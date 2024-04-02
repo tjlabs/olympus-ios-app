@@ -1,0 +1,16 @@
+PODS:
+  - OlympusSDK (0.1.0)
+
+DEPENDENCIES:
+  - OlympusSDK (from `../`)
+
+EXTERNAL SOURCES:
+  OlympusSDK:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  OlympusSDK: 371d3da52aa8cd9847c16f6ea40afe4002a65c7a
+
+PODFILE CHECKSUM: c53da8f4c0cd8bf9d12b2a4d05f3070570c47e21
+
+COCOAPODS: 1.14.3

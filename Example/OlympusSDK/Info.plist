@@ -22,6 +22,19 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>TJLABS는 블루투스 신호를 이용하여 사용자에게 위치 정보를 제공하므로, 블루투스 관련 권한 허용이 필요합니다.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>TJLABS는 블루투스 신호를 이용하여 사용자에게 위치 정보를 제공하므로, 블루투스 관련 권한 허용이 필요합니다.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Allow my app to access motion usage.</string>
+	<key>Privacy - Location When In Usage Description</key>
+	<string>TJLABS에서 제공하는 실내 위치 정보를 제공받기 위해서는 위치 권한이 필요합니다.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>bluetooth-central</string>
+		<string>location</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -29,6 +42,10 @@
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>armv7</string>
+		<string>accelerometer</string>
+		<string>gyroscope</string>
+		<string>magnetometer</string>
+		<string>bluetooth-le</string>
 	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>

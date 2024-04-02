@@ -1,10 +1,13 @@
 use_frameworks!
 
-platform :ios, '10.0'
+platform :ios, '13.0'
 
 target 'OlympusSDK_Example' do
+  use_frameworks!
+  
   pod 'OlympusSDK', :path => '../'
-
+  pod 'DropDown'
+  
   target 'OlympusSDK_Tests' do
     inherit! :search_paths
 

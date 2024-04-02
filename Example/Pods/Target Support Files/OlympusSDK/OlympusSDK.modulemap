@@ -1,0 +1,6 @@
+framework module OlympusSDK {
+  umbrella header "OlympusSDK-umbrella.h"
+
+  export *
+  module * { export * }
+}

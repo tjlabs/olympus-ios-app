@@ -8,13 +8,28 @@
 
 /* Begin PBXBuildFile section */
 		607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD51AFB9204008FA782 /* AppDelegate.swift */; };
-		607FACD81AFB9204008FA782 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD71AFB9204008FA782 /* ViewController.swift */; };
+		607FACD81AFB9204008FA782 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD71AFB9204008FA782 /* LoginViewController.swift */; };
 		607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 607FACD91AFB9204008FA782 /* Main.storyboard */; };
 		607FACDD1AFB9204008FA782 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDC1AFB9204008FA782 /* Images.xcassets */; };
 		607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDE1AFB9204008FA782 /* LaunchScreen.xib */; };
 		607FACEC1AFB9204008FA782 /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACEB1AFB9204008FA782 /* Tests.swift */; };
 		A6E5BEE28E1B86DBEFB2FCE4 /* Pods_OlympusSDK_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7EBA58F92CBD7B18638C505 /* Pods_OlympusSDK_Tests.framework */; };
 		A8FAC5D1354CFEBEB057A9E8 /* Pods_OlympusSDK_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 93391A15BC57780E08EED467 /* Pods_OlympusSDK_Example.framework */; };
+		B31439722BAD42D5002C072F /* UIViewExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31439712BAD42D5002C072F /* UIViewExtension.swift */; };
+		B31439742BAD42F2002C072F /* StringExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31439732BAD42F2002C072F /* StringExtension.swift */; };
+		B31439762BAD431B002C072F /* UIColorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31439752BAD431B002C072F /* UIColorExtension.swift */; };
+		B31439782BAD432F002C072F /* UILabelExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31439772BAD432F002C072F /* UILabelExtension.swift */; };
+		B314397A2BAD434B002C072F /* UITextFieldExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31439792BAD434B002C072F /* UITextFieldExtension.swift */; };
+		B314397C2BAD435D002C072F /* UITextViewExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B314397B2BAD435D002C072F /* UITextViewExtension.swift */; };
+		B314397E2BAD437F002C072F /* CALayerExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B314397D2BAD437F002C072F /* CALayerExtension.swift */; };
+		B31439802BAD439E002C072F /* UIViewControllerExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B314397F2BAD439E002C072F /* UIViewControllerExtension.swift */; };
+		B31439832BAD5A27002C072F /* ColorPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31439822BAD5A27002C072F /* ColorPalette.swift */; };
+		B31439872BAD5B76002C072F /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B31439862BAD5B76002C072F /* Colors.xcassets */; };
+		B3A7A5542BBBCAE200561897 /* CardViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A7A5532BBBCAE200561897 /* CardViewController.swift */; };
+		B3A7A55C2BBBD0FE00561897 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A7A55B2BBBD0FE00561897 /* NetworkManager.swift */; };
+		B3A7A55F2BBBD11A00561897 /* NetworkConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A7A55E2BBBD11A00561897 /* NetworkConstants.swift */; };
+		B3A7A5612BBBE1D400561897 /* Entity.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A7A5602BBBE1D400561897 /* Entity.swift */; };
+		B3A7A5632BBBE2AE00561897 /* JSONConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A7A5622BBBE2AE00561897 /* JSONConverter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -28,25 +43,40 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		3298F15F398AD9A4406FA9EB /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; name = README.md; path = ../README.md; sourceTree = "<group>"; };
+		3298F15F398AD9A4406FA9EB /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 		5D6664D531781DD3607F35F3 /* Pods-OlympusSDK_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OlympusSDK_Example.release.xcconfig"; path = "Target Support Files/Pods-OlympusSDK_Example/Pods-OlympusSDK_Example.release.xcconfig"; sourceTree = "<group>"; };
 		607FACD01AFB9204008FA782 /* OlympusSDK_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OlympusSDK_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACD41AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		607FACD51AFB9204008FA782 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		607FACD71AFB9204008FA782 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		607FACD71AFB9204008FA782 /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		607FACDA1AFB9204008FA782 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		607FACDC1AFB9204008FA782 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		607FACDF1AFB9204008FA782 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
 		607FACE51AFB9204008FA782 /* OlympusSDK_Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OlympusSDK_Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACEA1AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		607FACEB1AFB9204008FA782 /* Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests.swift; sourceTree = "<group>"; };
-		63F990924ED397D3F40125BA /* OlympusSDK.podspec */ = {isa = PBXFileReference; includeInIndex = 1; name = OlympusSDK.podspec; path = ../OlympusSDK.podspec; sourceTree = "<group>"; };
+		63F990924ED397D3F40125BA /* OlympusSDK.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = OlympusSDK.podspec; path = ../OlympusSDK.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		93391A15BC57780E08EED467 /* Pods_OlympusSDK_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OlympusSDK_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		97F5968B983B9EDF136BB324 /* Pods-OlympusSDK_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OlympusSDK_Tests.release.xcconfig"; path = "Target Support Files/Pods-OlympusSDK_Tests/Pods-OlympusSDK_Tests.release.xcconfig"; sourceTree = "<group>"; };
+		B31439712BAD42D5002C072F /* UIViewExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewExtension.swift; sourceTree = "<group>"; };
+		B31439732BAD42F2002C072F /* StringExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtension.swift; sourceTree = "<group>"; };
+		B31439752BAD431B002C072F /* UIColorExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColorExtension.swift; sourceTree = "<group>"; };
+		B31439772BAD432F002C072F /* UILabelExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UILabelExtension.swift; sourceTree = "<group>"; };
+		B31439792BAD434B002C072F /* UITextFieldExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITextFieldExtension.swift; sourceTree = "<group>"; };
+		B314397B2BAD435D002C072F /* UITextViewExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITextViewExtension.swift; sourceTree = "<group>"; };
+		B314397D2BAD437F002C072F /* CALayerExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerExtension.swift; sourceTree = "<group>"; };
+		B314397F2BAD439E002C072F /* UIViewControllerExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewControllerExtension.swift; sourceTree = "<group>"; };
+		B31439822BAD5A27002C072F /* ColorPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPalette.swift; sourceTree = "<group>"; };
+		B31439862BAD5B76002C072F /* Colors.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Colors.xcassets; sourceTree = "<group>"; };
+		B3A7A5532BBBCAE200561897 /* CardViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardViewController.swift; sourceTree = "<group>"; };
+		B3A7A55B2BBBD0FE00561897 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
+		B3A7A55E2BBBD11A00561897 /* NetworkConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkConstants.swift; sourceTree = "<group>"; };
+		B3A7A5602BBBE1D400561897 /* Entity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Entity.swift; sourceTree = "<group>"; };
+		B3A7A5622BBBE2AE00561897 /* JSONConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONConverter.swift; sourceTree = "<group>"; };
 		D6BEA357836562D67D800EA2 /* Pods-OlympusSDK_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OlympusSDK_Tests.debug.xcconfig"; path = "Target Support Files/Pods-OlympusSDK_Tests/Pods-OlympusSDK_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		D7EBA58F92CBD7B18638C505 /* Pods_OlympusSDK_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OlympusSDK_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		EDA8292140E0F10C97BF2877 /* Pods-OlympusSDK_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OlympusSDK_Example.debug.xcconfig"; path = "Target Support Files/Pods-OlympusSDK_Example/Pods-OlympusSDK_Example.debug.xcconfig"; sourceTree = "<group>"; };
-		F81D3805B0479FC8780A8C86 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
+		F81D3805B0479FC8780A8C86 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,11 +123,16 @@
 		607FACD21AFB9204008FA782 /* Example for OlympusSDK */ = {
 			isa = PBXGroup;
 			children = (
+				B3A7A55D2BBBD10600561897 /* Network */,
+				B31439812BAD5A17002C072F /* Color */,
+				B31439702BAD42BE002C072F /* Extensions */,
+				B314395D2BAD3043002C072F /* ViewControllers */,
 				607FACD51AFB9204008FA782 /* AppDelegate.swift */,
-				607FACD71AFB9204008FA782 /* ViewController.swift */,
+				B3A7A5602BBBE1D400561897 /* Entity.swift */,
+				B3A7A5622BBBE2AE00561897 /* JSONConverter.swift */,
 				607FACD91AFB9204008FA782 /* Main.storyboard */,
-				607FACDC1AFB9204008FA782 /* Images.xcassets */,
 				607FACDE1AFB9204008FA782 /* LaunchScreen.xib */,
+				607FACDC1AFB9204008FA782 /* Images.xcassets */,
 				607FACD31AFB9204008FA782 /* Supporting Files */,
 			);
 			name = "Example for OlympusSDK";
@@ -147,8 +182,49 @@
 				D6BEA357836562D67D800EA2 /* Pods-OlympusSDK_Tests.debug.xcconfig */,
 				97F5968B983B9EDF136BB324 /* Pods-OlympusSDK_Tests.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		B314395D2BAD3043002C072F /* ViewControllers */ = {
+			isa = PBXGroup;
+			children = (
+				607FACD71AFB9204008FA782 /* LoginViewController.swift */,
+				B3A7A5532BBBCAE200561897 /* CardViewController.swift */,
+			);
+			name = ViewControllers;
+			sourceTree = "<group>";
+		};
+		B31439702BAD42BE002C072F /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				B31439712BAD42D5002C072F /* UIViewExtension.swift */,
+				B31439732BAD42F2002C072F /* StringExtension.swift */,
+				B31439752BAD431B002C072F /* UIColorExtension.swift */,
+				B31439772BAD432F002C072F /* UILabelExtension.swift */,
+				B31439792BAD434B002C072F /* UITextFieldExtension.swift */,
+				B314397B2BAD435D002C072F /* UITextViewExtension.swift */,
+				B314397D2BAD437F002C072F /* CALayerExtension.swift */,
+				B314397F2BAD439E002C072F /* UIViewControllerExtension.swift */,
+			);
+			name = Extensions;
+			sourceTree = "<group>";
+		};
+		B31439812BAD5A17002C072F /* Color */ = {
+			isa = PBXGroup;
+			children = (
+				B31439822BAD5A27002C072F /* ColorPalette.swift */,
+				B31439862BAD5B76002C072F /* Colors.xcassets */,
+			);
+			name = Color;
+			sourceTree = "<group>";
+		};
+		B3A7A55D2BBBD10600561897 /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				B3A7A55B2BBBD0FE00561897 /* NetworkManager.swift */,
+				B3A7A55E2BBBD11A00561897 /* NetworkConstants.swift */,
+			);
+			name = Network;
 			sourceTree = "<group>";
 		};
 		D1022D991DC0E64BD5DD1706 /* Frameworks */ = {
@@ -213,10 +289,12 @@
 				TargetAttributes = {
 					607FACCF1AFB9204008FA782 = {
 						CreatedOnToolsVersion = 6.3.1;
+						DevelopmentTeam = G75UAV755N;
 						LastSwiftMigration = 0900;
 					};
 					607FACE41AFB9204008FA782 = {
 						CreatedOnToolsVersion = 6.3.1;
+						DevelopmentTeam = G75UAV755N;
 						LastSwiftMigration = 0900;
 						TestTargetID = 607FACCF1AFB9204008FA782;
 					};
@@ -227,6 +305,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);
@@ -247,6 +326,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */,
+				B31439872BAD5B76002C072F /* Colors.xcassets in Resources */,
 				607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */,
 				607FACDD1AFB9204008FA782 /* Images.xcassets in Resources */,
 			);
@@ -331,8 +411,22 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				607FACD81AFB9204008FA782 /* ViewController.swift in Sources */,
+				B3A7A5632BBBE2AE00561897 /* JSONConverter.swift in Sources */,
+				B3A7A55F2BBBD11A00561897 /* NetworkConstants.swift in Sources */,
+				B31439742BAD42F2002C072F /* StringExtension.swift in Sources */,
+				B31439722BAD42D5002C072F /* UIViewExtension.swift in Sources */,
+				B31439802BAD439E002C072F /* UIViewControllerExtension.swift in Sources */,
+				B3A7A55C2BBBD0FE00561897 /* NetworkManager.swift in Sources */,
+				B314397A2BAD434B002C072F /* UITextFieldExtension.swift in Sources */,
+				B31439762BAD431B002C072F /* UIColorExtension.swift in Sources */,
+				607FACD81AFB9204008FA782 /* LoginViewController.swift in Sources */,
+				B31439782BAD432F002C072F /* UILabelExtension.swift in Sources */,
+				B314397E2BAD437F002C072F /* CALayerExtension.swift in Sources */,
+				B3A7A5542BBBCAE200561897 /* CardViewController.swift in Sources */,
+				B3A7A5612BBBE1D400561897 /* Entity.swift in Sources */,
 				607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */,
+				B314397C2BAD435D002C072F /* UITextViewExtension.swift in Sources */,
+				B31439832BAD5A27002C072F /* ColorPalette.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -419,7 +513,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -465,7 +559,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
@@ -478,7 +572,9 @@
 			baseConfigurationReference = EDA8292140E0F10C97BF2877 /* Pods-OlympusSDK_Example.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = G75UAV755N;
 				INFOPLIST_FILE = OlympusSDK/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MODULE_NAME = ExampleApp;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.$(PRODUCT_NAME:rfc1034identifier)";
@@ -493,7 +589,9 @@
 			baseConfigurationReference = 5D6664D531781DD3607F35F3 /* Pods-OlympusSDK_Example.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = G75UAV755N;
 				INFOPLIST_FILE = OlympusSDK/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MODULE_NAME = ExampleApp;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.$(PRODUCT_NAME:rfc1034identifier)";
@@ -507,6 +605,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = D6BEA357836562D67D800EA2 /* Pods-OlympusSDK_Tests.debug.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = G75UAV755N;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
 					"$(inherited)",
@@ -529,6 +628,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 97F5968B983B9EDF136BB324 /* Pods-OlympusSDK_Tests.release.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = G75UAV755N;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
 					"$(inherited)",
