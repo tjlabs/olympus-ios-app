@@ -1,4 +1,4 @@
-import Foundation
+
 
 public class NetworkManager {
     static let shared = NetworkManager()
@@ -125,10 +125,6 @@ public class NetworkManager {
             requestURL.addValue("application/json", forHTTPHeaderField: "Content-Type")
             requestURL.setValue("\(String(describing: encodingData))", forHTTPHeaderField: "Content-Length")
         }
-//        let encodingData = JSONConverter.encodeJson(param: input)
-//        requestURL.httpBody = encodingData
-//        requestURL.addValue("application/json", forHTTPHeaderField: "Content-Type")
-//        requestURL.setValue("\(String(describing: encodingData))", forHTTPHeaderField: "Content-Length")
         
         let dataTask = URLSession.shared.dataTask(with: requestURL, completionHandler: { (data, response, error) in
             

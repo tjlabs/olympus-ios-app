@@ -150,3 +150,16 @@ extension Array where Element == Double {
         return sqrt(squareSum / Double(count))
     }
 }
+
+public func convertToDoubleArray(intArray: [Int]) -> [Double] {
+    return intArray.map { Double($0) }
+}
+
+public func containsArray(_ array2D: [[Double]], _ targetArray: [Double]) -> Bool {
+    for array in array2D {
+        if array == targetArray {
+            return true
+        }
+    }
+    return false
+}

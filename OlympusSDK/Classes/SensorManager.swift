@@ -83,8 +83,8 @@ public class SensorManager {
                     self.abnormalMagCount = 0
                 }
                 
-                if (self.abnormalMagCount >= OlympusConstants.ABNORMAL_COUNT) {
-                    self.abnormalMagCount = OlympusConstants.ABNORMAL_COUNT
+                if (self.abnormalMagCount >= OlympusConstants.ABNORMAL_MAG_COUNT) {
+                    self.abnormalMagCount = OlympusConstants.ABNORMAL_MAG_COUNT
                     if (!self.isVenusMode && self.runMode == OlympusConstants.MODE_DR) {
                         self.isVenusMode = true
                         NotificationCenter.default.post(name: .didBecomeVenus, object: nil, userInfo: nil)

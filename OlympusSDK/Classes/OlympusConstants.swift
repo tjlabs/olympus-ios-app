@@ -11,7 +11,7 @@ class OlympusConstants {
     static let G: Double = 9.81
     static let SENSOR_INTERVAL: TimeInterval = 1/100
     static let ABNORMAL_MAG_THRESHOLD: Double = 2000
-    static let ABNORMAL_COUNT = 500
+    static let ABNORMAL_MAG_COUNT = 500
     
     static var STANDARD_MIN_RSS: Double = -99
     static var STANDARD_MAX_RSS: Double = -60
@@ -22,4 +22,8 @@ class OlympusConstants {
     
     static var NUM_STRAIGHT_INDEX_DR: Int = 10
     static var NUM_STRAIGHT_INDEX_PDR: Int = 10
+    
+    public func setSectorInfoConstants() {
+        
+    }
 }

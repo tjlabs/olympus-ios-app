@@ -12,6 +12,7 @@ public class ServiceManager: NSObject {
     var rssCompensator = RssCompensator()
     var phaseController = PhaseController()
     var fileDownloader = OlympusFileDownloader()
+    var pmCalculator = PathMatchingCalculator()
     
     // ----- Sector Param ----- //
     var isSaveMobileResult: Bool = false
@@ -22,6 +23,9 @@ public class ServiceManager: NSObject {
     var PathPixelVersion = [String: String]()
     var isLoadPp = [String: Bool]()
     var EntranceRouteVersion = [String: String]()
+    var EntranceRouteLevel = [String: [String]]()
+    var EntranceRouteCoord = [String: [[Double]]]()
+    var isLoadEr = [String: Bool]()
     var EntranceNetworkStatus = [String: Bool]()
     var EntranceOuterWards = [String]()
     var EntranceVelocityScales = [String: Double]()
@@ -61,7 +65,7 @@ public class ServiceManager: NSObject {
                         if (statusCode == 200) {
                             let sectorInfoFromServer = jsonToSectorInfoFromServer(jsonString: returnedString)
                             if (sectorInfoFromServer.0) {
-                                self.setSectorInfo(sectorInfo: sectorInfoFromServer.1)
+                                self.setSectorInfo(sector_id: sector_id, sectorInfo: sectorInfoFromServer.1)
                                 
                                 completion(true, returnedString)
                             } else {
@@ -81,7 +85,7 @@ public class ServiceManager: NSObject {
         }
     }
     
-    private func setSectorInfo(sectorInfo: SectorInfoFromServer) {
+    private func setSectorInfo(sector_id: Int, sectorInfo: SectorInfoFromServer) {
         let sectorParam: SectorInfoParam = sectorInfo.parameter
         self.isSaveMobileResult = sectorParam.debug
         let stadard_rss: [Int] = sectorParam.standard_rss
@@ -113,11 +117,11 @@ public class ServiceManager: NSObject {
                 
                 if (levelName == "B0") {
                     var entranceOuterWards: [String] = []
-                    print(element.entrance_list)
                     for entrance in element.entrance_list {
-                        let entranceKey = "\(entrance.spot_number)"
+                        let entranceKey = "\(key)_\(entrance.spot_number)"
                         self.EntranceNetworkStatus[entranceKey] = entrance.network_status
                         self.EntranceVelocityScales[entranceKey] = entrance.scale
+                        self.EntranceRouteVersion[entranceKey] = entrance.route_version
                         entranceOuterWards.append(entrance.outermost_ward_id)
                     }
                     self.EntranceOuterWards = entranceOuterWards
@@ -125,32 +129,263 @@ public class ServiceManager: NSObject {
                 self.PathPixelVersion[key] = element.path_pixel_version
             }
         }
+        // Entrance Route 버전 확인
+        self.loadEntranceRoute(sector_id: sector_id, RouteVersion: self.EntranceRouteVersion)
+        // PP 버전 확인
+        self.loadPathPixel(sector_id: sector_id, PathPixelVersion: self.PathPixelVersion)
     }
     
-    private func loadPathPixel(sector_id: Int) {
-        // Cache를 통해 PP 버전을 확인
-        let keyPpVersion: String = "OlympusPathPixelVersion_\(sector_id)"
-//        if let loadedPpVersion:
+    private func saveEntranceRouteLocalUrl(key: String, url: String) {
+        let currentTime = getCurrentTimeInMilliseconds()
+        print(getLocalTimeString() + " , (Olympus) Save \(key) Entrance Route Local URL : \(url)")
         
-        // 만약 버전이 다르면 다운로드 받아오기
-        // 만약 버전이 같다면 파일을 가져오기
+        do {
+            let key: String = "OlympusEntranceRouteLocalUrl_\(key)"
+            UserDefaults.standard.set(url, forKey: key)
+        }
     }
     
-//    public func loadNormalizationScale(sector_id: Int) -> (Bool, Double) {
-//        var isLoadedFromCache: Bool = false
-//        var scale: Double = 1.0
-//        
-//        let keyScale: String = "OlympusNormalizationScale_\(sector_id)"
-//        if let loadedScale: Double = UserDefaults.standard.object(forKey: keyScale) as? Double {
-//            scale = loadedScale
-//            isLoadedFromCache = true
-//            if (scale >= 1.7) {
-//                scale = 1.0
-//            }
-//        }
-//        
-//        return (isLoadedFromCache, scale)
-//    }
+    private func loadEntranceRouteLocalUrl(key: String) -> (Bool, String?) {
+        let keyEntranceRouteUrl: String = "OlympusEntranceRouteLocalUrl_\(key)"
+        if let loadedEntranceRouteUrl: String = UserDefaults.standard.object(forKey: keyEntranceRouteUrl) as? String {
+            return (true, loadedEntranceRouteUrl)
+        } else {
+            return (false, nil)
+        }
+    }
+    
+    private func saveEntranceRouteVersion(key: String, routeVersion: String) {
+        let currentTime = getCurrentTimeInMilliseconds()
+        print(getLocalTimeString() + " , (Olympus) Save \(key) Entrance Route Version : \(routeVersion)")
+        do {
+            let key: String = "OlympusEntranceRouteVersion_\(key)"
+            UserDefaults.standard.set(routeVersion, forKey: key)
+        }
+    }
+    
+    private func loadEntranceRoute(sector_id: Int, RouteVersion: [String: String]) {
+        for (key, value) in RouteVersion {
+            // Cache를 통해 PP 버전을 확인
+            let keyRouteVersion: String = "OlympusEntranceRouteVersion_\(key)"
+            if let loadedRouteVersion: String = UserDefaults.standard.object(forKey: keyRouteVersion) as? String {
+                if value == loadedRouteVersion {
+                    // 만약 버전이 같다면 파일을 가져오기
+                    let routeLocalUrl = loadEntranceRouteLocalUrl(key: key)
+                    if (routeLocalUrl.0) {
+                        do {
+                            let contents = routeLocalUrl.1!
+                            let parsedData = parseEntrance(data: contents)
+                            EntranceRouteLevel[key] = parsedData.0
+                            EntranceRouteCoord[key] = parsedData.1
+                            isLoadEr[key] = true
+                        }
+                    } else {
+                        // 첫 시작과 동일하게 다운로드 받아오기
+                        let building_level_entrance = key.split(separator: "_")
+                        let routeUrl: String = CSV_URL + "/entrance-route/\(sector_id)/\(building_level_entrance[0])/\(building_level_entrance[1])/\(building_level_entrance[2])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
+                        let urlComponents = URLComponents(string: routeUrl)
+                        fileDownloader.downloadCSVFile(from: (urlComponents?.url)!, fname: key, completion: { [self] url, error in
+                            if error == nil {
+                                do {
+                                    let contents = try String(contentsOf: url!)
+                                    let parsedData = parseEntrance(data: contents)
+                                    EntranceRouteLevel[key] = parsedData.0
+                                    EntranceRouteCoord[key] = parsedData.1
+                                    saveEntranceRouteVersion(key: key, routeVersion: value)
+                                    saveEntranceRouteLocalUrl(key: key, url: contents)
+                                    isLoadEr[key] = true
+                                } catch {
+                                    isLoadEr[key] = false
+                                    print("Error reading file:", error.localizedDescription)
+                                }
+                            } else {
+                                isLoadEr[key] = false
+                            }
+                        })
+                    }
+                } else {
+                    // 만약 버전이 다르면 다운로드 받아오기
+                    // 첫 시작과 동일하게 다운로드 받아오기
+                    let building_level_entrance = key.split(separator: "_")
+                    let routeUrl: String = CSV_URL + "/entrance-route/\(sector_id)/\(building_level_entrance[0])/\(building_level_entrance[1])/\(building_level_entrance[2])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
+                    let urlComponents = URLComponents(string: routeUrl)
+                    fileDownloader.downloadCSVFile(from: (urlComponents?.url)!, fname: key, completion: { [self] url, error in
+                        if error == nil {
+                            do {
+                                let contents = try String(contentsOf: url!)
+                                let parsedData = parseEntrance(data: contents)
+                                EntranceRouteLevel[key] = parsedData.0
+                                EntranceRouteCoord[key] = parsedData.1
+                                saveEntranceRouteVersion(key: key, routeVersion: value)
+                                saveEntranceRouteLocalUrl(key: key, url: contents)
+                                isLoadEr[key] = true
+                            } catch {
+                                isLoadEr[key] = false
+                                print("Error reading file:", error.localizedDescription)
+                            }
+                        } else {
+                            isLoadEr[key] = false
+                        }
+                    })
+                }
+            } else {
+                // 첫 시작이면 다운로드 받아오기
+                let building_level_entrance = key.split(separator: "_")
+                let routeUrl: String = CSV_URL + "/entrance-route/\(sector_id)/\(building_level_entrance[0])/\(building_level_entrance[1])/\(building_level_entrance[2])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
+                let urlComponents = URLComponents(string: routeUrl)
+                fileDownloader.downloadCSVFile(from: (urlComponents?.url)!, fname: key, completion: { [self] url, error in
+                    if error == nil {
+                        do {
+                            let contents = try String(contentsOf: url!)
+                            let parsedData = parseEntrance(data: contents)
+                            EntranceRouteLevel[key] = parsedData.0
+                            EntranceRouteCoord[key] = parsedData.1
+                            saveEntranceRouteVersion(key: key, routeVersion: value)
+                            saveEntranceRouteLocalUrl(key: key, url: contents)
+                            isLoadEr[key] = true
+                        } catch {
+                            isLoadEr[key] = false
+                            print("Error reading file:", error.localizedDescription)
+                        }
+                    } else {
+                        isLoadEr[key] = false
+                    }
+                })
+            }
+        }
+    }
+    
+    private func parseEntrance(data: String) -> ([String], [[Double]]) {
+        var entracneLevelArray = [String]()
+        var entranceArray = [[Double]]()
+
+        let entranceString = data.components(separatedBy: .newlines)
+        for i in 0..<entranceString.count {
+            if (entranceString[i] != "") {
+                let lineData = entranceString[i].components(separatedBy: ",")
+                
+                let entrance: [Double] = [(Double(lineData[1])!), (Double(lineData[2])!), (Double(lineData[3])!)]
+                
+                entracneLevelArray.append(lineData[0])
+                entranceArray.append(entrance)
+            }
+        }
+        
+        return (entracneLevelArray, entranceArray)
+    }
+    
+    
+    private func savePathPixelLocalUrl(key: String, url: String) {
+        let currentTime = getCurrentTimeInMilliseconds()
+        print(getLocalTimeString() + " , (Olympus) Save \(key) Path-Pixel Local URL : \(url)")
+        
+        do {
+            let key: String = "OlympusPathPixelLocalUrl_\(key)"
+            UserDefaults.standard.set(url, forKey: key)
+        }
+    }
+    
+    private func loadPathPixelLocalUrl(key: String) -> (Bool, String?) {
+        let keyPpLocalUrl: String = "OlympusPathPixelLocalUrl_\(key)"
+        if let loadedPpLocalUrl: String = UserDefaults.standard.object(forKey: keyPpLocalUrl) as? String {
+            return (true, loadedPpLocalUrl)
+        } else {
+            return (false, nil)
+        }
+    }
+    
+    private func savePathPixelVersion(key: String, ppVersion: String) {
+        let currentTime = getCurrentTimeInMilliseconds()
+        print(getLocalTimeString() + " , (Olympus) Save \(key) Path-Pixel Version : \(ppVersion)")
+        do {
+            let key: String = "OlympusPathPixelVersion_\(key)"
+            UserDefaults.standard.set(ppVersion, forKey: key)
+        }
+    }
+    
+    private func loadPathPixel(sector_id: Int, PathPixelVersion: [String: String]) {
+        for (key, value) in PathPixelVersion {
+            // Cache를 통해 PP 버전을 확인
+            let keyPpVersion: String = "OlympusPathPixelVersion_\(key)"
+            if let loadedPpVersion: String = UserDefaults.standard.object(forKey: keyPpVersion) as? String {
+                if value == loadedPpVersion {
+                    // 만약 버전이 같다면 파일을 가져오기
+                    let ppLocalUrl = loadPathPixelLocalUrl(key: key)
+                    if (ppLocalUrl.0) {
+                        do {
+                            let contents = ppLocalUrl.1!
+                            ( pmCalculator.PpType[key], pmCalculator.PpCoord[key], pmCalculator.PpMagScale[key], pmCalculator.PpHeading[key] ) = pmCalculator.parseRoad(data: contents)
+                            isLoadPp[key] = true
+                        }
+                    } else {
+                        // 첫 시작과 동일하게 다운로드 받아오기
+                        let building_n_level = key.split(separator: "_")
+                        let ppUrl: String = CSV_URL + "/path-pixel/\(sector_id)/\(building_n_level[0])/\(building_n_level[1])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
+                        let urlComponents = URLComponents(string: ppUrl)
+                        fileDownloader.downloadCSVFile(from: (urlComponents?.url)!, fname: key, completion: { [self] url, error in
+                            if error == nil {
+                                do {
+                                    let contents = try String(contentsOf: url!)
+                                    ( pmCalculator.PpType[key], pmCalculator.PpCoord[key], pmCalculator.PpMagScale[key], pmCalculator.PpHeading[key] ) = pmCalculator.parseRoad(data: contents)
+                                    savePathPixelVersion(key: key, ppVersion: value)
+                                    savePathPixelLocalUrl(key: key, url: contents)
+                                    isLoadPp[key] = true
+                                } catch {
+                                    isLoadPp[key] = false
+                                    print("Error reading file:", error.localizedDescription)
+                                }
+                            } else {
+                                isLoadPp[key] = false
+                            }
+                        })
+                    }
+                } else {
+                    // 만약 버전이 다르면 다운로드 받아오기
+                    // 첫 시작과 동일하게 다운로드 받아오기
+                    let building_n_level = key.split(separator: "_")
+                    let ppUrl: String = CSV_URL + "/path-pixel/\(sector_id)/\(building_n_level[0])/\(building_n_level[1])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
+                    let urlComponents = URLComponents(string: ppUrl)
+                    fileDownloader.downloadCSVFile(from: (urlComponents?.url)!, fname: key, completion: { [self] url, error in
+                        if error == nil {
+                            do {
+                                let contents = try String(contentsOf: url!)
+                                ( pmCalculator.PpType[key], pmCalculator.PpCoord[key], pmCalculator.PpMagScale[key], pmCalculator.PpHeading[key] ) = pmCalculator.parseRoad(data: contents)
+                                savePathPixelVersion(key: key, ppVersion: value)
+                                savePathPixelLocalUrl(key: key, url: contents)
+                                isLoadPp[key] = true
+                            } catch {
+                                isLoadPp[key] = false
+                                print("Error reading file:", error.localizedDescription)
+                            }
+                        } else {
+                            isLoadPp[key] = false
+                        }
+                    })
+                }
+            } else {
+                // 첫 시작이면 다운로드 받아오기
+                let building_n_level = key.split(separator: "_")
+                let ppUrl: String = CSV_URL + "/path-pixel/\(sector_id)/\(building_n_level[0])/\(building_n_level[1])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
+                let urlComponents = URLComponents(string: ppUrl)
+                fileDownloader.downloadCSVFile(from: (urlComponents?.url)!, fname: key, completion: { [self] url, error in
+                    if error == nil {
+                        do {
+                            let contents = try String(contentsOf: url!)
+                            ( pmCalculator.PpType[key], pmCalculator.PpCoord[key], pmCalculator.PpMagScale[key], pmCalculator.PpHeading[key] ) = pmCalculator.parseRoad(data: contents)
+                            savePathPixelVersion(key: key, ppVersion: value)
+                            savePathPixelLocalUrl(key: key, url: contents)
+                            isLoadPp[key] = true
+                        } catch {
+                            isLoadPp[key] = false
+                            print("Error reading file:", error.localizedDescription)
+                        }
+                    } else {
+                        isLoadPp[key] = false
+                    }
+                })
+            }
+        }
+    }
     
     private func loadRssiCompensationParam(sector_id: Int, device_model: String, os_version: Int, completion: @escaping (Bool, String) -> Void) {
         // Check data in cache
@@ -181,7 +416,7 @@ public class ServiceManager: NSObject {
                                             completion(true, msg)
                                         } else {
                                             // Succes Load Normalization-scale (Device)
-                                            if let closest = findClosestOs(to: os_version, in: rcDeviceResult.1.rss_compensations) {
+                                            if let closest = self.findClosestOs(to: os_version, in: rcDeviceResult.1.rss_compensations) {
                                                 // Find Closest OS
                                                 let rcFromServer: RcInfo = closest
                                                 self.normalizationScale = rcFromServer.normalization_scale
@@ -226,6 +461,22 @@ public class ServiceManager: NSObject {
                 }
             })
         }
+    }
+    
+    private func findClosestOs(to myOsVersion: Int, in array: [RcInfo]) -> RcInfo? {
+        guard let first = array.first else {
+            return nil
+        }
+        var closest = first
+        var closestDistance = closest.os_version - myOsVersion
+        for d in array {
+            let distance = d.os_version - myOsVersion
+            if abs(distance) < abs(closestDistance) {
+                closest = d
+                closestDistance = distance
+            }
+        }
+        return closest
     }
     
     func notificationCenterAddObserver() {

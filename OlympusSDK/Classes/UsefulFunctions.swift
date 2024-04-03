@@ -20,32 +20,3 @@ public func getCurrentTimeInMillisecondsDouble() -> Double
 {
     return (Date().timeIntervalSince1970 * 1000)
 }
-
-public func convertToDoubleArray(intArray: [Int]) -> [Double] {
-    return intArray.map { Double($0) }
-}
-
-public func containsArray(_ array2D: [[Double]], _ targetArray: [Double]) -> Bool {
-    for array in array2D {
-        if array == targetArray {
-            return true
-        }
-    }
-    return false
-}
-
-public func findClosestOs(to myOsVersion: Int, in array: [RcInfo]) -> RcInfo? {
-    guard let first = array.first else {
-        return nil
-    }
-    var closest = first
-    var closestDistance = closest.os_version - myOsVersion
-    for d in array {
-        let distance = d.os_version - myOsVersion
-        if abs(distance) < abs(closestDistance) {
-            closest = d
-            closestDistance = distance
-        }
-    }
-    return closest
-}

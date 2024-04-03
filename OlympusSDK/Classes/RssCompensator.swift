@@ -1,4 +1,3 @@
-import Foundation
 
 
 public class RssCompensator {
@@ -154,15 +153,11 @@ public class RssCompensator {
     }
     
     public func saveNormalizationScale(scale: Double, sector_id: Int) {
-        let currentTime = getCurrentTimeInMilliseconds()
         print(getLocalTimeString() + " , (Olympus) Save NormalizationScale : \(scale)")
         
-        // Scale
         do {
             let key: String = "OlympusNormalizationScale_\(sector_id)"
             UserDefaults.standard.set(scale, forKey: key)
-        } catch {
-            print("(Olympus) Error : Fail to save NormalizattionScale")
         }
     }
     

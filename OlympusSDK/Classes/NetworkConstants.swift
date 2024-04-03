@@ -1,7 +1,9 @@
 let TIMEOUT_VALUE_PUT: Double = 5.0
 let TIMEOUT_VALUE_POST: Double = 5.0
 
-let SERVER_VERSION = "2024-03-19"
+let USER_SERVER_VERSION = "2024-03-19"
+let CALC_SERVER_VERSION = "2024-03-19"
+let REC_SERVER_VERSION = "2024-03-19"
 
 let HTTP_PREFIX = "https://"
 var REGION_PREFIX = "ap-northeast-2."
@@ -33,10 +35,10 @@ public func setServerURL(region: String) {
     IMAGE_URL = HTTP_PREFIX + REGION_PREFIX + "img" + OLMPUS_SUFFIX
     CSV_URL = HTTP_PREFIX + REGION_PREFIX + "csv" + OLMPUS_SUFFIX
     
-    USER_LOGIN_URL = USER_URL + "/" + SERVER_VERSION + "/user"
-    USER_CARD_URL = USER_URL + "/" + SERVER_VERSION + "/card"
-    USER_ORDER_URL = USER_URL + "/" + SERVER_VERSION + "/order"
-    USER_SCALE_URL = USER_URL + "/" + SERVER_VERSION + "/scale"
-    USER_SECTOR_URL = USER_URL + "/" + SERVER_VERSION + "/sector"
-    USER_RC_URL = USER_URL + "/" + SERVER_VERSION + "/rc"
+    USER_LOGIN_URL = USER_URL + "/" + USER_SERVER_VERSION + "/user"
+    USER_CARD_URL = USER_URL + "/" + USER_SERVER_VERSION + "/card"
+    USER_ORDER_URL = USER_URL + "/" + USER_SERVER_VERSION + "/order"
+    USER_SCALE_URL = USER_URL + "/" + USER_SERVER_VERSION + "/scale"
+    USER_SECTOR_URL = USER_URL + "/" + USER_SERVER_VERSION + "/sector"
+    USER_RC_URL = USER_URL + "/" + USER_SERVER_VERSION + "/rc"
 }
