@@ -16,6 +16,7 @@ var USER_CARD_URL = ""
 var USER_ORDER_URL = ""
 var USER_SCALE_URL = ""
 var USER_SECTOR_URL = ""
+var USER_RC_URL = ""
 
 
 public func setServerURL(region: String) {
@@ -37,4 +38,5 @@ public func setServerURL(region: String) {
     USER_ORDER_URL = USER_URL + "/" + SERVER_VERSION + "/order"
     USER_SCALE_URL = USER_URL + "/" + SERVER_VERSION + "/scale"
     USER_SECTOR_URL = USER_URL + "/" + SERVER_VERSION + "/sector"
+    USER_RC_URL = USER_URL + "/" + SERVER_VERSION + "/rc"
 }

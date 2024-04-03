@@ -6,12 +6,10 @@ public class NetworkManager {
     init() {
     }
     
-    func postUserLogin(url: String, input: UserInfo, completion: @escaping (Int, String) -> Void) {
+    func postUserLogin(url: String, input: LoginInfo, completion: @escaping (Int, String) -> Void) {
         // [http 비동기 방식을 사용해서 http 요청 수행 실시]
         let urlComponents = URLComponents(string: url)
         var requestURL = URLRequest(url: (urlComponents?.url)!)
-        print("URL : \(url)")
-        print("Input : \(input)")
         requestURL.httpMethod = "POST"
         let encodingData = JSONConverter.encodeJson(param: input)
         requestURL.httpBody = encodingData

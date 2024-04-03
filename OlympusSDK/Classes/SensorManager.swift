@@ -35,19 +35,19 @@ public class SensorManager {
         var sensorActive: Int = 0
         if motionManager.isAccelerometerAvailable {
             sensorActive += 1
-            motionManager.accelerometerUpdateInterval = SENSOR_INTERVAL
+            motionManager.accelerometerUpdateInterval = OlympusConstants.SENSOR_INTERVAL
             motionManager.startAccelerometerUpdates(to: .main) { [self] (data, error) in
                 if let accX = data?.acceleration.x {
-                    sensorData.acc[0] = -accX*G
-                    collectData.acc[0] = -accX*G
+                    sensorData.acc[0] = -accX*OlympusConstants.G
+                    collectData.acc[0] = -accX*OlympusConstants.G
                 }
                 if let accY = data?.acceleration.y {
-                    sensorData.acc[1] = -accY*G
-                    collectData.acc[1] = -accY*G
+                    sensorData.acc[1] = -accY*OlympusConstants.G
+                    collectData.acc[1] = -accY*OlympusConstants.G
                 }
                 if let accZ = data?.acceleration.z {
-                    sensorData.acc[2] = -accZ*G
-                    collectData.acc[2] = -accZ*G
+                    sensorData.acc[2] = -accZ*OlympusConstants.G
+                    collectData.acc[2] = -accZ*OlympusConstants.G
                 }
             }
         } else {
@@ -61,7 +61,7 @@ public class SensorManager {
         if motionManager.isMagnetometerAvailable {
             sensorActive += 1
             // Uncalibrated
-            motionManager.magnetometerUpdateInterval = SENSOR_INTERVAL
+            motionManager.magnetometerUpdateInterval = OlympusConstants.SENSOR_INTERVAL
             motionManager.startMagnetometerUpdates(to: .main) { [self] (data, error) in
                 if let magX = data?.magneticField.x {
                     sensorData.mag[0] = magX
@@ -77,15 +77,15 @@ public class SensorManager {
                 }
                 
                 let norm = sqrt(sensorData.mag.reduce(0) { $0 + $1 * $1 })
-                if (norm > ABNORMAL_MAG_THRESHOLD || norm == 0) {
+                if (norm > OlympusConstants.ABNORMAL_MAG_THRESHOLD || norm == 0) {
                     self.abnormalMagCount += 1
                 } else {
                     self.abnormalMagCount = 0
                 }
                 
-                if (self.abnormalMagCount >= ABNORMAL_COUNT) {
-                    self.abnormalMagCount = ABNORMAL_COUNT
-                    if (!self.isVenusMode && self.runMode == "dr") {
+                if (self.abnormalMagCount >= OlympusConstants.ABNORMAL_COUNT) {
+                    self.abnormalMagCount = OlympusConstants.ABNORMAL_COUNT
+                    if (!self.isVenusMode && self.runMode == OlympusConstants.MODE_DR) {
                         self.isVenusMode = true
                         NotificationCenter.default.post(name: .didBecomeVenus, object: nil, userInfo: nil)
                         
@@ -123,7 +123,7 @@ public class SensorManager {
         
         if motionManager.isDeviceMotionAvailable {
             sensorActive += 1
-            motionManager.deviceMotionUpdateInterval = SENSOR_INTERVAL
+            motionManager.deviceMotionUpdateInterval = OlympusConstants.SENSOR_INTERVAL
             motionManager.startDeviceMotionUpdates(to: .main) { [self] (motion, error) in
                 if let m = motion {
                     // Calibrated Gyro
@@ -135,13 +135,13 @@ public class SensorManager {
                     collectData.gyro[1] = m.rotationRate.y
                     collectData.gyro[2] = m.rotationRate.z
                     
-                    sensorData.userAcc[0] = -m.userAcceleration.x*G
-                    sensorData.userAcc[1] = -m.userAcceleration.y*G
-                    sensorData.userAcc[2] = -m.userAcceleration.z*G
+                    sensorData.userAcc[0] = -m.userAcceleration.x*OlympusConstants.G
+                    sensorData.userAcc[1] = -m.userAcceleration.y*OlympusConstants.G
+                    sensorData.userAcc[2] = -m.userAcceleration.z*OlympusConstants.G
                     
-                    collectData.userAcc[0] = -m.userAcceleration.x*G
-                    collectData.userAcc[1] = -m.userAcceleration.y*G
-                    collectData.userAcc[2] = -m.userAcceleration.z*G
+                    collectData.userAcc[0] = -m.userAcceleration.x*OlympusConstants.G
+                    collectData.userAcc[1] = -m.userAcceleration.y*OlympusConstants.G
+                    collectData.userAcc[2] = -m.userAcceleration.z*OlympusConstants.G
                     
                     sensorData.att[0] = m.attitude.roll
                     sensorData.att[1] = m.attitude.pitch

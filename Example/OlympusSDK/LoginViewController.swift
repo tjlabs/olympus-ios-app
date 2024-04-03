@@ -109,13 +109,13 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     }
     
     func loginUser() {
-        let userInfo = UserInfo(user_id: self.userId, device_model: self.deviceModel, os_version: self.deviceOsVersion, sdk_version: self.sdkVersion)
-        NetworkManager.shared.postUserLogin(url: USER_LOGIN_URL, input: userInfo, completion: { statusCode, returnedString in
+        let loginInfo = LoginInfo(user_id: self.userId, device_model: self.deviceModel, os_version: self.deviceOsVersion, sdk_version: self.sdkVersion)
+        NetworkManager.shared.postUserLogin(url: USER_LOGIN_URL, input: loginInfo, completion: { statusCode, returnedString in
             if (statusCode == 200) {
-                print(returnedString)
+                print(getLocalTimeString() + " , (InnerLabs) Success : User Login")
                 self.goToCardViewController(region: "Korea", userId: self.userId)
             } else {
-                print(statusCode)
+                print(getLocalTimeString() + " , (InnerLabs) Fail : User Login \(statusCode)")
                 print(returnedString)
             }
         })
