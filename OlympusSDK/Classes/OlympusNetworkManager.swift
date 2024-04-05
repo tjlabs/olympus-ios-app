@@ -1,7 +1,7 @@
 
 
-public class NetworkManager {
-    static let shared = NetworkManager()
+public class OlympusNetworkManager {
+    static let shared = OlympusNetworkManager()
     
     init() {
         let uvdConfig = URLSessionConfiguration.default

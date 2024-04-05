@@ -12,27 +12,37 @@
 		11BC9B9416FF262B6EA9071505480B41 /* Pods-OlympusSDK_Example-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F1ECFA330BB1A13F56112DAE84496DB /* Pods-OlympusSDK_Example-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2DAAB2681D61CBD97D6E2470EBB57876 /* Pods-OlympusSDK_Tests-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = B94E3DCDBFB844E5BAA24DAB193A7AC4 /* Pods-OlympusSDK_Tests-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		56FB42BFBE848F5EAAFAE02FB50A93BF /* Pods-OlympusSDK_Tests-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = D77B2D453565901081FB998631A553EC /* Pods-OlympusSDK_Tests-dummy.m */; };
-		78B53FD23F6AC41B06D38F98EF7B9E15 /* ServiceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA87D54C9CDB90F87008BB72017DCAB7 /* ServiceManager.swift */; };
+		78B53FD23F6AC41B06D38F98EF7B9E15 /* OlympusServiceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA87D54C9CDB90F87008BB72017DCAB7 /* OlympusServiceManager.swift */; };
 		97BE27F17FAB5C7F1812B740403D7A63 /* Pods-OlympusSDK_Example-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = D28847CEC9B2427DFEF34F48A347C217 /* Pods-OlympusSDK_Example-dummy.m */; };
-		B314395F2BAD30F9002C072F /* BluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B314395E2BAD30F9002C072F /* BluetoothManager.swift */; };
-		B31439612BAD312B002C072F /* UsefulFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31439602BAD312B002C072F /* UsefulFunctions.swift */; };
+		B314395F2BAD30F9002C072F /* OlympusBluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B314395E2BAD30F9002C072F /* OlympusBluetoothManager.swift */; };
+		B31439612BAD312B002C072F /* OlympusUsefulFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31439602BAD312B002C072F /* OlympusUsefulFunctions.swift */; };
 		B31439632BAD3196002C072F /* StringExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31439622BAD3196002C072F /* StringExtension.swift */; };
 		B31439652BAD31E3002C072F /* NotificationExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31439642BAD31E3002C072F /* NotificationExtension.swift */; };
 		B31439672BAD328A002C072F /* DeviceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31439662BAD328A002C072F /* DeviceModel.swift */; };
-		B31439692BAD3305002C072F /* Entity.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31439682BAD3305002C072F /* Entity.swift */; };
-		B314396B2BAD3314002C072F /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B314396A2BAD3314002C072F /* NetworkManager.swift */; };
+		B31439692BAD3305002C072F /* OlympusEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31439682BAD3305002C072F /* OlympusEntity.swift */; };
+		B314396B2BAD3314002C072F /* OlympusNetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B314396A2BAD3314002C072F /* OlympusNetworkManager.swift */; };
 		B314396D2BAD3323002C072F /* OlympusConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B314396C2BAD3323002C072F /* OlympusConstants.swift */; };
-		B314396F2BAD341B002C072F /* SensorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B314396E2BAD341B002C072F /* SensorManager.swift */; };
-		B3A7A5562BBBCEE700561897 /* NetworkConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A7A5552BBBCEE700561897 /* NetworkConstants.swift */; };
+		B314396F2BAD341B002C072F /* OlympusSensorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B314396E2BAD341B002C072F /* OlympusSensorManager.swift */; };
+		B3A7A5562BBBCEE700561897 /* OlympusNetworkConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A7A5552BBBCEE700561897 /* OlympusNetworkConstants.swift */; };
 		B3A7A5582BBBCF7800561897 /* Node.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A7A5572BBBCF7800561897 /* Node.swift */; };
 		B3A7A55A2BBBCF9000561897 /* LinkedList.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A7A5592BBBCF9000561897 /* LinkedList.swift */; };
 		B3A7A5652BBBE8F800561897 /* JSONConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A7A5642BBBE8F800561897 /* JSONConverter.swift */; };
-		B3A7A5672BBBFCD000561897 /* JsonDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A7A5662BBBFCD000561897 /* JsonDecoder.swift */; };
-		B3F5E2652BBCF89A00C6F4CE /* RssCompensator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F5E2642BBCF89A00C6F4CE /* RssCompensator.swift */; };
+		B3A7A5672BBBFCD000561897 /* OlympusJsonDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A7A5662BBBFCD000561897 /* OlympusJsonDecoder.swift */; };
+		B3F38C072BBFC38C00CCE620 /* OlympusNetworkChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F38C062BBFC38C00CCE620 /* OlympusNetworkChecker.swift */; };
+		B3F38C092BBFEDEA00CCE620 /* OlympusRouteTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F38C082BBFEDEA00CCE620 /* OlympusRouteTracker.swift */; };
+		B3F38C0D2BBFF29900CCE620 /* OlympusUnitStatusEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F38C0C2BBFF29900CCE620 /* OlympusUnitStatusEstimator.swift */; };
+		B3F38C112BBFF56A00CCE620 /* OlympusMathFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F38C102BBFF56A00CCE620 /* OlympusMathFunctions.swift */; };
+		B3F38C132BBFF58D00CCE620 /* OlympusUnitAttitudeEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F38C122BBFF58D00CCE620 /* OlympusUnitAttitudeEstimator.swift */; };
+		B3F38C152BBFF5AB00CCE620 /* OlympusPDRDistanceEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F38C142BBFF5AB00CCE620 /* OlympusPDRDistanceEstimator.swift */; };
+		B3F38C172BBFF66700CCE620 /* OlympusPeakValleyDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F38C162BBFF66700CCE620 /* OlympusPeakValleyDetector.swift */; };
+		B3F38C192BBFF73C00CCE620 /* OlympusStepLengthEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F38C182BBFF73C00CCE620 /* OlympusStepLengthEstimator.swift */; };
+		B3F38C1B2BBFF83700CCE620 /* OlympusPacingDetectFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F38C1A2BBFF83700CCE620 /* OlympusPacingDetectFunctions.swift */; };
+		B3F38C1D2BBFFA1700CCE620 /* OlympusDRDistanceEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F38C1C2BBFFA1700CCE620 /* OlympusDRDistanceEstimator.swift */; };
+		B3F5E2652BBCF89A00C6F4CE /* OlympusRssCompensator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F5E2642BBCF89A00C6F4CE /* OlympusRssCompensator.swift */; };
 		B3F5E2672BBCF8CF00C6F4CE /* ArrayExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F5E2662BBCF8CF00C6F4CE /* ArrayExtension.swift */; };
-		B3F5E2692BBD18C500C6F4CE /* PhaseController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F5E2682BBD18C500C6F4CE /* PhaseController.swift */; };
+		B3F5E2692BBD18C500C6F4CE /* OlympusPhaseController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F5E2682BBD18C500C6F4CE /* OlympusPhaseController.swift */; };
 		B3F5E26B2BBD28D100C6F4CE /* OlympusFileDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F5E26A2BBD28D100C6F4CE /* OlympusFileDownloader.swift */; };
-		B3F5E26D2BBD30C300C6F4CE /* PathMatchingCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F5E26C2BBD30C300C6F4CE /* PathMatchingCalculator.swift */; };
+		B3F5E26D2BBD30C300C6F4CE /* OlympusPathMatchingCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F5E26C2BBD30C300C6F4CE /* OlympusPathMatchingCalculator.swift */; };
 		C782A2560CDD9EC91A35E66BEA66C145 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 73010CC983E3809BECEE5348DA1BB8C6 /* Foundation.framework */; };
 		CFEBA39138BB7CF03B4AF92BB0B07F58 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 73010CC983E3809BECEE5348DA1BB8C6 /* Foundation.framework */; };
 		D13BC67B5E00598145E3BA16772D1FC6 /* OlympusSDK-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 52FC1000902B021649CD7FC603EC7569 /* OlympusSDK-dummy.m */; };
@@ -74,27 +84,37 @@
 		8D86710C59F2302076BEF7736FFAD970 /* Pods-OlympusSDK_Example-frameworks.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-OlympusSDK_Example-frameworks.sh"; sourceTree = "<group>"; };
 		95D1AC59FED2B5C367684266C9C881C7 /* Pods-OlympusSDK_Tests */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = "Pods-OlympusSDK_Tests"; path = Pods_OlympusSDK_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D940727FF8FB9C785EB98E56350EF41 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
-		AA87D54C9CDB90F87008BB72017DCAB7 /* ServiceManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ServiceManager.swift; path = OlympusSDK/Classes/ServiceManager.swift; sourceTree = "<group>"; };
+		AA87D54C9CDB90F87008BB72017DCAB7 /* OlympusServiceManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OlympusServiceManager.swift; path = OlympusSDK/Classes/OlympusServiceManager.swift; sourceTree = "<group>"; };
 		AC76D631D2D1411913819AF1817A7FFF /* Pods-OlympusSDK_Example.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Pods-OlympusSDK_Example.modulemap"; sourceTree = "<group>"; };
-		B314395E2BAD30F9002C072F /* BluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BluetoothManager.swift; path = OlympusSDK/Classes/BluetoothManager.swift; sourceTree = "<group>"; };
-		B31439602BAD312B002C072F /* UsefulFunctions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UsefulFunctions.swift; path = OlympusSDK/Classes/UsefulFunctions.swift; sourceTree = "<group>"; };
+		B314395E2BAD30F9002C072F /* OlympusBluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusBluetoothManager.swift; path = OlympusSDK/Classes/OlympusBluetoothManager.swift; sourceTree = "<group>"; };
+		B31439602BAD312B002C072F /* OlympusUsefulFunctions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusUsefulFunctions.swift; path = OlympusSDK/Classes/OlympusUsefulFunctions.swift; sourceTree = "<group>"; };
 		B31439622BAD3196002C072F /* StringExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StringExtension.swift; path = OlympusSDK/Classes/StringExtension.swift; sourceTree = "<group>"; };
 		B31439642BAD31E3002C072F /* NotificationExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NotificationExtension.swift; path = OlympusSDK/Classes/NotificationExtension.swift; sourceTree = "<group>"; };
 		B31439662BAD328A002C072F /* DeviceModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DeviceModel.swift; path = OlympusSDK/Classes/DeviceModel.swift; sourceTree = "<group>"; };
-		B31439682BAD3305002C072F /* Entity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Entity.swift; path = OlympusSDK/Classes/Entity.swift; sourceTree = "<group>"; };
-		B314396A2BAD3314002C072F /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NetworkManager.swift; path = OlympusSDK/Classes/NetworkManager.swift; sourceTree = "<group>"; };
+		B31439682BAD3305002C072F /* OlympusEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusEntity.swift; path = OlympusSDK/Classes/OlympusEntity.swift; sourceTree = "<group>"; };
+		B314396A2BAD3314002C072F /* OlympusNetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusNetworkManager.swift; path = OlympusSDK/Classes/OlympusNetworkManager.swift; sourceTree = "<group>"; };
 		B314396C2BAD3323002C072F /* OlympusConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusConstants.swift; path = OlympusSDK/Classes/OlympusConstants.swift; sourceTree = "<group>"; };
-		B314396E2BAD341B002C072F /* SensorManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SensorManager.swift; path = OlympusSDK/Classes/SensorManager.swift; sourceTree = "<group>"; };
-		B3A7A5552BBBCEE700561897 /* NetworkConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NetworkConstants.swift; path = OlympusSDK/Classes/NetworkConstants.swift; sourceTree = "<group>"; };
+		B314396E2BAD341B002C072F /* OlympusSensorManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusSensorManager.swift; path = OlympusSDK/Classes/OlympusSensorManager.swift; sourceTree = "<group>"; };
+		B3A7A5552BBBCEE700561897 /* OlympusNetworkConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusNetworkConstants.swift; path = OlympusSDK/Classes/OlympusNetworkConstants.swift; sourceTree = "<group>"; };
 		B3A7A5572BBBCF7800561897 /* Node.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Node.swift; path = OlympusSDK/Classes/Node.swift; sourceTree = "<group>"; };
 		B3A7A5592BBBCF9000561897 /* LinkedList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LinkedList.swift; path = OlympusSDK/Classes/LinkedList.swift; sourceTree = "<group>"; };
 		B3A7A5642BBBE8F800561897 /* JSONConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = JSONConverter.swift; path = OlympusSDK/Classes/JSONConverter.swift; sourceTree = "<group>"; };
-		B3A7A5662BBBFCD000561897 /* JsonDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = JsonDecoder.swift; path = OlympusSDK/Classes/JsonDecoder.swift; sourceTree = "<group>"; };
-		B3F5E2642BBCF89A00C6F4CE /* RssCompensator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RssCompensator.swift; path = OlympusSDK/Classes/RssCompensator.swift; sourceTree = "<group>"; };
+		B3A7A5662BBBFCD000561897 /* OlympusJsonDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusJsonDecoder.swift; path = OlympusSDK/Classes/OlympusJsonDecoder.swift; sourceTree = "<group>"; };
+		B3F38C062BBFC38C00CCE620 /* OlympusNetworkChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusNetworkChecker.swift; path = OlympusSDK/Classes/OlympusNetworkChecker.swift; sourceTree = "<group>"; };
+		B3F38C082BBFEDEA00CCE620 /* OlympusRouteTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusRouteTracker.swift; path = OlympusSDK/Classes/OlympusRouteTracker.swift; sourceTree = "<group>"; };
+		B3F38C0C2BBFF29900CCE620 /* OlympusUnitStatusEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusUnitStatusEstimator.swift; path = OlympusSDK/Classes/OlympusUnitStatusEstimator.swift; sourceTree = "<group>"; };
+		B3F38C102BBFF56A00CCE620 /* OlympusMathFunctions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusMathFunctions.swift; path = OlympusSDK/Classes/OlympusMathFunctions.swift; sourceTree = "<group>"; };
+		B3F38C122BBFF58D00CCE620 /* OlympusUnitAttitudeEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusUnitAttitudeEstimator.swift; path = OlympusSDK/Classes/OlympusUnitAttitudeEstimator.swift; sourceTree = "<group>"; };
+		B3F38C142BBFF5AB00CCE620 /* OlympusPDRDistanceEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusPDRDistanceEstimator.swift; path = OlympusSDK/Classes/OlympusPDRDistanceEstimator.swift; sourceTree = "<group>"; };
+		B3F38C162BBFF66700CCE620 /* OlympusPeakValleyDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusPeakValleyDetector.swift; path = OlympusSDK/Classes/OlympusPeakValleyDetector.swift; sourceTree = "<group>"; };
+		B3F38C182BBFF73C00CCE620 /* OlympusStepLengthEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusStepLengthEstimator.swift; path = OlympusSDK/Classes/OlympusStepLengthEstimator.swift; sourceTree = "<group>"; };
+		B3F38C1A2BBFF83700CCE620 /* OlympusPacingDetectFunctions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusPacingDetectFunctions.swift; path = OlympusSDK/Classes/OlympusPacingDetectFunctions.swift; sourceTree = "<group>"; };
+		B3F38C1C2BBFFA1700CCE620 /* OlympusDRDistanceEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusDRDistanceEstimator.swift; path = OlympusSDK/Classes/OlympusDRDistanceEstimator.swift; sourceTree = "<group>"; };
+		B3F5E2642BBCF89A00C6F4CE /* OlympusRssCompensator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusRssCompensator.swift; path = OlympusSDK/Classes/OlympusRssCompensator.swift; sourceTree = "<group>"; };
 		B3F5E2662BBCF8CF00C6F4CE /* ArrayExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ArrayExtension.swift; path = OlympusSDK/Classes/ArrayExtension.swift; sourceTree = "<group>"; };
-		B3F5E2682BBD18C500C6F4CE /* PhaseController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PhaseController.swift; path = OlympusSDK/Classes/PhaseController.swift; sourceTree = "<group>"; };
+		B3F5E2682BBD18C500C6F4CE /* OlympusPhaseController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusPhaseController.swift; path = OlympusSDK/Classes/OlympusPhaseController.swift; sourceTree = "<group>"; };
 		B3F5E26A2BBD28D100C6F4CE /* OlympusFileDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusFileDownloader.swift; path = OlympusSDK/Classes/OlympusFileDownloader.swift; sourceTree = "<group>"; };
-		B3F5E26C2BBD30C300C6F4CE /* PathMatchingCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PathMatchingCalculator.swift; path = OlympusSDK/Classes/PathMatchingCalculator.swift; sourceTree = "<group>"; };
+		B3F5E26C2BBD30C300C6F4CE /* OlympusPathMatchingCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusPathMatchingCalculator.swift; path = OlympusSDK/Classes/OlympusPathMatchingCalculator.swift; sourceTree = "<group>"; };
 		B94E3DCDBFB844E5BAA24DAB193A7AC4 /* Pods-OlympusSDK_Tests-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-OlympusSDK_Tests-umbrella.h"; sourceTree = "<group>"; };
 		BB8C492445BC71D7CFCB9C7E6D95E3B6 /* OlympusSDK.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; path = OlympusSDK.podspec; sourceTree = "<group>"; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		C828963AD4EBF25E5E4EBE929289C7F9 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
@@ -253,25 +273,35 @@
 		F76CF08FAC81AF13293452472AEFEF39 /* OlympusSDK */ = {
 			isa = PBXGroup;
 			children = (
-				B314395E2BAD30F9002C072F /* BluetoothManager.swift */,
-				AA87D54C9CDB90F87008BB72017DCAB7 /* ServiceManager.swift */,
+				B314395E2BAD30F9002C072F /* OlympusBluetoothManager.swift */,
+				AA87D54C9CDB90F87008BB72017DCAB7 /* OlympusServiceManager.swift */,
+				B3F38C1C2BBFFA1700CCE620 /* OlympusDRDistanceEstimator.swift */,
 				B3F5E2662BBCF8CF00C6F4CE /* ArrayExtension.swift */,
-				B3A7A5662BBBFCD000561897 /* JsonDecoder.swift */,
-				B31439602BAD312B002C072F /* UsefulFunctions.swift */,
+				B3A7A5662BBBFCD000561897 /* OlympusJsonDecoder.swift */,
+				B31439602BAD312B002C072F /* OlympusUsefulFunctions.swift */,
 				B31439622BAD3196002C072F /* StringExtension.swift */,
 				B3A7A5592BBBCF9000561897 /* LinkedList.swift */,
 				B31439642BAD31E3002C072F /* NotificationExtension.swift */,
 				B31439662BAD328A002C072F /* DeviceModel.swift */,
-				B31439682BAD3305002C072F /* Entity.swift */,
+				B31439682BAD3305002C072F /* OlympusEntity.swift */,
 				B3A7A5572BBBCF7800561897 /* Node.swift */,
+				B3F38C102BBFF56A00CCE620 /* OlympusMathFunctions.swift */,
 				B3F5E26A2BBD28D100C6F4CE /* OlympusFileDownloader.swift */,
-				B314396A2BAD3314002C072F /* NetworkManager.swift */,
-				B3A7A5552BBBCEE700561897 /* NetworkConstants.swift */,
+				B314396A2BAD3314002C072F /* OlympusNetworkManager.swift */,
+				B3F38C062BBFC38C00CCE620 /* OlympusNetworkChecker.swift */,
+				B3A7A5552BBBCEE700561897 /* OlympusNetworkConstants.swift */,
+				B3F38C122BBFF58D00CCE620 /* OlympusUnitAttitudeEstimator.swift */,
 				B314396C2BAD3323002C072F /* OlympusConstants.swift */,
-				B3F5E2682BBD18C500C6F4CE /* PhaseController.swift */,
-				B3F5E2642BBCF89A00C6F4CE /* RssCompensator.swift */,
-				B3F5E26C2BBD30C300C6F4CE /* PathMatchingCalculator.swift */,
-				B314396E2BAD341B002C072F /* SensorManager.swift */,
+				B3F5E2682BBD18C500C6F4CE /* OlympusPhaseController.swift */,
+				B3F5E2642BBCF89A00C6F4CE /* OlympusRssCompensator.swift */,
+				B3F38C1A2BBFF83700CCE620 /* OlympusPacingDetectFunctions.swift */,
+				B3F38C142BBFF5AB00CCE620 /* OlympusPDRDistanceEstimator.swift */,
+				B3F5E26C2BBD30C300C6F4CE /* OlympusPathMatchingCalculator.swift */,
+				B314396E2BAD341B002C072F /* OlympusSensorManager.swift */,
+				B3F38C162BBFF66700CCE620 /* OlympusPeakValleyDetector.swift */,
+				B3F38C082BBFEDEA00CCE620 /* OlympusRouteTracker.swift */,
+				B3F38C0C2BBFF29900CCE620 /* OlympusUnitStatusEstimator.swift */,
+				B3F38C182BBFF73C00CCE620 /* OlympusStepLengthEstimator.swift */,
 				B3A7A5642BBBE8F800561897 /* JSONConverter.swift */,
 				154A1BE75EACB6E30A27D0E0C519FAFD /* Pod */,
 				826BBF3ECB992694A5E565625FD883E2 /* Support Files */,
@@ -432,26 +462,36 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B3A7A5562BBBCEE700561897 /* NetworkConstants.swift in Sources */,
-				B314396B2BAD3314002C072F /* NetworkManager.swift in Sources */,
+				B3F38C0D2BBFF29900CCE620 /* OlympusUnitStatusEstimator.swift in Sources */,
+				B3F38C1D2BBFFA1700CCE620 /* OlympusDRDistanceEstimator.swift in Sources */,
+				B3A7A5562BBBCEE700561897 /* OlympusNetworkConstants.swift in Sources */,
+				B314396B2BAD3314002C072F /* OlympusNetworkManager.swift in Sources */,
+				B3F38C112BBFF56A00CCE620 /* OlympusMathFunctions.swift in Sources */,
 				B31439652BAD31E3002C072F /* NotificationExtension.swift in Sources */,
 				B3F5E2672BBCF8CF00C6F4CE /* ArrayExtension.swift in Sources */,
+				B3F38C092BBFEDEA00CCE620 /* OlympusRouteTracker.swift in Sources */,
 				D13BC67B5E00598145E3BA16772D1FC6 /* OlympusSDK-dummy.m in Sources */,
 				B31439672BAD328A002C072F /* DeviceModel.swift in Sources */,
-				B3F5E2692BBD18C500C6F4CE /* PhaseController.swift in Sources */,
+				B3F38C192BBFF73C00CCE620 /* OlympusStepLengthEstimator.swift in Sources */,
+				B3F5E2692BBD18C500C6F4CE /* OlympusPhaseController.swift in Sources */,
 				B3A7A5582BBBCF7800561897 /* Node.swift in Sources */,
 				B3A7A55A2BBBCF9000561897 /* LinkedList.swift in Sources */,
-				B31439612BAD312B002C072F /* UsefulFunctions.swift in Sources */,
-				B314396F2BAD341B002C072F /* SensorManager.swift in Sources */,
+				B3F38C132BBFF58D00CCE620 /* OlympusUnitAttitudeEstimator.swift in Sources */,
+				B31439612BAD312B002C072F /* OlympusUsefulFunctions.swift in Sources */,
+				B314396F2BAD341B002C072F /* OlympusSensorManager.swift in Sources */,
+				B3F38C152BBFF5AB00CCE620 /* OlympusPDRDistanceEstimator.swift in Sources */,
 				B314396D2BAD3323002C072F /* OlympusConstants.swift in Sources */,
-				B31439692BAD3305002C072F /* Entity.swift in Sources */,
+				B31439692BAD3305002C072F /* OlympusEntity.swift in Sources */,
 				B31439632BAD3196002C072F /* StringExtension.swift in Sources */,
-				B3F5E2652BBCF89A00C6F4CE /* RssCompensator.swift in Sources */,
-				B3F5E26D2BBD30C300C6F4CE /* PathMatchingCalculator.swift in Sources */,
-				B3A7A5672BBBFCD000561897 /* JsonDecoder.swift in Sources */,
-				B314395F2BAD30F9002C072F /* BluetoothManager.swift in Sources */,
-				78B53FD23F6AC41B06D38F98EF7B9E15 /* ServiceManager.swift in Sources */,
+				B3F38C172BBFF66700CCE620 /* OlympusPeakValleyDetector.swift in Sources */,
+				B3F5E2652BBCF89A00C6F4CE /* OlympusRssCompensator.swift in Sources */,
+				B3F5E26D2BBD30C300C6F4CE /* OlympusPathMatchingCalculator.swift in Sources */,
+				B3A7A5672BBBFCD000561897 /* OlympusJsonDecoder.swift in Sources */,
+				B3F38C1B2BBFF83700CCE620 /* OlympusPacingDetectFunctions.swift in Sources */,
+				B314395F2BAD30F9002C072F /* OlympusBluetoothManager.swift in Sources */,
+				78B53FD23F6AC41B06D38F98EF7B9E15 /* OlympusServiceManager.swift in Sources */,
 				B3F5E26B2BBD28D100C6F4CE /* OlympusFileDownloader.swift in Sources */,
+				B3F38C072BBFC38C00CCE620 /* OlympusNetworkChecker.swift in Sources */,
 				B3A7A5652BBBE8F800561897 /* JSONConverter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

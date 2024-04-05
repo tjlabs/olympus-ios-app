@@ -1,4 +1,4 @@
-public class PathMatchingCalculator {
+public class OlympusPathMatchingCalculator {
     
     public var PpCoord = [String: [[Double]]]()
     public var PpType = [String: [Int]]()

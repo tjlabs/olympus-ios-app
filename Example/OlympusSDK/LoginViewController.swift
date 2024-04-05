@@ -95,7 +95,7 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         deviceOsInfo = UIDevice.current.systemVersion
         let arr = deviceOsInfo.components(separatedBy: ".")
         deviceOsVersion = Int(arr[0]) ?? 0
-        self.sdkVersion = ServiceManager.sdkVersion
+        self.sdkVersion = OlympusServiceManager.sdkVersion
         self.sdkVersionLabel.text = self.sdkVersion
     }
     

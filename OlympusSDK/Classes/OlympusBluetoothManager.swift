@@ -1,4 +1,3 @@
-import Foundation
 import CoreBluetooth
 
 let NRF_UUID_SERVICE         = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E";
@@ -23,7 +22,7 @@ let UUIDWrite   = CBUUID(string: NRF_UUID_CHAR_WRITE)
 let NIService   = CBUUID(string: NI_UUID_SERVICE)
 let digit: Double = pow(10, 2)
 
-class BLECentralManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
+class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     var centralManager: CBCentralManager!
     var peripherals = [CBPeripheral]()
     var devices = [(name:String, device:CBPeripheral, RSSI:NSNumber)]()

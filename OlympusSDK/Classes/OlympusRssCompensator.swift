@@ -1,6 +1,6 @@
 
 
-public class RssCompensator {
+public class OlympusRssCompensator {
     var entranceWardRssi = [String: Double]()
     var allEntranceWardRssi = [String: Double]()
     
@@ -27,13 +27,13 @@ public class RssCompensator {
             completion(true, loadedNormalizationScale, msg)
         } else {
             let rcInputDeviceOs = RcInputDeviceOs(sector_id: sector_id, device_model: device_model, os_version: os_version)
-            NetworkManager.shared.getUserRssCompensation(url: USER_RC_URL, input: rcInputDeviceOs, isDeviceOs: true, completion: { statusCode, returnedString in
+            OlympusNetworkManager.shared.getUserRssCompensation(url: USER_RC_URL, input: rcInputDeviceOs, isDeviceOs: true, completion: { statusCode, returnedString in
                 if (statusCode == 200) {
                     let rcResult = jsonToRcInfoFromServer(jsonString: returnedString)
                     if (rcResult.0) {
                         if (rcResult.1.rss_compensations.isEmpty) {
                             let rcInputDevice = RcInputDevice(sector_id: sector_id, device_model: device_model)
-                            NetworkManager.shared.getUserRssCompensation(url: USER_RC_URL, input: rcInputDevice, isDeviceOs: false, completion: { statusCode, returnedString in
+                            OlympusNetworkManager.shared.getUserRssCompensation(url: USER_RC_URL, input: rcInputDevice, isDeviceOs: false, completion: { statusCode, returnedString in
                                 if (statusCode == 200) {
                                     let rcDeviceResult = jsonToRcInfoFromServer(jsonString: returnedString)
                                     if (rcDeviceResult.0) {
@@ -83,7 +83,9 @@ public class RssCompensator {
                     }
                 } else {
                     let msg: String = getLocalTimeString() + " , (Olympus) Error : Load RssCompensation (Device & OS) from server \(statusCode)"
-                    completion(false, loadedNormalizationScale, msg)
+                    
+                    // Edit Here !!
+                    completion(true, loadedNormalizationScale, msg)
                 }
             })
         }

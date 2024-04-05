@@ -1,9 +1,8 @@
-import Foundation
 import CoreMotion
 
-public class SensorManager {
-    public var sensorData = SensorData()
-    public var collectData = CollectData()
+public class OlympusSensorManager {
+    public var sensorData = OlympusSensorData()
+    public var collectData = OlympusCollectData()
     
     let magField = CMMagneticField()
     let motionManager = CMMotionManager()

@@ -1,6 +1,6 @@
 import Foundation
 
-public class PhaseController {
+public class OlympusPhaseController {
     let LOOKING_RECOGNITION_LENGTH: Int = 5
     
     var PHASE3_LENGTH_CONDITION_PDR: Double = 30

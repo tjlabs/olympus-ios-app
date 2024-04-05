@@ -1,8 +1,8 @@
 import SystemConfiguration
 
-class NetworkChecker {
+class OlympusNetworkChecker {
     
-    static let shared = NetworkChecker()
+    static let shared = OlympusNetworkChecker()
     private let reachability = SCNetworkReachabilityCreateWithName(nil, "NetworkCheck")
     
     private init() {}

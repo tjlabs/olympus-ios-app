@@ -2,17 +2,18 @@ import Foundation
 import CoreMotion
 import UIKit
 
-public class ServiceManager: NSObject {
+public class OlympusServiceManager: NSObject {
     public static let sdkVersion: String = "0.1.0"
     var deviceModel: String
     var deviceOsVersion: Int
     
-    var sensorManager = SensorManager()
-    var bleManager = BLECentralManager()
-    var rssCompensator = RssCompensator()
-    var phaseController = PhaseController()
+    var sensorManager = OlympusSensorManager()
+    var bleManager = OlympusBluetoothManager()
+    var rssCompensator = OlympusRssCompensator()
+    var phaseController = OlympusPhaseController()
     var fileDownloader = OlympusFileDownloader()
-    var pmCalculator = PathMatchingCalculator()
+    var pmCalculator = OlympusPathMatchingCalculator()
+    var routeTracker = OlympusRouteTracker()
     
     // ----- Sector Param ----- //
     var isSaveMobileResult: Bool = false
@@ -20,19 +21,25 @@ public class ServiceManager: NSObject {
     var EntranceArea = [String: [[Double]]]()
     var EntranceMatchingArea = [String: [[Double]]]()
     var LevelChangeArea = [String: [[Double]]]()
+    
+    
     var PathPixelVersion = [String: String]()
     var isLoadPp = [String: Bool]()
+    
     var EntranceRouteVersion = [String: String]()
-    var EntranceRouteLevel = [String: [String]]()
-    var EntranceRouteCoord = [String: [[Double]]]()
     var isLoadEr = [String: Bool]()
-    var EntranceNetworkStatus = [String: Bool]()
     var EntranceOuterWards = [String]()
-    var EntranceVelocityScales = [String: Double]()
+    
+    var receivedForceTimer: DispatchSourceTimer?
+    var RFD_INTERVAL: TimeInterval = 1/2 // second
     
     // ----- Rss Compensation ----- //
-    var normalizationScale: Double = 1.0
-    var preNormalizationScale: Double = 1.0
+//    var normalizationScale: Double = 1.0
+//    var preNormalizationScale: Double = 1.0
+    
+    // ----- State Observer ----- //
+    var runMode: String = "dr"
+    var currentMode: String = "dr"
     
     // ----- State Observer ----- //
     var isVenusMode: Bool = false
@@ -51,56 +58,124 @@ public class ServiceManager: NSObject {
         self.deviceOsVersion = Int(arr[0]) ?? 0
     }
     
-    public func startService(user_id: String, region: String, sector_id: Int, completion: @escaping (Bool, String) -> Void) {
+    public func startService(user_id: String, region: String, sector_id: Int, service: String, mode: String, completion: @escaping (Bool, String) -> Void) {
+        let success_msg: String =  " , (Olympus) Success : OlmpusService Start"
+        
         if (user_id.isEmpty || user_id.contains(" ")) {
             let msg: String = getLocalTimeString() + " , (Olympus) Error : User ID(input = \(user_id)) cannot be empty or contain space"
             completion(false, msg)
         } else {
-            setServerURL(region: region)
-            let loginInput = LoginInput(user_id: user_id, device_model: self.deviceModel, os_version: self.deviceOsVersion, sdk_version: ServiceManager.sdkVersion)
-            NetworkManager.shared.postUserLogin(url: USER_LOGIN_URL, input: loginInput, completion: { statusCode, returnedString in
-                if (statusCode == 200) {
-                    let sectorInput = SectorInput(sector_id: sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM)
-                    NetworkManager.shared.postUserSector(url: USER_SECTOR_URL, input: sectorInput, completion: { statusCode, returnedString in
+            let initService = initService(service: service, mode: mode)
+            if (initService.0) {
+                if (!OlympusNetworkChecker.shared.isConnectedToInternet()) {
+                    let msg: String = getLocalTimeString() + " , (Olympus) Error : Network is not connected"
+                    completion(false, msg)
+                } else {
+                    setServerURL(region: region)
+                    let loginInput = LoginInput(user_id: user_id, device_model: self.deviceModel, os_version: self.deviceOsVersion, sdk_version: OlympusServiceManager.sdkVersion)
+                    OlympusNetworkManager.shared.postUserLogin(url: USER_LOGIN_URL, input: loginInput, completion: { [self] statusCode, returnedString in
                         if (statusCode == 200) {
-                            let sectorInfoFromServer = jsonToSectorInfoFromServer(jsonString: returnedString)
-                            if (sectorInfoFromServer.0) {
-                                self.setSectorInfo(sector_id: sector_id, sectorInfo: sectorInfoFromServer.1)
-                                completion(true, returnedString)
-                            } else {
-                                let msg: String = getLocalTimeString() + " , (Olympus) Error : Decode SectorInfo"
-                                completion(false, returnedString)
-                            }
+                            let sectorInput = SectorInput(sector_id: sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM)
+                            OlympusNetworkManager.shared.postUserSector(url: USER_SECTOR_URL, input: sectorInput, completion: { [self] statusCode, returnedString in
+                                if (statusCode == 200) {
+                                    let sectorInfoFromServer = jsonToSectorInfoFromServer(jsonString: returnedString)
+                                    if (sectorInfoFromServer.0) {
+                                        self.setSectorInfo(sector_id: sector_id, sector_info_from_server: sectorInfoFromServer.1)
+                                        rssCompensator.loadRssiCompensationParam(sector_id: sector_id, device_model: deviceModel, os_version: deviceOsVersion, completion: { [self] isSuccess, loadedParam, returnedString in
+                                            if (isSuccess) {
+                                                OlympusConstants().setNormalizationScale(cur: loadedParam, pre: loadedParam)
+                                                print(getLocalTimeString() + " , (Olmypus) Scale : \(OlympusConstants.NORMALIZATION_SCALE)")
+                                                print(getLocalTimeString() + " , (Olmypus) Scale : \(OlympusConstants.PRE_NORMALIZATION_SCALE)")
+                                                if (!bleManager.bluetoothReady) {
+                                                    let msg: String = getLocalTimeString() + " , (Olympus) Error : Bluetooth is not enabled"
+                                                    completion(false, msg)
+                                                } else {
+                                                    completion(true, getLocalTimeString() + success_msg)
+                                                }
+                                            } else {
+                                                completion(false, returnedString)
+                                            }
+                                        })
+                                        completion(true, returnedString)
+                                    } else {
+                                        let msg: String = getLocalTimeString() + " , (Olympus) Error : Decode SectorInfo"
+                                        completion(false, msg)
+                                    }
+                                } else {
+                                    let msg: String = getLocalTimeString() + " , (Olympus) Error : Load Sector Info (id = \(sector_id))"
+                                    completion(false, msg)
+                                }
+                            })
                         } else {
-                            let msg: String = getLocalTimeString() + " , (Olympus) Error : Load Sector Info (id = \(sector_id))"
+                            let msg: String = getLocalTimeString() + " , (Olympus) Error : User ID(input = \(user_id)) Login Error"
                             completion(false, msg)
                         }
                     })
-                } else {
-                    let msg: String = getLocalTimeString() + " , (Olympus) Error : User ID(input = \(user_id)) Login Error"
-                    completion(false, msg)
                 }
-            })
+            } else {
+                let msg: String = initService.1
+                completion(false, msg)
+            }
         }
     }
     
-    private func setSectorInfo(sector_id: Int, sectorInfo: SectorInfoFromServer) {
-        let sectorParam: SectorInfoParam = sectorInfo.parameter
-        self.isSaveMobileResult = sectorParam.debug
-        let stadard_rss: [Int] = sectorParam.standard_rss
+    private func initService(service: String, mode: String) -> (Bool, String) {
+        let localTime = getLocalTimeString()
+        var isSuccess: Bool = true
+        var msg: String = ""
         
-        OlympusConstants.STANDARD_MIN_RSS = Double(stadard_rss[0])
-        OlympusConstants.STANDARD_MAX_RSS = Double(stadard_rss[1])
-        OlympusConstants.USER_TRAJECTORY_ORIGINAL = Double(sectorParam.trajectory_length + 10)
-        OlympusConstants.USER_TRAJECTORY_LENGTH = Double(sectorParam.trajectory_length + 10)
-        OlympusConstants.USER_TRAJECTORY_DIAGONAL = Double(sectorParam.trajectory_diagonal + 5)
-        OlympusConstants.NUM_STRAIGHT_INDEX_DR = Int(ceil(OlympusConstants.USER_TRAJECTORY_LENGTH/6))
-        OlympusConstants.NUM_STRAIGHT_INDEX_PDR = Int(ceil(OlympusConstants.USER_TRAJECTORY_DIAGONAL/6))
+        if (service.contains(OlympusConstants.SERVICE_FLT)) {
+//            unitDRInfo = UnitDRInfo()
+//            unitDRGenerator.setMode(mode: mode)
+//            self.notificationCenterAddObserver()
+
+            if (mode == "auto") {
+                self.runMode = "dr"
+                self.currentMode = "dr"
+            } else if (mode == "pdr") {
+                self.runMode = "pdr"
+            } else if (mode == "dr") {
+                self.runMode = "dr"
+            } else {
+                isSuccess = false
+                msg = localTime + " , (Jupiter) Error : Invalid Service Mode"
+                return (isSuccess, msg)
+            }
+//            setModeParam(mode: self.runMode, phase: self.phase)
+        }
         
-        self.phaseController.setPhaseLengthParam(lengthConditionPdr: Double(sectorParam.trajectory_diagonal), lengthConditionDr: Double(sectorParam.trajectory_length))
+        // Init Sensors
+        let initSensors = sensorManager.initSensors()
+        if (!initSensors.0) {
+            isSuccess = initSensors.0
+            msg = initSensors.1
+            
+            return (isSuccess, msg)
+        }
+        
+        // Init Bluetooth
+        let initBle = bleManager.initBle()
+        if (!initBle.0) {
+            isSuccess = initBle.0
+            msg = initBle.1
+            
+            return (isSuccess, msg)
+        }
+        
+        return (isSuccess, msg)
+    }
+    
+    private func setSectorInfo(sector_id: Int, sector_info_from_server: SectorInfoFromServer) {
+        let sector_param: SectorInfoParam = sector_info_from_server.parameter
+        self.isSaveMobileResult = sector_param.debug
+        let stadard_rss: [Int] = sector_param.standard_rss
+        
+        let sector_info = SectorInfo(standard_min_rss: Double(stadard_rss[0]), standard_max_rss: Double(stadard_rss[1]), user_traj_origin: Double(sector_param.trajectory_length + 10), user_traj_length: Double(sector_param.trajectory_length + 10), user_traj_diag:  Double(sector_param.trajectory_diagonal + 5), num_straight_idx_dr: Int(ceil(OlympusConstants.USER_TRAJECTORY_LENGTH/6)), num_straight_idx_pdr: Int(ceil(OlympusConstants.USER_TRAJECTORY_DIAGONAL/6)))
+        OlympusConstants().setSectorInfoConstants(sector_info: sector_info)
+        self.phaseController.setPhaseLengthParam(lengthConditionPdr: Double(sector_param.trajectory_diagonal), lengthConditionDr: Double(sector_param.trajectory_length))
         print(getLocalTimeString() + " , (Olympus) Information : User Trajectory Param \(OlympusConstants.USER_TRAJECTORY_LENGTH) // \(OlympusConstants.USER_TRAJECTORY_DIAGONAL) // \(OlympusConstants.NUM_STRAIGHT_INDEX_DR)")
         
-        let sectorLevelList = sectorInfo.level_list
+        let sectorLevelList = sector_info_from_server.level_list
         for element in sectorLevelList {
             let buildingName = element.building_name
             let levelName = element.level_name
@@ -118,8 +193,8 @@ public class ServiceManager: NSObject {
                     var entranceOuterWards: [String] = []
                     for entrance in element.entrance_list {
                         let entranceKey = "\(key)_\(entrance.spot_number)"
-                        self.EntranceNetworkStatus[entranceKey] = entrance.network_status
-                        self.EntranceVelocityScales[entranceKey] = entrance.scale
+                        routeTracker.EntranceNetworkStatus[entranceKey] = entrance.network_status
+                        routeTracker.EntranceVelocityScales[entranceKey] = entrance.scale
                         self.EntranceRouteVersion[entranceKey] = entrance.route_version
                         entranceOuterWards.append(entrance.outermost_ward_id)
                     }
@@ -130,12 +205,11 @@ public class ServiceManager: NSObject {
         }
         // Entrance Route 버전 확인
         self.loadEntranceRoute(sector_id: sector_id, RouteVersion: self.EntranceRouteVersion)
-        // PP 버전 확인
+        // Path-Pixel 버전 확인
         self.loadPathPixel(sector_id: sector_id, PathPixelVersion: self.PathPixelVersion)
     }
     
     private func saveEntranceRouteLocalUrl(key: String, url: String) {
-        let currentTime = getCurrentTimeInMilliseconds()
         print(getLocalTimeString() + " , (Olympus) Save \(key) Entrance Route Local URL : \(url)")
         
         do {
@@ -154,7 +228,6 @@ public class ServiceManager: NSObject {
     }
     
     private func saveEntranceRouteVersion(key: String, routeVersion: String) {
-        let currentTime = getCurrentTimeInMilliseconds()
         print(getLocalTimeString() + " , (Olympus) Save \(key) Entrance Route Version : \(routeVersion)")
         do {
             let key: String = "OlympusEntranceRouteVersion_\(key)"
@@ -174,8 +247,8 @@ public class ServiceManager: NSObject {
                         do {
                             let contents = routeLocalUrl.1!
                             let parsedData = parseEntrance(data: contents)
-                            EntranceRouteLevel[key] = parsedData.0
-                            EntranceRouteCoord[key] = parsedData.1
+                            routeTracker.EntranceRouteLevel[key] = parsedData.0
+                            routeTracker.EntranceRouteCoord[key] = parsedData.1
                             isLoadEr[key] = true
                         }
                     } else {
@@ -188,8 +261,8 @@ public class ServiceManager: NSObject {
                                 do {
                                     let contents = try String(contentsOf: url!)
                                     let parsedData = parseEntrance(data: contents)
-                                    EntranceRouteLevel[key] = parsedData.0
-                                    EntranceRouteCoord[key] = parsedData.1
+                                    routeTracker.EntranceRouteLevel[key] = parsedData.0
+                                    routeTracker.EntranceRouteCoord[key] = parsedData.1
                                     saveEntranceRouteVersion(key: key, routeVersion: value)
                                     saveEntranceRouteLocalUrl(key: key, url: contents)
                                     isLoadEr[key] = true
@@ -213,8 +286,8 @@ public class ServiceManager: NSObject {
                             do {
                                 let contents = try String(contentsOf: url!)
                                 let parsedData = parseEntrance(data: contents)
-                                EntranceRouteLevel[key] = parsedData.0
-                                EntranceRouteCoord[key] = parsedData.1
+                                routeTracker.EntranceRouteLevel[key] = parsedData.0
+                                routeTracker.EntranceRouteCoord[key] = parsedData.1
                                 saveEntranceRouteVersion(key: key, routeVersion: value)
                                 saveEntranceRouteLocalUrl(key: key, url: contents)
                                 isLoadEr[key] = true
@@ -237,8 +310,8 @@ public class ServiceManager: NSObject {
                         do {
                             let contents = try String(contentsOf: url!)
                             let parsedData = parseEntrance(data: contents)
-                            EntranceRouteLevel[key] = parsedData.0
-                            EntranceRouteCoord[key] = parsedData.1
+                            routeTracker.EntranceRouteLevel[key] = parsedData.0
+                            routeTracker.EntranceRouteCoord[key] = parsedData.1
                             saveEntranceRouteVersion(key: key, routeVersion: value)
                             saveEntranceRouteLocalUrl(key: key, url: contents)
                             isLoadEr[key] = true
@@ -275,7 +348,6 @@ public class ServiceManager: NSObject {
     
     
     private func savePathPixelLocalUrl(key: String, url: String) {
-        let currentTime = getCurrentTimeInMilliseconds()
         print(getLocalTimeString() + " , (Olympus) Save \(key) Path-Pixel Local URL : \(url)")
         
         do {
@@ -294,7 +366,6 @@ public class ServiceManager: NSObject {
     }
     
     private func savePathPixelVersion(key: String, ppVersion: String) {
-        let currentTime = getCurrentTimeInMilliseconds()
         print(getLocalTimeString() + " , (Olympus) Save \(key) Path-Pixel Version : \(ppVersion)")
         do {
             let key: String = "OlympusPathPixelVersion_\(key)"
@@ -386,97 +457,95 @@ public class ServiceManager: NSObject {
         }
     }
     
-    private func loadRssiCompensationParam(sector_id: Int, device_model: String, os_version: Int, completion: @escaping (Bool, String) -> Void) {
-        // Check data in cache
-        let loadedScale = rssCompensator.loadNormalizationScale(sector_id: sector_id)
-        
-        if loadedScale.0 {
-            // Scale is in cache
-            self.normalizationScale = loadedScale.1
-            self.preNormalizationScale = loadedScale.1
-            let msg: String = getLocalTimeString() + " , (Olympus) Success : Load RssCompenstaion in cache"
-            completion(true, msg)
-        } else {
-            let rcInputDeviceOs = RcInputDeviceOs(sector_id: sector_id, device_mode: device_model, os_version: os_version)
-            NetworkManager.shared.postUserRssCompensation(url: USER_RC_URL, input: rcInputDeviceOs, isDeviceOs: true, completion: { statusCode, returnedString in
-                if (statusCode == 200) {
-                    let rcResult = jsonToRcInfoFromServer(jsonString: returnedString)
-                    if (rcResult.0) {
-                        if (rcResult.1.rss_compensations.isEmpty) {
-                            let rcInputDevice = RcInputDevice(sector_id: sector_id, device_mode: device_model)
-                            NetworkManager.shared.postUserRssCompensation(url: USER_RC_URL, input: rcInputDevice, isDeviceOs: false, completion: { statusCode, returnedString in
-                                if (statusCode == 200) {
-                                    let rcDeviceResult = jsonToRcInfoFromServer(jsonString: returnedString)
-                                    if (rcDeviceResult.0) {
-                                        if (rcDeviceResult.1.rss_compensations.isEmpty) {
-                                            // Need Normalization-scale Estimation
-                                            print(getLocalTimeString() + " , (Olmypus) Information : Need RssCompensation Estimation")
-                                            let msg: String = getLocalTimeString() + " , (Olympus) Success : RssCompensation"
-                                            completion(true, msg)
-                                        } else {
-                                            // Succes Load Normalization-scale (Device)
-                                            if let closest = self.findClosestOs(to: os_version, in: rcDeviceResult.1.rss_compensations) {
-                                                // Find Closest OS
-                                                let rcFromServer: RcInfo = closest
-                                                self.normalizationScale = rcFromServer.normalization_scale
-                                                self.preNormalizationScale = rcFromServer.normalization_scale
-                                                
-                                                print(getLocalTimeString() + " , (Olmypus) Information : Load RssCompensation from server (Device)")
-                                                let msg: String = getLocalTimeString() + " , (Olympus) Success : RssCompensation"
-                                                completion(true, msg)
-                                            } else {
-                                                // Need Normalization-scale Estimation
-                                                print(getLocalTimeString() + " , (Olmypus) Information : Need RssCompensation Estimation")
-                                                let msg: String = getLocalTimeString() + " , (Olympus) Success : RssCompensation"
-                                                completion(true, msg)
-                                            }
-                                        }
-                                    } else {
-                                        let msg: String = getLocalTimeString() + " , (Olympus) Error : Decode RssCompenstaion (Device)"
-                                        completion(false, msg)
-                                    }
-                                } else {
-                                    let msg: String = getLocalTimeString() + " , (Olympus) Error : Load RssCompenstaion (Device) from server \(statusCode)"
-                                    completion(false, msg)
-                                }
-                            })
-                        } else {
-                            // Succes Load Normalization-scale (Device & OS)
-                            let rcFromServer: RcInfo = rcResult.1.rss_compensations[0]
-                            self.normalizationScale = rcFromServer.normalization_scale
-                            self.preNormalizationScale = rcFromServer.normalization_scale
-                            
-                            print(getLocalTimeString() + " , (Olmypus) Information : Load RssCompensation from server (Device & OS)")
-                            let msg: String = getLocalTimeString() + " , (Olympus) Success : RssCompensation"
-                            completion(true, msg)
-                        }
-                    } else {
-                        let msg: String = getLocalTimeString() + " , (Olympus) Error : Decode RssCompenstaion (Device & OS)"
-                        completion(false, msg)
-                    }
-                } else {
-                    let msg: String = getLocalTimeString() + " , (Olympus) Error : Load RssCompenstaion (Device & OS) from server \(statusCode)"
-                    completion(false, msg)
-                }
-            })
+    func startTimer() {
+        if (self.receivedForceTimer == nil) {
+            let queueRFD = DispatchQueue(label: Bundle.main.bundleIdentifier! + ".receivedForceTimer")
+            self.receivedForceTimer = DispatchSource.makeTimerSource(queue: queueRFD)
+            self.receivedForceTimer!.schedule(deadline: .now(), repeating: RFD_INTERVAL)
+            self.receivedForceTimer!.setEventHandler(handler: self.receivedForceTimerUpdate)
+            self.receivedForceTimer!.resume()
         }
     }
     
-    private func findClosestOs(to myOsVersion: Int, in array: [RcInfo]) -> RcInfo? {
-        guard let first = array.first else {
-            return nil
-        }
-        var closest = first
-        var closestDistance = closest.os_version - myOsVersion
-        for d in array {
-            let distance = d.os_version - myOsVersion
-            if abs(distance) < abs(closestDistance) {
-                closest = d
-                closestDistance = distance
-            }
-        }
-        return closest
+    @objc func receivedForceTimerUpdate() {
+        print("BLE is ready : \(bleManager.bluetoothReady)")
     }
+    
+//    private func loadRssiCompensationParam(sector_id: Int, device_model: String, os_version: Int, completion: @escaping (Bool, String) -> Void) {
+//        // Check data in cache
+//        let loadedScale = rssCompensator.loadNormalizationScale(sector_id: sector_id)
+//        
+//        if loadedScale.0 {
+//            // Scale is in cache
+//            self.normalizationScale = loadedScale.1
+//            self.preNormalizationScale = loadedScale.1
+//            let msg: String = getLocalTimeString() + " , (Olympus) Success : Load RssCompenstaion in cache"
+//            completion(true, msg)
+//        } else {
+//            let rcInputDeviceOs = RcInputDeviceOs(sector_id: sector_id, device_mode: device_model, os_version: os_version)
+//            NetworkManager.shared.postUserRssCompensation(url: USER_RC_URL, input: rcInputDeviceOs, isDeviceOs: true, completion: { statusCode, returnedString in
+//                if (statusCode == 200) {
+//                    let rcResult = jsonToRcInfoFromServer(jsonString: returnedString)
+//                    if (rcResult.0) {
+//                        if (rcResult.1.rss_compensations.isEmpty) {
+//                            let rcInputDevice = RcInputDevice(sector_id: sector_id, device_mode: device_model)
+//                            NetworkManager.shared.postUserRssCompensation(url: USER_RC_URL, input: rcInputDevice, isDeviceOs: false, completion: { statusCode, returnedString in
+//                                if (statusCode == 200) {
+//                                    let rcDeviceResult = jsonToRcInfoFromServer(jsonString: returnedString)
+//                                    if (rcDeviceResult.0) {
+//                                        if (rcDeviceResult.1.rss_compensations.isEmpty) {
+//                                            // Need Normalization-scale Estimation
+//                                            print(getLocalTimeString() + " , (Olmypus) Information : Need RssCompensation Estimation")
+//                                            let msg: String = getLocalTimeString() + " , (Olympus) Success : RssCompensation"
+//                                            completion(true, msg)
+//                                        } else {
+//                                            // Succes Load Normalization-scale (Device)
+//                                            if let closest = self.findClosestOs(to: os_version, in: rcDeviceResult.1.rss_compensations) {
+//                                                // Find Closest OS
+//                                                let rcFromServer: RcInfo = closest
+//                                                self.normalizationScale = rcFromServer.normalization_scale
+//                                                self.preNormalizationScale = rcFromServer.normalization_scale
+//                                                
+//                                                print(getLocalTimeString() + " , (Olmypus) Information : Load RssCompensation from server (Device)")
+//                                                let msg: String = getLocalTimeString() + " , (Olympus) Success : RssCompensation"
+//                                                completion(true, msg)
+//                                            } else {
+//                                                // Need Normalization-scale Estimation
+//                                                print(getLocalTimeString() + " , (Olmypus) Information : Need RssCompensation Estimation")
+//                                                let msg: String = getLocalTimeString() + " , (Olympus) Success : RssCompensation"
+//                                                completion(true, msg)
+//                                            }
+//                                        }
+//                                    } else {
+//                                        let msg: String = getLocalTimeString() + " , (Olympus) Error : Decode RssCompenstaion (Device)"
+//                                        completion(false, msg)
+//                                    }
+//                                } else {
+//                                    let msg: String = getLocalTimeString() + " , (Olympus) Error : Load RssCompenstaion (Device) from server \(statusCode)"
+//                                    completion(false, msg)
+//                                }
+//                            })
+//                        } else {
+//                            // Succes Load Normalization-scale (Device & OS)
+//                            let rcFromServer: RcInfo = rcResult.1.rss_compensations[0]
+//                            self.normalizationScale = rcFromServer.normalization_scale
+//                            self.preNormalizationScale = rcFromServer.normalization_scale
+//                            
+//                            print(getLocalTimeString() + " , (Olmypus) Information : Load RssCompensation from server (Device & OS)")
+//                            let msg: String = getLocalTimeString() + " , (Olympus) Success : RssCompensation"
+//                            completion(true, msg)
+//                        }
+//                    } else {
+//                        let msg: String = getLocalTimeString() + " , (Olympus) Error : Decode RssCompenstaion (Device & OS)"
+//                        completion(false, msg)
+//                    }
+//                } else {
+//                    let msg: String = getLocalTimeString() + " , (Olympus) Error : Load RssCompenstaion (Device & OS) from server \(statusCode)"
+//                    completion(false, msg)
+//                }
+//            })
+//        }
+//    }
     
     func notificationCenterAddObserver() {
         self.venusObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .didBecomeVenus, object: nil)
