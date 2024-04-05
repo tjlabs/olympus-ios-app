@@ -14,6 +14,81 @@ public class RssCompensator {
     var preSmoothedNormalizationScale: Double = 1.0
     var scaleQueue = [Double]()
     
+    public func loadRssiCompensationParam(sector_id: Int, device_model: String, os_version: Int, completion: @escaping (Bool, Double, String) -> Void) {
+        var loadedNormalizationScale: Double = 1.0
+        
+        // Check data in cache
+        let loadedScale = loadNormalizationScale(sector_id: sector_id)
+        
+        if loadedScale.0 {
+            // Scale is in cache
+            loadedNormalizationScale = loadedScale.1
+            let msg: String = getLocalTimeString() + " , (Olympus) Success : Load RssCompensation in cache"
+            completion(true, loadedNormalizationScale, msg)
+        } else {
+            let rcInputDeviceOs = RcInputDeviceOs(sector_id: sector_id, device_model: device_model, os_version: os_version)
+            NetworkManager.shared.getUserRssCompensation(url: USER_RC_URL, input: rcInputDeviceOs, isDeviceOs: true, completion: { statusCode, returnedString in
+                if (statusCode == 200) {
+                    let rcResult = jsonToRcInfoFromServer(jsonString: returnedString)
+                    if (rcResult.0) {
+                        if (rcResult.1.rss_compensations.isEmpty) {
+                            let rcInputDevice = RcInputDevice(sector_id: sector_id, device_model: device_model)
+                            NetworkManager.shared.getUserRssCompensation(url: USER_RC_URL, input: rcInputDevice, isDeviceOs: false, completion: { statusCode, returnedString in
+                                if (statusCode == 200) {
+                                    let rcDeviceResult = jsonToRcInfoFromServer(jsonString: returnedString)
+                                    if (rcDeviceResult.0) {
+                                        if (rcDeviceResult.1.rss_compensations.isEmpty) {
+                                            // Need Normalization-scale Estimation
+                                            print(getLocalTimeString() + " , (Olmypus) Information : Need RssCompensation Estimation")
+                                            let msg: String = getLocalTimeString() + " , (Olympus) Success : RssCompensation"
+                                            completion(true, loadedNormalizationScale, msg)
+                                        } else {
+                                            // Succes Load Normalization-scale (Device)
+                                            if let closest = self.findClosestOs(to: os_version, in: rcDeviceResult.1.rss_compensations) {
+                                                // Find Closest OS
+                                                let rcFromServer: RcInfo = closest
+                                                loadedNormalizationScale = rcFromServer.normalization_scale
+                                                
+                                                print(getLocalTimeString() + " , (Olmypus) Information : Load RssCompensation from server (Device)")
+                                                let msg: String = getLocalTimeString() + " , (Olympus) Success : RssCompensation"
+                                                completion(true, loadedNormalizationScale, msg)
+                                            } else {
+                                                // Need Normalization-scale Estimation
+                                                print(getLocalTimeString() + " , (Olmypus) Information : Need RssCompensation Estimation")
+                                                let msg: String = getLocalTimeString() + " , (Olympus) Success : RssCompensation"
+                                                completion(true, loadedNormalizationScale, msg)
+                                            }
+                                        }
+                                    } else {
+                                        let msg: String = getLocalTimeString() + " , (Olympus) Error : Decode RssCompensation (Device)"
+                                        completion(false, loadedNormalizationScale, msg)
+                                    }
+                                } else {
+                                    let msg: String = getLocalTimeString() + " , (Olympus) Error : Load RssCompensation (Device) from server \(statusCode)"
+                                    completion(false, loadedNormalizationScale, msg)
+                                }
+                            })
+                        } else {
+                            // Succes Load Normalization-scale (Device & OS)
+                            let rcFromServer: RcInfo = rcResult.1.rss_compensations[0]
+                            loadedNormalizationScale = rcFromServer.normalization_scale
+                            
+                            print(getLocalTimeString() + " , (Olmypus) Information : Load RssCompensation from server (Device & OS)")
+                            let msg: String = getLocalTimeString() + " , (Olympus) Success : RssCompensation"
+                            completion(true, loadedNormalizationScale, msg)
+                        }
+                    } else {
+                        let msg: String = getLocalTimeString() + " , (Olympus) Error : Decode RssCompensation (Device & OS)"
+                        completion(false, loadedNormalizationScale, msg)
+                    }
+                } else {
+                    let msg: String = getLocalTimeString() + " , (Olympus) Error : Load RssCompensation (Device & OS) from server \(statusCode)"
+                    completion(false, loadedNormalizationScale, msg)
+                }
+            })
+        }
+    }
+    
     public func clearEntranceWardRssi() {
         self.entranceWardRssi = [String: Double]()
         self.allEntranceWardRssi = [String: Double]()
@@ -241,5 +316,21 @@ public class RssCompensator {
     
     public func getDeviceMinRss() -> Double {
         return self.deviceMinValue
+    }
+    
+    private func findClosestOs(to myOsVersion: Int, in array: [RcInfo]) -> RcInfo? {
+        guard let first = array.first else {
+            return nil
+        }
+        var closest = first
+        var closestDistance = closest.os_version - myOsVersion
+        for d in array {
+            let distance = d.os_version - myOsVersion
+            if abs(distance) < abs(closestDistance) {
+                closest = d
+                closestDistance = distance
+            }
+        }
+        return closest
     }
 }

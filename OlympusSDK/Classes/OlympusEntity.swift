@@ -91,16 +91,26 @@ public struct SectorInfoFromServer: Codable {
     let level_list: [SectorInfoLevel]
 }
 
+public struct SectorInfo: Codable {
+    let standard_min_rss: Double
+    let standard_max_rss: Double
+    let user_traj_origin: Double
+    let user_traj_length: Double
+    let user_traj_diag: Double
+    let num_straight_idx_dr: Int
+    let num_straight_idx_pdr: Int
+}
+
 // ---------------- RC ---------------- //
 public struct RcInputDeviceOs: Codable {
     let sector_id: Int
-    let device_mode: String
+    let device_model: String
     let os_version: Int
 }
 
 public struct RcInputDevice: Codable {
     let sector_id: Int
-    let device_mode: String
+    let device_model: String
 }
 
 public struct RcInfo: Codable {

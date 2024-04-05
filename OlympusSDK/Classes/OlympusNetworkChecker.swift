@@ -1,0 +1,17 @@
+import SystemConfiguration
+
+class NetworkChecker {
+    
+    static let shared = NetworkChecker()
+    private let reachability = SCNetworkReachabilityCreateWithName(nil, "NetworkCheck")
+    
+    private init() {}
+    
+    func isConnectedToInternet() -> Bool {
+        var flags = SCNetworkReachabilityFlags()
+        SCNetworkReachabilityGetFlags(self.reachability!, &flags)
+        let isReachable = flags.contains(.reachable)
+        let needsConnection = flags.contains(.connectionRequired)
+        return (isReachable && !needsConnection)
+    }
+}

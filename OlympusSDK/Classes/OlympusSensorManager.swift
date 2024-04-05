@@ -27,7 +27,7 @@ public class SensorManager {
         
     }
     
-    public func initializeSensors() -> (Bool, String) {
+    public func initSensors() -> (Bool, String) {
         var isSuccess: Bool = false
         var message: String = ""
         var unavailableSensors = [String]()
@@ -189,7 +189,7 @@ public class SensorManager {
         }
         
         let localTime: String = getLocalTimeString()
-        if (sensorActive >= 4) {
+        if (sensorActive >= 3) {
             let log: String = localTime + " , (Jupiter) Success : Sensor Initialization"
             
             isSuccess = true

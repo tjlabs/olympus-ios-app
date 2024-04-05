@@ -12,6 +12,11 @@ enum BLEScanOption: Int {
     case Background
 }
 
+enum TrimBleDataError: Error {
+    case invalidInput
+    case noValidData
+}
+
 let UUIDService = CBUUID(string: NRF_UUID_SERVICE)
 let UUIDRead    = CBUUID(string: NRF_UUID_CHAR_READ)
 let UUIDWrite   = CBUUID(string: NRF_UUID_CHAR_WRITE)
@@ -251,11 +256,6 @@ class BLECentralManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegat
             return .success(trimmedData)
         }
     }
-
-    enum TrimBleDataError: Error {
-        case invalidInput
-        case noValidData
-    }
     
     func isConnected() -> Bool {
         return connected
@@ -265,6 +265,15 @@ class BLECentralManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegat
         if discoveredPeripheral != nil {
             centralManager.cancelPeripheralConnection(discoveredPeripheral)
         }
+    }
+    
+    public func initBle() -> (Bool, String){
+        let localTime: String = getLocalTimeString()
+        let isSuccess: Bool = true
+        let message: String = localTime + " , (Olympus) Success : Bluetooth Initialization"
+        startScan(option: .Foreground)
+        
+        return (isSuccess, message)
     }
     
     func startScan(option: BLEScanOption) {

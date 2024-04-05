@@ -66,7 +66,6 @@ public class ServiceManager: NSObject {
                             let sectorInfoFromServer = jsonToSectorInfoFromServer(jsonString: returnedString)
                             if (sectorInfoFromServer.0) {
                                 self.setSectorInfo(sector_id: sector_id, sectorInfo: sectorInfoFromServer.1)
-                                
                                 completion(true, returnedString)
                             } else {
                                 let msg: String = getLocalTimeString() + " , (Olympus) Error : Decode SectorInfo"
