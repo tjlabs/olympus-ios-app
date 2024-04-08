@@ -98,6 +98,19 @@ public struct DistanceInfo: Equatable {
     public var isIndexChanged: Bool = true
 }
 
+public struct UnitDRInfo {
+    public var index: Int = 0
+    public var length: Double = 0
+    public var heading: Double = 0
+    public var velocity: Double = 0
+    public var lookingFlag: Bool = false
+    public var isIndexChanged: Bool = false
+    public var autoMode: Int = 0
+    
+    public func toString() -> String {
+        return "{index : \(index), length : \(length), heading : \(heading), velocity : \(velocity), lookingFlag : \(lookingFlag), isStepDetected : \(isIndexChanged), autoMode : \(autoMode)}"
+    }
+}
 
 // ---------------- Login ---------------- //
 public struct LoginInput: Codable {
@@ -180,3 +193,296 @@ public struct RcInfoFromServer: Codable {
 }
 
 // ---------------- RC ---------------- //
+
+// ---------------- REC DATA ---------------- //
+struct ReceivedForce: Encodable {
+    let user_id: String
+    let mobile_time: Int
+    let ble: [String: Double]
+    let pressure: Double
+}
+
+struct UserVelocity: Encodable {
+    let user_id: String
+    let mobile_time: Int
+    let index: Int
+    let length: Double
+    let heading: Double
+    let looking: Bool
+}
+
+public struct MobileResult: Encodable {
+    public var user_id: String
+    public var mobile_time: Int
+    public var sector_id: Int
+    public var building_name: String
+    public var level_name: String
+    public var scc: Double
+    public var x: Double
+    public var y: Double
+    public var absolute_heading: Double
+    public var phase: Int
+    public var calculated_time: Double
+    public var index: Int
+    public var velocity: Double
+    public var ble_only_position: Bool
+    public var normalization_scale: Double
+    public var device_min_rss: Int
+    public var sc_compensation: Double
+    public var is_indoor: Bool
+}
+
+public struct MobileReport: Encodable {
+    public var user_id: String
+    public var mobile_time: Int
+    public var report: Int
+}
+
+// Recent
+struct RecentResult: Encodable {
+    var user_id: String
+    var mobile_time: Int
+}
+
+
+// ---------------- REC DATA ---------------- //
+
+
+// ---------------- Service ---------------- //
+
+// Building Detection
+public struct BuildingDetectionResult: Codable {
+    public var mobile_time: Int
+    public var building_name: String
+    public var calculated_time: Double
+    
+    public init() {
+        self.mobile_time = 0
+        self.building_name = ""
+        self.calculated_time = 0
+    }
+}
+
+// Coarse Level Detection
+struct CoarseLevelDetection: Encodable {
+    var user_id: String
+    var mobile_time: Int
+    var normalization_scale: Double
+    var device_min_rss: Int
+    var standard_min_rss: Int
+}
+
+public struct CoarseLevelDetectionResult: Codable {
+    public var mobile_time: Int
+    public var sector_name: String
+    public var building_name: String
+    public var level_name: String
+    public var calculated_time: Double
+    
+    public init() {
+        self.mobile_time = 0
+        self.sector_name = ""
+        self.building_name = ""
+        self.level_name = ""
+        self.calculated_time = 0
+    }
+}
+
+// Fine Level Detection
+public struct FineLevelDetectionResult: Codable {
+    public var mobile_time: Int
+    public var building_name: String
+    public var level_name: String
+    public var scc: Double
+    public var scr: Double
+    public var calculated_time: Double
+    
+    public init() {
+        self.mobile_time = 0
+        self.building_name = ""
+        self.level_name = ""
+        self.scc = 0
+        self.scr = 0
+        self.calculated_time = 0
+    }
+}
+
+
+// Coarse Location Estimation
+struct CoarseLocationEstimation: Encodable {
+    var user_id: String
+    var mobile_time: Int
+    var sector_id: Int
+    var search_direction_list: [Int]
+    var normalization_scale: Double
+    var device_min_rss: Int
+}
+
+public struct CoarseLocationEstimationResult: Codable {
+    public var mobile_time: Int
+    public var building_name: String
+    public var level_name: String
+    public var scc: Double
+    public var scr: Double
+    public var x: Int
+    public var y: Int
+    public var calculated_time: Double
+    
+    public init() {
+        self.mobile_time = 0
+        self.building_name = ""
+        self.level_name = ""
+        self.scc = 0
+        self.scr = 0
+        self.x = 0
+        self.y = 0
+        self.calculated_time = 0
+    }
+}
+
+// Fine Location Tracking
+public struct FineLocationTrackingResult: Codable {
+    public var mobile_time: Int
+    public var building_name: String
+    public var level_name: String
+    public var scc: Double
+    public var x: Double
+    public var y: Double
+    public var absolute_heading: Double
+    public var phase: Int
+    public var calculated_time: Double
+    public var index: Int
+    public var velocity: Double
+    public var mode: String
+    public var ble_only_position: Bool
+    public var isIndoor: Bool
+    public var validity: Bool
+    public var validity_flag: Int
+    
+    public init() {
+        self.mobile_time = 0
+        self.building_name = ""
+        self.level_name = ""
+        self.scc = 0
+        self.x = 0
+        self.y = 0
+        self.absolute_heading = 0
+        self.phase = 0
+        self.calculated_time = 0
+        self.index = 0
+        self.velocity = 0
+        self.mode = ""
+        self.ble_only_position = false
+        self.isIndoor = false
+        self.validity = false
+        self.validity_flag = 0
+    }
+}
+
+public struct FineLocationTrackingFromServer: Codable {
+    public var mobile_time: Int
+    public var building_name: String
+    public var level_name: String
+    public var scc: Double
+    public var x: Double
+    public var y: Double
+    public var absolute_heading: Double
+    public var calculated_time: Double
+    public var index: Int
+    public var sc_compensation: Double
+    public var search_direction: Int
+    public var cumulative_length: Double
+    public var channel_condition: Bool
+    
+    public init() {
+        self.mobile_time = 0
+        self.building_name = ""
+        self.level_name = ""
+        self.scc = 0
+        self.x = 0
+        self.y = 0
+        self.absolute_heading = 0
+        self.calculated_time = 0
+        self.index = 0
+        self.sc_compensation = 0
+        self.search_direction = 0
+        self.cumulative_length = 0
+        self.channel_condition = false
+    }
+}
+
+// On Spot Recognition
+struct OnSpotRecognition: Encodable {
+    var user_id: String
+    var mobile_time: Int
+    var normalization_scale: Double
+    var device_min_rss: Int
+    var standard_min_rss: Int
+}
+
+public struct OnSpotRecognitionResult: Codable {
+    public var mobile_time: Int
+    public var building_name: String
+    public var level_name: String
+    public var linked_level_name: String
+    public var spot_id: Int
+    public var spot_distance: Double
+    public var spot_range: [Int]
+    public var spot_direction_down: [Int]
+    public var spot_direction_up: [Int]
+
+    public init() {
+        self.mobile_time = 0
+        self.building_name = ""
+        self.level_name = ""
+        self.linked_level_name = ""
+        self.spot_id = 0
+        self.spot_distance = 0
+        self.spot_range = []
+        self.spot_direction_down = []
+        self.spot_direction_up = []
+    }
+}
+
+// On Spot Authorizationds
+struct OnSpotAuthorization: Encodable {
+    var user_id: String
+    var mobile_time: Int
+}
+
+
+public struct OnSpotAuthorizationResult: Codable {
+    public var spots: [Spot]
+    
+    public init() {
+        self.spots = []
+    }
+}
+
+public struct Spot: Codable {
+    public var mobile_time: Int
+    public var sector_name: String
+    public var building_name: String
+    public var level_name: String
+    public var spot_id: Int
+    public var spot_number: Int
+    public var spot_name: String
+    public var spot_feature_id: Int
+    public var spot_x: Int
+    public var spot_y: Int
+    public var ccs: Double
+    
+    public init() {
+        self.mobile_time = 0
+        self.sector_name = ""
+        self.building_name = ""
+        self.level_name = ""
+        self.spot_id = 0
+        self.spot_number = 0
+        self.spot_name = ""
+        self.spot_feature_id = 0
+        self.spot_x = 0
+        self.spot_y = 0
+        self.ccs = 0
+    }
+}

@@ -14,4 +14,6 @@ extension Notification.Name {
     public static let didBecomeActive     = Notification.Name("didBecomeActive")
     public static let didBecomeVenus      = Notification.Name("didBecomeActive")
     public static let didBecomeJupiter    = Notification.Name("didBecomeJupiter")
+    public static let errorSendRfd        = Notification.Name("errorSendRfd")
+    public static let errorSendUvd        = Notification.Name("errorSendUvd")
 }

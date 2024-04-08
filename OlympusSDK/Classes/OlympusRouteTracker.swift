@@ -1,12 +1,263 @@
-import Foundation
 
 public class OlympusRouteTracker {
+    static var shared = OlympusRouteTracker()
     
-    var EntranceRouteLevel = [String: [String]]()
-    var EntranceRouteCoord = [String: [[Double]]]()
-    var EntranceNetworkStatus = [String: Bool]()
-    var EntranceVelocityScales = [String: Double]()
-    init() {
+    init() { }
+    
+    public var EntranceRouteVersion = [String: String]()
+    public var EntranceRouteLevel = [String: [String]]()
+    public var EntranceRouteCoord = [String: [[Double]]]()
+    public var EntranceNetworkStatus = [String: Bool]()
+    public var EntranceVelocityScales = [String: Double]()
+    public var EntranceIsLoaded = [String: Bool]()
+    public var EnteranceNumbers: Int = 0
+    
+    public var isStartRouteTrack: Bool = false {
+        didSet {
+            notifyObservers(isStartRouteTrack: self.isStartRouteTrack)
+        }
+    }
+    
+    public var entranceVelocityScale: Double = 1.0
+    public var currentEntrance: String = ""
+    public var currentEntranceLength: Int = 0
+    public var isInNetworkBadEntrance: Bool = false
+    
+    private var observers = [RouteTrackingObserver]()
+
+    func addObserver(_ observer: RouteTrackingObserver) {
+            observers.append(observer)
+    }
         
+    func removeObserver(_ observer: RouteTrackingObserver) {
+        observers = observers.filter { $0 !== observer }
+    }
+    
+    private func notifyObservers(isStartRouteTrack: Bool) {
+        observers.forEach { $0.isStartRouteTrackDidChange(newValue: isStartRouteTrack) }
+    }
+    
+    private func parseEntrance(data: String) -> ([String], [[Double]]) {
+        var entracneLevelArray = [String]()
+        var entranceArray = [[Double]]()
+
+        let entranceString = data.components(separatedBy: .newlines)
+        for i in 0..<entranceString.count {
+            if (entranceString[i] != "") {
+                let lineData = entranceString[i].components(separatedBy: ",")
+                
+                let entrance: [Double] = [(Double(lineData[1])!), (Double(lineData[2])!), (Double(lineData[3])!)]
+                
+                entracneLevelArray.append(lineData[0])
+                entranceArray.append(entrance)
+            }
+        }
+        
+        
+        return (entracneLevelArray, entranceArray)
+    }
+    
+    public func saveEntranceRouteLocalUrl(key: String, url: String) {
+        print(getLocalTimeString() + " , (Olympus) Save \(key) Entrance Route Local URL : \(url)")
+        
+        do {
+            let key: String = "OlympusEntranceRouteLocalUrl_\(key)"
+            UserDefaults.standard.set(url, forKey: key)
+        }
+    }
+    
+    public func loadEntranceRouteLocalUrl(key: String) -> (Bool, String?) {
+        let keyEntranceRouteUrl: String = "OlympusEntranceRouteLocalUrl_\(key)"
+        if let loadedEntranceRouteUrl: String = UserDefaults.standard.object(forKey: keyEntranceRouteUrl) as? String {
+            return (true, loadedEntranceRouteUrl)
+        } else {
+            return (false, nil)
+        }
+    }
+    
+    public func saveEntranceRouteVersion(key: String, routeVersion: String) {
+        print(getLocalTimeString() + " , (Olympus) Save \(key) Entrance Route Version : \(routeVersion)")
+        do {
+            let key: String = "OlympusEntranceRouteVersion_\(key)"
+            UserDefaults.standard.set(routeVersion, forKey: key)
+        }
+    }
+    
+    public func loadEntranceRoute(sector_id: Int, RouteVersion: [String: String]) {
+        for (key, value) in RouteVersion {
+            // Cache를 통해 PP 버전을 확인
+            let keyRouteVersion: String = "OlympusEntranceRouteVersion_\(key)"
+            if let loadedRouteVersion: String = UserDefaults.standard.object(forKey: keyRouteVersion) as? String {
+                if value == loadedRouteVersion {
+                    // 만약 버전이 같다면 파일을 가져오기
+                    let routeLocalUrl = loadEntranceRouteLocalUrl(key: key)
+                    if (routeLocalUrl.0) {
+                        do {
+                            let contents = routeLocalUrl.1!
+                            let parsedData = self.parseEntrance(data: contents)
+                            self.EntranceRouteLevel[key] = parsedData.0
+                            self.EntranceRouteCoord[key] = parsedData.1
+                            self.EntranceIsLoaded[key] = true
+                        }
+                    } else {
+                        // 첫 시작과 동일하게 다운로드 받아오기
+                        let building_level_entrance = key.split(separator: "_")
+                        let routeUrl: String = CSV_URL + "/entrance-route/\(sector_id)/\(building_level_entrance[0])/\(building_level_entrance[1])/\(building_level_entrance[2])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
+                        let urlComponents = URLComponents(string: routeUrl)
+                        OlympusFileDownloader.shared.downloadCSVFile(from: (urlComponents?.url)!, fname: key, completion: { [self] url, error in
+                            if error == nil {
+                                do {
+                                    let contents = try String(contentsOf: url!)
+                                    let parsedData = self.parseEntrance(data: contents)
+                                    EntranceRouteLevel[key] = parsedData.0
+                                    EntranceRouteCoord[key] = parsedData.1
+                                    saveEntranceRouteVersion(key: key, routeVersion: value)
+                                    saveEntranceRouteLocalUrl(key: key, url: contents)
+                                    EntranceIsLoaded[key] = true
+                                } catch {
+                                    EntranceIsLoaded[key] = false
+                                    print("Error reading file:", error.localizedDescription)
+                                }
+                            } else {
+                                self.EntranceIsLoaded[key] = false
+                            }
+                        })
+                    }
+                } else {
+                    // 만약 버전이 다르면 다운로드 받아오기
+                    // 첫 시작과 동일하게 다운로드 받아오기
+                    let building_level_entrance = key.split(separator: "_")
+                    let routeUrl: String = CSV_URL + "/entrance-route/\(sector_id)/\(building_level_entrance[0])/\(building_level_entrance[1])/\(building_level_entrance[2])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
+                    let urlComponents = URLComponents(string: routeUrl)
+                    OlympusFileDownloader.shared.downloadCSVFile(from: (urlComponents?.url)!, fname: key, completion: { [self] url, error in
+                        if error == nil {
+                            do {
+                                let contents = try String(contentsOf: url!)
+                                let parsedData = self.parseEntrance(data: contents)
+                                EntranceRouteLevel[key] = parsedData.0
+                                EntranceRouteCoord[key] = parsedData.1
+                                saveEntranceRouteVersion(key: key, routeVersion: value)
+                                saveEntranceRouteLocalUrl(key: key, url: contents)
+                                EntranceIsLoaded[key] = true
+                            } catch {
+                                EntranceIsLoaded[key] = false
+                                print("Error reading file:", error.localizedDescription)
+                            }
+                        } else {
+                            EntranceIsLoaded[key] = false
+                        }
+                    })
+                }
+            } else {
+                // 첫 시작이면 다운로드 받아오기
+                let building_level_entrance = key.split(separator: "_")
+                let routeUrl: String = CSV_URL + "/entrance-route/\(sector_id)/\(building_level_entrance[0])/\(building_level_entrance[1])/\(building_level_entrance[2])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
+                let urlComponents = URLComponents(string: routeUrl)
+                OlympusFileDownloader.shared.downloadCSVFile(from: (urlComponents?.url)!, fname: key, completion: { [self] url, error in
+                    if error == nil {
+                        do {
+                            let contents = try String(contentsOf: url!)
+                            let parsedData = parseEntrance(data: contents)
+                            EntranceRouteLevel[key] = parsedData.0
+                            EntranceRouteCoord[key] = parsedData.1
+                            saveEntranceRouteVersion(key: key, routeVersion: value)
+                            saveEntranceRouteLocalUrl(key: key, url: contents)
+                            EntranceIsLoaded[key] = true
+                        } catch {
+                            EntranceIsLoaded[key] = false
+                            print("Error reading file:", error.localizedDescription)
+                        }
+                    } else {
+                        EntranceIsLoaded[key] = false
+                    }
+                })
+            }
+        }
+    }
+    
+    public func startRouteTracking(result: FineLocationTrackingFromServer) {
+        for i in 0..<self.EnteranceNumbers {
+            if (!self.isStartRouteTrack) {
+                let entranceResult = self.findEntrance(result: result, entrance: i)
+                if (entranceResult.0 != 0) {
+                    let buildingName = result.building_name
+                    let levelName = removeLevelDirectionString(levelName: result.level_name)
+                    
+                    let entranceKey: String = "\(buildingName)_\(levelName)_\(entranceResult.0)"
+                    if let velocityScale: Double = self.EntranceVelocityScales[entranceKey] {
+                        self.entranceVelocityScale = velocityScale
+                    } else {
+                        self.entranceVelocityScale = 1.0
+                    }
+
+                    self.currentEntrance = entranceKey
+                    self.currentEntranceLength = entranceResult.1
+                    if let entranceNetworkStatus: Bool = self.EntranceNetworkStatus[entranceKey] {
+                        self.isInNetworkBadEntrance = entranceNetworkStatus
+                    }
+                    self.isStartRouteTrack = true
+                    notifyObservers(isStartRouteTrack: self.isStartRouteTrack)
+                }
+            }
+        }
+    }
+    
+    private func findEntrance(result: FineLocationTrackingFromServer, entrance: Int) -> (Int, Int) {
+        var entranceNumber: Int = 0
+        var entranceLength: Int = 0
+        
+        let buildingName = result.building_name
+        let levelName = removeLevelDirectionString(levelName: result.level_name)
+        
+        let resultPm = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 1, COORD_RANGE: OlympusConstants.SQUARE_RANGE)
+        
+        let coordX = resultPm.xyhs[0]
+        let coordY = resultPm.xyhs[1]
+        
+        var resultCopy = result
+        resultCopy.x = coordX
+        resultCopy.y = coordY
+        
+        if (levelName == "B0") {
+            let number = entrance+1
+            
+            let key = "\(buildingName)_\(levelName)_\(number)"
+            
+            guard let entranceCoord: [[Double]] = EntranceRouteCoord[key] else {
+                return (entranceNumber, entranceLength)
+            }
+            
+            var column1Min = Double.infinity
+            var column1Max = -Double.infinity
+
+            for row in entranceCoord {
+                let value = row[0]
+                column1Min = min(column1Min, value)
+                column1Max = max(column1Max, value)
+            }
+
+            var column2Min = Double.infinity
+            var column2Max = -Double.infinity
+
+            for row in entranceCoord {
+                let value = row[1]
+                column2Min = min(column2Min, value)
+                column2Max = max(column2Max, value)
+            }
+
+            let xMin = column1Min
+            let xMax = column1Max
+            let yMin = column2Min
+            let yMax = column2Max
+
+            if (coordX >= xMin && coordX <= xMax) {
+                if (coordY >= yMin && coordY <= yMax) {
+                    entranceNumber = number
+                    entranceLength = entranceCoord.count
+                }
+            }
+        }
+        
+        return (entranceNumber, entranceLength)
     }
 }

@@ -1,7 +1,9 @@
 
 
-class OlympusFileDownloader {
-    func downloadCSVFile(from url: URL, fname: String, completion: @escaping (URL?, Error?) -> Void) {
+public class OlympusFileDownloader {
+    static let shared = OlympusFileDownloader()
+    
+    public func downloadCSVFile(from url: URL, fname: String, completion: @escaping (URL?, Error?) -> Void) {
         let task = URLSession.shared.downloadTask(with: url) { (tempLocalURL, response, error) in
             guard let tempLocalURL = tempLocalURL, error == nil else {
                 completion(nil, error)

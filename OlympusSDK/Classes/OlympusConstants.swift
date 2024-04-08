@@ -2,6 +2,8 @@ class OlympusConstants {
     static let OPERATING_SYSTEM: String = "iOS"
     static let MODE_DR = "dr"
     static let MODE_PDR = "pdr"
+    static let MODE_AUTO = "auto"
+    static let OLMPUS_SERVICES: [String] = ["SD", "BD", "CLD", "FLD", "CLE", "FLT", "FLT+", "OSA"]
     static let SERVICE_FLT = "FLT"
     
     static let R2D: Double = 180 / Double.pi
@@ -13,6 +15,43 @@ class OlympusConstants {
     static let SENSOR_INTERVAL: TimeInterval = 1/100
     static let ABNORMAL_MAG_THRESHOLD: Double = 2000
     static let ABNORMAL_MAG_COUNT = 500
+    
+    
+    // Sector Info //
+    static var STANDARD_MIN_RSS: Double = -99
+    static var STANDARD_MAX_RSS: Double = -60
+    
+    static var USER_TRAJECTORY_ORIGINAL: Double = 60
+    static var USER_TRAJECTORY_LENGTH: Double = 60
+    static var USER_TRAJECTORY_DIAGONAL: Double = 20
+    
+    static var NUM_STRAIGHT_IDX_DR: Int = 10
+    static var NUM_STRAIGHT_IDX_PDR: Int = 10
+    
+    static var NORMALIZATION_SCALE: Double = 1.0
+    static var PRE_NORMALIZATION_SCALE: Double = 1.0
+    
+    
+    // RFD //
+    static var BLE_VALID_TIME: Double = 1000
+    static let RFD_INTERVAL: TimeInterval = 1/2 //second
+    static var RFD_INPUT_NUM: Int = 7
+    static var DEVICE_MIN_RSSI: Double = -99.0
+    static let EST_RC_INTERVAL: Double = 5.0
+    static let REQUIRED_RC_CONVERGENCE_TIME: Double = 180 // 3min
+    static let OUTDOOR_THRESHOLD: Double = 10 // seconds
+    
+    // UVD //
+    static var UVD_INTERVAL: TimeInterval = 1/40 // second
+    static var RQ_IDX: Int = 10
+    static var RQ_IDX_PDR: Int = 4
+    static var RQ_IDX_DR: Int = 10
+    static var UVD_INPUT_NUM: Int = 3
+    static var VALUE_INPUT_NUM: Int = 5
+    static var INIT_INPUT_NUM: Int = 3
+    
+    // SLEEP
+    static let SLEEP_THRESHOLD: Double = 600
     
     // DR & PDR //
     static let LOOKING_FLAG_STEP_CHECK_SIZE: Int = 3
@@ -35,6 +74,8 @@ class OlympusConstants {
     static let COMPENSATION_WEIGHT: Double = 0.85
     static let COMPENSATION_BIAS: Double = 0.1
     static let DIFFERENCE_PV_THRESHOLD: Double = (MID_STEP_LENGTH - DEFAULT_STEP_LENGTH) / ALPHA + DIFFERENCE_PV_STANDARD
+    static let STEP_LENGTH_RANGE_BOTTOM: Double = 0.5
+    static let STEP_LENGTH_RANGE_TOP: Double = 0.7
     
     static let OUTPUT_SAMPLE_HZ: Double = 10
     static let OUTPUT_SAMPLE_TIME: Double = 1 / OUTPUT_SAMPLE_HZ
@@ -47,23 +88,31 @@ class OlympusConstants {
     static let SEND_INTERVAL_SECOND: Double = 1 / VELOCITY_QUEUE_SIZE
     static let VELOCITY_MIN: Double = 4
     static let VELOCITY_MAX: Double = 18
+    static let RF_SC_THRESHOLD_DR: Double = 0.67
     
-    static var AMP_THRESHOLD: Double = 0.18
-    static var TIME_THRESHOLD: Double = 100.0
+    static let AMP_THRESHOLD: Double = 0.18
+    static let TIME_THRESHOLD: Double = 100.0
+    static let STEP_VALID_TIME: Double = 1000
+    static let RF_SC_THRESHOLD_PDR: Double = 0.55
     
-    // Sector Info //
-    static var STANDARD_MIN_RSS: Double = -99
-    static var STANDARD_MAX_RSS: Double = -60
+    static let MODE_CHANGE_TIME_CONDITION: Double = 10*1000
+    static let MODE_CHANGE_RFLOW_TIME_OVER: Double = 0.1
+    static let MODE_CHANGE_RFLOW_FORCE: Double = 0.065
     
-    static var USER_TRAJECTORY_ORIGINAL: Double = 60
-    static var USER_TRAJECTORY_LENGTH: Double = 60
-    static var USER_TRAJECTORY_DIAGONAL: Double = 20
+    // OnSpotRecognition
+    static let OSR_INTERVAL: TimeInterval = 2 // second
     
-    static var NUM_STRAIGHT_INDEX_DR: Int = 10
-    static var NUM_STRAIGHT_INDEX_PDR: Int = 10
+    // Output Update
+    static let OUTPUT_INTERVAL: TimeInterval = 1/5 // second
     
-    static var NORMALIZATION_SCALE: Double = 0.2
-    static var PRE_NORMALIZATION_SCALE: Double = 0.8
+    // Threshold //
+    static let BLE_OFF_THRESHOLD: Double = 4
+    static var TIME_INIT_THRESHOLD: Double = 25
+    static let OUTERWARD_SCAN_THRESHOLD: Double = -85.0
+    
+    // Path-Matching
+    static let HEADING_RANGE: Double = 46
+    static var SQUARE_RANGE: Double = 10
     
     
     public func setSectorInfoConstants(sector_info: SectorInfo) {
@@ -72,14 +121,13 @@ class OlympusConstants {
         OlympusConstants.USER_TRAJECTORY_ORIGINAL = sector_info.user_traj_origin
         OlympusConstants.USER_TRAJECTORY_LENGTH = sector_info.user_traj_length
         OlympusConstants.USER_TRAJECTORY_DIAGONAL = sector_info.user_traj_diag
-        OlympusConstants.NUM_STRAIGHT_INDEX_DR = sector_info.num_straight_idx_dr
-        OlympusConstants.NUM_STRAIGHT_INDEX_PDR = sector_info.num_straight_idx_pdr
+        OlympusConstants.NUM_STRAIGHT_IDX_DR = sector_info.num_straight_idx_dr
+        OlympusConstants.NUM_STRAIGHT_IDX_PDR = sector_info.num_straight_idx_pdr
     }
     
     public func setNormalizationScale(cur: Double, pre: Double) {
         OlympusConstants.NORMALIZATION_SCALE     = cur
         OlympusConstants.PRE_NORMALIZATION_SCALE = pre
     }
-    
     
 }

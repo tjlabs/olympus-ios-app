@@ -87,24 +87,24 @@ public class OlympusPDRDistanceEstimator: NSObject {
                 finalUnitResult.length = stepLengthEstimator.estStepLength(accPeakQueue: accPeakQueue, accValleyQueue: accValleyQueue)
                 updateStepLengthQueue(stepLengthWithTimeStamp: StepLengthWithTimestamp(timestamp: foundAccPV.timestamp, stepLength: finalUnitResult.length))
                 
-                if (finalUnitResult.length > 0.7) {
-                    finalUnitResult.length = 0.7
-                } else if (finalUnitResult.length < 0.5) {
-                    finalUnitResult.length = 0.5
+                if (finalUnitResult.length > OlympusConstants.STEP_LENGTH_RANGE_TOP) {
+                    finalUnitResult.length = OlympusConstants.STEP_LENGTH_RANGE_TOP
+                } else if (finalUnitResult.length < OlympusConstants.STEP_LENGTH_RANGE_BOTTOM) {
+                    finalUnitResult.length = OlympusConstants.STEP_LENGTH_RANGE_BOTTOM
                 }
                 
 
                 if (!self.autoMode) {
                     if (isLossStep && finalUnitResult.index > OlympusConstants.NORMAL_STEP_LOSS_CHECK_SIZE) {
-                        finalUnitResult.length = 1.8
+                        finalUnitResult.length = OlympusConstants.DEFAULT_STEP_LENGTH * Double(OlympusConstants.NORMAL_STEP_LOSS_CHECK_SIZE)
                     }
                 } else {
                     if (finalUnitResult.index > OlympusConstants.AUTO_MODE_NORMAL_STEP_LOSS_CHECK_SIZE) {
                         if (isLossStep) {
                             if (self.isModeDrToPdr) {
-                                finalUnitResult.length = 1.8
+                                finalUnitResult.length = OlympusConstants.DEFAULT_STEP_LENGTH * Double(OlympusConstants.NORMAL_STEP_LOSS_CHECK_SIZE)
                             } else {
-                                finalUnitResult.length = 0.6*Double(OlympusConstants.AUTO_MODE_NORMAL_STEP_LOSS_CHECK_SIZE)
+                                finalUnitResult.length = OlympusConstants.DEFAULT_STEP_LENGTH*Double(OlympusConstants.AUTO_MODE_NORMAL_STEP_LOSS_CHECK_SIZE)
                             }
                         }
                     }

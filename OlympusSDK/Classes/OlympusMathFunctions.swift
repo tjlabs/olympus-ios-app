@@ -1,5 +1,6 @@
 
 public class OlympusMathFunctions: NSObject {
+    
     public override init() {
         
     }

@@ -20,3 +20,16 @@ public func getCurrentTimeInMillisecondsDouble() -> Double
 {
     return (Date().timeIntervalSince1970 * 1000)
 }
+
+public func removeLevelDirectionString(levelName: String) -> String {
+    var levelToReturn: String = levelName
+    if (levelToReturn.contains("_D")) {
+        levelToReturn = levelName.replacingOccurrences(of: "_D", with: "")
+    }
+    return levelToReturn
+}
+
+func movingAverage(preMvalue: Double, curValue: Double, windowSize: Int) -> Double {
+    let windowSizeDouble: Double = Double(windowSize)
+    return preMvalue*((windowSizeDouble - 1)/windowSizeDouble) + (curValue/windowSizeDouble)
+}

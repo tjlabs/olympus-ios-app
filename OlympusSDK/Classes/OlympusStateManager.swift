@@ -1,0 +1,272 @@
+
+public class OlympusStateManager: NSObject {
+    
+    override init() {
+        super.init()
+        self.notificationCenterAddObserver()
+    }
+    
+    deinit {
+        self.notificationCenterRemoveObserver()
+    }
+    
+    private var observers = [StateTrackingObserver]()
+    func addObserver(_ observer: StateTrackingObserver) {
+            observers.append(observer)
+    }
+        
+    func removeObserver(_ observer: StateTrackingObserver) {
+        observers = observers.filter { $0 !== observer }
+    }
+    
+    private func notifyObservers(state: Int) {
+        observers.forEach { $0.isStateDidChange(newValue: state) }
+    }
+    
+    public var EntranceOuterWards = [String]()
+    public var lastScannedEntranceOuterWardTime: Double = 0
+    
+    public var isGetFirstResponse: Bool = false
+    public var isIndoor: Bool = false
+    public var isBleOff: Bool = false
+    public var isBackground: Bool = false
+    
+    public var timeForInit: Double = 0
+    public var timeBleOff: Double = 0
+    public var timeBecomeForeground: Double = 0
+    public var timeEmptyRF: Double = 0
+    public var timeTrimFailRF: Double = 0
+    public var timeSleepRF: Double = 0
+    
+    var isActiveService: Bool = true
+    var isActiveRF: Bool = true
+    var isActiveUV: Bool = true
+    
+    public var OLYMPUS_STATE: Int = 0
+    
+    private var venusObserver: Any!
+    private var jupiterObserver: Any!
+    private var rfdErrorObserver: Any!
+    private var uvdErrorObserver: Any!
+    
+    public func setVariblesWhenBleIsNotEmpty() {
+        self.timeBleOff = 0
+        self.timeEmptyRF = 0
+        self.timeSleepRF = 0
+        
+        self.isActiveRF = true
+        self.isBleOff = false
+    }
+    
+    public func checkBleOff(bluetoothReady: Bool, bleLastScannedTime: Double) {
+        let currentTime: Double = getCurrentTimeInMillisecondsDouble()
+        if (!bluetoothReady) {
+            self.timeBleOff += OlympusConstants.RFD_INTERVAL
+            if (self.timeBleOff >= OlympusConstants.BLE_OFF_THRESHOLD) {
+                if (!self.isBleOff) {
+                    self.isBleOff = true
+                    self.timeBleOff = 0
+                    self.OLYMPUS_STATE = BLE_OFF_FLAG
+                    notifyObservers(state: self.OLYMPUS_STATE)
+//                    self.reporting(input: BLE_OFF_FLAG)
+                }
+            }
+        } else {
+            let bleLastScannedTime = (currentTime - bleLastScannedTime)*1e-3
+            if (bleLastScannedTime >= 6) {
+                // 스캔이 동작안한지 6초 이상 지남
+                self.OLYMPUS_STATE = BLE_SCAN_STOP_FLAG
+                notifyObservers(state: self.OLYMPUS_STATE)
+//                self.reporting(input: BLE_SCAN_STOP_FLAG)
+            }
+        }
+    }
+    
+    public func checkBleError(lastResult: FineLocationTrackingResult) -> Bool {
+        var isNeedClearBle: Bool = false
+        let currentTime: Double = getCurrentTimeInMillisecondsDouble()
+        if (self.isIndoor && self.isGetFirstResponse && !self.isBackground) {
+            let diffTime = (currentTime - self.timeBecomeForeground)*1e-3
+            if (!self.isBleOff && diffTime > 5) {
+                self.OLYMPUS_STATE = BLE_ERROR_FLAG
+                notifyObservers(state: self.OLYMPUS_STATE)
+//                self.reporting(input: BLE_ERROR_FLAG)
+                let isFailTrimBle = self.determineIsOutdoor(lastResult: lastResult, currentTime: currentTime, inFailCondition: true)
+                if (isFailTrimBle) {
+                    isNeedClearBle = true
+//                    self.bleAvg = [String: Double]()
+                }
+            }
+        }
+        
+        return isNeedClearBle
+    }
+    
+    public func checkOutdoorBleEmpty(lastBleDiscoveredTime: Double, lastResult: FineLocationTrackingResult) {
+        let currentTime = getCurrentTimeInMillisecondsDouble()
+        
+        if (currentTime - lastBleDiscoveredTime > OlympusConstants.BLE_VALID_TIME && lastBleDiscoveredTime != 0) {
+            self.timeEmptyRF += OlympusConstants.RFD_INTERVAL
+        } else {
+            self.timeEmptyRF = 0
+        }
+        
+        if (self.timeEmptyRF >= OlympusConstants.OUTDOOR_THRESHOLD) {
+            self.isActiveRF = false
+            if (self.isIndoor && self.isGetFirstResponse) {
+                if (!self.isBleOff) {
+                    let isOutdoor = self.determineIsOutdoor(lastResult: lastResult, currentTime: currentTime, inFailCondition: false)
+                    if (isOutdoor) {
+//                        self.initVariables()
+//                        self.currentLevel = "B0"
+                        self.isIndoor = false
+                        OLYMPUS_STATE = OUTDOOR_FLAG
+                        notifyObservers(state: self.OLYMPUS_STATE)
+                    }
+                }
+            }
+        }
+    }
+    
+    private func determineIsOutdoor(lastResult: FineLocationTrackingResult, currentTime: Double, inFailCondition: Bool) -> Bool {
+        let isInEntranceMatchingArea = OlympusPathMatchingCalculator.shared.checkInEntranceMatchingArea(x: lastResult.x, y: lastResult.y, building: lastResult.building_name, level: lastResult.level_name)
+        
+        let diffEntranceWardTime = currentTime - self.lastScannedEntranceOuterWardTime
+        if (lastResult.building_name != "" && lastResult.level_name == "B0") {
+            return true
+        } else if (isInEntranceMatchingArea.0) {
+            return true
+        } else if (diffEntranceWardTime <= 30*1000) {
+            return true
+        } else {
+            // 3min
+            if (inFailCondition) {
+                if (self.timeTrimFailRF >= OlympusConstants.OUTDOOR_THRESHOLD) {
+                    self.timeEmptyRF = self.timeTrimFailRF
+                    self.timeTrimFailRF = 0
+                    return true
+                }
+            } else {
+                if (self.timeEmptyRF >= OlympusConstants.OUTDOOR_THRESHOLD*6*3) {
+                    // 3 min
+                    return true
+                }
+            }
+        }
+        return false
+    }
+    
+    public func checkEnterSleepMode() -> Bool {
+        self.timeSleepRF += OlympusConstants.RFD_INTERVAL
+        if (self.timeSleepRF >= OlympusConstants.SLEEP_THRESHOLD) {
+//            self.isActiveService = false
+            self.timeSleepRF = 0
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    public func getLastScannedEntranceOuterWardTime(bleAvg: [String: Double], entranceOuterWards: [String]) {
+        var scannedTime: Double = 0
+
+        for (key, value) in bleAvg {
+            if entranceOuterWards.contains(key) {
+                if (value >= OlympusConstants.OUTERWARD_SCAN_THRESHOLD) {
+                    scannedTime = getCurrentTimeInMillisecondsDouble()
+                    self.lastScannedEntranceOuterWardTime = scannedTime
+                }
+            }
+        }
+    }
+    
+    public func checkEnterInNetworkBadEntrance(bleAvg: [String: Double]) -> (Bool, FineLocationTrackingFromServer) {
+        var isEnterInNetworkBadEntrance: Bool = false
+        let emptyEntrance = FineLocationTrackingFromServer()
+        
+        if (!self.isGetFirstResponse) {
+            let findResult = self.findNetworkBadEntrance(bleAvg: bleAvg)
+            if (!self.isIndoor && (self.timeForInit >= OlympusConstants.TIME_INIT_THRESHOLD) && findResult.0) {
+                self.isGetFirstResponse = true
+                self.isIndoor = true
+                self.OLYMPUS_STATE = INDOOR_FLAG
+                notifyObservers(state: self.OLYMPUS_STATE)
+//                self.reporting(input: INDOOR_FLAG)
+                isEnterInNetworkBadEntrance = true
+                return (isEnterInNetworkBadEntrance, findResult.1)
+            } else {
+                return (isEnterInNetworkBadEntrance, emptyEntrance)
+            }
+        } else {
+            return (isEnterInNetworkBadEntrance, emptyEntrance)
+        }
+    }
+    
+    private func findNetworkBadEntrance(bleAvg: [String: Double]) -> (Bool, FineLocationTrackingFromServer) {
+        var isInNetworkBadEntrance: Bool = false
+        var entrance = FineLocationTrackingFromServer()
+        
+        let networkBadEntranceWards = ["TJ-00CB-00000386-0000"]
+        for (key, value) in bleAvg {
+            if networkBadEntranceWards.contains(key) {
+                let rssi = value
+                if (rssi >= -82.0) {
+                    isInNetworkBadEntrance = true
+                    
+                    entrance.building_name = "COEX"
+                    entrance.level_name = "B0"
+                    entrance.x = 270
+                    entrance.y = 10
+                    entrance.absolute_heading = 270
+                    
+                    return (isInNetworkBadEntrance, entrance)
+                }
+            }
+        }
+        
+        return (isInNetworkBadEntrance, entrance)
+    }
+    
+    public func updateTimeForInit() {
+        if (!self.isIndoor) {
+            self.timeForInit += OlympusConstants.RFD_INTERVAL
+        }
+    }
+    
+    func notificationCenterAddObserver() {
+        self.venusObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .didBecomeVenus, object: nil)
+        self.jupiterObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .didBecomeJupiter, object: nil)
+        self.rfdErrorObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .errorSendRfd, object: nil)
+        self.uvdErrorObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .errorSendUvd, object: nil)
+    }
+    
+    func notificationCenterRemoveObserver() {
+        NotificationCenter.default.removeObserver(self.venusObserver)
+        NotificationCenter.default.removeObserver(self.jupiterObserver)
+        NotificationCenter.default.removeObserver(self.rfdErrorObserver)
+        NotificationCenter.default.removeObserver(self.uvdErrorObserver)
+    }
+    
+    @objc func onDidReceiveNotification(_ notification: Notification) {
+        if notification.name == .didBecomeVenus {
+            self.OLYMPUS_STATE = VENUS_FLAG
+            self.notifyObservers(state: self.OLYMPUS_STATE)
+        }
+    
+        if notification.name == .didBecomeJupiter {
+            self.OLYMPUS_STATE = JUPITER_FLAG
+            self.notifyObservers(state: self.OLYMPUS_STATE)
+        }
+        
+        if notification.name == .errorSendRfd {
+            self.OLYMPUS_STATE = RFD_FLAG
+            self.notifyObservers(state: self.OLYMPUS_STATE)
+            print("Send RFD Error")
+        }
+        
+        if notification.name == .errorSendUvd {
+            self.OLYMPUS_STATE = UVD_FLAG
+            self.notifyObservers(state: self.OLYMPUS_STATE)
+        }
+    }
+}

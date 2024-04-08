@@ -32,16 +32,11 @@ public class OlympusDRDistanceEstimator: NSObject {
     
     public var velocityScaleFactor: Double = 1.0
     public var entranceVelocityScaleFactor: Double = 1.0
-    public var scVelocityScaleFactor: Double = 1.0
     
     public var distance: Double = 0
     
-    var pastTime: Int = 0
-    
     var preRoll: Double = 0
     var prePitch: Double = 0
-    
-    let RF_SC_THRESHOLD_DR: Double = 0.67
     
     public var rflow: Double = 0
     public var rflowForVelocity: Double = 0
@@ -50,7 +45,7 @@ public class OlympusDRDistanceEstimator: NSObject {
     public var isSufficientRfdVelocityBuffer: Bool = false
     public var isSufficientRfdAutoModeBuffer: Bool = false
     
-    public var isStartSimulate: Bool = false
+    public var isStartRouteTrack: Bool = false
     
     public func argmax(array: [Float]) -> Int {
         let output1 = array[0]
@@ -152,7 +147,7 @@ public class OlympusDRDistanceEstimator: NSObject {
         // --------------- //
         
         let velocityRaw = log10(magVarFeature+1)/log10(1.1)
-        var velocity = velocityRaw
+        let velocity = velocityRaw
         updateVelocityQueue(data: velocity)
 
         var velocitySmoothing: Double = 0
@@ -177,7 +172,7 @@ public class OlympusDRDistanceEstimator: NSObject {
         }
         
         let rflowScale: Double = calRflowVelocityScale(rflowForVelocity: self.rflowForVelocity, isSufficientForVelocity: self.isSufficientRfdVelocityBuffer)
-        var velocityInputScale = velocityInput*self.velocityScaleFactor*self.entranceVelocityScaleFactor*self.scVelocityScaleFactor
+        var velocityInputScale = velocityInput*self.velocityScaleFactor*self.entranceVelocityScaleFactor
         if velocityInputScale < OlympusConstants.VELOCITY_MIN {
             velocityInputScale = 0
             if (self.isSufficientRfdBuffer && self.rflow < 0.5) {
@@ -187,11 +182,11 @@ public class OlympusDRDistanceEstimator: NSObject {
             velocityInputScale = OlympusConstants.VELOCITY_MAX
         }
         // RFlow Stop Detection
-        if (self.isSufficientRfdBuffer && self.rflow >= RF_SC_THRESHOLD_DR) {
+        if (self.isSufficientRfdBuffer && self.rflow >= OlympusConstants.RF_SC_THRESHOLD_DR) {
             velocityInputScale = 0
         }
         
-        if (velocityInputScale == 0 && self.isStartSimulate) {
+        if (velocityInputScale == 0 && self.isStartRouteTrack) {
             velocityInputScale = OlympusConstants.VELOCITY_MIN
         }
         
@@ -294,7 +289,7 @@ public class OlympusDRDistanceEstimator: NSObject {
         return scale
     }
     
-    public func setIsStartSimulate(isStartSimulate: Bool) {
-        self.isStartSimulate = isStartSimulate
+    public func setIsStartRouteTrack(isStartRouteTrack: Bool) {
+        self.isStartRouteTrack = isStartRouteTrack
     }
 }

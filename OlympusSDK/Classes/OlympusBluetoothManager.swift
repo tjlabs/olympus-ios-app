@@ -11,11 +11,6 @@ enum BLEScanOption: Int {
     case Background
 }
 
-enum TrimBleDataError: Error {
-    case invalidInput
-    case noValidData
-}
-
 let UUIDService = CBUUID(string: NRF_UUID_SERVICE)
 let UUIDRead    = CBUUID(string: NRF_UUID_CHAR_READ)
 let UUIDWrite   = CBUUID(string: NRF_UUID_CHAR_WRITE)
@@ -60,7 +55,6 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
     var bleDiscoveredTime: Double = 0
     
     public var bleLastScannedTime: Double = 0
-    public var BLE_VALID_TIME: Double = 1000
     
     override init() {
         super.init()
@@ -118,7 +112,7 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
                 userInfo["RSSI"] = String(format: "%d", RSSI.intValue )
                 
                 let bleTime = getCurrentTimeInMilliseconds()
-                let validTime = (self.BLE_VALID_TIME*2)
+                let validTime = (OlympusConstants.BLE_VALID_TIME*2)
                 self.bleDiscoveredTime = bleTime
                 
                 if RSSI.intValue != 127 {
@@ -142,7 +136,7 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
                     } else {
                         bleScanned.updateValue([[rssiValue, bleTime]], forKey: bleName)
                     }
-                    let trimmedResult = trimBleData(bleInput: bleScanned, nowTime: bleTime, validTime: validTime)
+                    let trimmedResult = OlympusRFDFunctions.shared.trimBleData(bleInput: bleScanned, nowTime: bleTime, validTime: validTime)
                     switch trimmedResult {
                     case .success(let trimmedData):
                         self.bleDictionary = trimmedData
@@ -229,32 +223,6 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 //        }
 //    }
     
-    func trimBleData(bleInput: Dictionary<String, [[Double]]>?, nowTime: Double, validTime: Double) -> Result<Dictionary<String, [[Double]]>, Error> {
-        guard let bleInput = bleInput else {
-            return .failure(TrimBleDataError.invalidInput)
-        }
-            
-        var trimmedData = [String: [[Double]]]()
-            
-        for (bleID, bleData) in bleInput {
-            let newValue = bleData.filter { data in
-                let rssi = data[0]
-                let time = data[1]
-                    
-                return (nowTime - time <= validTime) && (rssi >= -100)
-            }
-                
-            if !newValue.isEmpty {
-                    trimmedData[bleID] = newValue
-            }
-        }
-            
-        if trimmedData.isEmpty {
-            return .failure(TrimBleDataError.noValidData)
-        } else {
-            return .success(trimmedData)
-        }
-    }
     
     func isConnected() -> Bool {
         return connected
@@ -290,9 +258,7 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
     
     func stopScan() {
         self.centralManager.stopScan()
-        
         self.isScanning = false
-        
         self.bleDictionary = [String: [[Double]]]()
         self.bleDiscoveredTime = 0
         

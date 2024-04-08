@@ -52,7 +52,7 @@ public class OlympusSensorManager {
         } else {
             let localTime: String = getLocalTimeString()
             unavailableSensors.append("Acc")
-            let log: String = localTime + " , (Jupiter) Error : Fail to initialize accelerometer"
+            let log: String = localTime + " , (Olympus) Error : Fail to initialize accelerometer"
             print(log)
         }
         
@@ -87,7 +87,6 @@ public class OlympusSensorManager {
                     if (!self.isVenusMode && self.runMode == OlympusConstants.MODE_DR) {
                         self.isVenusMode = true
                         NotificationCenter.default.post(name: .didBecomeVenus, object: nil, userInfo: nil)
-                        
                     }
                 } else {
                     if (self.isVenusMode) {
@@ -99,7 +98,7 @@ public class OlympusSensorManager {
         } else {
             let localTime: String = getLocalTimeString()
             unavailableSensors.append("Mag")
-            let log: String = localTime + " , (Jupiter) Error : Fail to initialize magnetometer\n"
+            let log: String = localTime + " , (Olympus) Error : Fail to initialize magnetometer\n"
             print(log)
         }
         
@@ -107,16 +106,18 @@ public class OlympusSensorManager {
 //            sensorActive += 1
             motionAltimeter.startRelativeAltitudeUpdates(to: .main) { [self] (data, error) in
                 if let pressure = data?.pressure {
-                    let pressure_: Double = round(Double(pressure)*10*100)/100
+                    let pressure_: Double = round(Double(truncating: pressure)*10*100)/100
                     self.pressure = pressure_
                     sensorData.pressure[0] = pressure_
                     collectData.pressure[0] = pressure_
+                } else {
+                    print(error)
                 }
             }
         } else {
             let localTime: String = getLocalTimeString()
             unavailableSensors.append("Pressure")
-            let log: String = localTime + " , (Jupiter) Error : Fail to initialize pressure sensor"
+            let log: String = localTime + " , (Olympus) Error : Fail to initialize pressure sensor"
             print(log)
         }
         
@@ -183,18 +184,18 @@ public class OlympusSensorManager {
         } else {
             let localTime: String = getLocalTimeString()
             unavailableSensors.append("Motion")
-            let log: String = localTime + " , (Jupiter) Error : Fail to initialize motion sensor"
+            let log: String = localTime + " , (Olympus) Error : Fail to initialize motion sensor"
             print(log)
         }
         
         let localTime: String = getLocalTimeString()
         if (sensorActive >= 3) {
-            let log: String = localTime + " , (Jupiter) Success : Sensor Initialization"
+            let log: String = localTime + " , (Olympus) Success : Sensor Initialization"
             
             isSuccess = true
             message = log
         } else {
-            let log: String = localTime + " , (Jupiter) Error : Sensor is not available \(unavailableSensors)"
+            let log: String = localTime + " , (Olympus) Error : Sensor is not available \(unavailableSensors)"
             
             isSuccess = false
             message = log

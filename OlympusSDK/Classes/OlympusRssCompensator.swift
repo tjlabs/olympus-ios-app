@@ -1,6 +1,9 @@
 
 
 public class OlympusRssCompensator {
+    var isScaleLoaded: Bool = false
+    var isScaleConverged: Bool = false
+    
     var entranceWardRssi = [String: Double]()
     var allEntranceWardRssi = [String: Double]()
     
@@ -11,9 +14,13 @@ public class OlympusRssCompensator {
     var updateMaxArrayCount: Int = 0
     let ARRAY_SIZE: Int = 3
     
+    var timeAfterResponse: Double = 500
+    var normalizationScale: Double = 1.0
+    var preNormalizationScale: Double = 1.0
     var preSmoothedNormalizationScale: Double = 1.0
     var scaleQueue = [Double]()
     
+    var timeStackEst: Double = 0
     public func loadRssiCompensationParam(sector_id: Int, device_model: String, os_version: Int, completion: @escaping (Bool, Double, String) -> Void) {
         var loadedNormalizationScale: Double = 1.0
         
@@ -85,9 +92,51 @@ public class OlympusRssCompensator {
                     let msg: String = getLocalTimeString() + " , (Olympus) Error : Load RssCompensation (Device & OS) from server \(statusCode)"
                     
                     // Edit Here !!
-                    completion(true, loadedNormalizationScale, msg)
+                    completion(false, loadedNormalizationScale, msg)
                 }
             })
+        }
+    }
+    
+    public func estimateNormalizationScale(isGetFirstResponse: Bool, isIndoor: Bool, currentLevel: String, diffMinMaxRssi: Double, minRssi: Double) {
+        self.timeStackEst += OlympusConstants.RFD_INTERVAL
+        if (isGetFirstResponse && isIndoor && diffMinMaxRssi >= 25 && minRssi <= -97 && self.timeStackEst >= OlympusConstants.EST_RC_INTERVAL) {
+            self.timeStackEst = 0
+            if (self.isScaleLoaded) {
+                if (currentLevel != "B0") {
+                    let normalizationScale = calNormalizationScale(standardMin: OlympusConstants.STANDARD_MIN_RSS, standardMax: OlympusConstants.STANDARD_MAX_RSS)
+                    if (!self.isScaleConverged) {
+                        if (normalizationScale.0) {
+                            let smoothedScale: Double = smoothNormalizationScale(scale: normalizationScale.1)
+                            self.normalizationScale = smoothedScale
+                            let diffScale = abs(smoothedScale - self.preNormalizationScale)
+                            if (diffScale < 1e-3 && self.timeAfterResponse >= OlympusConstants.REQUIRED_RC_CONVERGENCE_TIME && (smoothedScale != self.preNormalizationScale)) {
+                                self.isScaleConverged = true
+                            }
+                            self.preNormalizationScale = smoothedScale
+                        } else {
+                            let smoothedScale: Double = smoothNormalizationScale(scale: self.preNormalizationScale)
+                            self.normalizationScale = smoothedScale
+                        }
+                    }
+                }
+            } else {
+                if (!self.isScaleConverged) {
+                    let normalizationScale = calNormalizationScale(standardMin: OlympusConstants.STANDARD_MIN_RSS, standardMax: OlympusConstants.STANDARD_MAX_RSS)
+                    if (normalizationScale.0) {
+                        let smoothedScale: Double = smoothNormalizationScale(scale: normalizationScale.1)
+                        self.normalizationScale = smoothedScale
+                        let diffScale = abs(smoothedScale - self.preNormalizationScale)
+                        if (diffScale < 1e-3 && self.timeAfterResponse >= OlympusConstants.REQUIRED_RC_CONVERGENCE_TIME && (smoothedScale != self.preNormalizationScale)) {
+                            self.isScaleConverged = true
+                        }
+                        self.preNormalizationScale = smoothedScale
+                    } else {
+                        let smoothedScale: Double = smoothNormalizationScale(scale: self.preNormalizationScale)
+                        self.normalizationScale = smoothedScale
+                    }
+                }
+            }
         }
     }
     

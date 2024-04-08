@@ -4,7 +4,7 @@ let SERVER_VERSION = "2024-03-19"
 
 let HTTP_PREFIX = "https://"
 var REGION_PREFIX = "ap-northeast-2."
-let OLMPUS_SUFFIX = ".olympus.tjlabs.dev"
+let OLYMPUS_SUFFIX = ".olympus.tjlabs.dev"
 
 var USER_URL = "user"
 var IMAGE_URL = "img"
@@ -27,9 +27,9 @@ public func setServerURL(region: String) {
         REGION_PREFIX = "ap-northeast-2."
     }
     
-    USER_URL = HTTP_PREFIX + REGION_PREFIX + "user" + OLMPUS_SUFFIX
-    IMAGE_URL = HTTP_PREFIX + REGION_PREFIX + "img" + OLMPUS_SUFFIX
-    CSV_URL = HTTP_PREFIX + REGION_PREFIX + "csv" + OLMPUS_SUFFIX
+    USER_URL = HTTP_PREFIX + REGION_PREFIX + "user" + OLYMPUS_SUFFIX
+    IMAGE_URL = HTTP_PREFIX + REGION_PREFIX + "img" + OLYMPUS_SUFFIX
+    CSV_URL = HTTP_PREFIX + REGION_PREFIX + "csv" + OLYMPUS_SUFFIX
     
     USER_LOGIN_URL = USER_URL + "/" + SERVER_VERSION + "/user"
     USER_CARD_URL = USER_URL + "/" + SERVER_VERSION + "/card"

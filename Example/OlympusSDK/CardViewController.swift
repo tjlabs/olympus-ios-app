@@ -11,7 +11,10 @@ class CardViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        serviceManager.startService(user_id: self.userId, region: self.region, sector_id: 6, service: "FLT", mode: "dr", completion: { isStart, returnedString in
+        var sector_id = 2
+        var mode = "pdr"
+        
+        serviceManager.startService(user_id: self.userId, region: self.region, sector_id: sector_id, service: "FLT", mode: mode, completion: { isStart, returnedString in
             if (isStart) {
 //                print(returnedString)
             } else {
