@@ -18,6 +18,7 @@ public class OlympusRouteTracker {
         }
     }
     
+    public var indexAfterRouteTrack: Int = 0
     public var entranceVelocityScale: Double = 1.0
     public var currentEntrance: String = ""
     public var currentEntranceLength: Int = 0
@@ -200,6 +201,16 @@ public class OlympusRouteTracker {
                 }
             }
         }
+    }
+    
+    public func getEntranceVelocityScale(isGetFirstResponse: Bool) -> Double {
+        var scale: Double = 1.0
+        if (self.isStartRouteTrack) {
+            self.indexAfterRouteTrack += 1
+            scale = self.entranceVelocityScale
+        }
+        
+        return scale
     }
     
     private func findEntrance(result: FineLocationTrackingFromServer, entrance: Int) -> (Int, Int) {

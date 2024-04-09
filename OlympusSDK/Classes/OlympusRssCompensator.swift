@@ -14,13 +14,15 @@ public class OlympusRssCompensator {
     var updateMaxArrayCount: Int = 0
     let ARRAY_SIZE: Int = 3
     
-    var timeAfterResponse: Double = 500
+    var timeAfterResponse: Double = 0
     var normalizationScale: Double = 1.0
     var preNormalizationScale: Double = 1.0
     var preSmoothedNormalizationScale: Double = 1.0
     var scaleQueue = [Double]()
     
     var timeStackEst: Double = 0
+    
+    
     public func loadRssiCompensationParam(sector_id: Int, device_model: String, os_version: Int, completion: @escaping (Bool, Double, String) -> Void) {
         var loadedNormalizationScale: Double = 1.0
         
@@ -95,6 +97,12 @@ public class OlympusRssCompensator {
                     completion(false, loadedNormalizationScale, msg)
                 }
             })
+        }
+    }
+    
+    public func stackTimeAfterResponse(isGetFirstResponse: Bool, isIndoor: Bool) {
+        if (self.timeAfterResponse < OlympusConstants.REQUIRED_RC_CONVERGENCE_TIME) {
+            self.timeAfterResponse += OlympusConstants.RFD_INTERVAL
         }
     }
     

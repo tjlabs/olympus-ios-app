@@ -202,7 +202,7 @@ struct ReceivedForce: Encodable {
     let pressure: Double
 }
 
-struct UserVelocity: Encodable {
+public struct UserVelocity: Encodable {
     let user_id: String
     let mobile_time: Int
     let index: Int
@@ -485,4 +485,23 @@ public struct Spot: Codable {
         self.spot_y = 0
         self.ccs = 0
     }
+}
+
+// Olympus
+public struct TrajectoryInfo {
+    public var index: Int = 0
+    public var length: Double = 0
+    public var heading: Double = 0
+    public var velocity: Double = 0
+    public var lookingFlag: Bool = false
+    public var isIndexChanged: Bool = false
+    public var numBleChannels: Int = 0
+    public var scc: Double = 0
+    public var userBuilding: String = ""
+    public var userLevel: String = ""
+    public var userX: Double = 0
+    public var userY: Double = 0
+    public var userHeading: Double = 0
+    public var userPmSuccess: Bool = false
+    public var userTuHeading: Double = 0
 }

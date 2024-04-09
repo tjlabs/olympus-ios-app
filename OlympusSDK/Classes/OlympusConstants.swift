@@ -40,6 +40,7 @@ class OlympusConstants {
     static let EST_RC_INTERVAL: Double = 5.0
     static let REQUIRED_RC_CONVERGENCE_TIME: Double = 180 // 3min
     static let OUTDOOR_THRESHOLD: Double = 10 // seconds
+    static let DEVICE_MIN_UPDATE_THRESHOLD: Double = -97.0
     
     // UVD //
     static var UVD_INTERVAL: TimeInterval = 1/40 // second
@@ -49,9 +50,15 @@ class OlympusConstants {
     static var UVD_INPUT_NUM: Int = 3
     static var VALUE_INPUT_NUM: Int = 5
     static var INIT_INPUT_NUM: Int = 3
+    static var INDEX_THRESHOLD: Int = 11
+    static let UVD_BUFFER_SIZE: Int = 10
     
     // SLEEP
     static let SLEEP_THRESHOLD: Double = 600
+    static let STOP_THRESHOLD: Double = 2
+    
+    // Request
+    static let MINIMUM_RQ_INTERVAL: Double = 2
     
     // DR & PDR //
     static let LOOKING_FLAG_STEP_CHECK_SIZE: Int = 3
@@ -62,7 +69,7 @@ class OlympusConstants {
     static let STEP_LENGTH_QUEUE_SIZE: Int = 5
     static let NORMAL_STEP_LOSS_CHECK_SIZE: Int = 3
     static let MODE_AUTO_NORMAL_STEP_COUNT_SET = 19
-    static  let AUTO_MODE_NORMAL_STEP_LOSS_CHECK_SIZE: Int = MODE_AUTO_NORMAL_STEP_COUNT_SET + 1
+    static let AUTO_MODE_NORMAL_STEP_LOSS_CHECK_SIZE: Int = MODE_AUTO_NORMAL_STEP_COUNT_SET + 1
     
     static let ALPHA: Double = 0.45
     static let DIFFERENCE_PV_STANDARD: Double = 0.83
@@ -113,6 +120,8 @@ class OlympusConstants {
     // Path-Matching
     static let HEADING_RANGE: Double = 46
     static var SQUARE_RANGE: Double = 10
+    static var SQUARE_RANGE_SMALL: Double = 10
+    static var SQUARE_RANGE_LARGE: Double = 20
     
     
     public func setSectorInfoConstants(sector_info: SectorInfo) {
@@ -130,4 +139,39 @@ class OlympusConstants {
         OlympusConstants.PRE_NORMALIZATION_SCALE = pre
     }
     
+    
+    public func setModeParam(mode: String, phase: Int) {
+        if (mode == OlympusConstants.MODE_PDR) {
+            OlympusConstants.RQ_IDX = OlympusConstants.RQ_IDX_PDR
+            OlympusConstants.USER_TRAJECTORY_LENGTH = OlympusConstants.USER_TRAJECTORY_DIAGONAL
+
+            OlympusConstants.INIT_INPUT_NUM = 3
+            OlympusConstants.VALUE_INPUT_NUM = 6
+            OlympusConstants.SQUARE_RANGE = OlympusConstants.SQUARE_RANGE_SMALL
+            
+            if (phase == 4) {
+                OlympusConstants.UVD_INPUT_NUM = OlympusConstants.VALUE_INPUT_NUM
+                OlympusConstants.INDEX_THRESHOLD = 21
+            } else {
+                OlympusConstants.UVD_INPUT_NUM = OlympusConstants.INIT_INPUT_NUM
+                OlympusConstants.INDEX_THRESHOLD = 11
+            }
+        } else if (mode == OlympusConstants.MODE_DR) {
+            OlympusConstants.RQ_IDX = OlympusConstants.RQ_IDX_DR
+            OlympusConstants.USER_TRAJECTORY_LENGTH = OlympusConstants.USER_TRAJECTORY_ORIGINAL
+
+            OlympusConstants.INIT_INPUT_NUM = 5
+            OlympusConstants.VALUE_INPUT_NUM = OlympusConstants.UVD_BUFFER_SIZE
+            OlympusConstants.SQUARE_RANGE = OlympusConstants.SQUARE_RANGE_LARGE
+            
+            if (phase == 4) {
+                OlympusConstants.UVD_INPUT_NUM = OlympusConstants.VALUE_INPUT_NUM
+                OlympusConstants.INDEX_THRESHOLD = (OlympusConstants.UVD_INPUT_NUM*2)+1
+            } else {
+                OlympusConstants.UVD_INPUT_NUM = OlympusConstants.INIT_INPUT_NUM
+                OlympusConstants.INDEX_THRESHOLD = OlympusConstants.UVD_INPUT_NUM+1
+            }
+        }
+        OlympusConstants.RQ_IDX = OlympusConstants.UVD_INPUT_NUM
+    }
 }

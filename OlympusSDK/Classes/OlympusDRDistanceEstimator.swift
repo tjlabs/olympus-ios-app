@@ -30,8 +30,8 @@ public class OlympusDRDistanceEstimator: NSObject {
     public var preMagVarFeature: Double = 0
     public var preVelocitySmoothing: Double = 0
     
-    public var velocityScaleFactor: Double = 1.0
-    public var entranceVelocityScaleFactor: Double = 1.0
+    public var velocityScale: Double = 1.0
+    public var entranceVelocityScale: Double = 1.0
     
     public var distance: Double = 0
     
@@ -172,7 +172,7 @@ public class OlympusDRDistanceEstimator: NSObject {
         }
         
         let rflowScale: Double = calRflowVelocityScale(rflowForVelocity: self.rflowForVelocity, isSufficientForVelocity: self.isSufficientRfdVelocityBuffer)
-        var velocityInputScale = velocityInput*self.velocityScaleFactor*self.entranceVelocityScaleFactor
+        var velocityInputScale = velocityInput*self.velocityScale*self.entranceVelocityScale
         if velocityInputScale < OlympusConstants.VELOCITY_MIN {
             velocityInputScale = 0
             if (self.isSufficientRfdBuffer && self.rflow < 0.5) {

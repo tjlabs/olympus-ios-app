@@ -84,14 +84,15 @@ public class OlympusRFDFunctions: NSObject {
         return ble
     }
 
-    public func checkBleChannelNum(bleDict: [String: Double]) -> Int {
+    public func checkBleChannelNum(bleAvg: [String: Double]?) -> Int {
         var numChannels: Int = 0
-        
-        for key in bleDict.keys {
-            let bleRssi: Double = bleDict[key] ?? -100.0
-            
-            if (bleRssi > -95.0) {
-                numChannels += 1
+        if let bleAvgData = bleAvg {
+            for key in bleAvgData.keys {
+                let bleRssi: Double = bleAvgData[key] ?? -100.0
+                
+                if (bleRssi > -95.0) {
+                    numChannels += 1
+                }
             }
         }
         

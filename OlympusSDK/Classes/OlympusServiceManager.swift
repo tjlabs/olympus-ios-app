@@ -1,6 +1,3 @@
-import Foundation
-import CoreMotion
-import UIKit
 
 public class OlympusServiceManager: NSObject, RouteTrackingObserver, StateTrackingObserver {
     public static let sdkVersion: String = "0.1.0"
@@ -15,19 +12,21 @@ public class OlympusServiceManager: NSObject, RouteTrackingObserver, StateTracki
     var stateManager = OlympusStateManager()
     var rflowCorrelator = OlympusRflowCorrelator()
     var unitDRGenerator = OlympusUnitDRGenerator()
+    var levelChanger = OlympusLevelChanger()
+    var trajController = OlympusTrajectoryController()
     
-    var unitDRInfo = UnitDRInfo()
-    
-    // ----- Sector Param ----- //
+    // ----- Data ----- //
     var inputReceivedForce: [ReceivedForce] = [ReceivedForce(user_id: "", mobile_time: 0, ble: [:], pressure: 0)]
     var inputUserVelocity: [UserVelocity] = [UserVelocity(user_id: "", mobile_time: 0, index: 0, length: 0, heading: 0, looking: true)]
+    var unitDRInfo = UnitDRInfo()
     var isSaveMobileResult: Bool = false
     
     // ----- Sector Param ----- //
     var user_id: String = ""
+    var sector_id: Int = 0
+    var sector_id_origin: Int = 0
     var service: String = ""
     var mode: String = ""
-
     
     // ----- Timer ----- //
     var backgroundUpTimer: DispatchSourceTimer?
@@ -43,14 +42,17 @@ public class OlympusServiceManager: NSObject, RouteTrackingObserver, StateTracki
     var bleTrimed = [String: [[Double]]]()
     var bleAvg = [String: Double]()
     
+    // UVD
+    var pastUvdTime: Int = 0
+    var unitDRInfoIndex: Int = 0
+    var isPostUvdAnswered: Bool = false
     
     // ----- State Observer ----- //
     var runMode: String = "dr"
     var currentMode: String = "dr"
     var currentLevel: String = ""
-    
-    // ----- State Observer ----- //
-    var isVenusMode: Bool = false
+    var phase: Int = 0
+    var timeRequest: Double = 0
     
     public override init() {
         self.deviceModel = UIDevice.modelName
@@ -121,7 +123,6 @@ public class OlympusServiceManager: NSObject, RouteTrackingObserver, StateTracki
                                                 completion(false, returnedString)
                                             }
                                         })
-//                                        completion(true, returnedString)
                                     } else {
                                         let msg: String = getLocalTimeString() + " , (Olympus) Error : Decode SectorInfo"
                                         completion(false, msg)
@@ -156,20 +157,22 @@ public class OlympusServiceManager: NSObject, RouteTrackingObserver, StateTracki
             if (service.contains(OlympusConstants.SERVICE_FLT)) {
                 unitDRInfo = UnitDRInfo()
                 unitDRGenerator.setMode(mode: mode)
-
-                if (mode == "auto") {
-                    self.runMode = "dr"
-                    self.currentMode = "dr"
-                } else if (mode == "pdr") {
-                    self.runMode = "pdr"
-                } else if (mode == "dr") {
-                    self.runMode = "dr"
+                if (mode == OlympusConstants.MODE_AUTO) {
+                    // Auto Mode (Default : DR)
+                    self.runMode = OlympusConstants.MODE_DR
+                    self.currentMode = OlympusConstants.MODE_DR
+                } else if (mode == OlympusConstants.MODE_PDR) {
+                    // PDR Mode
+                    self.runMode =  OlympusConstants.MODE_PDR
+                } else if (mode == OlympusConstants.MODE_DR) {
+                    // DR Mode
+                    self.runMode = OlympusConstants.MODE_DR
                 } else {
                     isSuccess = false
                     msg = localTime + " , (Olympus) Error : Invalid Service Mode"
                     return (isSuccess, msg)
                 }
-//                setModeParam(mode: self.runMode, phase: self.phase)
+                OlympusConstants().setModeParam(mode: self.runMode, phase: self.phase)
             }
             
             // Init Sensors
@@ -177,7 +180,6 @@ public class OlympusServiceManager: NSObject, RouteTrackingObserver, StateTracki
             if (!initSensors.0) {
                 isSuccess = initSensors.0
                 msg = initSensors.1
-                
                 return (isSuccess, msg)
             }
             
@@ -186,7 +188,6 @@ public class OlympusServiceManager: NSObject, RouteTrackingObserver, StateTracki
             if (!initBle.0) {
                 isSuccess = initBle.0
                 msg = initBle.1
-                
                 return (isSuccess, msg)
             }
         }
@@ -196,6 +197,8 @@ public class OlympusServiceManager: NSObject, RouteTrackingObserver, StateTracki
     }
     
     private func setSectorInfo(sector_id: Int, sector_info_from_server: SectorInfoFromServer) {
+        self.sector_id = sector_id
+        self.sector_id_origin = sector_id
         let sector_param: SectorInfoParam = sector_info_from_server.parameter
         self.isSaveMobileResult = sector_param.debug
         let stadard_rss: [Int] = sector_param.standard_rss
@@ -333,12 +336,12 @@ public class OlympusServiceManager: NSObject, RouteTrackingObserver, StateTracki
             let maxRssi = rssCompensator.getMaxRssi()
             let minRssi = rssCompensator.getMinRssi()
             let diffMinMaxRssi = abs(maxRssi - minRssi)
-            if (minRssi <= -97) {
+            if (minRssi <= OlympusConstants.DEVICE_MIN_UPDATE_THRESHOLD) {
                 let deviceMin: Double = rssCompensator.getDeviceMinRss()
                 OlympusConstants.DEVICE_MIN_RSSI = deviceMin
             }
+            rssCompensator.stackTimeAfterResponse(isGetFirstResponse: stateManager.isGetFirstResponse, isIndoor: stateManager.isIndoor)
             rssCompensator.estimateNormalizationScale(isGetFirstResponse: stateManager.isGetFirstResponse, isIndoor: stateManager.isIndoor, currentLevel: self.currentLevel, diffMinMaxRssi: diffMinMaxRssi, minRssi: minRssi)
-            
         } else {
             let msg: String = localTime + " , (Olympus) Warnings : Fail to get recent BLE"
             print(msg)
@@ -379,8 +382,90 @@ public class OlympusServiceManager: NSObject, RouteTrackingObserver, StateTracki
     }
     
     @objc func userVelocityTimerUpdate() {
-//        print(sensorManager.sensorData.pressure)
-//        print("BLE is ready : \(bleManager.bluetoothReady)")
+        let currentTime = getCurrentTimeInMilliseconds()
+        let localTime = getLocalTimeString()
+        
+        self.controlMode()
+        OlympusConstants().setModeParam(mode: self.runMode, phase: self.phase)
+        if (service.contains(OlympusConstants.SERVICE_FLT)) {
+            unitDRInfo = unitDRGenerator.generateDRInfo(sensorData: sensorManager.sensorData)
+        }
+        
+        var backgroundScale: Double = 1.0
+        if (stateManager.isBackground) {
+            let diffTime = currentTime - self.pastUvdTime
+            backgroundScale = Double(diffTime)/(1000/OlympusConstants.SAMPLE_HZ)
+        }
+        self.pastUvdTime = currentTime
+        
+        if (unitDRInfo.isIndexChanged && !stateManager.isVenusMode) {
+            var curUnitDRLength: Double = 0
+            if (stateManager.isBackground) {
+                curUnitDRLength = unitDRInfo.length*backgroundScale
+            } else {
+                curUnitDRLength = unitDRInfo.length
+            }
+            curUnitDRLength = round(curUnitDRLength*10000)/10000
+            self.unitDRInfoIndex = unitDRInfo.index
+            
+            let data = UserVelocity(user_id: self.user_id, mobile_time: currentTime, index: unitDRInfo.index, length: curUnitDRLength, heading: round(unitDRInfo.heading*100)/100, looking: unitDRInfo.lookingFlag)
+            inputUserVelocity.append(data)
+            
+            trajController.checkPhase2To4(unitLength: curUnitDRLength)
+//            levelChanger.accumulateOsrDistance(unitLength: curUnitDRLength, isGetFirstResponse: stateManager.isGetFirstResponse, mode: self.runMode, result: <#T##FineLocationTrackingResult#>)
+            
+            // Check Entrance Level
+//            let isEntrance = self.checkInEntranceLevel(result: self.jupiterResult, isGetFirstResponse: self.isGetFirstResponse, isStartSimulate: self.isStartSimulate)
+//            unitDRGenerator.setIsEntranceLevel(flag: isEntrance)
+            
+            let entrancaeVelocityScale: Double = OlympusRouteTracker.shared.getEntranceVelocityScale(isGetFirstResponse: stateManager.isGetFirstResponse)
+            unitDRGenerator.setEntranceVelocityScale(scale: entrancaeVelocityScale)
+            let numBleChannels = OlympusRFDFunctions.shared.checkBleChannelNum(bleAvg: self.bleAvg)
+            
+            if ((inputUserVelocity.count-1) >= OlympusConstants.UVD_INPUT_NUM) {
+                inputUserVelocity.remove(at: 0)
+                OlympusNetworkManager.shared.postUserVelocity(url: REC_UVD_URL, input: inputUserVelocity, completion: { [self] statusCode, returnedString, inputUvd in
+                    if (statusCode == 200) {
+                        self.isPostUvdAnswered = true
+                    } else {
+                        let localTime = getLocalTimeString()
+                        let msg: String = localTime + " , (Olympus) Error : UVD \(statusCode) // " + returnedString
+                        if (stateManager.isIndoor && stateManager.isGetFirstResponse && !stateManager.isBackground) {
+                            NotificationCenter.default.post(name: .errorSendUvd, object: nil, userInfo: nil)
+                        }
+                        trajController.stackPostUvdFailData(inputUvd: inputUvd)
+                    }
+                })
+                inputUserVelocity = [UserVelocity(user_id: user_id, mobile_time: 0, index: 0, length: 0, heading: 0, looking: true)]
+            }
+        } else {
+            self.timeRequest += OlympusConstants.UVD_INTERVAL
+            if (stateManager.isVenusMode && self.timeRequest >= OlympusConstants.MINIMUM_RQ_INTERVAL) {
+                self.timeRequest = 0
+//                let phase3Trajectory = self.userTrajectoryInfo
+//                let accumulatedLength = calculateAccumulatedLength(userTrajectory: phase3Trajectory)
+//                let searchInfo = makeSearchAreaAndDirection(userTrajectory: phase3Trajectory, serverResultBuffer: self.serverResultBuffer, pastUserTrajectory: self.pastUserTrajectoryInfo, pastSearchDirection: self.pastSearchDirection, length: accumulatedLength, diagonal: accumulatedLength, mode: self.runMode, phase: 1, isKf: self.isActiveKf, isPhaseBreak: self.isPhaseBreak)
+//                processPhase3(currentTime: currentTime, localTime: localTime, userTrajectory: phase3Trajectory, searchInfo: searchInfo)
+            } else {
+                if (!stateManager.isGetFirstResponse && self.timeRequest >= OlympusConstants.MINIMUM_RQ_INTERVAL) {
+                    self.timeRequest = 0
+//                    let phase3Trajectory = self.userTrajectoryInfo
+//                    let accumulatedLength = calculateAccumulatedLength(userTrajectory: phase3Trajectory)
+//                    let searchInfo = makeSearchAreaAndDirection(userTrajectory: phase3Trajectory, serverResultBuffer: self.serverResultBuffer, pastUserTrajectory: self.pastUserTrajectoryInfo, pastSearchDirection: self.pastSearchDirection, length: accumulatedLength, diagonal: accumulatedLength, mode: self.runMode, phase: self.phase, isKf: self.isActiveKf, isPhaseBreak: self.isPhaseBreak)
+//                    processPhase3(currentTime: currentTime, localTime: localTime, userTrajectory: phase3Trajectory, searchInfo: searchInfo)
+                }
+            }
+            
+            // UV가 발생하지 않음
+            let isStop = stateManager.checkStopWhenIsIndexNotChanage()
+
+//            self.timeSleepUV += UVD_INTERVAL
+//            if (self.timeSleepUV >= SLEEP_THRESHOLD) {
+//                self.isActiveService = false
+//                self.timeSleepUV = 0
+//                self.enterSleepMode()
+//            }
+        }
     }
     
     @objc func outputTimerUpdate() {
@@ -389,5 +474,25 @@ public class OlympusServiceManager: NSObject, RouteTrackingObserver, StateTracki
     
     @objc func osrTimerUpdate() {
 //        print("BLE is ready : \(bleManager.bluetoothReady)")
+    }
+    
+    private func controlMode() {
+        if (self.mode == "auto") {
+            let autoMode = unitDRInfo.autoMode
+            if (autoMode == 0) {
+                self.runMode = "pdr"
+                self.sector_id = self.sector_id_origin - 1
+            } else {
+                self.runMode = "dr"
+                self.sector_id = self.sector_id_origin
+            }
+            
+            if (self.runMode != self.currentMode) {
+//                self.isNeedTrajInit = true
+                self.phase = 1
+            }
+            self.currentMode = self.runMode
+        }
+        sensorManager.setRunMode(mode: self.runMode)
     }
 }

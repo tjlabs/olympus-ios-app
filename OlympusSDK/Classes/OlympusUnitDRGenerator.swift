@@ -222,12 +222,12 @@ public class OlympusUnitDRGenerator: NSObject {
         pdrQueue.append(data)
     }
     
-    public func setVelocityScaleFactor(scaleFactor: Double) {
-        self.drDistanceEstimator.velocityScaleFactor = scaleFactor
+    public func setVelocityScale(scale: Double) {
+        self.drDistanceEstimator.velocityScale = scale
     }
     
-    public func setEntranceVelocityScaleFactor(scaleFactor: Double) {
-        self.drDistanceEstimator.entranceVelocityScaleFactor = scaleFactor
+    public func setEntranceVelocityScale(scale: Double) {
+        self.drDistanceEstimator.entranceVelocityScale = scale
     }
     
     public func setIsInEntranceLevel (flag: Bool) {

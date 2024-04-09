@@ -110,8 +110,6 @@ public class OlympusSensorManager {
                     self.pressure = pressure_
                     sensorData.pressure[0] = pressure_
                     collectData.pressure[0] = pressure_
-                } else {
-                    print(error)
                 }
             }
         } else {
