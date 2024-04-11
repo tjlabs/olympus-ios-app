@@ -244,7 +244,6 @@ struct RecentResult: Encodable {
     var mobile_time: Int
 }
 
-
 // ---------------- REC DATA ---------------- //
 
 
@@ -341,6 +340,22 @@ public struct CoarseLocationEstimationResult: Codable {
 }
 
 // Fine Location Tracking
+struct FineLocationTracking: Encodable {
+    var user_id: String
+    var mobile_time: Int
+    var sector_id: Int
+    var operating_system: String
+    var building_name: String
+    var level_name_list: [String]
+    var phase: Int
+    var search_range: [Int]
+    var search_direction_list: [Int]
+    var normalization_scale: Double
+    var device_min_rss: Int
+    var sc_compensation_list: [Double]
+    var tail_index: Int
+}
+
 public struct FineLocationTrackingResult: Codable {
     public var mobile_time: Int
     public var building_name: String
@@ -504,4 +519,12 @@ public struct TrajectoryInfo {
     public var userHeading: Double = 0
     public var userPmSuccess: Bool = false
     public var userTuHeading: Double = 0
+}
+
+public struct SearchInfo {
+    public var searchRange: [Int] = []
+    public var searchDirection: [Int] = [0, 90, 180, 270]
+    public var tailIndex: Int = 1
+    public var trajType: Int = 0
+    public var trajLength: Double = 0
 }

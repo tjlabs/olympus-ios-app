@@ -35,6 +35,25 @@ public func jsonToRcInfoFromServer(jsonString: String) -> (Bool, RcInfoFromServe
     }
 }
 
+public func jsonToFineLocatoinTrackingResultFromServer(jsonString: String) -> (Bool, FineLocationTrackingFromServer) {
+    let result = FineLocationTrackingFromServer.init()
+    
+    if let jsonData = jsonString.data(using: .utf8) {
+        do {
+            let decodedData: FineLocationTrackingFromServer = try JSONDecoder().decode(FineLocationTrackingFromServer.self, from: jsonData)
+            
+            return (true, decodedData)
+        } catch {
+            print("Error decoding JSON: \(error)")
+            
+            return (false, result)
+        }
+    } else {
+        return (false, result)
+    }
+    
+}
+
 public func jsonToOnSpotRecognitionResult(jsonString: String) -> (Bool, OnSpotRecognitionResult) {
     let result = OnSpotRecognitionResult.init()
     

@@ -27,6 +27,7 @@ public class OlympusBuildingLevelChanger {
     public var currentSpot: Int = 0
     public var spotCutIndex: Int = 0
     public var buildingLevelChangedTime: Int = 0
+    public var buildingsAndLevels = [String:[String]]()
     
     public var phase2Range: [Int] = []
     public var phase2Direction: [Int] = []
@@ -240,6 +241,36 @@ public class OlympusBuildingLevelChanger {
         return false
     }
     
+    public func makeLevelChangeArray(buildingName: String, levelName: String, buildingLevel: [String:[String]]) -> [String] {
+        let inputLevel = levelName
+        var levelArrayToReturn: [String] = [levelName]
+        
+        if (inputLevel.contains("_D")) {
+            let levelCandidate = inputLevel.replacingOccurrences(of: "_D", with: "")
+            levelArrayToReturn = [inputLevel, levelCandidate]
+        } else {
+            let levelCandidate = inputLevel + "_D"
+            levelArrayToReturn = [inputLevel, levelCandidate]
+        }
+        
+        if (!buildingLevel.isEmpty) {
+            guard let levelList: [String] = buildingLevel[buildingName] else {
+                return levelArrayToReturn
+            }
+            
+            var newArray = [String]()
+            for i in 0..<levelArrayToReturn.count {
+                let levelName: String = levelArrayToReturn[i]
+                if (levelList.contains(levelName)) {
+                    newArray.append(levelName)
+                }
+            }
+            levelArrayToReturn = newArray
+        }
+        
+        return levelArrayToReturn
+    }
+    
     func getLevelDirection(currentLevel: Int, destinationLevel: Int) -> String {
         var levelDirection: String = ""
         let diffLevel: Int = destinationLevel - currentLevel
@@ -272,6 +303,10 @@ public class OlympusBuildingLevelChanger {
             cutIndex = 1
         }
         return cutIndex
+    }
+    
+    public func setBuildingLevelChangedTime(value: Int) {
+        self.buildingLevelChangedTime = value
     }
     
     func notificationCenterAddObserver() {

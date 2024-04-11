@@ -59,6 +59,7 @@ class OlympusConstants {
     static var INIT_INPUT_NUM: Int = 3
     static var INDEX_THRESHOLD: Int = 11
     static let UVD_BUFFER_SIZE: Int = 10
+    static let DR_INFO_BUFFER_SIZE: Int = 30
     
     // SLEEP
     static let SLEEP_THRESHOLD: Double = 600
@@ -126,12 +127,13 @@ class OlympusConstants {
     static var TIME_INIT_THRESHOLD: Double = 25
     static var UNKNOWN_TRAJ_CUT_IDX: Int = 25
     static let OUTERWARD_SCAN_THRESHOLD: Double = -85.0
+    static var REQUIRED_LENGTH_FOR_MAJOR_HEADING: Double = 10
     
     // Path-Matching
     static let HEADING_RANGE: Double = 46
-    static var SQUARE_RANGE: Double = 10
-    static var SQUARE_RANGE_SMALL: Double = 10
-    static var SQUARE_RANGE_LARGE: Double = 20
+    static var COORD_RANGE: Double = 10
+    static var COORD_RANGE_SMALL: Double = 10
+    static var COORD_RANGE_LARGE: Double = 20
     
     
     public func setSectorInfoConstants(sector_info: SectorInfo) {
@@ -157,7 +159,7 @@ class OlympusConstants {
 
             OlympusConstants.INIT_INPUT_NUM = 3
             OlympusConstants.VALUE_INPUT_NUM = 6
-            OlympusConstants.SQUARE_RANGE = OlympusConstants.SQUARE_RANGE_SMALL
+            OlympusConstants.COORD_RANGE = OlympusConstants.COORD_RANGE_SMALL
             
             if (phase == OlympusConstants.PHASE_4) {
                 OlympusConstants.UVD_INPUT_NUM = OlympusConstants.VALUE_INPUT_NUM
@@ -172,7 +174,7 @@ class OlympusConstants {
 
             OlympusConstants.INIT_INPUT_NUM = 5
             OlympusConstants.VALUE_INPUT_NUM = OlympusConstants.UVD_BUFFER_SIZE
-            OlympusConstants.SQUARE_RANGE = OlympusConstants.SQUARE_RANGE_LARGE
+            OlympusConstants.COORD_RANGE = OlympusConstants.COORD_RANGE_LARGE
             
             if (phase == OlympusConstants.PHASE_4) {
                 OlympusConstants.UVD_INPUT_NUM = OlympusConstants.VALUE_INPUT_NUM

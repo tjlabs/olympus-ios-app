@@ -5,6 +5,8 @@ public class OlympusTrajectoryController {
     var distanceAfterPhase2To4: Double = 0
     
     public var userTrajectoryInfo: [TrajectoryInfo] = []
+    public var pastTrajectoryInfo: [TrajectoryInfo] = []
+    public var pastSearchInfo = SearchInfo()
     
     public var isNeedTrajCheck: Bool = false
     public var isUnknownTraj: Bool = false
@@ -12,20 +14,28 @@ public class OlympusTrajectoryController {
     public var validIndex: Int = 0
     public var isNeedRemoveIndexSendFailArray: Bool = false
     
+    
+    // Trajectory Compensation
+    let defaultTrajCompensataionArray: [Double] = [0.8, 1.0, 1.2]
+    var trajCompensation: Double = 1.0
+    var trajCompensationBadCount: Int = 0
+    var isFltRequested: Bool = false
+    var fltRequestTime: Int = 0
+    
     init() {}
     
-    public func calculateTrajectoryLength(userTrajectory: [TrajectoryInfo]) -> Double {
+    public func calculateTrajectoryLength(trajectoryInfo: [TrajectoryInfo]) -> Double {
         var trajLength = 0.0
-        for unitTraj in userTrajectory {
+        for unitTraj in trajectoryInfo {
             trajLength += unitTraj.length
         }
         return trajLength
     }
     
-    func getTrajectoryFromLast(from userTrajectory: [TrajectoryInfo], N: Int) -> [TrajectoryInfo] {
-        let size = userTrajectory.count
+    func getTrajectoryFromLast(from trajectoryInfo: [TrajectoryInfo], N: Int) -> [TrajectoryInfo] {
+        let size = trajectoryInfo.count
         guard size >= N else {
-            return userTrajectory
+            return trajectoryInfo
         }
         
         let startIndex = size - N
@@ -33,16 +43,16 @@ public class OlympusTrajectoryController {
         
         var result: [TrajectoryInfo] = []
         for i in startIndex..<endIndex {
-            result.append(userTrajectory[i])
+            result.append(trajectoryInfo[i])
         }
 
         return result
     }
     
-    func getTrajectoryFromN(from userTrajectory: [TrajectoryInfo], N: Int) -> [TrajectoryInfo] {
-        let size = userTrajectory.count
+    func getTrajectoryFromN(from trajectoryInfo: [TrajectoryInfo], N: Int) -> [TrajectoryInfo] {
+        let size = trajectoryInfo.count
         guard size >= N else {
-            return userTrajectory
+            return trajectoryInfo
         }
         
         let startIndex = N
@@ -50,7 +60,7 @@ public class OlympusTrajectoryController {
         
         var result: [TrajectoryInfo] = []
         for i in startIndex..<endIndex {
-            result.append(userTrajectory[i])
+            result.append(trajectoryInfo[i])
         }
 
         return result
@@ -83,9 +93,9 @@ public class OlympusTrajectoryController {
         }
     }
     
-    private func checkIsTailIndexSendFail(userTrajectory: [TrajectoryInfo], sendFailUvdIndexes: [Int]) -> Bool {
+    private func checkIsTailIndexSendFail(trajectoryInfo: [TrajectoryInfo], sendFailUvdIndexes: [Int]) -> Bool {
         var isTailIndexSendFail: Bool = false
-        let tailIndex = userTrajectory[0].index
+        let tailIndex = trajectoryInfo[0].index
         if sendFailUvdIndexes.contains(tailIndex) {
             isTailIndexSendFail = true
         }
@@ -93,15 +103,15 @@ public class OlympusTrajectoryController {
         return isTailIndexSendFail
     }
     
-    func getValidTrajectory(userTrajectory: [TrajectoryInfo], sendFailUvdIndexes: [Int], mode: String) -> ([TrajectoryInfo], Int) {
+    func getValidTrajectory(trajectoryInfo: [TrajectoryInfo], sendFailUvdIndexes: [Int], mode: String) -> ([TrajectoryInfo], Int) {
         var result = [TrajectoryInfo]()
         var isFindValidIndex: Bool = false
         var validIndex: Int = 0
-        var validUvdIndex: Int = userTrajectory[0].index
+        var validUvdIndex: Int = trajectoryInfo[0].index
         
-        for i in 0..<userTrajectory.count{
-            let uvdIndex = userTrajectory[i].index
-            var uvdLookingFlag = userTrajectory[i].lookingFlag
+        for i in 0..<trajectoryInfo.count{
+            let uvdIndex = trajectoryInfo[i].index
+            var uvdLookingFlag = trajectoryInfo[i].lookingFlag
             if (mode == OlympusConstants.MODE_DR) {
                 uvdLookingFlag = true
             }
@@ -113,8 +123,8 @@ public class OlympusTrajectoryController {
             }
         }
         if (isFindValidIndex) {
-            for i in validIndex..<userTrajectory.count {
-                result.append(userTrajectory[i])
+            for i in validIndex..<trajectoryInfo.count {
+                result.append(trajectoryInfo[i])
             }
         }
         return (result, validUvdIndex)
@@ -158,17 +168,17 @@ public class OlympusTrajectoryController {
     
     public func getTrajectoryInfo(unitDRInfo: UnitDRInfo, unitLength: Double, olympusResult: FineLocationTrackingResult, tuHeading: Double, isPmSuccess: Bool, numBleChannels: Int, mode: String, isDetermineSpot: Bool, spotCutIndex: Int) -> [TrajectoryInfo] {
         if (olympusResult.x != 0 && olympusResult.y != 0) {
-            var userTrajectory = TrajectoryInfo()
-            userTrajectory.index = unitDRInfo.index
-            userTrajectory.length = unitLength
-            userTrajectory.heading = unitDRInfo.heading
-            userTrajectory.velocity = unitDRInfo.velocity
-            userTrajectory.lookingFlag = unitDRInfo.lookingFlag
-            userTrajectory.isIndexChanged = unitDRInfo.isIndexChanged
-            userTrajectory.numBleChannels = numBleChannels
-            userTrajectory.scc = olympusResult.scc
-            userTrajectory.userBuilding = olympusResult.building_name
-            userTrajectory.userLevel = olympusResult.level_name
+            var unitTrajectoryInfo = TrajectoryInfo()
+            unitTrajectoryInfo.index = unitDRInfo.index
+            unitTrajectoryInfo.length = unitLength
+            unitTrajectoryInfo.heading = unitDRInfo.heading
+            unitTrajectoryInfo.velocity = unitDRInfo.velocity
+            unitTrajectoryInfo.lookingFlag = unitDRInfo.lookingFlag
+            unitTrajectoryInfo.isIndexChanged = unitDRInfo.isIndexChanged
+            unitTrajectoryInfo.numBleChannels = numBleChannels
+            unitTrajectoryInfo.scc = olympusResult.scc
+            unitTrajectoryInfo.userBuilding = olympusResult.building_name
+            unitTrajectoryInfo.userLevel = olympusResult.level_name
             
 //            if (self.isActiveKf) {
 //                userTrajectory.userX = self.timeUpdateResult[0]
@@ -180,13 +190,13 @@ public class OlympusTrajectoryController {
 //                userTrajectory.userHeading = resultToReturn.absolute_heading
 //            }
             
-            userTrajectory.userX = olympusResult.x
-            userTrajectory.userY = olympusResult.y
-            userTrajectory.userHeading = olympusResult.absolute_heading
+            unitTrajectoryInfo.userX = olympusResult.x
+            unitTrajectoryInfo.userY = olympusResult.y
+            unitTrajectoryInfo.userHeading = olympusResult.absolute_heading
             
-            userTrajectory.userTuHeading = tuHeading
-            userTrajectory.userPmSuccess = isPmSuccess
-            self.userTrajectoryInfo.append(userTrajectory)
+            unitTrajectoryInfo.userTuHeading = tuHeading
+            unitTrajectoryInfo.userPmSuccess = isPmSuccess
+            self.userTrajectoryInfo.append(unitTrajectoryInfo)
             
             if (mode == OlympusConstants.MODE_PDR) {
                 // PDR
@@ -202,12 +212,12 @@ public class OlympusTrajectoryController {
     
     private func controlPdrTrajectoryInfo(LENGTH_CONDITION: Double) {
         var isNeedAllClear: Bool = false
-        let updatedTrajectoryInfoWithLength = updateTrajectoryInfoWithLength(userTrajectory: self.userTrajectoryInfo, LENGTH_CONDITION: LENGTH_CONDITION)
-        let isTailIndexSendFail = checkIsTailIndexSendFail(userTrajectory: updatedTrajectoryInfoWithLength, sendFailUvdIndexes: self.sendFailUvdIndexes)
+        let updatedTrajectoryInfoWithLength = updateTrajectoryInfoWithLength(trajectoryInfo: self.userTrajectoryInfo, LENGTH_CONDITION: LENGTH_CONDITION)
+        let isTailIndexSendFail = checkIsTailIndexSendFail(trajectoryInfo: updatedTrajectoryInfoWithLength, sendFailUvdIndexes: self.sendFailUvdIndexes)
         if (isTailIndexSendFail) {
-            let validTrajectoryInfoResult = getValidTrajectory(userTrajectory: updatedTrajectoryInfoWithLength, sendFailUvdIndexes: self.sendFailUvdIndexes, mode: OlympusConstants.MODE_PDR)
+            let validTrajectoryInfoResult = getValidTrajectory(trajectoryInfo: updatedTrajectoryInfoWithLength, sendFailUvdIndexes: self.sendFailUvdIndexes, mode: OlympusConstants.MODE_PDR)
             if (!validTrajectoryInfoResult.0.isEmpty) {
-                let trajLength = calculateTrajectoryLength(userTrajectory: validTrajectoryInfoResult.0)
+                let trajLength = calculateTrajectoryLength(trajectoryInfo: validTrajectoryInfoResult.0)
                 if (trajLength > 5) {
                     self.userTrajectoryInfo = validTrajectoryInfoResult.0
                     self.validIndex = validTrajectoryInfoResult.1
@@ -220,9 +230,9 @@ public class OlympusTrajectoryController {
             }
         } else {
             if (!updatedTrajectoryInfoWithLength[0].lookingFlag) {
-                let validTrajectoryInfoResult = getValidTrajectory(userTrajectory: updatedTrajectoryInfoWithLength, sendFailUvdIndexes: self.sendFailUvdIndexes, mode: OlympusConstants.MODE_PDR)
+                let validTrajectoryInfoResult = getValidTrajectory(trajectoryInfo: updatedTrajectoryInfoWithLength, sendFailUvdIndexes: self.sendFailUvdIndexes, mode: OlympusConstants.MODE_PDR)
                 if (!validTrajectoryInfoResult.0.isEmpty) {
-                    let trajLength = calculateTrajectoryLength(userTrajectory: validTrajectoryInfoResult.0)
+                    let trajLength = calculateTrajectoryLength(trajectoryInfo: validTrajectoryInfoResult.0)
                     if (trajLength > 5) {
                         self.userTrajectoryInfo = validTrajectoryInfoResult.0
                         self.validIndex = validTrajectoryInfoResult.1
@@ -263,7 +273,7 @@ public class OlympusTrajectoryController {
             self.userTrajectoryInfo = newTraj
             
         } else {
-            let trajLength = calculateTrajectoryLength(userTrajectory: self.userTrajectoryInfo)
+            let trajLength = calculateTrajectoryLength(trajectoryInfo: self.userTrajectoryInfo)
             if trajLength > LENGTH_CONDITION {
                 self.userTrajectoryInfo.removeFirst()
             }
@@ -271,11 +281,11 @@ public class OlympusTrajectoryController {
         
         var isNeedAllClear: Bool = false
         if (!self.userTrajectoryInfo.isEmpty) {
-            let isTailIndexSendFail = checkIsTailIndexSendFail(userTrajectory: self.userTrajectoryInfo, sendFailUvdIndexes: self.sendFailUvdIndexes)
+            let isTailIndexSendFail = checkIsTailIndexSendFail(trajectoryInfo: self.userTrajectoryInfo, sendFailUvdIndexes: self.sendFailUvdIndexes)
             if (isTailIndexSendFail) {
-                let validTrajectoryInfoResult = getValidTrajectory(userTrajectory: self.userTrajectoryInfo, sendFailUvdIndexes: self.sendFailUvdIndexes, mode: OlympusConstants.MODE_DR)
+                let validTrajectoryInfoResult = getValidTrajectory(trajectoryInfo: self.userTrajectoryInfo, sendFailUvdIndexes: self.sendFailUvdIndexes, mode: OlympusConstants.MODE_DR)
                 if (!validTrajectoryInfoResult.0.isEmpty) {
-                    let trajLength = calculateTrajectoryLength(userTrajectory: validTrajectoryInfoResult.0)
+                    let trajLength = calculateTrajectoryLength(trajectoryInfo: validTrajectoryInfoResult.0)
                     if (trajLength > 10) {
                         self.userTrajectoryInfo = validTrajectoryInfoResult.0
                         self.validIndex = validTrajectoryInfoResult.1
@@ -297,7 +307,7 @@ public class OlympusTrajectoryController {
         }
     }
     
-    private func updateTrajectoryInfoWithLength(userTrajectory: [TrajectoryInfo], LENGTH_CONDITION: Double) -> [TrajectoryInfo] {
+    private func updateTrajectoryInfoWithLength(trajectoryInfo: [TrajectoryInfo], LENGTH_CONDITION: Double) -> [TrajectoryInfo] {
         var accumulatedLength = 0.0
 
         var longTrajIndex: Int = 0
@@ -305,21 +315,21 @@ public class OlympusTrajectoryController {
         var shortTrajIndex: Int = 0
         var isFindShort: Bool = false
 
-        if (!userTrajectory.isEmpty) {
-            let startHeading = userTrajectory[0].heading
-            let headInfo = userTrajectory[userTrajectory.count-1]
+        if (!trajectoryInfo.isEmpty) {
+            let startHeading = trajectoryInfo[0].heading
+            let headInfo = trajectoryInfo[trajectoryInfo.count-1]
             var xyFromHead: [Double] = [headInfo.userX, headInfo.userY]
 
-            var headingFromHead = [Double] (repeating: 0, count: userTrajectory.count)
-            for i in 0..<userTrajectory.count {
-                headingFromHead[i] = compensateHeading(heading: userTrajectory[i].heading  - 180 - startHeading)
+            var headingFromHead = [Double] (repeating: 0, count: trajectoryInfo.count)
+            for i in 0..<trajectoryInfo.count {
+                headingFromHead[i] = compensateHeading(heading: trajectoryInfo[i].heading  - 180 - startHeading)
             }
 
             var trajectoryFromHead = [[Double]]()
             trajectoryFromHead.append(xyFromHead)
-            for i in (1..<userTrajectory.count).reversed() {
+            for i in (1..<trajectoryInfo.count).reversed() {
                 let headAngle = headingFromHead[i]
-                let uvdLength = userTrajectory[i].length
+                let uvdLength = trajectoryInfo[i].length
                 accumulatedLength += uvdLength
 
                 if ((accumulatedLength >= LENGTH_CONDITION*2) && !isFindLong) {
@@ -342,18 +352,208 @@ public class OlympusTrajectoryController {
             let height = trajectoryMinMax[3] - trajectoryMinMax[1]
 
             if (width <= 3 || height <= 3) {
-                let newTrajectory = getTrajectoryFromN(from: userTrajectory, N: longTrajIndex)
+                let newTrajectory = getTrajectoryFromN(from: trajectoryInfo, N: longTrajIndex)
                 return newTrajectory
             } else {
-                let newTrajectory = getTrajectoryFromN(from: userTrajectory, N: shortTrajIndex)
+                let newTrajectory = getTrajectoryFromN(from: trajectoryInfo, N: shortTrajIndex)
                 return newTrajectory
             }
         }
 
-        return userTrajectory
+        return trajectoryInfo
     }
     
-    public func makeSearchAreaAndDirection() {
+    public func makeSearchInfo(trajectoryInfo: [TrajectoryInfo], pastTrajectoryInfo: [TrajectoryInfo], mode: String, PHASE: Int) -> SearchInfo {
+        var searchInfo = SearchInfo()
         
+        let trajLength = calculateTrajectoryLength(trajectoryInfo: trajectoryInfo)
+        searchInfo.trajLength = trajLength
+        var reqLengthForMajorHeading: Double = OlympusConstants.REQUIRED_LENGTH_FOR_MAJOR_HEADING
+        if (OlympusConstants.USER_TRAJECTORY_LENGTH <= 20) {
+            reqLengthForMajorHeading = (OlympusConstants.USER_TRAJECTORY_LENGTH-5)/2
+        }
+        
+        if (!trajectoryInfo.isEmpty) {
+            var uvRawHeading = [Double]()
+            var uvHeading = [Double]()
+            for value in trajectoryInfo {
+                uvRawHeading.append(value.heading)
+                uvHeading.append(compensateHeading(heading: value.heading))
+            }
+            let userBuilding    = trajectoryInfo[trajectoryInfo.count-1].userBuilding
+            let userLevel       = trajectoryInfo[trajectoryInfo.count-1].userLevel
+            var userX           = trajectoryInfo[trajectoryInfo.count-1].userX
+            var userY           = trajectoryInfo[trajectoryInfo.count-1].userY
+            let userHeading     = trajectoryInfo[trajectoryInfo.count-1].userHeading
+            
+            if (mode == OlympusConstants.MODE_PDR) {
+                // PDR
+                let PADDING_VALUE = OlympusConstants.USER_TRAJECTORY_LENGTH_PDR*0.8
+                if (PHASE < 4) {
+                    // Phase 1 ~ 3
+//                    if (isPhaseBreak && (self.phaseBreakResult.building_name != "" && self.phaseBreakResult.level_name != "")) {
+//                        userX = self.phaseBreakResult.x
+//                        userY = self.phaseBreakResult.y
+//                    }
+                    let areaMinMax: [Double] = [userX - PADDING_VALUE, userY - PADDING_VALUE, userX + PADDING_VALUE, userY + PADDING_VALUE]
+                    let searchArea = getSearchCoordinates(areaMinMax: areaMinMax, interval: 1.0)
+                    searchInfo.searchRange = areaMinMax.map { Int($0) }
+                    
+                    var searchHeadings: [Double] = []
+                    var hasMajorDirection: Bool = false
+                    if (trajLength > reqLengthForMajorHeading) {
+                        let ppHeadings = OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: userBuilding, level: userLevel, x: userX, y: userY, heading: userHeading, PADDING_VALUE: PADDING_VALUE, mode: mode)
+                        let headingLeastChangeSection = extractSectionWithLeastChange(inputArray: uvRawHeading)
+                        if (headingLeastChangeSection.isEmpty) {
+                            hasMajorDirection = false
+                        } else {
+                            let headingForCompensation = headingLeastChangeSection.average - uvRawHeading[0]
+                            for ppHeading in ppHeadings {
+                                let tailHeading = ppHeading - headingForCompensation
+                                searchHeadings.append(compensateHeading(heading: tailHeading))
+                            }
+                            hasMajorDirection = true
+                        }
+                    }
+                    
+                    if (!hasMajorDirection) {
+                        searchHeadings = [0, 90, 180, 270]
+                    }
+                    searchInfo.searchDirection = searchHeadings.map { Int($0) }
+                    
+                    let headInfo = trajectoryInfo[trajectoryInfo.count-1]
+                    var xyFromHead: [Double] = [headInfo.userX, headInfo.userY]
+                    
+                    let headingCorrectionFromServer: Double = headInfo.userHeading - uvHeading[uvHeading.count-1]
+                    var headingFromHead = [Double] (repeating: 0, count: uvHeading.count)
+                    
+                    for i in 0..<uvHeading.count {
+                        headingFromHead[i] = compensateHeading(heading: uvHeading[i] - 180 + headingCorrectionFromServer)
+                    }
+                    
+                    var trajectoryFromHead = [[Double]]()
+                    trajectoryFromHead.append(xyFromHead)
+                    for i in (1..<trajectoryInfo.count).reversed() {
+                        let headAngle = headingFromHead[i]
+                        xyFromHead[0] = xyFromHead[0] + trajectoryInfo[i].length*cos(headAngle*OlympusConstants.D2R)
+                        xyFromHead[1] = xyFromHead[1] + trajectoryInfo[i].length*sin(headAngle*OlympusConstants.D2R)
+                        trajectoryFromHead.append(xyFromHead)
+                    }
+                } else {
+                    // Phase 4
+                }
+            } else {
+                // DR
+            }
+        } else {
+            // Empty TrajectoryInfo
+        }
+        
+        return searchInfo
+    }
+    
+    private func extractSectionWithLeastChange(inputArray: [Double]) -> [Double] {
+        var resultArray = [Double]()
+        guard inputArray.count > 7 else {
+            return []
+        }
+        
+        var compensatedArray = [Double] (repeating: 0, count: inputArray.count)
+        for i in 0..<inputArray.count {
+            compensatedArray[i] = compensateHeading(heading: inputArray[i])
+        }
+        
+        var bestSliceStartIndex = 0
+        var bestSliceEndIndex = 0
+
+        for startIndex in 0..<(inputArray.count-6) {
+            for endIndex in (startIndex+7)..<inputArray.count {
+                let slice = Array(compensatedArray[startIndex...endIndex])
+                let circularStd = circularStandardDeviation(for: slice)
+                if circularStd < 5 && slice.count > bestSliceEndIndex - bestSliceStartIndex {
+                    bestSliceStartIndex = startIndex
+                    bestSliceEndIndex = endIndex
+                }
+            }
+        }
+        
+        resultArray = Array(inputArray[bestSliceStartIndex...bestSliceEndIndex])
+        if resultArray.count > 7 {
+            return resultArray
+        } else {
+            return []
+        }
+    }
+    
+    private func getSearchCoordinates(areaMinMax: [Double], interval: Double) -> [[Double]] {
+        var coordinates: [[Double]] = []
+        
+        let xMin = areaMinMax[0]
+        let yMin = areaMinMax[1]
+        let xMax = areaMinMax[2]
+        let yMax = areaMinMax[3]
+        
+        var x = xMin
+            while x <= xMax {
+                coordinates.append([x, yMin])
+                coordinates.append([x, yMax])
+                x += interval
+            }
+            
+            var y = yMin
+            while y <= yMax {
+                coordinates.append([xMin, y])
+                coordinates.append([xMax, y])
+                y += interval
+            }
+        
+        return coordinates
+    }
+    
+    public func setPastInfo(trajInfo: [TrajectoryInfo], searchInfo: SearchInfo) {
+        self.pastTrajectoryInfo = trajInfo
+        self.pastSearchInfo = searchInfo
+    }
+    
+    
+    // Trajectory Compensation
+    public func getTrajCompensationArray(currentTime: Int, trajLength: Double) -> [Double] {
+        var trajCompensationArray: [Double] = [self.trajCompensation]
+        if (trajLength < OlympusConstants.USER_TRAJECTORY_LENGTH) {
+            trajCompensationArray = [1.01]
+        } else {
+            if (self.isFltRequested) {
+                trajCompensationArray = [1.01]
+            } else {
+                trajCompensationArray = self.defaultTrajCompensataionArray
+                self.fltRequestTime = currentTime
+                self.isFltRequested = true
+            }
+        }
+        
+        return trajCompensationArray
+    }
+    
+    public func updateTrajCompensationArray(result: FineLocationTrackingFromServer) {
+        if (self.isFltRequested) {
+            let compensationCheckTime = abs(result.mobile_time - self.fltRequestTime)
+            if (compensationCheckTime < 100) {
+                if (result.scc < 0.55) {
+                    self.trajCompensationBadCount += 1
+                } else {
+                    if (result.scc > 0.6) {
+                        let digit: Double = pow(10, 4)
+                        self.trajCompensation = round((result.sc_compensation*digit)/digit)
+                    }
+                    self.trajCompensationBadCount = 0
+                }
+                if (self.trajCompensationBadCount > 1) {
+                    self.trajCompensationBadCount = 0
+                    self.isFltRequested = false
+                }
+            } else if (compensationCheckTime > 3000) {
+                self.isFltRequested = false
+            }
+        }
     }
 }

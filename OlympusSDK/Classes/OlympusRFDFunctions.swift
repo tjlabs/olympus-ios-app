@@ -99,35 +99,35 @@ public class OlympusRFDFunctions: NSObject {
         return numChannels
     }
 
-//    public func checkSufficientRfd(userTrajectory: [TrajectoryInfo]) -> Bool {
-//        if (!userTrajectory.isEmpty) {
-//            var countOneChannel: Int = 0
-//            var numAllChannels: Int = 0
-//            
-//            let trajectoryLength: Int = userTrajectory.count
-//            for i in 0..<trajectoryLength {
-//                let numChannels = userTrajectory[i].numChannels
-//                numAllChannels += numChannels
-//                if (numChannels <= 1) {
-//                    countOneChannel += 1
-//                }
-//            }
-//            
-//            let ratioOneChannel: Double = Double(countOneChannel)/Double(trajectoryLength)
-//            if (ratioOneChannel >= 0.5) {
-//                return false
-//            }
-//            
-//            let ratio: Double = Double(numAllChannels)/Double(trajectoryLength)
-//            if (ratio >= 2.0) {
-//                return true
-//            } else {
-//                return false
-//            }
-//        } else {
-//            return false
-//        }
-//    }
+    public func checkSufficientRfd(trajectoryInfo: [TrajectoryInfo]) -> Bool {
+        if (!trajectoryInfo.isEmpty) {
+            var countOneChannel: Int = 0
+            var numAllChannels: Int = 0
+            
+            let trajectoryLength: Int = trajectoryInfo.count
+            for i in 0..<trajectoryLength {
+                let numChannels = trajectoryInfo[i].numBleChannels
+                numAllChannels += numChannels
+                if (numChannels <= 1) {
+                    countOneChannel += 1
+                }
+            }
+            
+            let ratioOneChannel: Double = Double(countOneChannel)/Double(trajectoryLength)
+            if (ratioOneChannel >= 0.5) {
+                return false
+            }
+            
+            let ratio: Double = Double(numAllChannels)/Double(trajectoryLength)
+            if (ratio >= 2.0) {
+                return true
+            } else {
+                return false
+            }
+        } else {
+            return false
+        }
+    }
 
     public func getLatestBleData(bleDictionary: [String: [[Double]]]) -> [String: Double] {
         var ble = [String: Double]()

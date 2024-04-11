@@ -8,6 +8,8 @@ let REC_SERVER_VERSION = "2024-04-03"
 let HTTP_PREFIX = "https://"
 var REGION_PREFIX = "ap-northeast-2."
 let OLMPUS_SUFFIX = ".olympus.tjlabs.dev"
+var REGION_NAME = "Korea"
+
 
 var USER_URL = "user"
 var IMAGE_URL = "img"
@@ -26,15 +28,19 @@ var REC_RFD_URL = ""
 var REC_UVD_URL = ""
 
 var CALC_OSR_URL = ""
+var CALC_FLT_URL = ""
 
 public func setServerURL(region: String) {
     switch (region) {
     case "Korea":
         REGION_PREFIX = "ap-northeast-2."
+        REGION_NAME = "Korea"
     case "Canada":
         REGION_PREFIX = "ca-central-1."
+        REGION_NAME = "Canada"
     default:
         REGION_PREFIX = "ap-northeast-2."
+        REGION_NAME = "Korea"
     }
     
     USER_URL = HTTP_PREFIX + REGION_PREFIX + "user" + OLMPUS_SUFFIX
@@ -54,4 +60,5 @@ public func setServerURL(region: String) {
     REC_UVD_URL = REC_URL + "/" + REC_SERVER_VERSION + "/uv"
     
     CALC_OSR_URL = CALC_URL + "/" + CALC_SERVER_VERSION + "/osr"
+    CALC_FLT_URL = CALC_URL + "/" + CALC_SERVER_VERSION + "/flt"
 }

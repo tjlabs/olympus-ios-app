@@ -45,7 +45,7 @@
 		B3F38C272BC3B26300CCE620 /* OlympusObservers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F38C262BC3B26300CCE620 /* OlympusObservers.swift */; };
 		B3F38C292BC3BFD400CCE620 /* OlympusRflowCorrelator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F38C282BC3BFD400CCE620 /* OlympusRflowCorrelator.swift */; };
 		B3F38C2B2BC3F16D00CCE620 /* OlympusTrajectoryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F38C2A2BC3F16D00CCE620 /* OlympusTrajectoryController.swift */; };
-		B3F38C2D2BC3F3DE00CCE620 /* OlympusLevelChanger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F38C2C2BC3F3DE00CCE620 /* OlympusLevelChanger.swift */; };
+		B3F38C2D2BC3F3DE00CCE620 /* OlympusBuildingLevelChanger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F38C2C2BC3F3DE00CCE620 /* OlympusBuildingLevelChanger.swift */; };
 		B3F5E2652BBCF89A00C6F4CE /* OlympusRssCompensator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F5E2642BBCF89A00C6F4CE /* OlympusRssCompensator.swift */; };
 		B3F5E2672BBCF8CF00C6F4CE /* ArrayExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F5E2662BBCF8CF00C6F4CE /* ArrayExtension.swift */; };
 		B3F5E2692BBD18C500C6F4CE /* OlympusPhaseController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F5E2682BBD18C500C6F4CE /* OlympusPhaseController.swift */; };
@@ -125,7 +125,7 @@
 		B3F38C262BC3B26300CCE620 /* OlympusObservers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusObservers.swift; path = OlympusSDK/Classes/OlympusObservers.swift; sourceTree = "<group>"; };
 		B3F38C282BC3BFD400CCE620 /* OlympusRflowCorrelator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusRflowCorrelator.swift; path = OlympusSDK/Classes/OlympusRflowCorrelator.swift; sourceTree = "<group>"; };
 		B3F38C2A2BC3F16D00CCE620 /* OlympusTrajectoryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusTrajectoryController.swift; path = OlympusSDK/Classes/OlympusTrajectoryController.swift; sourceTree = "<group>"; };
-		B3F38C2C2BC3F3DE00CCE620 /* OlympusLevelChanger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusLevelChanger.swift; path = OlympusSDK/Classes/OlympusLevelChanger.swift; sourceTree = "<group>"; };
+		B3F38C2C2BC3F3DE00CCE620 /* OlympusBuildingLevelChanger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusBuildingLevelChanger.swift; path = OlympusSDK/Classes/OlympusBuildingLevelChanger.swift; sourceTree = "<group>"; };
 		B3F5E2642BBCF89A00C6F4CE /* OlympusRssCompensator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusRssCompensator.swift; path = OlympusSDK/Classes/OlympusRssCompensator.swift; sourceTree = "<group>"; };
 		B3F5E2662BBCF8CF00C6F4CE /* ArrayExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ArrayExtension.swift; path = OlympusSDK/Classes/ArrayExtension.swift; sourceTree = "<group>"; };
 		B3F5E2682BBD18C500C6F4CE /* OlympusPhaseController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusPhaseController.swift; path = OlympusSDK/Classes/OlympusPhaseController.swift; sourceTree = "<group>"; };
@@ -317,7 +317,7 @@
 				B3F38C1E2BBFFF0600CCE620 /* OlympusRFDFunctions.swift */,
 				B3F38C142BBFF5AB00CCE620 /* OlympusPDRDistanceEstimator.swift */,
 				B3F5E26C2BBD30C300C6F4CE /* OlympusPathMatchingCalculator.swift */,
-				B3F38C2C2BC3F3DE00CCE620 /* OlympusLevelChanger.swift */,
+				B3F38C2C2BC3F3DE00CCE620 /* OlympusBuildingLevelChanger.swift */,
 				B314396E2BAD341B002C072F /* OlympusSensorManager.swift */,
 				B3F38C222BC3851F00CCE620 /* OlympusKalmanFilter.swift */,
 				B3F38C162BBFF66700CCE620 /* OlympusPeakValleyDetector.swift */,
@@ -488,7 +488,7 @@
 			files = (
 				B3F38C0D2BBFF29900CCE620 /* OlympusUnitStatusEstimator.swift in Sources */,
 				B3F38C1D2BBFFA1700CCE620 /* OlympusDRDistanceEstimator.swift in Sources */,
-				B3F38C2D2BC3F3DE00CCE620 /* OlympusLevelChanger.swift in Sources */,
+				B3F38C2D2BC3F3DE00CCE620 /* OlympusBuildingLevelChanger.swift in Sources */,
 				B3F38C1F2BBFFF0600CCE620 /* OlympusRFDFunctions.swift in Sources */,
 				B3F38C232BC3851F00CCE620 /* OlympusKalmanFilter.swift in Sources */,
 				B3A7A5562BBBCEE700561897 /* OlympusNetworkConstants.swift in Sources */,

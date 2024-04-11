@@ -390,4 +390,65 @@ public class OlympusPathMatchingCalculator {
         
         return (false, area)
     }
+    
+    public func getPathMatchingHeadings(building: String, level: String, x: Double, y: Double, heading: Double, PADDING_VALUE: Double, mode: String) -> [Double] {
+        var headings: [Double] = []
+        let levelCopy: String = removeLevelDirectionString(levelName: level)
+        let key: String = "\(building)_\(levelCopy)"
+        
+        if (!(building.isEmpty) && !(level.isEmpty)) {
+            guard let mainType: [Int] = self.PpType[key] else {
+                return headings
+            }
+            
+            guard let mainRoad: [[Double]] = self.PpCoord[key] else {
+                return headings
+            }
+            
+            guard let mainHeading: [String] = self.PpHeading[key] else {
+                return headings
+            }
+            
+            if (!mainRoad.isEmpty) {
+                let roadX = mainRoad[0]
+                let roadY = mainRoad[1]
+                
+                let xMin = x - PADDING_VALUE
+                let xMax = x + PADDING_VALUE
+                let yMin = y - PADDING_VALUE
+                let yMax = y + PADDING_VALUE
+                
+                for i in 0..<roadX.count {
+                    let xPath = roadX[i]
+                    let yPath = roadY[i]
+                    
+                    let pathType = mainType[i]
+                    
+                    if (mode == "dr") {
+                        if (pathType != 1) {
+                            continue
+                        }
+                    }
+                    
+                    if (xPath >= xMin && xPath <= xMax) {
+                        if (yPath >= yMin && yPath <= yMax) {
+                            let headingArray = mainHeading[i]
+                            if (!headingArray.isEmpty) {
+                                let headingData = headingArray.components(separatedBy: ",")
+                                for j in 0..<headingData.count {
+                                    if (!headingData[j].isEmpty) {
+                                        let value = Double(headingData[j])!
+                                        if (!headings.contains(value)) {
+                                            headings.append(value)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return headings
+    }
 }

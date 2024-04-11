@@ -163,6 +163,47 @@ public class OlympusStateManager: NSObject {
         return false
     }
     
+    public func checkInEntranceLevel(result: FineLocationTrackingResult, isStartRouteTrack: Bool) -> Bool {
+        if (!self.isGetFirstResponse) {
+            return true
+        }
+        
+        if (isStartRouteTrack) {
+            return true
+        }
+        
+        let lastResult = result
+        
+        let buildingName = lastResult.building_name
+        let levelName = removeLevelDirectionString(levelName: result.level_name)
+        
+        if (levelName == "B0") {
+            return true
+        } else {
+            let key = "\(buildingName)_\(levelName)"
+            guard let entranceArea: [[Double]] = OlympusPathMatchingCalculator.shared.EntranceArea[key] else {
+                return false
+            }
+            
+            for i in 0..<entranceArea.count {
+                if (!entranceArea[i].isEmpty) {
+                    let xMin = entranceArea[i][0]
+                    let yMin = entranceArea[i][1]
+                    let xMax = entranceArea[i][2]
+                    let yMax = entranceArea[i][3]
+                    
+                    if (lastResult.x >= xMin && lastResult.x <= xMax) {
+                        if (lastResult.y >= yMin && lastResult.y <= yMax) {
+                            return true
+                        }
+                    }
+                }
+                
+            }
+            return false
+        }
+    }
+    
     public func checkEnterSleepMode() -> Bool {
         self.timeSleepRF += OlympusConstants.RFD_INTERVAL
         if (self.timeSleepRF >= OlympusConstants.SLEEP_THRESHOLD) {
@@ -209,7 +250,6 @@ public class OlympusStateManager: NSObject {
                 self.isGetFirstResponse = true
                 self.isIndoor = true
                 notifyObservers(state: INDOOR_FLAG)
-//                self.reporting(input: INDOOR_FLAG)
                 isEnterInNetworkBadEntrance = true
                 return (isEnterInNetworkBadEntrance, findResult.1)
             } else {
@@ -274,6 +314,10 @@ public class OlympusStateManager: NSObject {
         }
     }
     
+    public func setNetworkCount(value: Int) {
+        self.networkCount = value
+    }
+    
     public func checkStopWhenIsIndexNotChanage() -> Bool {
         var isStop: Bool = false
         self.timeIndexNotChanged += OlympusConstants.UVD_INTERVAL
@@ -291,6 +335,24 @@ public class OlympusStateManager: NSObject {
     
     public func setIsBackground(isBackground: Bool) {
         self.isBackground = isBackground
+        if (isBackground) {
+            self.notifyObservers(state: BACKGROUND_FLAG)
+        } else {
+            self.notifyObservers(state: FOREGROUND_FLAG)
+        }
+    }
+    
+    public func setIsIndoor(isIndoor: Bool) {
+        self.isIndoor = isIndoor
+        if (isIndoor) {
+            self.notifyObservers(state: INDOOR_FLAG)
+        } else {
+            self.notifyObservers(state: OUTDOOR_FLAG)
+        }
+    }
+    
+    public func setIsGetFirstResponse(isGetFirstResponse: Bool) {
+        self.isGetFirstResponse = isGetFirstResponse
     }
     
     public func setBecomeForeground(isBecomeForeground: Bool, time: Double) {
@@ -303,8 +365,6 @@ public class OlympusStateManager: NSObject {
         self.jupiterObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .didBecomeJupiter, object: nil)
         self.rfdErrorObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .errorSendRfd, object: nil)
         self.uvdErrorObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .errorSendUvd, object: nil)
-        self.backgroundObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .didEnterBackground, object: nil)
-        self.foregroundObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .didBecomeActive, object: nil)
         self.trajEditedObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .trajEditedBecomeForground, object: nil)
     }
     
@@ -313,8 +373,6 @@ public class OlympusStateManager: NSObject {
         NotificationCenter.default.removeObserver(self.jupiterObserver)
         NotificationCenter.default.removeObserver(self.rfdErrorObserver)
         NotificationCenter.default.removeObserver(self.uvdErrorObserver)
-        NotificationCenter.default.removeObserver(self.backgroundObserver)
-        NotificationCenter.default.removeObserver(self.foregroundObserver)
         NotificationCenter.default.removeObserver(self.trajEditedObserver)
     }
     
@@ -335,14 +393,6 @@ public class OlympusStateManager: NSObject {
         
         if notification.name == .errorSendUvd {
             self.notifyObservers(state: UVD_FLAG)
-        }
-        
-        if notification.name == .didEnterBackground {
-            self.notifyObservers(state: BACKGROUND_FLAG)
-        }
-        
-        if notification.name == .didBecomeActive {
-            self.notifyObservers(state: FOREGROUND_FLAG)
         }
         
         if notification.name == .trajEditedBecomeForground {

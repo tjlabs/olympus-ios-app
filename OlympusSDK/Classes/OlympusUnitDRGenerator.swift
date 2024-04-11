@@ -26,7 +26,7 @@ public class OlympusUnitDRGenerator: NSObject {
     var preRoll: Double = 0
     var prePitch: Double = 0
     
-    public var isInEnteranceLevel: Bool = false
+    public var isInEntranceLevel: Bool = false
     public var isStartRoutTrack: Bool = false
     public var isBackground: Bool = false
     public var rflow: Double = 0
@@ -136,7 +136,7 @@ public class OlympusUnitDRGenerator: NSObject {
                     }
                 }
                 
-                if (self.isInEnteranceLevel || self.isStartRoutTrack) {
+                if (self.isInEntranceLevel || self.isStartRoutTrack) {
                     self.isPdrMode = false
                     self.lastModeChangedTime = currentTime
                 }
@@ -231,7 +231,7 @@ public class OlympusUnitDRGenerator: NSObject {
     }
     
     public func setIsInEntranceLevel (flag: Bool) {
-        self.isInEnteranceLevel = flag
+        self.isInEntranceLevel = flag
     }
     
     public func setRflow(rflow: Double, rflowForVelocity: Double, rflowForAutoMode: Double, isSufficient: Bool, isSufficientForVelocity: Bool, isSufficientForAutoMode: Bool) {

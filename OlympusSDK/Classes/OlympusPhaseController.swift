@@ -16,7 +16,7 @@ public class OlympusPhaseController {
     private var phase1Observer: Any!
     private var phase2Observer: Any!
     
-    public var PHASE: Int = 0
+    public var PHASE: Int = 1
     
     init() {
         self.notificationCenterAddObserver()
@@ -68,23 +68,23 @@ public class OlympusPhaseController {
 //        return (phase, isPhaseBreak)
 //    }
 //    
-//    public func phase1control(serverResult: FineLocationTrackingFromServer, mode: String) -> Int {
-//        var phase: Int = 0
-//        
-//        let building_name = serverResult.building_name
-//        let level_name = serverResult.level_name
-//        let scc = serverResult.scc
-//        
-//        if (building_name != "" && level_name != "") {
-//            if (scc >= 0.62) {
-//                phase = 3
-//            } else {
-//                phase = 1
-//            }
-//        }
-//        
-//        return phase
-//    }
+    public func phase1control(serverResult: FineLocationTrackingFromServer, mode: String) -> Int {
+        var phase: Int = 0
+        
+        let building_name = serverResult.building_name
+        let level_name = serverResult.level_name
+        let scc = serverResult.scc
+        
+        if (building_name != "" && level_name != "") {
+            if (scc >= 0.62) {
+                phase = 3
+            } else {
+                phase = 1
+            }
+        }
+        
+        return phase
+    }
 //    
 //    public func phase2control(serverResult: FineLocationTrackingFromServer, mode: String) -> Int {
 //        var phase: Int = 2
@@ -206,41 +206,43 @@ public class OlympusPhaseController {
 //        return (isInterrupt, phase)
 //    }
 //    
-//    public func controlPhase(serverResultArray: [FineLocationTrackingFromServer], drBuffer: [UnitDRInfo], UVD_INTERVAL: Int, TRAJ_LENGTH: Double, inputPhase: Int, mode: String, isVenusMode: Bool) -> (Int, Bool) {
-//        var phase: Int = 0
-//        var isPhaseBreak: Bool = false
-//        
-//        if (isVenusMode) {
-//            phase = 1
-//            return (phase, isPhaseBreak)
-//        }
-//        
-//        let currentResult: FineLocationTrackingFromServer = serverResultArray[serverResultArray.count-1]
-//        switch (inputPhase) {
-//        case 0:
-//            phase = self.phase1control(serverResult: currentResult, mode: mode)
-//        case 1:
-//            phase = self.phase1control(serverResult: currentResult, mode: mode)
-//        case 2:
+    public func controlPhase(serverResultArray: [FineLocationTrackingFromServer], drBuffer: [UnitDRInfo], UVD_INTERVAL: Int, TRAJ_LENGTH: Double, inputPhase: Int, mode: String, isVenusMode: Bool) -> (Int, Bool) {
+        var phase: Int = 0
+        var isPhaseBreak: Bool = false
+        
+        if (isVenusMode) {
+            phase = 1
+            return (phase, isPhaseBreak)
+        }
+        
+        let currentResult: FineLocationTrackingFromServer = serverResultArray[serverResultArray.count-1]
+        switch (inputPhase) {
+        case 0:
+            phase = self.phase1control(serverResult: currentResult, mode: mode)
+        case 1:
+            phase = self.phase1control(serverResult: currentResult, mode: mode)
+        case 2:
+            phase = 3
 //            phase = self.checkScResultConnectionForPhase4(inputPhase: inputPhase, serverResultArray: serverResultArray, drBuffer: drBuffer, UVD_INTERVAL: UVD_INTERVAL, TRAJ_LENGTH: TRAJ_LENGTH, mode: mode)
-//        case 3:
-//            if (currentResult.scc < 0.45) {
-//                phase = 1
-//            } else {
+        case 3:
+            if (currentResult.scc < 0.45) {
+                phase = 1
+            } else {
+                phase = 3
 //                phase = self.checkScResultConnectionForPhase4(inputPhase: inputPhase, serverResultArray: serverResultArray, drBuffer: drBuffer, UVD_INTERVAL: UVD_INTERVAL, TRAJ_LENGTH: TRAJ_LENGTH, mode: mode)
-//            }
+            }
 //        case 4:
 //            phase = self.phase4control(serverResult: currentResult, mode: mode)
-//        default:
-//            phase = 0
-//        }
-//        
-//        if (inputPhase >= 1 && phase < 2) {
-//            isPhaseBreak = true
-//        }
-//        
-//        return (phase, isPhaseBreak)
-//    }
+        default:
+            phase = 0
+        }
+        
+        if (inputPhase >= 1 && phase < 2) {
+            isPhaseBreak = true
+        }
+        
+        return (phase, isPhaseBreak)
+    }
 //    
 //    public func checkScResultConnectionForPhase4(inputPhase: Int, serverResultArray: [FineLocationTrackingFromServer], drBuffer: [UnitDRInfo], UVD_INTERVAL: Int, TRAJ_LENGTH: Double, mode: String) -> Int {
 //        var phase: Int = inputPhase

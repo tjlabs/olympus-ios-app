@@ -14,6 +14,7 @@ public class OlympusNetworkManager {
     var rfdSessions = [URLSession]()
     var uvdSessions = [URLSession]()
     
+    let fltSession: URLSession
     let osrSession: URLSession
     
     init() {
@@ -36,7 +37,7 @@ public class OlympusNetworkManager {
         let fltConfig = URLSessionConfiguration.default
         fltConfig.timeoutIntervalForResource = TIMEOUT_VALUE_POST
         fltConfig.timeoutIntervalForRequest = TIMEOUT_VALUE_POST
-//        self.fltSession = URLSession(configuration: fltConfig)
+        self.fltSession = URLSession(configuration: fltConfig)
         
         let osrConfig = URLSessionConfiguration.default
         osrConfig.timeoutIntervalForResource = TIMEOUT_VALUE_POST
@@ -332,6 +333,77 @@ public class OlympusNetworkManager {
             DispatchQueue.main.async {
                 completion(406, "Fail to encode UVD", inputUvd)
             }
+        }
+    }
+    
+    func postFLT(url: String, input: FineLocationTracking, userTraj: [TrajectoryInfo], searchInfo: SearchInfo, completion: @escaping (Int, String, Int, [TrajectoryInfo], SearchInfo) -> Void) {
+        // [http 비동기 방식을 사용해서 http 요청 수행 실시]
+        let urlComponents = URLComponents(string: url)
+        var requestURL = URLRequest(url: (urlComponents?.url)!)
+        let inputPhase: Int = input.phase
+        let inputTraj: [TrajectoryInfo] = userTraj
+        let inputSearchInfo: SearchInfo = searchInfo
+        
+        requestURL.httpMethod = "POST"
+        let encodingData = JSONConverter.encodeJson(param: input)
+        if (encodingData != nil) {
+            requestURL.httpBody = encodingData
+            requestURL.addValue("application/json", forHTTPHeaderField: "Content-Type")
+            requestURL.setValue("\(encodingData)", forHTTPHeaderField: "Content-Length")
+            
+            print("")
+            print("====================================")
+            print("POST FLT URL :: ", url)
+            print("POST FLT Sector :: ", input.sector_id)
+            print("POST FLT ID :: ", input.user_id)
+            print("POST FLT 데이터 :: ", input)
+            print("====================================")
+            print("")
+            
+            let dataTask = self.fltSession.dataTask(with: requestURL, completionHandler: { (data, response, error) in
+                // [error가 존재하면 종료]
+                guard error == nil else {
+                    // [콜백 반환]
+                    DispatchQueue.main.async {
+                        completion(500, error?.localizedDescription ?? "Fail", inputPhase, inputTraj, inputSearchInfo)
+                    }
+                    return
+                }
+
+                // [status 코드 체크 실시]
+                let successsRange = 200..<300
+                guard let statusCode = (response as? HTTPURLResponse)?.statusCode, successsRange.contains(statusCode)
+                else {
+                    // [콜백 반환]
+                    DispatchQueue.main.async {
+                        completion(500, (response as? HTTPURLResponse)?.description ?? "Fail", inputPhase, inputTraj, inputSearchInfo)
+                    }
+                    return
+                }
+
+                // [response 데이터 획득]
+                let resultCode = (response as? HTTPURLResponse)?.statusCode ?? 500 // [상태 코드]
+                guard let resultLen = data else {
+                    completion(resultCode, (response as? HTTPURLResponse)?.description ?? "Fail", inputPhase, inputTraj, inputSearchInfo)
+                    return
+                }
+                let resultData = String(data: resultLen, encoding: .utf8) ?? "" // [데이터 확인]
+
+                // [콜백 반환]
+                DispatchQueue.main.async {
+//                    print("")
+//                    print("====================================")
+//                    print("RESPONSE FLT 데이터 :: ", resultData)
+//                    print("====================================")
+//                    print("")
+                    completion(resultCode, resultData, inputPhase, inputTraj, inputSearchInfo)
+                }
+            })
+
+            // [network 통신 실행]
+            dataTask.resume()
+        } else {
+            completion(500, "Fail to encode", inputPhase, inputTraj, inputSearchInfo)
         }
     }
     

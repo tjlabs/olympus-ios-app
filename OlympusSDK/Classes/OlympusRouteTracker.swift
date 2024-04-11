@@ -1,7 +1,5 @@
 
 public class OlympusRouteTracker {
-//    static var shared = OlympusRouteTracker()
-    
     init() { }
     
     public var EntranceRouteVersion = [String: String]()
@@ -10,32 +8,12 @@ public class OlympusRouteTracker {
     public var EntranceNetworkStatus = [String: Bool]()
     public var EntranceVelocityScales = [String: Double]()
     public var EntranceIsLoaded = [String: Bool]()
-    public var EnteranceNumbers: Int = 0
-    
-//    public var isStartRouteTrack: Bool = false {
-//        didSet {
-//            notifyObservers(isStartRouteTrack: self.isStartRouteTrack)
-//        }
-//    }
+    public var EntranceNumbers: Int = 0
     
     public var indexAfterRouteTrack: Int = 0
     public var entranceVelocityScale: Double = 1.0
     public var currentEntrance: String = ""
     public var currentEntranceLength: Int = 0
-    
-//    private var observers = [RouteTrackingObserver]()
-//
-//    func addObserver(_ observer: RouteTrackingObserver) {
-//            observers.append(observer)
-//    }
-//        
-//    func removeObserver(_ observer: RouteTrackingObserver) {
-//        observers = observers.filter { $0 !== observer }
-//    }
-//    
-//    private func notifyObservers(isStartRouteTrack: Bool) {
-//        observers.forEach { $0.isStartRouteTrackDidChange(newValue: isStartRouteTrack) }
-//    }
     
     private func parseEntrance(data: String) -> ([String], [[Double]]) {
         var entracneLevelArray = [String]()
@@ -179,7 +157,7 @@ public class OlympusRouteTracker {
         var routeTrack: Bool = false
         var networkBad: Bool = false
         
-        for i in 0..<self.EnteranceNumbers {
+        for i in 0..<self.EntranceNumbers {
             if (!isStartRouteTrack) {
                 let entranceResult = self.findEntrance(result: result, entrance: i)
                 if (entranceResult.0 != 0) {
@@ -198,7 +176,7 @@ public class OlympusRouteTracker {
                     if let entranceNetworkStatus: Bool = self.EntranceNetworkStatus[entranceKey] {
                         networkBad = entranceNetworkStatus
                     }
-                    return (routeTrack, networkBad)
+                    return (true, networkBad)
                 }
             }
         }
@@ -215,14 +193,14 @@ public class OlympusRouteTracker {
         return scale
     }
     
-    private func findEntrance(result: FineLocationTrackingFromServer, entrance: Int) -> (Int, Int) {
+    public func findEntrance(result: FineLocationTrackingFromServer, entrance: Int) -> (Int, Int) {
         var entranceNumber: Int = 0
         var entranceLength: Int = 0
         
         let buildingName = result.building_name
         let levelName = removeLevelDirectionString(levelName: result.level_name)
         
-        let resultPm = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 1, COORD_RANGE: OlympusConstants.SQUARE_RANGE)
+        let resultPm = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 1, COORD_RANGE: OlympusConstants.COORD_RANGE)
         
         let coordX = resultPm.xyhs[0]
         let coordY = resultPm.xyhs[1]

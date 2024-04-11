@@ -4,4 +4,5 @@ public class OlympusKalmanFilter: NSObject {
         
     }
     
+    public var isRunning: Bool = false
 }
