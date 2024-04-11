@@ -1,6 +1,6 @@
 
 public class OlympusRouteTracker {
-    static var shared = OlympusRouteTracker()
+//    static var shared = OlympusRouteTracker()
     
     init() { }
     
@@ -12,31 +12,30 @@ public class OlympusRouteTracker {
     public var EntranceIsLoaded = [String: Bool]()
     public var EnteranceNumbers: Int = 0
     
-    public var isStartRouteTrack: Bool = false {
-        didSet {
-            notifyObservers(isStartRouteTrack: self.isStartRouteTrack)
-        }
-    }
+//    public var isStartRouteTrack: Bool = false {
+//        didSet {
+//            notifyObservers(isStartRouteTrack: self.isStartRouteTrack)
+//        }
+//    }
     
     public var indexAfterRouteTrack: Int = 0
     public var entranceVelocityScale: Double = 1.0
     public var currentEntrance: String = ""
     public var currentEntranceLength: Int = 0
-    public var isInNetworkBadEntrance: Bool = false
     
-    private var observers = [RouteTrackingObserver]()
-
-    func addObserver(_ observer: RouteTrackingObserver) {
-            observers.append(observer)
-    }
-        
-    func removeObserver(_ observer: RouteTrackingObserver) {
-        observers = observers.filter { $0 !== observer }
-    }
-    
-    private func notifyObservers(isStartRouteTrack: Bool) {
-        observers.forEach { $0.isStartRouteTrackDidChange(newValue: isStartRouteTrack) }
-    }
+//    private var observers = [RouteTrackingObserver]()
+//
+//    func addObserver(_ observer: RouteTrackingObserver) {
+//            observers.append(observer)
+//    }
+//        
+//    func removeObserver(_ observer: RouteTrackingObserver) {
+//        observers = observers.filter { $0 !== observer }
+//    }
+//    
+//    private func notifyObservers(isStartRouteTrack: Bool) {
+//        observers.forEach { $0.isStartRouteTrackDidChange(newValue: isStartRouteTrack) }
+//    }
     
     private func parseEntrance(data: String) -> ([String], [[Double]]) {
         var entracneLevelArray = [String]()
@@ -176,9 +175,12 @@ public class OlympusRouteTracker {
         }
     }
     
-    public func startRouteTracking(result: FineLocationTrackingFromServer) {
+    public func startRouteTracking(result: FineLocationTrackingFromServer, isStartRouteTrack: Bool) -> (Bool, Bool) {
+        var routeTrack: Bool = false
+        var networkBad: Bool = false
+        
         for i in 0..<self.EnteranceNumbers {
-            if (!self.isStartRouteTrack) {
+            if (!isStartRouteTrack) {
                 let entranceResult = self.findEntrance(result: result, entrance: i)
                 if (entranceResult.0 != 0) {
                     let buildingName = result.building_name
@@ -194,18 +196,18 @@ public class OlympusRouteTracker {
                     self.currentEntrance = entranceKey
                     self.currentEntranceLength = entranceResult.1
                     if let entranceNetworkStatus: Bool = self.EntranceNetworkStatus[entranceKey] {
-                        self.isInNetworkBadEntrance = entranceNetworkStatus
+                        networkBad = entranceNetworkStatus
                     }
-                    self.isStartRouteTrack = true
-                    notifyObservers(isStartRouteTrack: self.isStartRouteTrack)
+                    return (routeTrack, networkBad)
                 }
             }
         }
+        return (routeTrack, networkBad)
     }
     
-    public func getEntranceVelocityScale(isGetFirstResponse: Bool) -> Double {
+    public func getEntranceVelocityScale(isGetFirstResponse: Bool, isStartRouteTrack: Bool) -> Double {
         var scale: Double = 1.0
-        if (self.isStartRouteTrack) {
+        if (isStartRouteTrack) {
             self.indexAfterRouteTrack += 1
             scale = self.entranceVelocityScale
         }

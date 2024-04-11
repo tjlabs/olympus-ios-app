@@ -13,12 +13,21 @@ public class OlympusPhaseController {
     var phase2count: Int = 0
     var phase3count: Int = 0
     
-//    var pmCalculator = PathMatchingCalculator()
+    private var phase1Observer: Any!
+    private var phase2Observer: Any!
+    
+    public var PHASE: Int = 0
     
     init() {
+        self.notificationCenterAddObserver()
         self.PHASE2_LENGTH_CONDITION_PDR = self.PHASE3_LENGTH_CONDITION_PDR-self.TRAJ_BIAS
         self.PHASE2_LENGTH_CONDITION_DR = self.PHASE3_LENGTH_CONDITION_DR-self.TRAJ_BIAS
     }
+    
+    deinit {
+        self.notificationCenterRemoveObserver()
+    }
+    
     
     public func setPhaseLengthParam(lengthConditionPdr: Double, lengthConditionDr: Double) {
         self.PHASE3_LENGTH_CONDITION_PDR = lengthConditionPdr
@@ -325,4 +334,24 @@ public class OlympusPhaseController {
 //            }
 //        }
 //    }
+    
+    func notificationCenterAddObserver() {
+        self.phase1Observer = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .phaseBecome1, object: nil)
+        self.phase2Observer = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .phaseBecome2, object: nil)
+    }
+    
+    func notificationCenterRemoveObserver() {
+        NotificationCenter.default.removeObserver(self.phase1Observer)
+        NotificationCenter.default.removeObserver(self.phase2Observer)
+    }
+    
+    @objc func onDidReceiveNotification(_ notification: Notification) {
+        if notification.name == .phaseBecome1 {
+            self.PHASE = OlympusConstants.PHASE_1
+        }
+        
+        if notification.name == .phaseBecome2 {
+            self.PHASE = OlympusConstants.PHASE_2
+        }
+    }
 }

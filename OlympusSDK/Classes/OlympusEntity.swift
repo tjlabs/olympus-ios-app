@@ -164,9 +164,9 @@ public struct SectorInfoFromServer: Codable {
 public struct SectorInfo: Codable {
     let standard_min_rss: Double
     let standard_max_rss: Double
-    let user_traj_origin: Double
     let user_traj_length: Double
-    let user_traj_diag: Double
+    let user_traj_length_dr: Double
+    let user_traj_length_pdr: Double
     let num_straight_idx_dr: Int
     let num_straight_idx_pdr: Int
 }

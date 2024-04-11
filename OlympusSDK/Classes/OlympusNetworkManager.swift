@@ -14,6 +14,8 @@ public class OlympusNetworkManager {
     var rfdSessions = [URLSession]()
     var uvdSessions = [URLSession]()
     
+    let osrSession: URLSession
+    
     init() {
         let rfdConfig = URLSessionConfiguration.default
         rfdConfig.timeoutIntervalForResource = TIMEOUT_VALUE_PUT
@@ -35,6 +37,11 @@ public class OlympusNetworkManager {
         fltConfig.timeoutIntervalForResource = TIMEOUT_VALUE_POST
         fltConfig.timeoutIntervalForRequest = TIMEOUT_VALUE_POST
 //        self.fltSession = URLSession(configuration: fltConfig)
+        
+        let osrConfig = URLSessionConfiguration.default
+        osrConfig.timeoutIntervalForResource = TIMEOUT_VALUE_POST
+        osrConfig.timeoutIntervalForRequest = TIMEOUT_VALUE_POST
+        self.osrSession = URLSession(configuration: osrConfig)
     }
     
     func postUserLogin(url: String, input: LoginInput, completion: @escaping (Int, String) -> Void) {
@@ -325,6 +332,72 @@ public class OlympusNetworkManager {
             DispatchQueue.main.async {
                 completion(406, "Fail to encode UVD", inputUvd)
             }
+        }
+    }
+    
+    func postOSR(url: String, input: OnSpotRecognition, completion: @escaping (Int, String) -> Void) {
+        // [http 비동기 방식을 사용해서 http 요청 수행 실시]
+        let urlComponents = URLComponents(string: url)
+        var requestURL = URLRequest(url: (urlComponents?.url)!)
+        
+        requestURL.httpMethod = "POST"
+        let encodingData = JSONConverter.encodeJson(param: input)
+        if (encodingData != nil) {
+            requestURL.httpBody = encodingData
+            requestURL.addValue("application/json", forHTTPHeaderField: "Content-Type")
+            requestURL.setValue("\(encodingData)", forHTTPHeaderField: "Content-Length")
+            
+//            print("")
+//            print("====================================")
+//            print("POST OSR 데이터 :: ", input)
+//            print("====================================")
+//            print("")
+
+            let dataTask = self.osrSession.dataTask(with: requestURL, completionHandler: { (data, response, error) in
+                // [error가 존재하면 종료]
+                guard error == nil else {
+                    // [콜백 반환]
+                    DispatchQueue.main.async {
+                        completion(500, error?.localizedDescription ?? "Fail")
+                    }
+                    return
+                }
+                
+                // [status 코드 체크 실시]
+                let successsRange = 200..<300
+                guard let statusCode = (response as? HTTPURLResponse)?.statusCode, successsRange.contains(statusCode)
+                else {
+                    // [콜백 반환]
+                    DispatchQueue.main.async {
+                        completion(500, (response as? HTTPURLResponse)?.description ?? "Fail")
+                    }
+                    return
+                }
+                
+                // [response 데이터 획득]
+                let resultCode = (response as? HTTPURLResponse)?.statusCode ?? 500 // [상태 코드]
+                guard let resultLen = data else {
+                    completion(500, (response as? HTTPURLResponse)?.description ?? "Fail")
+                    return
+                }
+                let resultData = String(data: resultLen, encoding: .utf8) ?? "" // [데이터 확인]
+                
+                // [콜백 반환]
+                DispatchQueue.main.async {
+//                    print("")
+//                    print("====================================")
+//                    print("RESPONSE OSR 데이터 :: ", resultCode)
+//                    print("                 :: ", resultData)
+//                    print("====================================")
+//                    print("")
+                    completion(resultCode, resultData)
+                }
+            })
+            
+            // [network 통신 실행]
+            dataTask.resume()
+        } else {
+            completion(500, "Fail to encode")
         }
     }
 }

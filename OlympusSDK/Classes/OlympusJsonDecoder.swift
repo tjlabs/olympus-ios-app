@@ -35,3 +35,21 @@ public func jsonToRcInfoFromServer(jsonString: String) -> (Bool, RcInfoFromServe
     }
 }
 
+public func jsonToOnSpotRecognitionResult(jsonString: String) -> (Bool, OnSpotRecognitionResult) {
+    let result = OnSpotRecognitionResult.init()
+    
+    if let jsonData = jsonString.data(using: .utf8) {
+        do {
+            let decodedData: OnSpotRecognitionResult = try JSONDecoder().decode(OnSpotRecognitionResult.self, from: jsonData)
+            
+            return (true, decodedData)
+        } catch {
+            print("Error decoding JSON: \(error)")
+            
+            return (false, result)
+        }
+    } else {
+        return (false, result)
+    }
+    
+}

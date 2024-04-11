@@ -29,7 +29,18 @@ public func removeLevelDirectionString(levelName: String) -> String {
     return levelToReturn
 }
 
-func movingAverage(preMvalue: Double, curValue: Double, windowSize: Int) -> Double {
+public func movingAverage(preMvalue: Double, curValue: Double, windowSize: Int) -> Double {
     let windowSizeDouble: Double = Double(windowSize)
     return preMvalue*((windowSizeDouble - 1)/windowSizeDouble) + (curValue/windowSizeDouble)
+}
+
+public func compensateHeading(heading: Double) -> Double {
+    var headingToReturn: Double = heading
+    
+    if (headingToReturn < 0) {
+        headingToReturn = headingToReturn + 360
+    }
+    headingToReturn = headingToReturn - floor(headingToReturn/360)*360
+
+    return headingToReturn
 }

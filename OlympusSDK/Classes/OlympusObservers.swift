@@ -13,12 +13,13 @@ let UVD_FLAG: Int = 10
 let BLE_SCAN_STOP_FLAG: Int = 11
 let BLE_ERROR_FLAG: Int = 12
 
-protocol RouteTrackingObserver: AnyObject {
-    func isStartRouteTrackDidChange(newValue: Bool)
-}
 
 protocol StateTrackingObserver: AnyObject {
     func isStateDidChange(newValue: Int)
+}
+
+protocol BuildingLevelChangeObserver: AnyObject {
+    func isBuildingLevelChanged(newBuilding: String, newLevel: String)
 }
 
 public protocol Observable {

@@ -1,11 +1,40 @@
-public class OlympusLevelChanger {
+public class OlympusBuildingLevelChanger {
+    
     init() {
-        
+        notificationCenterAddObserver()
     }
     
-    public var travelingOsrDistance: Double = 0
+    deinit {
+        notificationCenterRemoveObserver()
+    }
     
-    public func accumulateOsrDistance(unitLength: Double, isGetFirstResponse: Bool, mode: String, result: FineLocationTrackingResult) {
+    private var observers = [BuildingLevelChangeObserver]()
+    func addObserver(_ observer: BuildingLevelChangeObserver) {
+            observers.append(observer)
+    }
+        
+    func removeObserver(_ observer: BuildingLevelChangeObserver) {
+        observers = observers.filter { $0 !== observer }
+    }
+    
+    private func notifyObservers(building: String, level: String) {
+        observers.forEach { $0.isBuildingLevelChanged(newBuilding: building, newLevel: level)}
+    }
+    
+    public var isDetermineSpot: Bool = false
+    public var travelingOsrDistance: Double = 0
+    public var lastSpotId: Int = 0
+    public var currentSpot: Int = 0
+    public var spotCutIndex: Int = 0
+    public var buildingLevelChangedTime: Int = 0
+    
+    public var phase2Range: [Int] = []
+    public var phase2Direction: [Int] = []
+    public var preOutputMobileTime: Int = 0
+    
+    var trajEditedObserver: Any!
+    
+    func accumulateOsrDistance(unitLength: Double, isGetFirstResponse: Bool, mode: String, result: FineLocationTrackingResult) {
         if (isGetFirstResponse && mode == OlympusConstants.MODE_DR) {
             let lastResult = result
             if (lastResult.building_name != "" && lastResult.level_name != "") {
@@ -14,36 +43,248 @@ public class OlympusLevelChanger {
         }
     }
     
-    public func estimateLevel(isGetFirstResponse: Bool, isInNetworkBadEntrance: Bool, mode: String, phase: Int) {
-//        let currentTime = getCurrentTimeInMilliseconds()
-//        var isRunOsr: Bool = true
-//        if (isGetFirstResponse && !isInNetworkBadEntrance) {
-//            if (mode != OlympusConstants.MODE_PDR) {
-//                if (phase == 4) {
-//                    let isInLevelChangeArea = self.checkInLevelChangeArea(result: self.jupiterResult, mode: mode)
-//                    if (!isInLevelChangeArea) {
-//                        isRunOsr = false
-//                    }
-//                }
-//                
-//                if (isRunOsr) {
-//                    let input = OnSpotRecognition(user_id: self.user_id, mobile_time: currentTime, normalization_scale: self.normalizationScale, device_min_rss: Int(self.deviceMinRss), standard_min_rss: Int(self.standardMinRss))
-//                    NetworkManager.shared.postOSR(url: OSR_URL, input: input, completion: { [self] statusCode, returnedString in
-//                        if (statusCode == 200) {
-//                            let result = decodeOSR(json: returnedString)
-//                            if (result.building_name != "" && result.level_name != "") {
-//                                let isOnSpot = isOnSpotRecognition(result: result, level: self.currentLevel)
-//                                if (isOnSpot.isOn) {
-//                                    let levelDestination = isOnSpot.levelDestination + isOnSpot.levelDirection
-//                                    determineSpotDetect(result: result, lastSpotId: self.lastOsrId, levelDestination: levelDestination, currentTime: currentTime)
-//                                }
-//                            }
-//                        }
-//                    })
-//                }
-//            }
-//        } else {
-//            self.travelingOsrDistance = 0
-//        }
+    func estimateBuildingLevel(user_id: String, mode: String, phase: Int, isGetFirstResponse: Bool, isInNetworkBadEntrance: Bool, isStartRouteTrack: Bool, result: FineLocationTrackingResult, currentBuilding: String, currentLevel: String, currentEntrance: String) {
+        let currentTime = getCurrentTimeInMilliseconds()
+        var isRunOsr: Bool = true
+        if (isGetFirstResponse && !isInNetworkBadEntrance) {
+            if (mode != OlympusConstants.MODE_PDR) {
+                if (phase == OlympusConstants.PHASE_4) {
+                    let isInLevelChangeArea = self.checkInLevelChangeArea(result: result, mode: mode)
+                    if (!isInLevelChangeArea) {
+                        isRunOsr = false
+                    }
+                }
+                
+                if (isRunOsr) {
+                    let input = OnSpotRecognition(user_id: user_id, mobile_time: currentTime, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), standard_min_rss: Int(OlympusConstants.STANDARD_MIN_RSS))
+                    OlympusNetworkManager.shared.postOSR(url: CALC_OSR_URL, input: input, completion: { [self] statusCode, returnedString in
+                        if (statusCode == 200) {
+                            let result = jsonToOnSpotRecognitionResult(jsonString: returnedString)
+                            let decodedOsr = result.1
+                            if (result.0 && decodedOsr.building_name != "" && decodedOsr.level_name != "") {
+                                let isOnSpot = isOnSpotRecognition(result: decodedOsr, level: currentLevel)
+                                if (isOnSpot.isOn) {
+                                    let levelDestination = isOnSpot.levelDestination + isOnSpot.levelDirection
+                                    determineSpotDetect(result: decodedOsr, isStartRouteTrack: isStartRouteTrack, lastSpotId: self.lastSpotId, levelDestination: levelDestination, currentBuilding: currentBuilding, currentLevel: currentLevel, currentEntrance: currentEntrance, currentTime: currentTime)
+                                }
+                            }
+                        }
+                    })
+                }
+            }
+        } else {
+            self.travelingOsrDistance = 0
+        }
+    }
+    
+    func determineSpotDetect(result: OnSpotRecognitionResult, isStartRouteTrack: Bool, lastSpotId: Int, levelDestination: String, currentBuilding: String, currentLevel: String, currentEntrance: String, currentTime: Int) {
+        let localTime = getLocalTimeString()
+        var spotDistance = result.spot_distance
+        if (spotDistance == 0) {
+            spotDistance = OlympusConstants.DEFAULT_SPOT_DISTANCE
+        }
+        
+        let levelArray: [String] = [result.level_name, result.linked_level_name]
+        var TIME_CONDITION = OlympusConstants.MINIMUM_BUILDING_LEVEL_CHANGE_TIME
+        if (levelArray.contains("B0") && levelArray.contains("B2")) {
+            TIME_CONDITION = OlympusConstants.MINIMUM_BUILDING_LEVEL_CHANGE_TIME*3
+        }
+        
+        if (result.spot_id != lastSpotId) {
+            // Different Spot Detected
+            let resultLevelName: String = removeLevelDirectionString(levelName: levelDestination)
+            if (result.building_name != currentBuilding || resultLevelName != currentLevel) {
+                if ((result.mobile_time - self.buildingLevelChangedTime) > TIME_CONDITION) {
+                    // Building Level 이 바뀐지 7초 이상 지남 -> 서버 결과를 이용해 바뀌어야 한다고 판단
+                    self.notifyObservers(building: result.building_name, level: levelDestination)
+                    
+//                    self.timeUpdateOutput.building_name = result.building_name
+//                    self.timeUpdateOutput.level_name = levelDestination
+//                    self.measurementOutput.building_name = result.building_name
+//                    self.measurementOutput.level_name = levelDestination
+//                    self.outputResult.level_name = levelDestination
+
+                    self.phase2Range = result.spot_range
+                    if (levelDestination.contains("_D")) {
+                        self.phase2Direction = result.spot_direction_up
+                    } else {
+                        self.phase2Direction = result.spot_direction_down
+                    }
+                    
+                    self.currentSpot = result.spot_id
+                    self.lastSpotId = result.spot_id
+                    self.travelingOsrDistance = 0
+                    self.buildingLevelChangedTime = currentTime
+                    
+                    self.isDetermineSpot = true
+                    self.spotCutIndex = self.determineSpotCutIndex(entranceString: currentEntrance)
+                    
+                    if (isStartRouteTrack) {
+//                        self.makeOutputResult(input: self.outputResult, isPast: self.flagPast, runMode: self.runMode, isVenusMode: self.isVenusMode)
+                    } else {
+//                        self.resultToReturn = self.makeOutputResult(input: self.outputResult, isPast: self.flagPast, runMode: self.runMode, isVenusMode: self.isVenusMode)
+                    }
+                }
+            }
+            self.preOutputMobileTime = currentTime
+        } else {
+            // Same Spot Detected
+            if (self.travelingOsrDistance >= spotDistance) {
+                let resultLevelName: String = removeLevelDirectionString(levelName: levelDestination)
+                if (result.building_name != currentBuilding || resultLevelName != currentLevel) {
+                    if ((result.mobile_time - self.buildingLevelChangedTime) > TIME_CONDITION) {
+                        // Building Level 이 바뀐지 7초 이상 지남 -> 서버 결과를 이용해 바뀌어야 한다고 판단
+                        self.notifyObservers(building: result.building_name, level: levelDestination)
+                        
+//                        self.timeUpdateOutput.building_name = result.building_name
+//                        self.timeUpdateOutput.level_name = levelDestination
+//                        self.measurementOutput.building_name = result.building_name
+//                        self.measurementOutput.level_name = levelDestination
+//                        self.outputResult.level_name = levelDestination
+                        
+                        self.phase2Range = result.spot_range
+                        if (levelDestination.contains("_D")) {
+                            self.phase2Direction = result.spot_direction_up
+                        } else {
+                            self.phase2Direction = result.spot_direction_down
+                        }
+                        
+                        self.currentSpot = result.spot_id
+                        self.lastSpotId = result.spot_id
+                        self.travelingOsrDistance = 0
+                        self.buildingLevelChangedTime = currentTime
+                        
+                        self.isDetermineSpot = true
+                        self.spotCutIndex = self.determineSpotCutIndex(entranceString: currentEntrance)
+                        
+                        if (isStartRouteTrack) {
+//                            self.makeOutputResult(input: self.outputResult, isPast: self.flagPast, runMode: self.runMode, isVenusMode: self.isVenusMode)
+                        } else {
+//                            self.resultToReturn = self.makeOutputResult(input: self.outputResult, isPast: self.flagPast, runMode: self.runMode, isVenusMode: self.isVenusMode)
+                        }
+                    }
+                }
+                self.preOutputMobileTime = currentTime
+            }
+        }
+    }
+    
+    func isOnSpotRecognition(result: OnSpotRecognitionResult, level: String) -> (isOn: Bool, levelDestination: String, levelDirection: String) {
+        let localTime = getLocalTimeString()
+        var isOn: Bool = false
+        let building_name = result.building_name
+        let level_name = result.level_name
+        let linked_level_name = result.linked_level_name
+        
+        let levelArray: [String] = [level_name, linked_level_name]
+        var levelDestination: String = ""
+
+        if (linked_level_name == "") {
+            isOn = false
+            return (isOn, levelDestination, "")
+        } else {
+            if (level_name == linked_level_name) {
+                isOn = false
+                return (isOn, "", "")
+            }
+            
+            // Normal OSR
+            let currentLevel: String = level
+            let levelNameCorrected: String = removeLevelDirectionString(levelName: currentLevel)
+            for i in 0..<levelArray.count {
+                if levelArray[i] != levelNameCorrected {
+                    levelDestination = levelArray[i]
+                    isOn = true
+                }
+            }
+            
+            // Up or Down Direction
+            let currentLevelNum: Int = getLevelNumber(levelName: currentLevel)
+            let destinationLevelNum: Int = getLevelNumber(levelName: levelDestination)
+            let levelDirection: String = getLevelDirection(currentLevel: currentLevelNum, destinationLevel: destinationLevelNum)
+            
+            return (isOn, levelDestination, levelDirection)
+        }
+    }
+    
+    func checkInLevelChangeArea(result: FineLocationTrackingResult, mode: String) -> Bool {
+        if (mode == OlympusConstants.MODE_PDR) {
+            return false
+        }
+        
+        let lastResult = result
+        
+        let buildingName = lastResult.building_name
+        let levelName = removeLevelDirectionString(levelName: result.level_name)
+
+        let key = "\(buildingName)_\(levelName)"
+        guard let levelChangeArea: [[Double]] = OlympusPathMatchingCalculator.shared.LevelChangeArea[key] else {
+            return false
+        }
+        
+        for i in 0..<levelChangeArea.count {
+            if (!levelChangeArea[i].isEmpty) {
+                let xMin = levelChangeArea[i][0]
+                let yMin = levelChangeArea[i][1]
+                let xMax = levelChangeArea[i][2]
+                let yMax = levelChangeArea[i][3]
+                
+                if (lastResult.x >= xMin && lastResult.x <= xMax) {
+                    if (lastResult.y >= yMin && lastResult.y <= yMax) {
+                        return true
+                    }
+                }
+            }
+        }
+
+        return false
+    }
+    
+    func getLevelDirection(currentLevel: Int, destinationLevel: Int) -> String {
+        var levelDirection: String = ""
+        let diffLevel: Int = destinationLevel - currentLevel
+        if (diffLevel > 0) {
+            levelDirection = "_D"
+        }
+        return levelDirection
+    }
+    
+    func getLevelNumber(levelName: String) -> Int {
+        let levelNameCorrected: String = removeLevelDirectionString(levelName: levelName)
+        if (levelNameCorrected[levelNameCorrected.startIndex] == "B") {
+            // 지하
+            let levelTemp = levelNameCorrected.substring(from: 1, to: levelNameCorrected.count-1)
+            var levelNum = Int(levelTemp) ?? 0
+            levelNum = (-1*levelNum)-1
+            return levelNum
+        } else {
+            // 지상
+            let levelTemp = levelNameCorrected.substring(from: 0, to: levelNameCorrected.count-2)
+            var levelNum = Int(levelTemp) ?? 0
+            levelNum = levelNum+1
+            return levelNum
+        }
+    }
+    
+    func determineSpotCutIndex(entranceString: String) -> Int {
+        var cutIndex: Int = 15
+        if (entranceString == "COEX_B0_3" || entranceString == "COEX_B0_4") {
+            cutIndex = 1
+        }
+        return cutIndex
+    }
+    
+    func notificationCenterAddObserver() {
+        self.trajEditedObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .trajEditedAfterOsr, object: nil)
+    }
+    
+    func notificationCenterRemoveObserver() {
+        NotificationCenter.default.removeObserver(self.trajEditedObserver)
+    }
+    
+    @objc func onDidReceiveNotification(_ notification: Notification) {
+        if notification.name == .trajEditedAfterOsr {
+            self.isDetermineSpot = false
+        }
     }
 }

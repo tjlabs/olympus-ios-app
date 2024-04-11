@@ -16,14 +16,21 @@ class OlympusConstants {
     static let ABNORMAL_MAG_THRESHOLD: Double = 2000
     static let ABNORMAL_MAG_COUNT = 500
     
+    // Phase
+    static let PHASE_0: Int = 0
+    static let PHASE_1: Int = 1
+    static let PHASE_2: Int = 2
+    static let PHASE_3: Int = 3
+    static let PHASE_4: Int = 4
+    
     
     // Sector Info //
     static var STANDARD_MIN_RSS: Double = -99
     static var STANDARD_MAX_RSS: Double = -60
     
-    static var USER_TRAJECTORY_ORIGINAL: Double = 60
     static var USER_TRAJECTORY_LENGTH: Double = 60
-    static var USER_TRAJECTORY_DIAGONAL: Double = 20
+    static var USER_TRAJECTORY_LENGTH_DR: Double = 60
+    static var USER_TRAJECTORY_LENGTH_PDR: Double = 20
     
     static var NUM_STRAIGHT_IDX_DR: Int = 10
     static var NUM_STRAIGHT_IDX_PDR: Int = 10
@@ -108,6 +115,8 @@ class OlympusConstants {
     
     // OnSpotRecognition
     static let OSR_INTERVAL: TimeInterval = 2 // second
+    static let DEFAULT_SPOT_DISTANCE: Double = 80
+    static let MINIMUM_BUILDING_LEVEL_CHANGE_TIME = 7000
     
     // Output Update
     static let OUTPUT_INTERVAL: TimeInterval = 1/5 // second
@@ -115,6 +124,7 @@ class OlympusConstants {
     // Threshold //
     static let BLE_OFF_THRESHOLD: Double = 4
     static var TIME_INIT_THRESHOLD: Double = 25
+    static var UNKNOWN_TRAJ_CUT_IDX: Int = 25
     static let OUTERWARD_SCAN_THRESHOLD: Double = -85.0
     
     // Path-Matching
@@ -127,9 +137,9 @@ class OlympusConstants {
     public func setSectorInfoConstants(sector_info: SectorInfo) {
         OlympusConstants.STANDARD_MIN_RSS = sector_info.standard_min_rss
         OlympusConstants.STANDARD_MAX_RSS = sector_info.standard_max_rss
-        OlympusConstants.USER_TRAJECTORY_ORIGINAL = sector_info.user_traj_origin
         OlympusConstants.USER_TRAJECTORY_LENGTH = sector_info.user_traj_length
-        OlympusConstants.USER_TRAJECTORY_DIAGONAL = sector_info.user_traj_diag
+        OlympusConstants.USER_TRAJECTORY_LENGTH_DR = sector_info.user_traj_length_dr
+        OlympusConstants.USER_TRAJECTORY_LENGTH_PDR = sector_info.user_traj_length_pdr
         OlympusConstants.NUM_STRAIGHT_IDX_DR = sector_info.num_straight_idx_dr
         OlympusConstants.NUM_STRAIGHT_IDX_PDR = sector_info.num_straight_idx_pdr
     }
@@ -143,13 +153,13 @@ class OlympusConstants {
     public func setModeParam(mode: String, phase: Int) {
         if (mode == OlympusConstants.MODE_PDR) {
             OlympusConstants.RQ_IDX = OlympusConstants.RQ_IDX_PDR
-            OlympusConstants.USER_TRAJECTORY_LENGTH = OlympusConstants.USER_TRAJECTORY_DIAGONAL
+            OlympusConstants.USER_TRAJECTORY_LENGTH = OlympusConstants.USER_TRAJECTORY_LENGTH_PDR
 
             OlympusConstants.INIT_INPUT_NUM = 3
             OlympusConstants.VALUE_INPUT_NUM = 6
             OlympusConstants.SQUARE_RANGE = OlympusConstants.SQUARE_RANGE_SMALL
             
-            if (phase == 4) {
+            if (phase == OlympusConstants.PHASE_4) {
                 OlympusConstants.UVD_INPUT_NUM = OlympusConstants.VALUE_INPUT_NUM
                 OlympusConstants.INDEX_THRESHOLD = 21
             } else {
@@ -158,13 +168,13 @@ class OlympusConstants {
             }
         } else if (mode == OlympusConstants.MODE_DR) {
             OlympusConstants.RQ_IDX = OlympusConstants.RQ_IDX_DR
-            OlympusConstants.USER_TRAJECTORY_LENGTH = OlympusConstants.USER_TRAJECTORY_ORIGINAL
+            OlympusConstants.USER_TRAJECTORY_LENGTH = OlympusConstants.USER_TRAJECTORY_LENGTH_DR
 
             OlympusConstants.INIT_INPUT_NUM = 5
             OlympusConstants.VALUE_INPUT_NUM = OlympusConstants.UVD_BUFFER_SIZE
             OlympusConstants.SQUARE_RANGE = OlympusConstants.SQUARE_RANGE_LARGE
             
-            if (phase == 4) {
+            if (phase == OlympusConstants.PHASE_4) {
                 OlympusConstants.UVD_INPUT_NUM = OlympusConstants.VALUE_INPUT_NUM
                 OlympusConstants.INDEX_THRESHOLD = (OlympusConstants.UVD_INPUT_NUM*2)+1
             } else {

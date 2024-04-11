@@ -25,6 +25,8 @@ var USER_RC_URL = ""
 var REC_RFD_URL = ""
 var REC_UVD_URL = ""
 
+var CALC_OSR_URL = ""
+
 public func setServerURL(region: String) {
     switch (region) {
     case "Korea":
@@ -50,4 +52,6 @@ public func setServerURL(region: String) {
     
     REC_RFD_URL = REC_URL + "/" + REC_SERVER_VERSION + "/rf"
     REC_UVD_URL = REC_URL + "/" + REC_SERVER_VERSION + "/uv"
+    
+    CALC_OSR_URL = CALC_URL + "/" + CALC_SERVER_VERSION + "/osr"
 }

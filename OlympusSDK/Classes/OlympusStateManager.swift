@@ -30,6 +30,7 @@ public class OlympusStateManager: NSObject {
     public var isIndoor: Bool = false
     public var isBleOff: Bool = false
     public var isBackground: Bool = false
+    public var isBecomeForeground: Bool = false
     
     public var timeForInit: Double = 0
     public var timeBleOff: Double = 0
@@ -50,6 +51,9 @@ public class OlympusStateManager: NSObject {
     private var jupiterObserver: Any!
     private var rfdErrorObserver: Any!
     private var uvdErrorObserver: Any!
+    private var backgroundObserver: Any!
+    private var foregroundObserver: Any!
+    private var trajEditedObserver: Any!
     
     public var isVenusMode: Bool = false
     
@@ -87,7 +91,7 @@ public class OlympusStateManager: NSObject {
         }
     }
     
-    public func checkBleError(lastResult: FineLocationTrackingResult) -> Bool {
+    public func checkBleError(olympusResult: FineLocationTrackingResult) -> Bool {
         var isNeedClearBle: Bool = false
         let currentTime: Double = getCurrentTimeInMillisecondsDouble()
         if (self.isIndoor && self.isGetFirstResponse && !self.isBackground) {
@@ -95,7 +99,7 @@ public class OlympusStateManager: NSObject {
             if (!self.isBleOff && diffTime > 5) {
                 notifyObservers(state: BLE_ERROR_FLAG)
 //                self.reporting(input: BLE_ERROR_FLAG)
-                let isFailTrimBle = self.determineIsOutdoor(lastResult: lastResult, currentTime: currentTime, inFailCondition: true)
+                let isFailTrimBle = self.determineIsOutdoor(olympusResult: olympusResult, currentTime: currentTime, inFailCondition: true)
                 if (isFailTrimBle) {
                     isNeedClearBle = true
 //                    self.bleAvg = [String: Double]()
@@ -106,7 +110,7 @@ public class OlympusStateManager: NSObject {
         return isNeedClearBle
     }
     
-    public func checkOutdoorBleEmpty(lastBleDiscoveredTime: Double, lastResult: FineLocationTrackingResult) {
+    public func checkOutdoorBleEmpty(lastBleDiscoveredTime: Double, olympusResult: FineLocationTrackingResult) {
         let currentTime = getCurrentTimeInMillisecondsDouble()
         
         if (currentTime - lastBleDiscoveredTime > OlympusConstants.BLE_VALID_TIME && lastBleDiscoveredTime != 0) {
@@ -119,7 +123,7 @@ public class OlympusStateManager: NSObject {
             self.isActiveRF = false
             if (self.isIndoor && self.isGetFirstResponse) {
                 if (!self.isBleOff) {
-                    let isOutdoor = self.determineIsOutdoor(lastResult: lastResult, currentTime: currentTime, inFailCondition: false)
+                    let isOutdoor = self.determineIsOutdoor(olympusResult: olympusResult, currentTime: currentTime, inFailCondition: false)
                     if (isOutdoor) {
 //                        self.initVariables()
 //                        self.currentLevel = "B0"
@@ -131,11 +135,11 @@ public class OlympusStateManager: NSObject {
         }
     }
     
-    private func determineIsOutdoor(lastResult: FineLocationTrackingResult, currentTime: Double, inFailCondition: Bool) -> Bool {
-        let isInEntranceMatchingArea = OlympusPathMatchingCalculator.shared.checkInEntranceMatchingArea(x: lastResult.x, y: lastResult.y, building: lastResult.building_name, level: lastResult.level_name)
+    private func determineIsOutdoor(olympusResult: FineLocationTrackingResult, currentTime: Double, inFailCondition: Bool) -> Bool {
+        let isInEntranceMatchingArea = OlympusPathMatchingCalculator.shared.checkInEntranceMatchingArea(x: olympusResult.x, y: olympusResult.y, building: olympusResult.building_name, level: olympusResult.level_name)
         
         let diffEntranceWardTime = currentTime - self.lastScannedEntranceOuterWardTime
-        if (lastResult.building_name != "" && lastResult.level_name == "B0") {
+        if (olympusResult.building_name != "" && olympusResult.level_name == "B0") {
             return true
         } else if (isInEntranceMatchingArea.0) {
             return true
@@ -285,11 +289,23 @@ public class OlympusStateManager: NSObject {
         return isStop
     }
     
+    public func setIsBackground(isBackground: Bool) {
+        self.isBackground = isBackground
+    }
+    
+    public func setBecomeForeground(isBecomeForeground: Bool, time: Double) {
+        self.isBecomeForeground = isBecomeForeground
+        self.timeBecomeForeground = time
+    }
+    
     func notificationCenterAddObserver() {
         self.venusObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .didBecomeVenus, object: nil)
         self.jupiterObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .didBecomeJupiter, object: nil)
         self.rfdErrorObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .errorSendRfd, object: nil)
         self.uvdErrorObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .errorSendUvd, object: nil)
+        self.backgroundObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .didEnterBackground, object: nil)
+        self.foregroundObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .didBecomeActive, object: nil)
+        self.trajEditedObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .trajEditedBecomeForground, object: nil)
     }
     
     func notificationCenterRemoveObserver() {
@@ -297,6 +313,9 @@ public class OlympusStateManager: NSObject {
         NotificationCenter.default.removeObserver(self.jupiterObserver)
         NotificationCenter.default.removeObserver(self.rfdErrorObserver)
         NotificationCenter.default.removeObserver(self.uvdErrorObserver)
+        NotificationCenter.default.removeObserver(self.backgroundObserver)
+        NotificationCenter.default.removeObserver(self.foregroundObserver)
+        NotificationCenter.default.removeObserver(self.trajEditedObserver)
     }
     
     @objc func onDidReceiveNotification(_ notification: Notification) {
@@ -316,6 +335,18 @@ public class OlympusStateManager: NSObject {
         
         if notification.name == .errorSendUvd {
             self.notifyObservers(state: UVD_FLAG)
+        }
+        
+        if notification.name == .didEnterBackground {
+            self.notifyObservers(state: BACKGROUND_FLAG)
+        }
+        
+        if notification.name == .didBecomeActive {
+            self.notifyObservers(state: FOREGROUND_FLAG)
+        }
+        
+        if notification.name == .trajEditedBecomeForground {
+            self.isBecomeForeground = false
         }
     }
 }
