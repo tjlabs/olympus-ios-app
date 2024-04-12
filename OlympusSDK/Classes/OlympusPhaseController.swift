@@ -8,7 +8,6 @@ public class OlympusPhaseController {
     
     var PHASE3_LENGTH_CONDITION_DR: Double = 60
     var PHASE2_LENGTH_CONDITION_DR: Double = 50
-    var TRAJ_BIAS: Double = 10
     
     var phase2count: Int = 0
     var phase3count: Int = 0
@@ -20,8 +19,8 @@ public class OlympusPhaseController {
     
     init() {
         self.notificationCenterAddObserver()
-        self.PHASE2_LENGTH_CONDITION_PDR = self.PHASE3_LENGTH_CONDITION_PDR-self.TRAJ_BIAS
-        self.PHASE2_LENGTH_CONDITION_DR = self.PHASE3_LENGTH_CONDITION_DR-self.TRAJ_BIAS
+        self.PHASE2_LENGTH_CONDITION_PDR = self.PHASE3_LENGTH_CONDITION_PDR - Double(OlympusConstants.PDR_LENGTH_MARGIN)
+        self.PHASE2_LENGTH_CONDITION_DR = self.PHASE3_LENGTH_CONDITION_DR - Double(OlympusConstants.DR_LENGTH_MARGIN)
     }
     
     deinit {
@@ -33,8 +32,8 @@ public class OlympusPhaseController {
         self.PHASE3_LENGTH_CONDITION_PDR = lengthConditionPdr
         self.PHASE3_LENGTH_CONDITION_DR = lengthConditionDr
         
-        self.PHASE2_LENGTH_CONDITION_PDR = self.PHASE3_LENGTH_CONDITION_PDR - self.TRAJ_BIAS
-        self.PHASE2_LENGTH_CONDITION_DR = self.PHASE3_LENGTH_CONDITION_DR - self.TRAJ_BIAS
+        self.PHASE2_LENGTH_CONDITION_PDR = self.PHASE3_LENGTH_CONDITION_PDR - Double(OlympusConstants.PDR_LENGTH_MARGIN)
+        self.PHASE2_LENGTH_CONDITION_DR = self.PHASE3_LENGTH_CONDITION_DR - Double(OlympusConstants.DR_LENGTH_MARGIN)
     }
     
 //    public func controlJupiterPhase(serverResult: FineLocationTrackingFromServer, inputPhase: Int, mode: String, isVenusMode: Bool) -> (Int, Bool) {
@@ -223,9 +222,9 @@ public class OlympusPhaseController {
             phase = self.phase1control(serverResult: currentResult, mode: mode)
         case 2:
             phase = 3
-//            phase = self.checkScResultConnectionForPhase4(inputPhase: inputPhase, serverResultArray: serverResultArray, drBuffer: drBuffer, UVD_INTERVAL: UVD_INTERVAL, TRAJ_LENGTH: TRAJ_LENGTH, mode: mode)
+            phase = self.checkScResultConnectionForPhase4(inputPhase: inputPhase, serverResultArray: serverResultArray, drBuffer: drBuffer, UVD_INTERVAL: UVD_INTERVAL, TRAJ_LENGTH: TRAJ_LENGTH, mode: mode)
         case 3:
-            if (currentResult.scc < 0.45) {
+            if (currentResult.scc < OlympusConstants.SCC_FOR_PHASE_BREAK) {
                 phase = 1
             } else {
                 phase = 3
@@ -243,99 +242,100 @@ public class OlympusPhaseController {
         
         return (phase, isPhaseBreak)
     }
-//    
-//    public func checkScResultConnectionForPhase4(inputPhase: Int, serverResultArray: [FineLocationTrackingFromServer], drBuffer: [UnitDRInfo], UVD_INTERVAL: Int, TRAJ_LENGTH: Double, mode: String) -> Int {
-//        var phase: Int = inputPhase
-//        
-//        // Conditions //
-//        var sccCondition: Double = 0.5
-//        var isPoolChannel: Bool = false
-//        let indexCondition: Int = Int(Double(UVD_INTERVAL)*1.5)
-//        if (inputPhase == 2) {
-//            sccCondition = 0.5
-//        }
-//        var pathType: Int = 1
-//        var distanceCondition: Double = 15
-//        var headingCondition: Double = 30
-//        if (mode == "pdr") {
-//            pathType = 0
-//            distanceCondition = 2
-//            headingCondition = 10
-//        }
-//        
-//        // Check Phase
-//        if (serverResultArray.count < 2) {
-//            return phase
-//        } else {
-//            let currentResult: FineLocationTrackingFromServer = serverResultArray[serverResultArray.count-1]
-//            let previousResult: FineLocationTrackingFromServer = serverResultArray[serverResultArray.count-2]
-//            if (currentResult.scc < sccCondition) {
-//                return phase
-//            } else if (previousResult.index == 0 || currentResult.index == 0) {
-//                return phase
-//            } else if (currentResult.cumulative_length < (TRAJ_LENGTH/2)) {
-//                return phase
-//            } else {
-//                if (inputPhase != 2) {
-//                    isPoolChannel = !currentResult.channel_condition && !previousResult.channel_condition
-//                }
-//                if (isPoolChannel) {
-//                    return phase
-//                } else {
-//                    if (currentResult.index - previousResult.index) > indexCondition {
-//                        return phase
-//                    } else if (currentResult.index <= previousResult.index) {
-//                        return phase
-//                    } else {
-//                        var drBufferStartIndex: Int = 0
-//                        var drBufferEndIndex: Int = 0
-//                        var headingCompensation: Double = 0
-//                        for i in 0..<drBuffer.count {
-//                            if drBuffer[i].index == previousResult.index {
-//                                drBufferStartIndex = i
-//                                headingCompensation = previousResult.absolute_heading -  drBuffer[i].heading
-//                            }
-//                            
-//                            if drBuffer[i].index == currentResult.index {
-//                                drBufferEndIndex = i
-//                            }
-//                        }
-//                        let previousPmResult = pmCalculator.pathMatching(building: previousResult.building_name, level: previousResult.level_name, x: previousResult.x, y: previousResult.y, heading: previousResult.absolute_heading, isPast: false, HEADING_RANGE: HEADING_RANGE, isUseHeading: false, pathType: pathType, range: 10)
-//                        let currentPmResult = pmCalculator.pathMatching(building: currentResult.building_name, level: currentResult.level_name, x: currentResult.x, y: currentResult.y, heading: currentResult.absolute_heading, isPast: false, HEADING_RANGE: HEADING_RANGE, isUseHeading: false, pathType: pathType, range: 10)
-//                        
-//                        var propagatedXyh: [Double] = [previousPmResult.xyhs[0], previousPmResult.xyhs[1], previousPmResult.xyhs[2]]
-//                        for i in drBufferStartIndex..<drBufferEndIndex {
-//                            let length = drBuffer[i].length
-//                            let heading = drBuffer[i].heading + headingCompensation
-//                            let dx = length*cos(heading*D2R)
-//                            let dy = length*sin(heading*D2R)
-//                             
-//                            propagatedXyh[0] += dx
-//                            propagatedXyh[1] += dy
-//                        }
-//                        let dh = drBuffer[drBufferEndIndex].heading - drBuffer[drBufferStartIndex].heading
-//                        propagatedXyh[2] += dh
-//                        propagatedXyh[2] = compensateHeading(heading: propagatedXyh[2])
-//                        
-//                        let pathMatchingResult = pmCalculator.pathMatching(building: currentResult.building_name, level: currentResult.level_name, x: propagatedXyh[0], y: propagatedXyh[1], heading: propagatedXyh[2], isPast: false, HEADING_RANGE: HEADING_RANGE, isUseHeading: false, pathType: pathType, range: 10)
-//                        let diffX = abs(pathMatchingResult.xyhs[0] - currentPmResult.xyhs[0])
-//                        let diffY = abs(pathMatchingResult.xyhs[1] - currentPmResult.xyhs[1])
-//                        let currentResultHeading = compensateHeading(heading: currentPmResult.xyhs[2])
-//                        var diffH = abs(pathMatchingResult.xyhs[2] - currentResultHeading)
-//                        if (diffH > 270) {
-//                            diffH = 360 - diffH
-//                        }
-//                        
-//                        let rendezvousDistance = sqrt(diffX*diffX + diffY*diffY)
-//                        if (rendezvousDistance <= distanceCondition) && diffH <= headingCondition {
-//                            phase = 4
-//                        }
-//                        return phase
-//                    }
-//                }
-//            }
-//        }
-//    }
+    
+    public func checkScResultConnectionForPhase4(inputPhase: Int, serverResultArray: [FineLocationTrackingFromServer], drBuffer: [UnitDRInfo], UVD_INTERVAL: Int, TRAJ_LENGTH: Double, mode: String) -> Int {
+        var phase: Int = inputPhase
+        
+        // Conditions //
+        var sccCondition: Double = 0.5
+        var isPoolChannel: Bool = false
+        let indexCondition: Int = Int(Double(UVD_INTERVAL)*1.5)
+        if (inputPhase == OlympusConstants.PHASE_2) {
+            sccCondition = 0.5
+        }
+        var pathType: Int = 1
+        var distanceCondition: Double = 15
+        var headingCondition: Double = 30
+        if (mode == OlympusConstants.MODE_PDR) {
+            pathType = 0
+            distanceCondition = 2
+            headingCondition = 10
+        }
+        
+        // Check Phase
+        if (serverResultArray.count < 2) {
+            return phase
+        } else {
+            let currentResult: FineLocationTrackingFromServer = serverResultArray[serverResultArray.count-1]
+            let previousResult: FineLocationTrackingFromServer = serverResultArray[serverResultArray.count-2]
+            if (currentResult.scc < sccCondition) {
+                return phase
+            } else if (previousResult.index == 0 || currentResult.index == 0) {
+                return phase
+            } else if (currentResult.cumulative_length < (TRAJ_LENGTH/2)) {
+                return phase
+            } else {
+                if (inputPhase != 2) {
+                    isPoolChannel = !currentResult.channel_condition && !previousResult.channel_condition
+                }
+                if (isPoolChannel) {
+                    return phase
+                } else {
+                    if (currentResult.index - previousResult.index) > indexCondition {
+                        return phase
+                    } else if (currentResult.index <= previousResult.index) {
+                        return phase
+                    } else {
+                        var drBufferStartIndex: Int = 0
+                        var drBufferEndIndex: Int = 0
+                        var headingCompensation: Double = 0
+                        for i in 0..<drBuffer.count {
+                            if drBuffer[i].index == previousResult.index {
+                                drBufferStartIndex = i
+                                headingCompensation = previousResult.absolute_heading -  drBuffer[i].heading
+                            }
+                            
+                            if drBuffer[i].index == currentResult.index {
+                                drBufferEndIndex = i
+                            }
+                        }
+
+                        let previousPmResult = OlympusPathMatchingCalculator.shared.pathMatching(building: previousResult.building_name, level: previousResult.level_name, x: previousResult.x, y: previousResult.y, heading: previousResult.absolute_heading, isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: pathType, COORD_RANGE: OlympusConstants.COORD_RANGE)
+                        let currentPmResult = OlympusPathMatchingCalculator.shared.pathMatching(building: currentResult.building_name, level: currentResult.level_name, x: currentResult.x, y: currentResult.y, heading: currentResult.absolute_heading, isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: pathType, COORD_RANGE: OlympusConstants.COORD_RANGE)
+                        
+                        var propagatedXyh: [Double] = [previousPmResult.xyhs[0], previousPmResult.xyhs[1], previousPmResult.xyhs[2]]
+                        for i in drBufferStartIndex..<drBufferEndIndex {
+                            let length = drBuffer[i].length
+                            let heading = drBuffer[i].heading + headingCompensation
+                            let dx = length*cos(heading*OlympusConstants.D2R)
+                            let dy = length*sin(heading*OlympusConstants.D2R)
+                             
+                            propagatedXyh[0] += dx
+                            propagatedXyh[1] += dy
+                        }
+                        let dh = drBuffer[drBufferEndIndex].heading - drBuffer[drBufferStartIndex].heading
+                        propagatedXyh[2] += dh
+                        propagatedXyh[2] = compensateHeading(heading: propagatedXyh[2])
+                        
+                        let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: currentResult.building_name, level: currentResult.level_name, x: propagatedXyh[0], y: propagatedXyh[1], heading: propagatedXyh[2], isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: pathType, COORD_RANGE: OlympusConstants.COORD_RANGE)
+                        let diffX = abs(pathMatchingResult.xyhs[0] - currentPmResult.xyhs[0])
+                        let diffY = abs(pathMatchingResult.xyhs[1] - currentPmResult.xyhs[1])
+                        let currentResultHeading = compensateHeading(heading: currentPmResult.xyhs[2])
+                        var diffH = abs(pathMatchingResult.xyhs[2] - currentResultHeading)
+                        if (diffH > 270) {
+                            diffH = 360 - diffH
+                        }
+                        
+                        let rendezvousDistance = sqrt(diffX*diffX + diffY*diffY)
+                        if (rendezvousDistance <= distanceCondition) && diffH <= headingCondition {
+                            phase = 4
+                        }
+                        return phase
+                    }
+                }
+            }
+        }
+    }
     
     func notificationCenterAddObserver() {
         self.phase1Observer = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .phaseBecome1, object: nil)

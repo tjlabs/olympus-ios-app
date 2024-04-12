@@ -10,10 +10,11 @@ public class OlympusRouteTracker {
     public var EntranceIsLoaded = [String: Bool]()
     public var EntranceNumbers: Int = 0
     
-    public var indexAfterRouteTrack: Int = 0
+    var indexAfterRouteTrack: Int = 0
     public var entranceVelocityScale: Double = 1.0
     public var currentEntrance: String = ""
-    public var currentEntranceLength: Int = 0
+    var currentEntranceIndex: Int = 0
+    var currentEntranceLength: Int = 0
     
     private func parseEntrance(data: String) -> ([String], [[Double]]) {
         var entracneLevelArray = [String]()
@@ -154,7 +155,6 @@ public class OlympusRouteTracker {
     }
     
     public func startRouteTracking(result: FineLocationTrackingFromServer, isStartRouteTrack: Bool) -> (Bool, Bool) {
-        var routeTrack: Bool = false
         var networkBad: Bool = false
         
         for i in 0..<self.EntranceNumbers {
@@ -180,7 +180,103 @@ public class OlympusRouteTracker {
                 }
             }
         }
-        return (routeTrack, networkBad)
+        return (false, networkBad)
+    }
+    
+    public func getRouteTrackResult(temporalResult: FineLocationTrackingFromServer, currentLevel: String, isVenusMode: Bool, isKF: Bool, isPhaseBreakInRouteTrack: Bool) -> (isRouteTrackFinished: Bool, FineLocationTrackingFromServer) {
+        var isRouteTrackFinished: Bool = false
+        
+        var result = temporalResult
+        let localTime = getLocalTimeString()
+        result = routeTrackEntrance(temporalResult: temporalResult, currentEntranceIndex: self.currentEntranceIndex)
+        if (self.currentEntranceIndex < self.currentEntranceLength) {
+            self.currentEntranceIndex += 1
+                                    
+            if (isVenusMode) {
+                print(localTime + " , (Olympus) Entrance Route Tracker : Finish (BLE Only Mode)")
+                isRouteTrackFinished = true
+                
+//                self.isStartSimulate = false
+//                unitDRGenerator.setIsStartSimulate(isStartSimulate: self.isStartSimulate)
+//                self.isPhaseBreakInSimulate = false
+//                self.isInNetworkBadEntrance = false
+                
+                self.indexAfterRouteTrack = 0
+                self.currentEntrance = ""
+                self.currentEntranceLength = 0
+                self.currentEntranceIndex = 0
+            } else {
+                if (result.level_name != "B0") {
+                    let curLevel = removeLevelDirectionString(levelName: currentLevel)
+                    if (isKF && (curLevel == result.level_name)) {
+                        print(localTime + " , (Olympus) Entrance Route Tracker : Finish (Enter Phase4)")
+//                        self.timeUpdatePosition.x = self.outputResult.x
+//                        self.timeUpdatePosition.y = self.outputResult.y
+//                        self.timeUpdatePosition.heading = self.outputResult.absolute_heading
+//                        self.timeUpdateOutput.x = self.outputResult.x
+//                        self.timeUpdateOutput.y = self.outputResult.y
+//                        self.timeUpdateOutput.absolute_heading = self.outputResult.absolute_heading
+//                        self.measurementPosition.x = self.outputResult.x
+//                        self.measurementPosition.y = self.outputResult.y
+//                        self.measurementPosition.heading = self.outputResult.absolute_heading
+//                        self.measurementOutput.x = self.outputResult.x
+//                        self.measurementOutput.y = self.outputResult.y
+//                        self.measurementOutput.absolute_heading = self.outputResult.absolute_heading
+                        
+                        
+                        isRouteTrackFinished = true
+                        self.indexAfterRouteTrack = 0
+                        self.currentEntrance = ""
+                        self.currentEntranceLength = 0
+                        self.currentEntranceIndex = 0
+                    }
+                }
+            }
+        } else {
+//            self.currentLevel = self.resultToReturn.level_name
+//            if (isKF) {
+//                self.timeUpdatePosition.x = self.outputResult.x
+//                self.timeUpdatePosition.y = self.outputResult.y
+//                self.timeUpdatePosition.heading = self.outputResult.absolute_heading
+//                self.timeUpdateOutput.x = self.outputResult.x
+//                self.timeUpdateOutput.y = self.outputResult.y
+//                self.timeUpdateOutput.absolute_heading = self.outputResult.absolute_heading
+//                self.measurementPosition.x = self.outputResult.x
+//                self.measurementPosition.y = self.outputResult.y
+//                self.measurementPosition.heading = self.outputResult.absolute_heading
+//                self.measurementOutput.x = self.outputResult.x
+//                self.measurementOutput.y = self.outputResult.y
+//                self.measurementOutput.absolute_heading = self.outputResult.absolute_heading
+//            }
+            print(localTime + " , (Olympus) Entrance Route Tracker : Finish")
+            
+            isRouteTrackFinished = true
+            self.indexAfterRouteTrack = 0
+            self.currentEntrance = ""
+            self.currentEntranceLength = 0
+            self.currentEntranceIndex = 0
+        }
+        
+        return (isRouteTrackFinished, result)
+    }
+    
+    private func routeTrackEntrance(temporalResult: FineLocationTrackingFromServer, currentEntranceIndex: Int) -> FineLocationTrackingFromServer {
+        var result = temporalResult
+        
+        guard let entranceRouteLevel: [String] = self.EntranceRouteLevel[self.currentEntrance] else {
+            return result
+        }
+        
+        guard let entranceRouteCoord: [[Double]] = self.EntranceRouteCoord[self.currentEntrance] else {
+            return result
+        }
+        
+        result.level_name = entranceRouteLevel[currentEntranceIndex]
+        result.x = entranceRouteCoord[currentEntranceIndex][0]
+        result.y = entranceRouteCoord[currentEntranceIndex][1]
+        result.absolute_heading = entranceRouteCoord[currentEntranceIndex][2]
+        
+        return result
     }
     
     public func getEntranceVelocityScale(isGetFirstResponse: Bool, isStartRouteTrack: Bool) -> Double {

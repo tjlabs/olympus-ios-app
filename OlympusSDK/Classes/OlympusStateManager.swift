@@ -20,6 +20,7 @@ public class OlympusStateManager: NSObject {
     }
     
     private func notifyObservers(state: Int) {
+        print("State : \(state)")
         observers.forEach { $0.isStateDidChange(newValue: state) }
     }
     
@@ -31,22 +32,23 @@ public class OlympusStateManager: NSObject {
     public var isBleOff: Bool = false
     public var isBackground: Bool = false
     public var isBecomeForeground: Bool = false
-    
-    public var timeForInit: Double = 0
-    public var timeBleOff: Double = 0
-    public var timeBecomeForeground: Double = 0
-    public var timeEmptyRF: Double = 0
-    public var timeTrimFailRF: Double = 0
-    public var timeSleepRF: Double = 0
-    
-    var isActiveService: Bool = true
-    var isActiveRF: Bool = true
-    var isActiveUV: Bool = true
-    
-    public var timeIndexNotChanged: Double = 0
-    public var timeSleepUV: Double = 0
     public var isStop: Bool = false
+    public var isVenusMode: Bool = false
+    private var isNetworkConnectReported: Bool = false
     
+    public var timeForInit: Double = OlympusConstants.TIME_INIT_THRESHOLD+1
+    private var timeBleOff: Double = 0
+    private var timeBecomeForeground: Double = 0
+    private var timeEmptyRF: Double = 0
+    private var timeTrimFailRF: Double = 0
+    
+    public var isSleepMode: Bool = true
+    private var timeSleepRF: Double = 0
+    private var timeSleepUV: Double = 0
+    private var timeIndexNotChanged: Double = 0
+    
+
+    private var startObserver: Any!
     private var venusObserver: Any!
     private var jupiterObserver: Any!
     private var rfdErrorObserver: Any!
@@ -55,18 +57,14 @@ public class OlympusStateManager: NSObject {
     private var foregroundObserver: Any!
     private var trajEditedObserver: Any!
     
-    public var isVenusMode: Bool = false
-    
     public var networkCount: Int = 0
-    public var isNetworkConnectReported: Bool = false
     
     public func setVariblesWhenBleIsNotEmpty() {
         self.timeBleOff = 0
         self.timeEmptyRF = 0
         self.timeSleepRF = 0
-        
-        self.isActiveRF = true
         self.isBleOff = false
+        self.isSleepMode = false
     }
     
     public func checkBleOff(bluetoothReady: Bool, bleLastScannedTime: Double) {
@@ -78,7 +76,6 @@ public class OlympusStateManager: NSObject {
                     self.isBleOff = true
                     self.timeBleOff = 0
                     notifyObservers(state: BLE_OFF_FLAG)
-//                    self.reporting(input: BLE_OFF_FLAG)
                 }
             }
         } else {
@@ -86,7 +83,6 @@ public class OlympusStateManager: NSObject {
             if (bleLastScannedTime >= 6) {
                 // 스캔이 동작안한지 6초 이상 지남
                 notifyObservers(state: BLE_SCAN_STOP_FLAG)
-//                self.reporting(input: BLE_SCAN_STOP_FLAG)
             }
         }
     }
@@ -120,7 +116,6 @@ public class OlympusStateManager: NSObject {
         }
         
         if (self.timeEmptyRF >= OlympusConstants.OUTDOOR_THRESHOLD) {
-            self.isActiveRF = false
             if (self.isIndoor && self.isGetFirstResponse) {
                 if (!self.isBleOff) {
                     let isOutdoor = self.determineIsOutdoor(olympusResult: olympusResult, currentTime: currentTime, inFailCondition: false)
@@ -204,28 +199,19 @@ public class OlympusStateManager: NSObject {
         }
     }
     
-    public func checkEnterSleepMode() -> Bool {
-        self.timeSleepRF += OlympusConstants.RFD_INTERVAL
-        if (self.timeSleepRF >= OlympusConstants.SLEEP_THRESHOLD) {
-//            self.isActiveService = false
-            self.timeSleepRF = 0
-            return true
-        } else {
-            return false
+    public func checkEnterSleepMode(service: String, type: Int) {
+        if (service.contains(OlympusConstants.SERVICE_FLT)) {
+            if (type == 0) {
+                self.timeSleepRF += OlympusConstants.RFD_INTERVAL
+            } else {
+                self.timeSleepUV += OlympusConstants.UVD_INTERVAL
+            }
+            
+            if (self.timeSleepRF >= OlympusConstants.SLEEP_THRESHOLD || self.timeSleepUV >= OlympusConstants.SLEEP_THRESHOLD) {
+                self.isSleepMode = true
+            }
         }
     }
-    
-//    public func wakeUpFromSleepMode() {
-//        if (self.service == "FLT" || self.service == "FLT+") {
-//            if (self.updateTimer == nil && !self.isBackground) {
-//                let queue = DispatchQueue(label: Bundle.main.bundleIdentifier! + ".updateTimer")
-//                self.updateTimer = DispatchSource.makeTimerSource(queue: queue)
-//                self.updateTimer!.schedule(deadline: .now(), repeating: UPDATE_INTERVAL)
-//                self.updateTimer!.setEventHandler(handler: self.outputTimerUpdate)
-//                self.updateTimer!.resume()
-//            }
-//        }
-//    }
     
     public func getLastScannedEntranceOuterWardTime(bleAvg: [String: Double], entranceOuterWards: [String]) {
         var scannedTime: Double = 0
@@ -241,22 +227,19 @@ public class OlympusStateManager: NSObject {
     }
     
     public func checkEnterInNetworkBadEntrance(bleAvg: [String: Double]) -> (Bool, FineLocationTrackingFromServer) {
-        var isEnterInNetworkBadEntrance: Bool = false
         let emptyEntrance = FineLocationTrackingFromServer()
         
         if (!self.isGetFirstResponse) {
             let findResult = self.findNetworkBadEntrance(bleAvg: bleAvg)
             if (!self.isIndoor && (self.timeForInit >= OlympusConstants.TIME_INIT_THRESHOLD) && findResult.0) {
-                self.isGetFirstResponse = true
-                self.isIndoor = true
-                notifyObservers(state: INDOOR_FLAG)
-                isEnterInNetworkBadEntrance = true
-                return (isEnterInNetworkBadEntrance, findResult.1)
+                setIsGetFirstResponse(isGetFirstResponse: true)
+                setIsIndoor(isIndoor: true)
+                return (true, findResult.1)
             } else {
-                return (isEnterInNetworkBadEntrance, emptyEntrance)
+                return (false, emptyEntrance)
             }
         } else {
-            return (isEnterInNetworkBadEntrance, emptyEntrance)
+            return (false, emptyEntrance)
         }
     }
     
@@ -294,9 +277,8 @@ public class OlympusStateManager: NSObject {
     public func setVariblesWhenIsIndexChanged() {
         self.timeIndexNotChanged = 0
         self.timeSleepUV = 0
-        
         self.isStop = false
-//        self.isActiveService = true
+        self.isSleepMode = false
     }
     
     public func checkNetworkConnection() {
@@ -361,42 +343,48 @@ public class OlympusStateManager: NSObject {
     }
     
     func notificationCenterAddObserver() {
-        self.venusObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .didBecomeVenus, object: nil)
-        self.jupiterObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .didBecomeJupiter, object: nil)
-        self.rfdErrorObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .errorSendRfd, object: nil)
-        self.uvdErrorObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .errorSendUvd, object: nil)
-        self.trajEditedObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .trajEditedBecomeForground, object: nil)
+        startObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .serviceStarted, object: nil)
+        venusObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .didBecomeVenus, object: nil)
+        jupiterObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .didBecomeJupiter, object: nil)
+        rfdErrorObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .errorSendRfd, object: nil)
+        uvdErrorObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .errorSendUvd, object: nil)
+        trajEditedObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .trajEditedBecomeForground, object: nil)
     }
     
     func notificationCenterRemoveObserver() {
-        NotificationCenter.default.removeObserver(self.venusObserver)
-        NotificationCenter.default.removeObserver(self.jupiterObserver)
-        NotificationCenter.default.removeObserver(self.rfdErrorObserver)
-        NotificationCenter.default.removeObserver(self.uvdErrorObserver)
-        NotificationCenter.default.removeObserver(self.trajEditedObserver)
+        NotificationCenter.default.removeObserver(startObserver)
+        NotificationCenter.default.removeObserver(venusObserver)
+        NotificationCenter.default.removeObserver(jupiterObserver)
+        NotificationCenter.default.removeObserver(rfdErrorObserver)
+        NotificationCenter.default.removeObserver(uvdErrorObserver)
+        NotificationCenter.default.removeObserver(trajEditedObserver)
     }
     
     @objc func onDidReceiveNotification(_ notification: Notification) {
+        if notification.name == .serviceStarted {
+            notifyObservers(state: START_FLAG)
+        }
+        
         if notification.name == .didBecomeVenus {
-            self.isVenusMode = true
-            self.notifyObservers(state: VENUS_FLAG)
+            isVenusMode = true
+            notifyObservers(state: VENUS_FLAG)
         }
     
         if notification.name == .didBecomeJupiter {
-            self.isVenusMode = false
-            self.notifyObservers(state: JUPITER_FLAG)
+            isVenusMode = false
+            notifyObservers(state: JUPITER_FLAG)
         }
         
         if notification.name == .errorSendRfd {
-            self.notifyObservers(state: RFD_FLAG)
+            notifyObservers(state: RFD_FLAG)
         }
         
         if notification.name == .errorSendUvd {
-            self.notifyObservers(state: UVD_FLAG)
+            notifyObservers(state: UVD_FLAG)
         }
         
         if notification.name == .trajEditedBecomeForground {
-            self.isBecomeForeground = false
+            isBecomeForeground = false
         }
     }
 }

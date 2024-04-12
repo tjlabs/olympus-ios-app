@@ -305,8 +305,42 @@ public class OlympusBuildingLevelChanger {
         return cutIndex
     }
     
-    public func setBuildingLevelChangedTime(value: Int) {
+    private func setBuildingLevelChangedTime(value: Int) {
         self.buildingLevelChangedTime = value
+    }
+    
+    public func updateBuildingAndLevel(fltResult: FineLocationTrackingFromServer, currentBuilding: String, currentLevel: String) -> FineLocationTrackingFromServer{
+        var result = fltResult
+        
+        let currentTime = getCurrentTimeInMilliseconds()
+        let resultLevelName = removeLevelDirectionString(levelName: fltResult.level_name)
+        let currentLevelName = removeLevelDirectionString(levelName: currentLevel)
+        
+        let levelArray: [String] = [resultLevelName, currentLevelName]
+        var TIME_CONDITION = OlympusConstants.MINIMUM_BUILDING_LEVEL_CHANGE_TIME
+        if (levelArray.contains("B0") && levelArray.contains("B2")) {
+            TIME_CONDITION = OlympusConstants.MINIMUM_BUILDING_LEVEL_CHANGE_TIME*4
+        }
+        
+        var isBuildingLevelChanged: Bool = false
+        if (fltResult.building_name != currentBuilding || resultLevelName != currentLevelName) {
+            if ((fltResult.mobile_time - buildingLevelChangedTime) > TIME_CONDITION) {
+                if (currentBuilding != "" && currentLevel != "0F") {
+                    setBuildingLevelChangedTime(value: currentTime)
+                }
+                // Building Level 이 바뀐지 10초 이상 지남 -> 서버 결과를 이용해 바뀌어야 한다고 판단
+                result.building_name = fltResult.building_name
+                result.level_name = resultLevelName
+                isBuildingLevelChanged = true
+            }
+        }
+        
+        if (!isBuildingLevelChanged) {
+            result.building_name = currentBuilding
+            result.level_name = currentLevel
+        }
+        
+        return result
     }
     
     func notificationCenterAddObserver() {

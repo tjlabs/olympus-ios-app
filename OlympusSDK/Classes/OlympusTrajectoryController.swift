@@ -14,6 +14,7 @@ public class OlympusTrajectoryController {
     public var validIndex: Int = 0
     public var isNeedRemoveIndexSendFailArray: Bool = false
     
+    var phase2ReqCount: Int = 0
     
     // Trajectory Compensation
     let defaultTrajCompensataionArray: [Double] = [0.8, 1.0, 1.2]
@@ -205,6 +206,7 @@ public class OlympusTrajectoryController {
                 // DR
                 controlDrTrajectoryInfo(isDetermineSpot: isDetermineSpot, spotCutIndex: spotCutIndex, isUnknownTraj: self.isUnknownTraj, LENGTH_CONDITION: OlympusConstants.USER_TRAJECTORY_LENGTH)
             }
+            self.pastTrajectoryInfo = self.userTrajectoryInfo
         }
         
         return self.userTrajectoryInfo
@@ -258,6 +260,7 @@ public class OlympusTrajectoryController {
         if (isDetermineSpot) {
             let newTraj = getTrajectoryFromLast(from: self.userTrajectoryInfo, N: spotCutIndex)
             self.userTrajectoryInfo = newTraj
+            self.phase2ReqCount = 0
             
             NotificationCenter.default.post(name: .trajEditedAfterOsr, object: nil, userInfo: nil)
             NotificationCenter.default.post(name: .phaseBecome2, object: nil, userInfo: nil)
@@ -450,6 +453,17 @@ public class OlympusTrajectoryController {
         }
         
         return searchInfo
+    }
+    
+    public func controlPhase2SearchRange(searchInfo: SearchInfo, trajLength: Double) -> SearchInfo {
+        var result = searchInfo
+        self.phase2ReqCount += 1
+        if (self.phase2ReqCount > 2) {
+            let expandRange: Int = Int((trajLength - OlympusConstants.REQUIRED_LENGTH_PHASE2)/2)
+            result.searchRange = [result.searchRange[0]-expandRange, result.searchRange[1]-expandRange, result.searchRange[2]+expandRange, result.searchRange[3]+expandRange]
+        }
+        
+        return result
     }
     
     private func extractSectionWithLeastChange(inputArray: [Double]) -> [Double] {

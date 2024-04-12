@@ -16,6 +16,16 @@ class OlympusConstants {
     static let ABNORMAL_MAG_THRESHOLD: Double = 2000
     static let ABNORMAL_MAG_COUNT = 500
     
+    // Validity
+    static let VALID_SOLUTION: Int = 1
+    static let RECOVERING_SOLUTION: Int = 2
+    static let INVALID_OUTDOOR: Int = 3
+    static let INVALID_VENUS: Int = 4
+    static let INVALID_BLE: Int = 5
+    static let INVALID_NETWORK: Int = 6
+    static let INVALID_STATE: Int = 7
+
+    
     // Phase
     static let PHASE_0: Int = 0
     static let PHASE_1: Int = 1
@@ -31,6 +41,8 @@ class OlympusConstants {
     static var USER_TRAJECTORY_LENGTH: Double = 60
     static var USER_TRAJECTORY_LENGTH_DR: Double = 60
     static var USER_TRAJECTORY_LENGTH_PDR: Double = 20
+    static let DR_LENGTH_MARGIN: Int = 10
+    static let PDR_LENGTH_MARGIN: Int = 5
     
     static var NUM_STRAIGHT_IDX_DR: Int = 10
     static var NUM_STRAIGHT_IDX_PDR: Int = 10
@@ -67,6 +79,7 @@ class OlympusConstants {
     
     // Request
     static let MINIMUM_RQ_INTERVAL: Double = 2
+    static var REQUIRED_LENGTH_PHASE2: Double = 40
     
     // DR & PDR //
     static let LOOKING_FLAG_STEP_CHECK_SIZE: Int = 3
@@ -128,6 +141,7 @@ class OlympusConstants {
     static var UNKNOWN_TRAJ_CUT_IDX: Int = 25
     static let OUTERWARD_SCAN_THRESHOLD: Double = -85.0
     static var REQUIRED_LENGTH_FOR_MAJOR_HEADING: Double = 10
+    static let SCC_FOR_PHASE_BREAK: Double = 0.45
     
     // Path-Matching
     static let HEADING_RANGE: Double = 46
@@ -144,6 +158,10 @@ class OlympusConstants {
         OlympusConstants.USER_TRAJECTORY_LENGTH_PDR = sector_info.user_traj_length_pdr
         OlympusConstants.NUM_STRAIGHT_IDX_DR = sector_info.num_straight_idx_dr
         OlympusConstants.NUM_STRAIGHT_IDX_PDR = sector_info.num_straight_idx_pdr
+        
+        if (OlympusConstants.REQUIRED_LENGTH_PHASE2 >= sector_info.user_traj_length_dr) {
+            OlympusConstants.REQUIRED_LENGTH_PHASE2 = round(sector_info.user_traj_length_dr/2)
+        }
     }
     
     public func setNormalizationScale(cur: Double, pre: Double) {

@@ -10,6 +10,7 @@ extension Notification.Name {
     public static let didReceiveData                  = Notification.Name("olmypusDidReceiveData")
     public static let scanInfo                        = Notification.Name("olmypusScanInfo")
     public static let notificationEnabled             = Notification.Name("olmypusNotificationEnabled")
+    public static let serviceStarted                  = Notification.Name("olympusStarted")
     public static let didEnterBackground              = Notification.Name("olmypusDidEnterBackground")
     public static let didBecomeActive                 = Notification.Name("olmypusDidBecomeActive")
     public static let didBecomeVenus                  = Notification.Name("olmypusDidBecomeVenus")
