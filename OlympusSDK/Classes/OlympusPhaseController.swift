@@ -9,12 +9,11 @@ public class OlympusPhaseController {
     var PHASE3_LENGTH_CONDITION_DR: Double = 60
     var PHASE2_LENGTH_CONDITION_DR: Double = 50
     
+    public var phase2BadCount: Int = 0
     var phase2count: Int = 0
     var phase3count: Int = 0
     
-    private var phase1Observer: Any!
-    private var phase2Observer: Any!
-    
+    private var phaseObserver: Any!
     public var PHASE: Int = 1
     
     init() {
@@ -34,6 +33,10 @@ public class OlympusPhaseController {
         
         self.PHASE2_LENGTH_CONDITION_PDR = self.PHASE3_LENGTH_CONDITION_PDR - Double(OlympusConstants.PDR_LENGTH_MARGIN)
         self.PHASE2_LENGTH_CONDITION_DR = self.PHASE3_LENGTH_CONDITION_DR - Double(OlympusConstants.DR_LENGTH_MARGIN)
+    }
+    
+    public func setPhase2BadCount(value: Int) {
+        self.phase2BadCount = value
     }
     
 //    public func controlJupiterPhase(serverResult: FineLocationTrackingFromServer, inputPhase: Int, mode: String, isVenusMode: Bool) -> (Int, Bool) {
@@ -240,6 +243,7 @@ public class OlympusPhaseController {
             isPhaseBreak = true
         }
         
+        self.PHASE = phase
         return (phase, isPhaseBreak)
     }
     
@@ -338,22 +342,18 @@ public class OlympusPhaseController {
     }
     
     func notificationCenterAddObserver() {
-        self.phase1Observer = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .phaseBecome1, object: nil)
-        self.phase2Observer = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .phaseBecome2, object: nil)
+        self.phaseObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .phaseChanged, object: nil)
     }
     
     func notificationCenterRemoveObserver() {
-        NotificationCenter.default.removeObserver(self.phase1Observer)
-        NotificationCenter.default.removeObserver(self.phase2Observer)
+        NotificationCenter.default.removeObserver(self.phaseObserver)
     }
     
     @objc func onDidReceiveNotification(_ notification: Notification) {
-        if notification.name == .phaseBecome1 {
+        if let intValue = notification.userInfo?["phase"] as? Int {
+            self.PHASE = intValue
+        } else {
             self.PHASE = OlympusConstants.PHASE_1
-        }
-        
-        if notification.name == .phaseBecome2 {
-            self.PHASE = OlympusConstants.PHASE_2
         }
     }
 }

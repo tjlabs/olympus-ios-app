@@ -521,10 +521,14 @@ public struct TrajectoryInfo {
     public var userTuHeading: Double = 0
 }
 
+public enum TrajType {
+    case ALL_STRAIGHT, HEADING_STRAIGHT, TAIL_STRAIGHT, UNKNOWN
+}
+
 public struct SearchInfo {
     public var searchRange: [Int] = []
     public var searchDirection: [Int] = [0, 90, 180, 270]
     public var tailIndex: Int = 1
-    public var trajType: Int = 0
+    public var trajType: TrajType = TrajType.UNKNOWN
     public var trajLength: Double = 0
 }

@@ -30,7 +30,10 @@ public class OlympusTrajectoryController {
         for unitTraj in trajectoryInfo {
             trajLength += unitTraj.length
         }
-        return trajLength
+        
+        let roundedTrajLength = (trajLength * 1e4).rounded() / 1e4
+        
+        return roundedTrajLength
     }
     
     func getTrajectoryFromLast(from trajectoryInfo: [TrajectoryInfo], N: Int) -> [TrajectoryInfo] {
@@ -251,7 +254,7 @@ public class OlympusTrajectoryController {
         }
         
         if (isNeedAllClear) {
-            NotificationCenter.default.post(name: .phaseBecome1, object: nil, userInfo: nil)
+            NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_1])
             self.userTrajectoryInfo = [TrajectoryInfo]()
         }
     }
@@ -263,7 +266,7 @@ public class OlympusTrajectoryController {
             self.phase2ReqCount = 0
             
             NotificationCenter.default.post(name: .trajEditedAfterOsr, object: nil, userInfo: nil)
-            NotificationCenter.default.post(name: .phaseBecome2, object: nil, userInfo: nil)
+            NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_2])
         } else if (isUnknownTraj) {
             self.isUnknownTraj = false
             
@@ -305,7 +308,7 @@ public class OlympusTrajectoryController {
         }
         
         if (isNeedAllClear) {
-            NotificationCenter.default.post(name: .phaseBecome1, object: nil, userInfo: nil)
+            NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_1])
             self.userTrajectoryInfo = [TrajectoryInfo]()
         }
     }
@@ -450,6 +453,7 @@ public class OlympusTrajectoryController {
             }
         } else {
             // Empty TrajectoryInfo
+            print("Traj is Empty")
         }
         
         return searchInfo

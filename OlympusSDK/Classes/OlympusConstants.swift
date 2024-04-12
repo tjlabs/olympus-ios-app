@@ -142,6 +142,8 @@ class OlympusConstants {
     static let OUTERWARD_SCAN_THRESHOLD: Double = -85.0
     static var REQUIRED_LENGTH_FOR_MAJOR_HEADING: Double = 10
     static let SCC_FOR_PHASE_BREAK: Double = 0.45
+    static let SCC_FOR_PHASE_BREAK_IN_PHASE2: Double = 0.26
+    static let COUNT_FOR_PHASE_BREAK_IN_PHASE2: Int = 7
     
     // Path-Matching
     static let HEADING_RANGE: Double = 46

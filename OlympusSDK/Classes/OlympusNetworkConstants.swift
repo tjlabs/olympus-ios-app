@@ -10,7 +10,6 @@ var REGION_PREFIX = "ap-northeast-2."
 let OLMPUS_SUFFIX = ".olympus.tjlabs.dev"
 var REGION_NAME = "Korea"
 
-
 var USER_URL = "user"
 var IMAGE_URL = "img"
 var CSV_URL = "csv"

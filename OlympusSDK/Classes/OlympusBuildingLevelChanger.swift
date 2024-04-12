@@ -44,7 +44,7 @@ public class OlympusBuildingLevelChanger {
         }
     }
     
-    func estimateBuildingLevel(user_id: String, mode: String, phase: Int, isGetFirstResponse: Bool, isInNetworkBadEntrance: Bool, isStartRouteTrack: Bool, result: FineLocationTrackingResult, currentBuilding: String, currentLevel: String, currentEntrance: String) {
+    func estimateBuildingLevel(user_id: String, mode: String, phase: Int, isGetFirstResponse: Bool, isInNetworkBadEntrance: Bool, result: FineLocationTrackingResult, currentBuilding: String, currentLevel: String, currentEntrance: String) {
         let currentTime = getCurrentTimeInMilliseconds()
         var isRunOsr: Bool = true
         if (isGetFirstResponse && !isInNetworkBadEntrance) {
@@ -66,7 +66,7 @@ public class OlympusBuildingLevelChanger {
                                 let isOnSpot = isOnSpotRecognition(result: decodedOsr, level: currentLevel)
                                 if (isOnSpot.isOn) {
                                     let levelDestination = isOnSpot.levelDestination + isOnSpot.levelDirection
-                                    determineSpotDetect(result: decodedOsr, isStartRouteTrack: isStartRouteTrack, lastSpotId: self.lastSpotId, levelDestination: levelDestination, currentBuilding: currentBuilding, currentLevel: currentLevel, currentEntrance: currentEntrance, currentTime: currentTime)
+                                    determineSpotDetect(result: decodedOsr, lastSpotId: self.lastSpotId, levelDestination: levelDestination, currentBuilding: currentBuilding, currentLevel: currentLevel, currentEntrance: currentEntrance, currentTime: currentTime)
                                 }
                             }
                         }
@@ -78,8 +78,7 @@ public class OlympusBuildingLevelChanger {
         }
     }
     
-    func determineSpotDetect(result: OnSpotRecognitionResult, isStartRouteTrack: Bool, lastSpotId: Int, levelDestination: String, currentBuilding: String, currentLevel: String, currentEntrance: String, currentTime: Int) {
-        let localTime = getLocalTimeString()
+    func determineSpotDetect(result: OnSpotRecognitionResult, lastSpotId: Int, levelDestination: String, currentBuilding: String, currentLevel: String, currentEntrance: String, currentTime: Int) {
         var spotDistance = result.spot_distance
         if (spotDistance == 0) {
             spotDistance = OlympusConstants.DEFAULT_SPOT_DISTANCE
@@ -119,12 +118,6 @@ public class OlympusBuildingLevelChanger {
                     
                     self.isDetermineSpot = true
                     self.spotCutIndex = self.determineSpotCutIndex(entranceString: currentEntrance)
-                    
-                    if (isStartRouteTrack) {
-//                        self.makeOutputResult(input: self.outputResult, isPast: self.flagPast, runMode: self.runMode, isVenusMode: self.isVenusMode)
-                    } else {
-//                        self.resultToReturn = self.makeOutputResult(input: self.outputResult, isPast: self.flagPast, runMode: self.runMode, isVenusMode: self.isVenusMode)
-                    }
                 }
             }
             self.preOutputMobileTime = currentTime
@@ -157,12 +150,6 @@ public class OlympusBuildingLevelChanger {
                         
                         self.isDetermineSpot = true
                         self.spotCutIndex = self.determineSpotCutIndex(entranceString: currentEntrance)
-                        
-                        if (isStartRouteTrack) {
-//                            self.makeOutputResult(input: self.outputResult, isPast: self.flagPast, runMode: self.runMode, isVenusMode: self.isVenusMode)
-                        } else {
-//                            self.resultToReturn = self.makeOutputResult(input: self.outputResult, isPast: self.flagPast, runMode: self.runMode, isVenusMode: self.isVenusMode)
-                        }
                     }
                 }
                 self.preOutputMobileTime = currentTime

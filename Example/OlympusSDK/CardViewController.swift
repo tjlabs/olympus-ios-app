@@ -9,7 +9,7 @@ class CardViewController: UIViewController, Observer {
     
     func update(result: OlympusSDK.FineLocationTrackingResult) {
         if (result.x != 0 && result.y != 0) {
-            print("InnerLabs : Result = \(result)")
+//            print("InnerLabs : Result = \(result)")
         }
         
     }
@@ -28,12 +28,11 @@ class CardViewController: UIViewController, Observer {
         super.viewDidLoad()
         serviceManager.addObserver(self)
         
-        var sector_id = 2
-        var mode = "pdr"
+        let sector_id = 2
+        let mode = "pdr"
         
         serviceManager.startService(user_id: self.userId, region: self.region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
             if (isStart) {
-                serviceManager.addObserver(self)
 //                print(returnedString)
             } else {
                 print(returnedString)
