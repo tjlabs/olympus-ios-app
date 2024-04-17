@@ -1,7 +1,8 @@
 import Foundation
+import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
-    public static let sdkVersion: String = "0.0.2"
+    public static let sdkVersion: String = "0.0.3"
     
     func tracking(input: FineLocationTrackingResult) {
         for observer in observers {
