@@ -218,6 +218,7 @@ public class OlympusTrajectoryController {
     private func controlPdrTrajectoryInfo(LENGTH_CONDITION: Double) {
         var isNeedAllClear: Bool = false
         let updatedTrajectoryInfoWithLength = updateTrajectoryInfoWithLength(trajectoryInfo: self.userTrajectoryInfo, LENGTH_CONDITION: LENGTH_CONDITION)
+        print("(Olympus) traj length : \(calculateTrajectoryLength(trajectoryInfo: updatedTrajectoryInfoWithLength))")
         let isTailIndexSendFail = checkIsTailIndexSendFail(trajectoryInfo: updatedTrajectoryInfoWithLength, sendFailUvdIndexes: self.sendFailUvdIndexes)
         if (isTailIndexSendFail) {
             let validTrajectoryInfoResult = getValidTrajectory(trajectoryInfo: updatedTrajectoryInfoWithLength, sendFailUvdIndexes: self.sendFailUvdIndexes, mode: OlympusConstants.MODE_PDR)
@@ -424,6 +425,9 @@ public class OlympusTrajectoryController {
                     
                     if (!hasMajorDirection) {
                         searchHeadings = [0, 90, 180, 270]
+                        searchInfo.trajType = TrajType.PDR_IN_PHASE3_NO_MAJOR_DIR
+                    } else {
+                        searchInfo.trajType = TrajType.PDR_IN_PHASE3_HAS_MAJOR_DIR
                     }
                     searchInfo.searchDirection = searchHeadings.map { Int($0) }
                     
@@ -445,6 +449,12 @@ public class OlympusTrajectoryController {
                         xyFromHead[1] = xyFromHead[1] + trajectoryInfo[i].length*sin(headAngle*OlympusConstants.D2R)
                         trajectoryFromHead.append(xyFromHead)
                     }
+                    
+                    searchInfo.tailIndex = trajectoryInfo[0].index
+                    
+                    // 임시
+                    searchInfo.trajShape = trajectoryFromHead
+                    searchInfo.trajStartCoord = [headInfo.userX, headInfo.userY]
                 } else {
                     // Phase 4
                 }

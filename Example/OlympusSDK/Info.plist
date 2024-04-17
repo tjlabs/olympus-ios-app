@@ -46,7 +46,6 @@
 		<string>gyroscope</string>
 		<string>magnetometer</string>
 		<string>bluetooth-le</string>
-		<string>Baro</string>
 	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>

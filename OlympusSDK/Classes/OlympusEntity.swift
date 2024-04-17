@@ -522,13 +522,52 @@ public struct TrajectoryInfo {
 }
 
 public enum TrajType {
-    case ALL_STRAIGHT, HEADING_STRAIGHT, TAIL_STRAIGHT, UNKNOWN
+    case DR_UNKNOWN,
+         DR_IN_PHASE3,
+         DR_ALL_STRAIGHT,
+         DR_HEADING_STRAIGHT,
+         DR_TAIL_STRAIGHT,
+         DR_RQ_IN_PHASE2,
+         DR_NO_RQ_IN_PHASE2,
+         PDR_IN_PHASE3_HAS_MAJOR_DIR,
+         PDR_IN_PHASE3_NO_MAJOR_DIR,
+         PDR_IN_PHASE4_HAS_MAJOR_DIR,
+         PDR_IN_PHASE4_NO_MAJOR_DIR,
+         PDR_IN_PHASE4_ABNORMAL
 }
 
 public struct SearchInfo {
     public var searchRange: [Int] = []
     public var searchDirection: [Int] = [0, 90, 180, 270]
     public var tailIndex: Int = 1
-    public var trajType: TrajType = TrajType.UNKNOWN
+    public var trajShape: [[Double]] = [[0, 0]]
+    public var trajStartCoord: [Double] = [0, 0]
+    public var trajType: TrajType = TrajType.DR_UNKNOWN
     public var trajLength: Double = 0
+}
+
+
+// 임시
+public struct ServiceResult {
+    public var isIndexChanged: Bool = false
+    public var indexTx: Int = 0
+    public var indexRx: Int = 0
+    public var length: Double = 0
+    public var velocity: Double = 0
+    public var heading: Double = 0
+    public var scc: Double = 0
+    public var phase: String = ""
+    public var mode: String = ""
+    public var isPmSuccess: Bool = false
+    
+    public var level: String = ""
+    public var building: String = ""
+    
+    public var userTrajectory: [[Double]] = [[0, 0]]
+    public var trajectoryStartCoord: [Double] = [0, 0]
+    public var searchArea: [[Double]] = [[0, 0]]
+    public var searchType: Int = 0
+    
+    public var trajectoryPm: [[Double]] = [[0, 0]]
+    public var trajectoryOg: [[Double]] = [[0, 0]]
 }

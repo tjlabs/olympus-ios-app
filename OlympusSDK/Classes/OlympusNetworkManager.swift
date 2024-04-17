@@ -351,14 +351,14 @@ public class OlympusNetworkManager {
             requestURL.addValue("application/json", forHTTPHeaderField: "Content-Type")
             requestURL.setValue("\(encodingData)", forHTTPHeaderField: "Content-Length")
             
-            print("")
-            print("====================================")
-            print("POST FLT URL :: ", url)
-            print("POST FLT Sector :: ", input.sector_id)
-            print("POST FLT ID :: ", input.user_id)
-            print("POST FLT 데이터 :: ", input)
-            print("====================================")
-            print("")
+//            print("")
+//            print("====================================")
+//            print("POST FLT URL :: ", url)
+//            print("POST FLT Sector :: ", input.sector_id)
+//            print("POST FLT ID :: ", input.user_id)
+//            print("POST FLT 데이터 :: ", input)
+//            print("====================================")
+//            print("")
             
             let dataTask = self.fltSession.dataTask(with: requestURL, completionHandler: { (data, response, error) in
                 // [error가 존재하면 종료]

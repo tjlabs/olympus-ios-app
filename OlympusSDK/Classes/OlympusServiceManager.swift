@@ -93,6 +93,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     var olympusResult = FineLocationTrackingResult()
     var olympusVelocity: Double = 0
     
+    // 임시
+    public var displayOutput = ServiceResult()
+    
     public override init() {
         self.deviceModel = UIDevice.modelName
         let deviceOs = UIDevice.current.systemVersion
@@ -103,7 +106,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd-HH-mm-ss"
         dateFormatter.locale = Locale(identifier:"ko_KR")
-        let nowDate = Date()
+        
         stateManager.addObserver(self)
     }
     
@@ -534,7 +537,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             let phase4Trajectory = trajectoryInfo
             if (!stateManager.isBackground) {
                 let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase4Trajectory, pastTrajectoryInfo: [], mode: mode, PHASE: phaseController.PHASE)
-                if (searchInfo.trajType != TrajType.UNKNOWN) {
+                if (searchInfo.trajType != TrajType.DR_UNKNOWN) {
 //                    processPhase4(currentTime: currentTime, localTime: localTime, userTrajectory: phase4Trajectory, searchInfo: searchInfo)
                 }
             }
@@ -553,6 +556,13 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 // Phase 1 ~ 3
                 let phase3Trajectory = trajectoryInfo
                 let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase3Trajectory, pastTrajectoryInfo: trajController.pastTrajectoryInfo, mode: mode, PHASE: phaseController.PHASE)
+                
+                // 임시
+                let displaySearchType: Int = trajTypeConveter(trajType: searchInfo.trajType)
+                displayOutput.searchType = displaySearchType
+                displayOutput.userTrajectory = searchInfo.trajShape
+                displayOutput.trajectoryStartCoord = searchInfo.trajStartCoord
+                
                 if (!isStartRouteTrack || isPhaseBreakInRouteTrack) {
                     processPhase3(currentTime: currentTime, mode: mode, trajectoryInfo: phase3Trajectory, searchInfo: searchInfo)
                 }
@@ -583,11 +593,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         
         var input = FineLocationTracking(user_id: self.user_id, mobile_time: currentTime, sector_id: self.sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM, building_name: self.currentBuilding, level_name_list: [self.currentLevel], phase: OlympusConstants.PHASE_2, search_range: searchInfo.searchRange, search_direction_list: searchInfo.searchDirection, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation_list: trajCompensationArray, tail_index: searchInfo.tailIndex)
         stateManager.setNetworkCount(value: stateManager.networkCount+1)
-        if (REGION_NAME != "Korea" && self.deviceModel == "iPhone SE (2nd generation)") {
-            input.normalization_scale = 1.01
-        }
+        if (REGION_NAME != "Korea" && self.deviceModel == "iPhone SE (2nd generation)") { input.normalization_scale = 1.01 }
         OlympusNetworkManager.shared.postFLT(url: CALC_FLT_URL, input: input, userTraj: trajectoryInfo, searchInfo: searchInfo, completion: { [self] statusCode, returnedString, inputPhase, inputTraj, inputSearchInfo in
-            print("Code = \(statusCode) // Result = \(returnedString)")
+//            print("Code = \(statusCode) // Result = \(returnedString)")
             if (!returnedString.contains("timed out")) {
                 stateManager.setNetworkCount(value: 0)
             }
@@ -651,10 +659,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //        self.phase2BadCount = 0
         var input = FineLocationTracking(user_id: self.user_id, mobile_time: currentTime, sector_id: self.sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM, building_name: self.currentBuilding, level_name_list: levelArray, phase: phaseController.PHASE, search_range: searchInfo.searchRange, search_direction_list: searchInfo.searchDirection, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation_list: trajCompensationArray, tail_index: searchInfo.tailIndex)
         stateManager.setNetworkCount(value: stateManager.networkCount+1)
-        if (REGION_NAME != "Korea" && self.deviceModel == "iPhone SE (2nd generation)") {
-            input.normalization_scale = 1.01
-        }
-        
+        if (REGION_NAME != "Korea" && self.deviceModel == "iPhone SE (2nd generation)") { input.normalization_scale = 1.01 }
         OlympusNetworkManager.shared.postFLT(url: CALC_FLT_URL, input: input, userTraj: trajectoryInfo, searchInfo: searchInfo, completion: { [self] statusCode, returnedString, inputPhase, inputTraj, inputSearchInfo in
 //            print("Code = \(statusCode) // Result = \(returnedString)")
             if (!returnedString.contains("timed out")) {
@@ -863,6 +868,39 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         phaseController.setPhase2BadCount(value: 0)
         isPhaseBreakInRouteTrack = isStartRouteTrack
         isPhaseBreak = KF.isRunning
+    }
+    
+    // 임시
+    private func trajTypeConveter(trajType: TrajType) -> Int {
+        var convertedValue: Int = -3
+        switch (trajType) {
+        case .DR_UNKNOWN:
+            convertedValue = 0
+        case .DR_ALL_STRAIGHT:
+            convertedValue = 1
+        case .DR_HEADING_STRAIGHT:
+            convertedValue = 2
+        case .DR_TAIL_STRAIGHT:
+            convertedValue = 3
+        case .DR_RQ_IN_PHASE2:
+            convertedValue = 4
+        case .DR_NO_RQ_IN_PHASE2:
+            convertedValue = -1
+        case .PDR_IN_PHASE3_HAS_MAJOR_DIR:
+            convertedValue = 5
+        case .PDR_IN_PHASE3_NO_MAJOR_DIR:
+            convertedValue = -1
+        case .PDR_IN_PHASE4_HAS_MAJOR_DIR:
+            convertedValue = 4
+        case .PDR_IN_PHASE4_NO_MAJOR_DIR:
+            convertedValue = 6
+        case .PDR_IN_PHASE4_ABNORMAL:
+            convertedValue = 7
+        default:
+            convertedValue = -3
+        }
+        
+        return convertedValue
     }
     
     private func temporalToOlympus(fromServer: FineLocationTrackingFromServer, phase: Int, velocity: Double, mode: String, ble_only_position: Bool, isIndoor: Bool, validity: Bool, validity_flag: Int) -> FineLocationTrackingResult {
