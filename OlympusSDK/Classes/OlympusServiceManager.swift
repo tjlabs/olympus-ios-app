@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
-    public static let sdkVersion: String = "0.0.4"
+    public static let sdkVersion: String = "0.0.5"
     
     func tracking(input: FineLocationTrackingResult) {
         for observer in observers {
@@ -74,6 +74,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     var currentBuilding: String = ""
     var currentLevel: String = ""
     
+    var isStartComplete: Bool = false
     var isPhaseBreak: Bool = false
     var isPhaseBreakInRouteTrack: Bool = false
     var isInNetworkBadEntrance: Bool = false
@@ -160,6 +161,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                                     let msg: String = getLocalTimeString() + " , (Olympus) Error : Bluetooth is not enabled"
                                                     completion(false, msg)
                                                 } else {
+                                                    self.isStartComplete = true
                                                     self.startTimer()
                                                     NotificationCenter.default.post(name: .serviceStarted, object: nil, userInfo: nil)
                                                     completion(true, getLocalTimeString() + success_msg)
@@ -240,6 +242,59 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         
         
         return (isSuccess, msg)
+    }
+    
+    public func stopService() -> (Bool, String) {
+        let localTime: String = getLocalTimeString()
+        var message: String = localTime + " , (Olympus) Success : Stop Service"
+        
+        if (self.isStartComplete) {
+            self.stopTimer()
+            self.bleManager.stopScan()
+            
+            if (self.service.contains(OlympusConstants.SERVICE_FLT)) {
+                initVariables()
+//                paramEstimator.saveNormalizationScale(scale: self.normalizationScale, sector_id: self.sector_id)
+//                self.postParam(sector_id: self.sector_id, normailzationScale: self.normalizationScale)
+            }
+            
+            return (true, message)
+        } else {
+            message = localTime + " , (Olympus) Fail : After the service has fully started, it can be stop "
+            return (false, message)
+        }
+    }
+    
+    private func initVariables() {
+        runMode = OlympusConstants.MODE_DR
+        currentMode = OlympusConstants.MODE_DR
+        currentBuilding = ""
+        currentLevel = ""
+        
+        isStartComplete = false
+        isPhaseBreak = false
+        isPhaseBreakInRouteTrack = false
+        isInNetworkBadEntrance = false
+        isStartRouteTrack = false
+        isInEntranceLevel = false
+        
+        pastReportTime = 0
+        pastReportFlag = 0
+        
+        timeRequest = 0
+        preServerResultMobileTime = 0
+        serverResultBuffer = []
+        unitDRInfoBuffer = []
+        
+        temporalResult =  FineLocationTrackingFromServer()
+        preTemporalResult = FineLocationTrackingFromServer()
+        routeTrackResult = FineLocationTrackingFromServer()
+        
+        olympusResult = FineLocationTrackingResult()
+        olympusVelocity = 0
+        
+        unitDRInfo = UnitDRInfo()
+        trajController.clearUserTrajectoryInfo()
     }
     
     private func setSectorInfo(sector_id: Int, sector_info_from_server: SectorInfoFromServer) {
@@ -427,9 +482,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     if (statusCode != 200) {
 //                        let localTime = getLocalTimeString()
 //                        let msg: String = localTime + " , (Olympus) Error : RFD \(statusCode) // " + returnedString
-                        if (stateManager.isIndoor && stateManager.isGetFirstResponse && !stateManager.isBackground) {
-                            NotificationCenter.default.post(name: .errorSendRfd, object: nil, userInfo: nil)
-                        }
+                        if (stateManager.isIndoor && stateManager.isGetFirstResponse && !stateManager.isBackground) { NotificationCenter.default.post(name: .errorSendRfd, object: nil, userInfo: nil) }
                     }
                 })
                 inputReceivedForce = [ReceivedForce(user_id: "", mobile_time: 0, ble: [:], pressure: 0)]
@@ -492,9 +545,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     } else {
 //                        let localTime = getLocalTimeString()
 //                        let msg: String = localTime + " , (Olympus) Error : UVD \(statusCode) // " + returnedString
-                        if (stateManager.isIndoor && stateManager.isGetFirstResponse && !stateManager.isBackground) {
-                            NotificationCenter.default.post(name: .errorSendUvd, object: nil, userInfo: nil)
-                        }
+                        if (stateManager.isIndoor && stateManager.isGetFirstResponse && !stateManager.isBackground) { NotificationCenter.default.post(name: .errorSendUvd, object: nil, userInfo: nil) }
                         trajController.stackPostUvdFailData(inputUvd: inputUvd)
                     }
                 })
@@ -673,6 +724,11 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 if (result.0 && fltResult.x != 0 && fltResult.y != 0) {
                     trajController.updateTrajCompensationArray(result: fltResult)
                     if (fltResult.mobile_time > self.preServerResultMobileTime) {
+                        // 임시
+                        displayOutput.serverResult[0] = fltResult.x
+                        displayOutput.serverResult[1] = fltResult.y
+                        displayOutput.serverResult[2] = fltResult.absolute_heading
+                        
                         stackServerResult(serverResult: fltResult)
                         let resultPhase = phaseController.controlPhase(serverResultArray: serverResultBuffer, drBuffer: unitDRInfoBuffer, UVD_INTERVAL: OlympusConstants.UVD_INPUT_NUM, TRAJ_LENGTH: OlympusConstants.USER_TRAJECTORY_LENGTH, inputPhase: inputPhase, mode: runMode, isVenusMode: stateManager.isVenusMode)
                         
@@ -723,12 +779,13 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         
                         if (KF.isRunning) {
                             if (resultPhase.0 == OlympusConstants.PHASE_4) {
-                                
+                                // Phase4 유지중
                             } else {
                                 
                             }
                         } else {
                             if (resultPhase.0 == OlympusConstants.PHASE_4) {
+                                // Phase 3 --> 4 && KF start
                                 
                             } else {
                                 // KF is not running && Phase 1 ~ 3

@@ -570,4 +570,6 @@ public struct ServiceResult {
     
     public var trajectoryPm: [[Double]] = [[0, 0]]
     public var trajectoryOg: [[Double]] = [[0, 0]]
+    
+    public var serverResult: [Double] = [0, 0, 0]
 }

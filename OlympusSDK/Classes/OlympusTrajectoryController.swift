@@ -25,6 +25,10 @@ public class OlympusTrajectoryController {
     
     init() {}
     
+    public func clearUserTrajectoryInfo() {
+        self.userTrajectoryInfo = [TrajectoryInfo]()
+    }
+    
     public func calculateTrajectoryLength(trajectoryInfo: [TrajectoryInfo]) -> Double {
         var trajLength = 0.0
         for unitTraj in trajectoryInfo {
@@ -218,7 +222,6 @@ public class OlympusTrajectoryController {
     private func controlPdrTrajectoryInfo(LENGTH_CONDITION: Double) {
         var isNeedAllClear: Bool = false
         let updatedTrajectoryInfoWithLength = updateTrajectoryInfoWithLength(trajectoryInfo: self.userTrajectoryInfo, LENGTH_CONDITION: LENGTH_CONDITION)
-        print("(Olympus) traj length : \(calculateTrajectoryLength(trajectoryInfo: updatedTrajectoryInfoWithLength))")
         let isTailIndexSendFail = checkIsTailIndexSendFail(trajectoryInfo: updatedTrajectoryInfoWithLength, sendFailUvdIndexes: self.sendFailUvdIndexes)
         if (isTailIndexSendFail) {
             let validTrajectoryInfoResult = getValidTrajectory(trajectoryInfo: updatedTrajectoryInfoWithLength, sendFailUvdIndexes: self.sendFailUvdIndexes, mode: OlympusConstants.MODE_PDR)

@@ -5,4 +5,12 @@ public class OlympusKalmanFilter: NSObject {
     }
     
     public var isRunning: Bool = false
+    
+    public func initKalmanFilter() {
+        self.isRunning = false
+    }
+    
+    public func activateKalmanFilter() {
+        self.isRunning = true
+    }
 }
