@@ -74,7 +74,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		0AA350A8B68B659F7560E987A0DCB037 /* OlympusSDK */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = OlympusSDK; path = OlympusSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		0AA350A8B68B659F7560E987A0DCB037 /* OlympusSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OlympusSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		14EEF2957DAF1EAC4206FADC91C43710 /* Pods-OlympusSDK_Example-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-OlympusSDK_Example-acknowledgements.plist"; sourceTree = "<group>"; };
 		1A8815DE66BB1C930B1BB871FF02B9DA /* OlympusSDK.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = OlympusSDK.debug.xcconfig; sourceTree = "<group>"; };
 		21E37C7F2BCF3D6A411190DBF2499648 /* Pods-OlympusSDK_Tests-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-OlympusSDK_Tests-Info.plist"; sourceTree = "<group>"; };
@@ -84,13 +84,13 @@
 		4D747DDBED9806468C6DE103985D1B71 /* Pods-OlympusSDK_Example-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-OlympusSDK_Example-acknowledgements.markdown"; sourceTree = "<group>"; };
 		4F1ECFA330BB1A13F56112DAE84496DB /* Pods-OlympusSDK_Example-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-OlympusSDK_Example-umbrella.h"; sourceTree = "<group>"; };
 		52FC1000902B021649CD7FC603EC7569 /* OlympusSDK-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "OlympusSDK-dummy.m"; sourceTree = "<group>"; };
-		56BC7954DCE7FFB38130C9BAB70CA4FB /* Pods-OlympusSDK_Example */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = "Pods-OlympusSDK_Example"; path = Pods_OlympusSDK_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		56BC7954DCE7FFB38130C9BAB70CA4FB /* Pods_OlympusSDK_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OlympusSDK_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		67ABF0A99145D22D85A85DC5FF252C9D /* Pods-OlympusSDK_Tests-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-OlympusSDK_Tests-acknowledgements.plist"; sourceTree = "<group>"; };
 		689E63160BF7B7EC9F33F76B3E18CF75 /* OlympusSDK-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "OlympusSDK-umbrella.h"; sourceTree = "<group>"; };
 		69C7B0A9336B8613989906875E45C0DD /* Pods-OlympusSDK_Tests.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Pods-OlympusSDK_Tests.modulemap"; sourceTree = "<group>"; };
 		73010CC983E3809BECEE5348DA1BB8C6 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		8D86710C59F2302076BEF7736FFAD970 /* Pods-OlympusSDK_Example-frameworks.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-OlympusSDK_Example-frameworks.sh"; sourceTree = "<group>"; };
-		95D1AC59FED2B5C367684266C9C881C7 /* Pods-OlympusSDK_Tests */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = "Pods-OlympusSDK_Tests"; path = Pods_OlympusSDK_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		95D1AC59FED2B5C367684266C9C881C7 /* Pods_OlympusSDK_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OlympusSDK_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D940727FF8FB9C785EB98E56350EF41 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		AA87D54C9CDB90F87008BB72017DCAB7 /* OlympusServiceManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OlympusServiceManager.swift; path = OlympusSDK/Classes/OlympusServiceManager.swift; sourceTree = "<group>"; };
 		AC76D631D2D1411913819AF1817A7FFF /* Pods-OlympusSDK_Example.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Pods-OlympusSDK_Example.modulemap"; sourceTree = "<group>"; };
@@ -187,9 +187,9 @@
 		1EFC39196F06A72FA61E8E502FD80A29 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				0AA350A8B68B659F7560E987A0DCB037 /* OlympusSDK */,
-				56BC7954DCE7FFB38130C9BAB70CA4FB /* Pods-OlympusSDK_Example */,
-				95D1AC59FED2B5C367684266C9C881C7 /* Pods-OlympusSDK_Tests */,
+				0AA350A8B68B659F7560E987A0DCB037 /* OlympusSDK.framework */,
+				56BC7954DCE7FFB38130C9BAB70CA4FB /* Pods_OlympusSDK_Example.framework */,
+				95D1AC59FED2B5C367684266C9C881C7 /* Pods_OlympusSDK_Tests.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -380,7 +380,7 @@
 			);
 			name = "Pods-OlympusSDK_Tests";
 			productName = Pods_OlympusSDK_Tests;
-			productReference = 95D1AC59FED2B5C367684266C9C881C7 /* Pods-OlympusSDK_Tests */;
+			productReference = 95D1AC59FED2B5C367684266C9C881C7 /* Pods_OlympusSDK_Tests.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 		B12FFDA67F2A5ED6308231D1781B6BA9 /* OlympusSDK */ = {
@@ -398,7 +398,7 @@
 			);
 			name = OlympusSDK;
 			productName = OlympusSDK;
-			productReference = 0AA350A8B68B659F7560E987A0DCB037 /* OlympusSDK */;
+			productReference = 0AA350A8B68B659F7560E987A0DCB037 /* OlympusSDK.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 		DB960E511BF61566F9C93B2F08F0279F /* Pods-OlympusSDK_Example */ = {
@@ -417,7 +417,7 @@
 			);
 			name = "Pods-OlympusSDK_Example";
 			productName = Pods_OlympusSDK_Example;
-			productReference = 56BC7954DCE7FFB38130C9BAB70CA4FB /* Pods-OlympusSDK_Example */;
+			productReference = 56BC7954DCE7FFB38130C9BAB70CA4FB /* Pods_OlympusSDK_Example.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
@@ -603,7 +603,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/OlympusSDK/OlympusSDK-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/OlympusSDK/OlympusSDK-Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MODULEMAP_FILE = "Target Support Files/OlympusSDK/OlympusSDK.modulemap";
 				PRODUCT_MODULE_NAME = OlympusSDK;
@@ -611,7 +611,7 @@
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -668,7 +668,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -695,7 +695,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/OlympusSDK/OlympusSDK-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/OlympusSDK/OlympusSDK-Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MODULEMAP_FILE = "Target Support Files/OlympusSDK/OlympusSDK.modulemap";
 				PRODUCT_MODULE_NAME = OlympusSDK;
@@ -703,7 +703,7 @@
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -832,7 +832,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;

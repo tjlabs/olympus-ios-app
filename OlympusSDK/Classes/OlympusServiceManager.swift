@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
-    public static let sdkVersion: String = "0.0.3"
+    public static let sdkVersion: String = "0.0.4"
     
     func tracking(input: FineLocationTrackingResult) {
         for observer in observers {
@@ -1124,12 +1124,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             
         if let existingTaskIdentifier = self.backgroundTaskIdentifier {
             UIApplication.shared.endBackgroundTask(existingTaskIdentifier)
-            self.backgroundTaskIdentifier = UIBackgroundTaskInvalid
+            self.backgroundTaskIdentifier = .invalid
         }
 
         self.backgroundTaskIdentifier = UIApplication.shared.beginBackgroundTask(withName: "BackgroundOutputTimer") {
             UIApplication.shared.endBackgroundTask(self.backgroundTaskIdentifier!)
-            self.backgroundTaskIdentifier = UIBackgroundTaskInvalid
+            self.backgroundTaskIdentifier = .invalid
         }
             
         if (self.backgroundUpTimer == nil) {
@@ -1153,7 +1153,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     private func runForegroundMode() {
         if let existingTaskIdentifier = self.backgroundTaskIdentifier {
             UIApplication.shared.endBackgroundTask(existingTaskIdentifier)
-            self.backgroundTaskIdentifier = UIBackgroundTaskInvalid
+            self.backgroundTaskIdentifier = .invalid
         }
             
         self.backgroundUpTimer?.cancel()
