@@ -525,7 +525,7 @@ public enum TrajType {
     case DR_UNKNOWN,
          DR_IN_PHASE3,
          DR_ALL_STRAIGHT,
-         DR_HEADING_STRAIGHT,
+         DR_HEAD_STRAIGHT,
          DR_TAIL_STRAIGHT,
          DR_RQ_IN_PHASE2,
          DR_NO_RQ_IN_PHASE2,
@@ -538,6 +538,7 @@ public enum TrajType {
 
 public struct SearchInfo {
     public var searchRange: [Int] = []
+    public var searchArea: [[Double]] = [[0, 0]]
     public var searchDirection: [Int] = [0, 90, 180, 270]
     public var tailIndex: Int = 1
     public var trajShape: [[Double]] = [[0, 0]]

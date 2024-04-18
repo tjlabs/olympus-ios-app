@@ -358,6 +358,8 @@ public class OlympusPathMatchingCalculator {
                 }
             }
         }
+        
+        xyhs[2] = compensateHeading(heading: xyhs[2])
         return (isSuccess, xyhs)
     }
     
@@ -450,5 +452,205 @@ public class OlympusPathMatchingCalculator {
             }
         }
         return headings
+    }
+    
+    public func pathTrajectoryMatching(building: String, level: String, x: Double, y: Double, heading: Double, pastResult: FineLocationTrackingResult, unitDRInfoBuffer: [UnitDRInfo], HEADING_RANGE: Double, pathType: Int, mode: String, PADDING_VALUE: Double) -> (isSuccess: Bool, xyd: [Double], matchedTraj: [[Double]], inputTraj: [[Double]]) {
+        let pastX = pastResult.x
+        let pastY = pastResult.y
+        
+        var isSuccess: Bool = false
+        var xyd: [Double] = [x, y, 50]
+        var matchedTraj = [[Double]]()
+        var inputTraj = [[Double]]()
+        
+        let levelCopy: String = removeLevelDirectionString(levelName: level)
+        let key: String = "\(building)_\(levelCopy)"
+        
+        if (!(building.isEmpty) && !(level.isEmpty)) {
+            guard let mainType: [Int] = self.PpType[key] else {
+                return (isSuccess, xyd, matchedTraj, inputTraj)
+            }
+            guard let mainRoad: [[Double]] = self.PpCoord[key] else {
+                return (isSuccess, xyd, matchedTraj, inputTraj)
+            }
+            
+            if (!mainRoad.isEmpty) {
+                let roadX = mainRoad[0]
+                let roadY = mainRoad[1]
+                
+                var xMin = x - PADDING_VALUE
+                var xMax = x + PADDING_VALUE
+                var yMin = y - PADDING_VALUE
+                var yMax = y + PADDING_VALUE
+                
+                var ppXydArray = [[Double]]()
+                var minDistanceCoord = [Double]()
+                
+                for i in 0..<roadX.count {
+                    let xPath = roadX[i]
+                    let yPath = roadY[i]
+                    
+                    let pathTypeLoaded = mainType[i]
+                    if (pathType == 1) {
+                        if (pathType != pathTypeLoaded) {
+                            continue
+                        }
+                    }
+                    
+                    // XY 범위 안에 있는 값 중에 검사
+                    if (xPath >= xMin && xPath <= xMax) {
+                        if (yPath >= yMin && yPath <= yMax) {
+                            var passedPp = [[Double]]()
+                            var distanceSum: Double = 0
+                            
+                            let headingCompensation: Double = heading - unitDRInfoBuffer[unitDRInfoBuffer.count-1].heading
+                            var headingBuffer: [Double] = []
+                            for i in 0..<unitDRInfoBuffer.count {
+                                let compensatedHeading = compensateHeading(heading: unitDRInfoBuffer[i].heading + headingCompensation - 180)
+                                headingBuffer.append(compensatedHeading)
+                            }
+                            
+                            var xyFromHead: [Double] = [xPath, yPath]
+                            var xyOriginal: [Double] = [xPath, yPath]
+                            let firstXyd = calDistacneFromNearestPp(coord: xyFromHead, passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUE: PADDING_VALUE)
+                            passedPp.append(xyFromHead)
+                            
+                            var xydArray: [[Double]] = [firstXyd]
+                            distanceSum += firstXyd[2]
+                            
+                            var trajectoryFromHead = [[Double]]()
+                            var trajectoryOriginal = [[Double]]()
+                            trajectoryFromHead.append(xyFromHead)
+                            trajectoryOriginal.append(xyOriginal)
+                            for i in (1..<unitDRInfoBuffer.count).reversed() {
+                                let headAngle = headingBuffer[i]
+                                xyOriginal[0] = xyOriginal[0] + unitDRInfoBuffer[i].length*cos(headAngle*OlympusConstants.D2R)
+                                xyOriginal[1] = xyOriginal[1] + unitDRInfoBuffer[i].length*sin(headAngle*OlympusConstants.D2R)
+                                trajectoryOriginal.append(xyOriginal)
+                                if (mode == OlympusConstants.MODE_PDR) {
+                                    if (i%2 == 0) {
+                                        let propagatedX = xyFromHead[0] + unitDRInfoBuffer[i].length*cos(headAngle*OlympusConstants.D2R)
+                                        let propagatedY = xyFromHead[1] + unitDRInfoBuffer[i].length*sin(headAngle*OlympusConstants.D2R)
+                                        let calculatedXyd = calDistacneFromNearestPp(coord: [propagatedX, propagatedY], passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUE: PADDING_VALUE)
+                                        
+                                        xyFromHead[0] = calculatedXyd[0]
+                                        xyFromHead[1] = calculatedXyd[1]
+                                        xydArray.append(calculatedXyd)
+                                        distanceSum += calculatedXyd[2]
+                                        trajectoryFromHead.append(xyFromHead)
+                                        passedPp.append(xyFromHead)
+                                    } else {
+                                        let propagatedX = xyFromHead[0] + unitDRInfoBuffer[i].length*cos(headAngle*OlympusConstants.D2R)
+                                        let propagatedY = xyFromHead[1] + unitDRInfoBuffer[i].length*sin(headAngle*OlympusConstants.D2R)
+                                        let calculatedXyd = calDistacneFromNearestPp(coord: [propagatedX, propagatedY], passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUE: PADDING_VALUE)
+                                        
+                                        xyFromHead[0] = propagatedX
+                                        xyFromHead[1] = propagatedY
+                                        xydArray.append(calculatedXyd)
+                                        distanceSum += calculatedXyd[2]
+                                        trajectoryFromHead.append(xyFromHead)
+                                        passedPp.append(xyFromHead)
+                                    }
+                                } else {
+                                    let propagatedX = xyFromHead[0] + unitDRInfoBuffer[i].length*cos(headAngle*OlympusConstants.D2R)
+                                    let propagatedY = xyFromHead[1] + unitDRInfoBuffer[i].length*sin(headAngle*OlympusConstants.D2R)
+                                    let calculatedXyd = calDistacneFromNearestPp(coord: [propagatedX, propagatedY], passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUE: PADDING_VALUE)
+                                    
+                                    xyFromHead[0] = calculatedXyd[0]
+                                    xyFromHead[1] = calculatedXyd[1]
+                                    xydArray.append(calculatedXyd)
+                                    distanceSum += calculatedXyd[2]
+                                    trajectoryFromHead.append(xyFromHead)
+                                    passedPp.append(xyFromHead)
+                                }
+                            }
+                            
+                            let distWithPast = sqrt((pastX - xPath)*(pastX - xPath) + (pastY - yPath)*(pastY - yPath))
+                            ppXydArray.append([xPath, yPath, distanceSum, distWithPast])
+                            
+                            if (minDistanceCoord.isEmpty) {
+                                minDistanceCoord = [xPath, yPath, distanceSum, distWithPast]
+                                matchedTraj = trajectoryFromHead
+                                inputTraj = trajectoryOriginal
+                            } else {
+                                let distanceCurrent = distanceSum
+                                let distancePast = minDistanceCoord[2]
+                                if (distanceCurrent < distancePast && distWithPast <= 3) {
+                                    minDistanceCoord = [xPath, yPath, distanceSum, distWithPast]
+                                    matchedTraj = trajectoryFromHead
+                                    inputTraj = trajectoryOriginal
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (!minDistanceCoord.isEmpty) {
+                        if (minDistanceCoord[2] <= 15 && minDistanceCoord[3] <= 5) {
+                            isSuccess = true
+                        } else {
+                            isSuccess = false
+                        }
+                        xyd = minDistanceCoord
+                    }
+                }
+            }
+        }
+        
+        return (isSuccess, xyd, matchedTraj, inputTraj)
+    }
+    
+    private func calDistacneFromNearestPp(coord: [Double], passedPp: [[Double]], mainRoad: [[Double]], mainType: [Int], pathType: Int, PADDING_VALUE: Double) -> [Double] {
+        let x = coord[0]
+        let y = coord[1]
+        
+        var xyd: [Double] = [x, y, 50]
+        
+        var xydArray = [[Double]]()
+        
+        let roadX = mainRoad[0]
+        let roadY = mainRoad[1]
+        
+        var xMin = x - PADDING_VALUE
+        var xMax = x + PADDING_VALUE
+        var yMin = y - PADDING_VALUE
+        var yMax = y + PADDING_VALUE
+        
+        for i in 0..<roadX.count {
+            let xPath = roadX[i]
+            let yPath = roadY[i]
+            
+            let pathTypeLoaded = mainType[i]
+            if (pathType == 1) {
+                if (pathType != pathTypeLoaded) {
+                    continue
+                }
+            }
+            
+            // XY 범위 안에 있는 값 중에 검사
+            if (!passedPp.isEmpty) {
+                let isContain: Bool = containsArray(passedPp, [xPath, yPath])
+                if (isContain) {
+                    continue
+                }
+            }
+            
+            if (xPath >= xMin && xPath <= xMax) {
+                if (yPath >= yMin && yPath <= yMax) {
+                    let distance = sqrt(pow(x-xPath, 2) + pow(y-yPath, 2))
+                    var xyd: [Double] = [xPath, yPath, distance]
+                    
+                    xydArray.append(xyd)
+                }
+            }
+        }
+        
+        if (!xydArray.isEmpty) {
+            let sortedXyd = xydArray.sorted(by: {$0[2] < $1[2] })
+            if (!sortedXyd.isEmpty) {
+                let minData: [Double] = sortedXyd[0]
+                xyd = minData
+            }
+        }
+        return xyd
     }
 }

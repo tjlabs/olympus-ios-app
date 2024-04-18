@@ -45,14 +45,14 @@ public func compensateHeading(heading: Double) -> Double {
     return headingToReturn
 }
 
-public func isResultHeadingStraight(drBuffer: [UnitDRInfo], fltResult: FineLocationTrackingFromServer) -> Bool {
+public func isResultHeadingStraight(unitDRInfoBuffer: [UnitDRInfo], fltResult: FineLocationTrackingFromServer) -> Bool {
     var isStraight: Bool = false
     let resultIndex = fltResult.index
     
     var matchedIndex: Int = -1
     
-    for i in 0..<drBuffer.count {
-        let drBufferIndex = drBuffer[i].index
+    for i in 0..<unitDRInfoBuffer.count {
+        let drBufferIndex = unitDRInfoBuffer[i].index
         if (drBufferIndex == resultIndex) {
             matchedIndex = i
         }
@@ -61,12 +61,12 @@ public func isResultHeadingStraight(drBuffer: [UnitDRInfo], fltResult: FineLocat
     if (matchedIndex != -1 && matchedIndex >= 4) {
         var startHeading: Double = 0
         var endHeading: Double = 0
-        if (drBuffer.count < 5) {
-            startHeading = drBuffer[0].heading
-            endHeading = drBuffer[matchedIndex].heading
+        if (unitDRInfoBuffer.count < OlympusConstants.HEADING_BUFFER_SIZE) {
+            startHeading = unitDRInfoBuffer[0].heading
+            endHeading = unitDRInfoBuffer[matchedIndex].heading
         } else {
-            startHeading = drBuffer[matchedIndex-4].heading
-            endHeading = drBuffer[matchedIndex].heading
+            startHeading = unitDRInfoBuffer[matchedIndex-4].heading
+            endHeading = unitDRInfoBuffer[matchedIndex].heading
         }
         
         if (abs(endHeading - startHeading) < 5.0) {
@@ -79,14 +79,30 @@ public func isResultHeadingStraight(drBuffer: [UnitDRInfo], fltResult: FineLocat
     return isStraight
 }
 
-public func propagateUsingUvd(drBuffer: [UnitDRInfo], fltResult: FineLocationTrackingFromServer) -> (Bool, [Double]) {
+public func checkHeadingCorrection(buffer: [Double]) -> Bool {
+    if (buffer.count >= OlympusConstants.HEADING_BUFFER_SIZE) {
+        let firstHeading: Double = buffer.first ?? 0.0
+        let lastHeading: Double = buffer.last ?? 10.0
+
+        let diffHeadingLastFirst: Double = abs(lastHeading - firstHeading)
+        if (diffHeadingLastFirst < 5.0) {
+            return true
+        } else {
+            return false
+        }
+    } else {
+        return false
+    }
+}
+
+public func propagateUsingUvd(unitDRInfoBuffer: [UnitDRInfo], fltResult: FineLocationTrackingFromServer) -> (Bool, [Double]) {
     var isSuccess: Bool = false
     var propagationValues: [Double] = [0, 0, 0]
     let resultIndex = fltResult.index
     var matchedIndex: Int = -1
     
-    for i in 0..<drBuffer.count {
-        let drBufferIndex = drBuffer[i].index
+    for i in 0..<unitDRInfoBuffer.count {
+        let drBufferIndex = unitDRInfoBuffer[i].index
         if (drBufferIndex == resultIndex) {
             matchedIndex = i
         }
@@ -97,7 +113,7 @@ public func propagateUsingUvd(drBuffer: [UnitDRInfo], fltResult: FineLocationTra
     var dh: Double = 0
     
     if (matchedIndex != -1) {
-        let drBuffrerFromIndex = sliceArray(drBuffer, startingFrom: matchedIndex)
+        let drBuffrerFromIndex = sliceArray(unitDRInfoBuffer, startingFrom: matchedIndex)
         let headingCompensation: Double = fltResult.absolute_heading - drBuffrerFromIndex[0].heading
         var headingBuffer = [Double]()
         for i in 0..<drBuffrerFromIndex.count {
@@ -114,4 +130,24 @@ public func propagateUsingUvd(drBuffer: [UnitDRInfo], fltResult: FineLocationTra
     }
     
     return (isSuccess, propagationValues)
+}
+
+public func isDrBufferStraight(unitDRInfoBuffer: [UnitDRInfo], condition: Double) -> Bool {
+    if (unitDRInfoBuffer.count >= OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT) {
+        let firstIndex = unitDRInfoBuffer.count-OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT
+        let firstHeading: Double = unitDRInfoBuffer[firstIndex].heading
+        let lastHeading: Double = unitDRInfoBuffer[unitDRInfoBuffer.count-1].heading
+        var diffHeading: Double = abs(lastHeading - firstHeading)
+        if (diffHeading >= 270 && diffHeading < 360) {
+            diffHeading = 360 - diffHeading
+        }
+        
+        if (diffHeading < condition) {
+            return true
+        } else {
+            return false
+        }
+    } else {
+        return true
+    }
 }

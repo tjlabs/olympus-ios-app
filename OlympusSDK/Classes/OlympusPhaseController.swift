@@ -38,38 +38,7 @@ public class OlympusPhaseController {
     public func setPhase2BadCount(value: Int) {
         self.phase2BadCount = value
     }
-    
-//    public func controlJupiterPhase(serverResult: FineLocationTrackingFromServer, inputPhase: Int, mode: String, isVenusMode: Bool) -> (Int, Bool) {
-//        var phase: Int = 0
-//        var isPhaseBreak: Bool = false
-//        
-//        if (isVenusMode) {
-//            phase = 1
-//            return (phase, isPhaseBreak)
-//        }
-//        
-//        switch (inputPhase) {
-//        case 0:
-//            phase = self.phase1control(serverResult: serverResult, mode: mode)
-//        case 1:
-//            phase = self.phase1control(serverResult: serverResult, mode: mode)
-//        case 2:
-//            phase = self.phase2control(serverResult: serverResult, mode: mode)
-//        case 3:
-//            phase = self.phase3control(serverResult: serverResult, mode: mode)
-//        case 4:
-//            phase = self.phase4control(serverResult: serverResult, mode: mode)
-//        default:
-//            phase = 0
-//        }
-//        
-//        if (inputPhase >= 1 && phase < 2) {
-//            isPhaseBreak = true
-//        }
-//        
-//        return (phase, isPhaseBreak)
-//    }
-//    
+     
     public func phase1control(serverResult: FineLocationTrackingFromServer, mode: String) -> Int {
         var phase: Int = 0
         
@@ -87,87 +56,20 @@ public class OlympusPhaseController {
         
         return phase
     }
-//    
-//    public func phase2control(serverResult: FineLocationTrackingFromServer, mode: String) -> Int {
-//        var phase: Int = 2
-//        
-//        let building_name = serverResult.building_name
-//        let level_name = serverResult.level_name
-//        let scc = serverResult.scc
-//        let cumulative_length = serverResult.cumulative_length
-//        let channel_condition = serverResult.channel_condition
-//        
-//        if (building_name != "" && level_name != "") {
-//            if (scc >= 0.55 && channel_condition && cumulative_length >= self.PHASE2_LENGTH_CONDITION_DR) {
-//                self.phase2count += 1
-//                if (self.phase2count >= 2) {
-//                    self.phase2count = 0
-//                    phase = 4
-//                }
-//            } else {
-//                self.phase2count = 0
-//            }
-//        } else {
-//            phase = 1
-//            self.phase2count = 0
-//        }
-//        return phase
-//    }
-//    
-//    public func phase3control(serverResult: FineLocationTrackingFromServer, mode: String) -> Int {
-//        var phase: Int = 3
-//        
-//        let scc = serverResult.scc
-//
-//        let cumulative_length = serverResult.cumulative_length
-//        let channel_condition = serverResult.channel_condition
-//        
-//        var length_condition: Double = 0
-//        if (mode == "pdr") {
-//            length_condition = self.PHASE3_LENGTH_CONDITION_PDR
-//        } else {
-//            length_condition = self.PHASE3_LENGTH_CONDITION_DR
-//        }
-//        
-//        if (scc < 0.45) {
-//            phase = 1
-//            self.phase3count = 0
-//        } else if (scc >= 0.6 && scc < 0.62 && cumulative_length >= length_condition && channel_condition) {
-//            self.phase3count += 1
-//            if (self.phase3count >= 4) {
-//                self.phase3count = 0
-//                phase = 4
-//            }
-//        } else if (scc >= 0.62 && scc < 0.65 && cumulative_length >= length_condition && channel_condition) {
-//            self.phase3count += 1
-//            if (self.phase3count >= 3) {
-//                self.phase3count = 0
-//                phase = 4
-//            }
-//        } else if (scc >= 0.65 && cumulative_length >= length_condition && channel_condition) {
-//            self.phase3count += 1
-//            if (self.phase3count >= 2) {
-//                self.phase3count = 0
-//                phase = 4
-//            }
-//        } else {
-//            self.phase3count = 0
-//        }
-//        
-//        return phase
-//    }
-//    
-//    public func phase4control(serverResult: FineLocationTrackingFromServer, mode: String) -> Int {
-//        var phase: Int = 4
-//        
-//        let scc = serverResult.scc
-//        
-//        if (scc < 0.45) {
-//            phase = 1
-//        }
-//        
-//        return phase
-//    }
+    
+    public func phase4control(serverResult: FineLocationTrackingFromServer, mode: String) -> Int {
+        var phase: Int = 4
+        
+        let scc = serverResult.scc
+        
+        if (scc < 0.45) {
+            phase = 1
+        } else if (serverResult.x == 0 && serverResult.y == 0) {
+            phase = 1
+        }
+        
+        return phase
+    }
 //    
 //    public func isNotLooking(inputUserTrajectory: [TrajectoryInfo]) -> Bool {
 //        var isNotLooking: Bool = false
@@ -224,17 +126,15 @@ public class OlympusPhaseController {
         case 1:
             phase = self.phase1control(serverResult: currentResult, mode: mode)
         case 2:
-            phase = 3
             phase = self.checkScResultConnectionForPhase4(inputPhase: inputPhase, serverResultArray: serverResultArray, drBuffer: drBuffer, UVD_INTERVAL: UVD_INTERVAL, TRAJ_LENGTH: TRAJ_LENGTH, mode: mode)
         case 3:
             if (currentResult.scc < OlympusConstants.SCC_FOR_PHASE_BREAK) {
                 phase = 1
             } else {
-                phase = 3
-//                phase = self.checkScResultConnectionForPhase4(inputPhase: inputPhase, serverResultArray: serverResultArray, drBuffer: drBuffer, UVD_INTERVAL: UVD_INTERVAL, TRAJ_LENGTH: TRAJ_LENGTH, mode: mode)
+                phase = self.checkScResultConnectionForPhase4(inputPhase: inputPhase, serverResultArray: serverResultArray, drBuffer: drBuffer, UVD_INTERVAL: UVD_INTERVAL, TRAJ_LENGTH: TRAJ_LENGTH, mode: mode)
             }
-//        case 4:
-//            phase = self.phase4control(serverResult: currentResult, mode: mode)
+        case 4:
+            phase = self.phase4control(serverResult: currentResult, mode: mode)
         default:
             phase = 0
         }
@@ -262,7 +162,7 @@ public class OlympusPhaseController {
         var headingCondition: Double = 30
         if (mode == OlympusConstants.MODE_PDR) {
             pathType = 0
-            distanceCondition = 2
+            distanceCondition = 5
             headingCondition = 10
         }
         
@@ -287,7 +187,9 @@ public class OlympusPhaseController {
                 } else {
                     if (currentResult.index - previousResult.index) > indexCondition {
                         return phase
-                    } else if (currentResult.index <= previousResult.index) {
+                    } else if (currentResult.index < previousResult.index) {
+                        print("PHASE : here 7 // \(serverResultArray)")
+                        print("PHASE : here 7 // curIndex = \(currentResult.index) // preIndex = \(previousResult.index)")
                         return phase
                     } else {
                         var drBufferStartIndex: Int = 0
@@ -331,6 +233,7 @@ public class OlympusPhaseController {
                         }
                         
                         let rendezvousDistance = sqrt(diffX*diffX + diffY*diffY)
+                        print("PHASE : rendezvousDistance = \(rendezvousDistance)")
                         if (rendezvousDistance <= distanceCondition) && diffH <= headingCondition {
                             phase = 4
                         }

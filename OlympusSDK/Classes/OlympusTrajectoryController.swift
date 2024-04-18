@@ -7,6 +7,7 @@ public class OlympusTrajectoryController {
     public var userTrajectoryInfo: [TrajectoryInfo] = []
     public var pastTrajectoryInfo: [TrajectoryInfo] = []
     public var pastSearchInfo = SearchInfo()
+    public var pastMatchedDirection: Int = 0
     
     public var isNeedTrajCheck: Bool = false
     public var isUnknownTraj: Bool = false
@@ -38,6 +39,38 @@ public class OlympusTrajectoryController {
         let roundedTrajLength = (trajLength * 1e4).rounded() / 1e4
         
         return roundedTrajLength
+    }
+    
+    public func calculateAccumulatedDiagonal(trajectoryInfo: [TrajectoryInfo]) -> Double {
+        var trajDiagonal = 0.0
+        
+        if (!trajectoryInfo.isEmpty) {
+            let startHeading = trajectoryInfo[0].heading
+            let headInfo = trajectoryInfo[trajectoryInfo.count-1]
+            var xyFromHead: [Double] = [headInfo.userX, headInfo.userY]
+            
+            var headingFromHead = [Double] (repeating: 0, count: trajectoryInfo.count)
+            for i in 0..<trajectoryInfo.count {
+                headingFromHead[i] = compensateHeading(heading: trajectoryInfo[i].heading  - 180 - startHeading)
+            }
+            
+            var trajectoryFromHead = [[Double]]()
+            trajectoryFromHead.append(xyFromHead)
+            for i in (1..<trajectoryInfo.count).reversed() {
+                let headAngle = headingFromHead[i]
+                xyFromHead[0] = xyFromHead[0] + trajectoryInfo[i].length*cos(headAngle*OlympusConstants.D2R)
+                xyFromHead[1] = xyFromHead[1] + trajectoryInfo[i].length*sin(headAngle*OlympusConstants.D2R)
+                trajectoryFromHead.append(xyFromHead)
+            }
+            
+            let trajectoryMinMax = getMinMaxValues(for: trajectoryFromHead)
+            let dx = trajectoryMinMax[2] - trajectoryMinMax[0]
+            let dy = trajectoryMinMax[3] - trajectoryMinMax[1]
+            
+            trajDiagonal = sqrt(dx*dx + dy*dy)
+        }
+        
+        return trajDiagonal
     }
     
     func getTrajectoryFromLast(from trajectoryInfo: [TrajectoryInfo], N: Int) -> [TrajectoryInfo] {
@@ -373,22 +406,24 @@ public class OlympusTrajectoryController {
         return trajectoryInfo
     }
     
-    public func makeSearchInfo(trajectoryInfo: [TrajectoryInfo], pastTrajectoryInfo: [TrajectoryInfo], mode: String, PHASE: Int) -> SearchInfo {
+    public func makeSearchInfo(trajectoryInfo: [TrajectoryInfo], pastTrajectoryInfo: [TrajectoryInfo], serverResultBuffer: [FineLocationTrackingFromServer], unitDRInfoBuffer: [UnitDRInfo], mode: String, PHASE: Int, isPhaseBreak: Bool, phaseBreakResult: FineLocationTrackingFromServer) -> SearchInfo {
         var searchInfo = SearchInfo()
+        var searchDirection: [Int] = [0, 90, 180, 270]
         
         let trajLength = calculateTrajectoryLength(trajectoryInfo: trajectoryInfo)
         searchInfo.trajLength = trajLength
+        
         var reqLengthForMajorHeading: Double = OlympusConstants.REQUIRED_LENGTH_FOR_MAJOR_HEADING
         if (OlympusConstants.USER_TRAJECTORY_LENGTH <= 20) {
             reqLengthForMajorHeading = (OlympusConstants.USER_TRAJECTORY_LENGTH-5)/2
         }
         
         if (!trajectoryInfo.isEmpty) {
-            var uvRawHeading = [Double]()
-            var uvHeading = [Double]()
+            var uvdRawHeading = [Double]()
+            var uvdHeading = [Double]()
             for value in trajectoryInfo {
-                uvRawHeading.append(value.heading)
-                uvHeading.append(compensateHeading(heading: value.heading))
+                uvdRawHeading.append(value.heading)
+                uvdHeading.append(compensateHeading(heading: value.heading))
             }
             let userBuilding    = trajectoryInfo[trajectoryInfo.count-1].userBuilding
             let userLevel       = trajectoryInfo[trajectoryInfo.count-1].userLevel
@@ -400,24 +435,25 @@ public class OlympusTrajectoryController {
                 // PDR
                 let PADDING_VALUE = OlympusConstants.USER_TRAJECTORY_LENGTH_PDR*0.8
                 if (PHASE < 4) {
-                    // Phase 1 ~ 3
-//                    if (isPhaseBreak && (self.phaseBreakResult.building_name != "" && self.phaseBreakResult.level_name != "")) {
-//                        userX = self.phaseBreakResult.x
-//                        userY = self.phaseBreakResult.y
-//                    }
-                    let areaMinMax: [Double] = [userX - PADDING_VALUE, userY - PADDING_VALUE, userX + PADDING_VALUE, userY + PADDING_VALUE]
-                    let searchArea = getSearchCoordinates(areaMinMax: areaMinMax, interval: 1.0)
-                    searchInfo.searchRange = areaMinMax.map { Int($0) }
+                    searchInfo.tailIndex = trajectoryInfo[0].index
+                    
+                    // PDR Phase 1 ~ 3
+                    if (isPhaseBreak && (phaseBreakResult.building_name != "" && phaseBreakResult.level_name != "")) {
+                        userX = phaseBreakResult.x
+                        userY = phaseBreakResult.y
+                    }
+                    let searchRange: [Double] = [userX - PADDING_VALUE, userY - PADDING_VALUE, userX + PADDING_VALUE, userY + PADDING_VALUE]
+                    searchInfo.searchRange = searchRange.map { Int($0) }
                     
                     var searchHeadings: [Double] = []
                     var hasMajorDirection: Bool = false
                     if (trajLength > reqLengthForMajorHeading) {
                         let ppHeadings = OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: userBuilding, level: userLevel, x: userX, y: userY, heading: userHeading, PADDING_VALUE: PADDING_VALUE, mode: mode)
-                        let headingLeastChangeSection = extractSectionWithLeastChange(inputArray: uvRawHeading)
+                        let headingLeastChangeSection = extractSectionWithLeastChange(inputArray: uvdRawHeading)
                         if (headingLeastChangeSection.isEmpty) {
                             hasMajorDirection = false
                         } else {
-                            let headingForCompensation = headingLeastChangeSection.average - uvRawHeading[0]
+                            let headingForCompensation = headingLeastChangeSection.average - uvdRawHeading[0]
                             for ppHeading in ppHeadings {
                                 let tailHeading = ppHeading - headingForCompensation
                                 searchHeadings.append(compensateHeading(heading: tailHeading))
@@ -437,11 +473,11 @@ public class OlympusTrajectoryController {
                     let headInfo = trajectoryInfo[trajectoryInfo.count-1]
                     var xyFromHead: [Double] = [headInfo.userX, headInfo.userY]
                     
-                    let headingCorrectionFromServer: Double = headInfo.userHeading - uvHeading[uvHeading.count-1]
-                    var headingFromHead = [Double] (repeating: 0, count: uvHeading.count)
+                    let headingCorrectionFromServer: Double = headInfo.userHeading - uvdHeading[uvdHeading.count-1]
+                    var headingFromHead = [Double] (repeating: 0, count: uvdHeading.count)
                     
-                    for i in 0..<uvHeading.count {
-                        headingFromHead[i] = compensateHeading(heading: uvHeading[i] - 180 + headingCorrectionFromServer)
+                    for i in 0..<uvdHeading.count {
+                        headingFromHead[i] = compensateHeading(heading: uvdHeading[i] - 180 + headingCorrectionFromServer)
                     }
                     
                     var trajectoryFromHead = [[Double]]()
@@ -452,14 +488,189 @@ public class OlympusTrajectoryController {
                         xyFromHead[1] = xyFromHead[1] + trajectoryInfo[i].length*sin(headAngle*OlympusConstants.D2R)
                         trajectoryFromHead.append(xyFromHead)
                     }
-                    
-                    searchInfo.tailIndex = trajectoryInfo[0].index
-                    
+
                     // 임시
+                    searchInfo.searchArea = getSearchCoordinates(areaMinMax: searchRange, interval: 1.0)
                     searchInfo.trajShape = trajectoryFromHead
                     searchInfo.trajStartCoord = [headInfo.userX, headInfo.userY]
                 } else {
-                    // Phase 4
+                    // PDR Phase 4
+                    searchInfo.tailIndex = trajectoryInfo[0].index
+                    
+                    let trajDiagonal = calculateAccumulatedDiagonal(trajectoryInfo: trajectoryInfo)
+                    let headInfo = trajectoryInfo[trajectoryInfo.count-1]
+                    let headInfoHeading = compensateHeading(heading: headInfo.userHeading)
+                    
+                    let recentServerResult: FineLocationTrackingFromServer = serverResultBuffer[serverResultBuffer.count-1]
+                    let propagtedResult = propagateUsingUvd(unitDRInfoBuffer: unitDRInfoBuffer, fltResult: recentServerResult)
+                    var xyFromHead: [Double] = [headInfo.userX, headInfo.userY]
+                    var xyForArea: [Double] = [headInfo.userX, headInfo.userY]
+                    
+                    let headCoord: [Double] = xyFromHead
+                    let serverCoord: [Double] = [recentServerResult.x, recentServerResult.y]
+                    
+                    var hasMajorDirection: Bool = false
+                    if (trajLength < 10) {
+                        hasMajorDirection = false
+                    } else {
+                        let ppHeadings = OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: userBuilding, level: userLevel, x: userX, y: userY, heading: userHeading, PADDING_VALUE: PADDING_VALUE, mode: mode)
+                        var searchHeadings: [Double] = []
+                        var headHeadings: [Double] = []
+                        let headingLeastChangeSection = extractSectionWithLeastChange(inputArray: uvdRawHeading)
+                        if (headingLeastChangeSection.isEmpty) {
+                            hasMajorDirection = false
+                        } else {
+                            let headingForCompensation = uvdRawHeading[uvdRawHeading.count-1] - headingLeastChangeSection.average
+                            for ppHeading in ppHeadings {
+                                let headHeading = compensateHeading(heading: ppHeading + headingForCompensation)
+                                var diffHeading = abs(headInfoHeading - headHeading)
+                                if (diffHeading >= 270 && diffHeading < 360) { diffHeading = 360 - diffHeading }
+                                headHeadings.append(diffHeading)
+                            }
+                            let minHeading = headHeadings.min() ?? 40
+                            if let minIndex = zip(headHeadings.indices, headHeadings).min(by: { $0.1 < $1.1 })?.0 {
+                                let trajType = TrajType.PDR_IN_PHASE4_HAS_MAJOR_DIR
+                                
+                                let headingForCompensation = headingLeastChangeSection.average - uvdRawHeading[0]
+                                let tailHeading = ppHeadings[minIndex] - headingForCompensation
+                                searchHeadings.append(compensateHeading(heading: tailHeading - 5))
+                                searchHeadings.append(compensateHeading(heading: tailHeading))
+                                searchHeadings.append(compensateHeading(heading: tailHeading + 5))
+                                searchInfo.searchDirection = searchHeadings.map { Int($0) }
+
+                                let headingCorrectionForTail: Double = tailHeading - uvdHeading[0]
+                                var headingFromTail = [Double] (repeating: 0, count: uvdHeading.count)
+                                var headingFromHead = [Double] (repeating: 0, count: uvdHeading.count)
+                                for i in 0..<uvdHeading.count {
+                                    headingFromTail[i] = compensateHeading(heading: uvdHeading[i] + headingCorrectionForTail)
+                                    headingFromHead[i] = compensateHeading(heading: headingFromTail[i] - 180)
+                                }
+                                
+                                var trajectoryFromHead = [[Double]]()
+                                trajectoryFromHead.append(xyFromHead)
+                                var trajectoryForArea = [[Double]]()
+                                trajectoryForArea.append(xyForArea)
+                                for i in (1..<trajectoryInfo.count).reversed() {
+                                    let headAngle = headingFromHead[i]
+                                    xyFromHead[0] = xyFromHead[0] + trajectoryInfo[i].length*cos(headAngle*OlympusConstants.D2R)
+                                    xyFromHead[1] = xyFromHead[1] + trajectoryInfo[i].length*sin(headAngle*OlympusConstants.D2R)
+                                    trajectoryFromHead.append(xyFromHead)
+                                    
+                                    xyForArea[0] = xyForArea[0] + trajectoryInfo[i].length*1.2*cos(headAngle*OlympusConstants.D2R)
+                                    xyForArea[1] = xyForArea[1] + trajectoryInfo[i].length*1.2*sin(headAngle*OlympusConstants.D2R)
+                                    trajectoryForArea.append(xyForArea)
+                                }
+                                
+                                let xyMinMax: [Double] = getMinMaxValues(for: trajectoryFromHead)
+                                let headingStart = compensateHeading(heading: headingFromHead[headingFromHead.count-1]-180)
+                                let headingEnd = compensateHeading(heading: headingFromHead[0]-180)
+                                
+                                let searchRange: [Double] = getSearchAreaMinMax(xyMinMax: xyMinMax, heading: [headingStart, headingEnd], headCoord: headCoord, serverCoord: serverCoord, trajType: trajType, lengthCondition: OlympusConstants.USER_TRAJECTORY_LENGTH_PDR, diagonalLengthRatio: trajDiagonal/trajLength)
+                                searchInfo.searchRange = searchRange.map { Int($0) }
+                                
+                                // 임시
+                                searchInfo.searchArea = getSearchCoordinates(areaMinMax: searchRange, interval: 1.0)
+                                searchInfo.trajShape = trajectoryFromHead
+                                searchInfo.trajStartCoord = [headInfo.userX, headInfo.userY]
+                            } else {
+                                hasMajorDirection = false
+                            }
+                        }
+                    }
+                    
+                    if (!hasMajorDirection) {
+                        let trajType = TrajType.PDR_IN_PHASE4_NO_MAJOR_DIR
+                        
+                        let pastTraj = pastTrajectoryInfo
+                        let pastDirection = pastMatchedDirection
+                        let pastDirectionCompensation = pastDirection - Int(round(pastTraj[0].heading))
+                        var pastTrajIndex = [Int]()
+                        var pastTrajHeading = [Int]()
+                        for i in 0..<pastTraj.count {
+                            pastTrajIndex.append(pastTraj[i].index)
+                            pastTrajHeading.append(Int(round(pastTraj[i].heading)) + pastDirectionCompensation)
+                        }
+                        
+                        let isStraight = isTrajectoryStraight(for: uvdHeading, size: uvdHeading.count, mode: mode, conditionPdr: OlympusConstants.NUM_STRAIGHT_IDX_PDR, conditionDr: OlympusConstants.NUM_STRAIGHT_IDX_DR)
+                        let closestIndex = findClosestValueIndex(to: searchInfo.tailIndex, in: pastTrajIndex)
+                        if let headingIndex = closestIndex {
+                            searchDirection = [pastTrajHeading[headingIndex], pastTrajHeading[headingIndex]-5, pastTrajHeading[headingIndex]+5]
+                            for i in 0..<searchDirection.count {
+                                searchDirection[i] = Int(compensateHeading(heading: Double(searchDirection[i])))
+                            }
+                            searchInfo.searchDirection = searchDirection
+                            
+                            let headingCorrectionForTail: Double = Double(pastTrajHeading[headingIndex]) - uvdHeading[0]
+                            var headingFromTail = [Double] (repeating: 0, count: uvdHeading.count)
+                            var headingFromHead = [Double] (repeating: 0, count: uvdHeading.count)
+                            for i in 0..<uvdHeading.count {
+                                headingFromTail[i] = uvdHeading[i] + headingCorrectionForTail
+                                headingFromHead[i] = compensateHeading(heading: headingFromTail[i] - 180)
+                            }
+                            
+                            var trajectoryFromHead = [[Double]]()
+                            trajectoryFromHead.append(xyFromHead)
+                            for i in (1..<trajectoryInfo.count).reversed() {
+                                let headAngle = headingFromHead[i]
+                                xyFromHead[0] = xyFromHead[0] + trajectoryInfo[i].length*cos(headAngle*OlympusConstants.D2R)
+                                xyFromHead[1] = xyFromHead[1] + trajectoryInfo[i].length*sin(headAngle*OlympusConstants.D2R)
+                                trajectoryFromHead.append(xyFromHead)
+                            }
+                            
+                            let xyMinMax: [Double] = getMinMaxValues(for: trajectoryFromHead)
+                            let headingStart = compensateHeading(heading: headingFromHead[headingFromHead.count-1]-180)
+                            let headingEnd = compensateHeading(heading: headingFromHead[0]-180)
+                            
+                            let searchRange: [Double] = getSearchAreaMinMax(xyMinMax: xyMinMax, heading: [headingStart, headingEnd], headCoord: headCoord, serverCoord: serverCoord, trajType: trajType, lengthCondition: OlympusConstants.USER_TRAJECTORY_LENGTH_PDR, diagonalLengthRatio: trajDiagonal/trajLength)
+                            searchInfo.searchRange = searchRange.map { Int($0) }
+                            let searchArea = getSearchCoordinates(areaMinMax: searchRange, interval: 1.0)
+                            
+                            // 임시
+                            searchInfo.searchArea = getSearchCoordinates(areaMinMax: searchRange, interval: 1.0)
+                            searchInfo.trajShape = trajectoryFromHead
+                            searchInfo.trajStartCoord = [headInfo.userX, headInfo.userY]
+                        } else {
+                            let trajType = TrajType.PDR_IN_PHASE4_ABNORMAL
+                            
+                            searchDirection = [pastDirection+5, pastDirection-5, pastDirection]
+                            
+                            var headingCorrectionForHead: Double = 0
+                            let headingCorrectionFromServer: Double = headInfo.userHeading - uvdHeading[uvdHeading.count-1]
+//                            if (!isKf) {
+//                                headingCorrectionForHead = 0
+//                            } else {
+//                                headingCorrectionForHead = headInfoHeading - headInfo.userHeading
+//                            }
+                            
+                            var headingFromHead = [Double] (repeating: 0, count: uvdHeading.count)
+                            for i in 0..<uvdHeading.count {
+                                headingFromHead[i] = compensateHeading(heading: (uvdHeading[i] + headingCorrectionForHead) - 180 + headingCorrectionFromServer)
+                            }
+
+                            var trajectoryFromHead = [[Double]]()
+                            trajectoryFromHead.append(xyFromHead)
+                            for i in (1..<trajectoryInfo.count).reversed() {
+                                let headAngle = headingFromHead[i]
+                                xyFromHead[0] = xyFromHead[0] + trajectoryInfo[i].length*cos(headAngle*OlympusConstants.D2R)
+                                xyFromHead[1] = xyFromHead[1] + trajectoryInfo[i].length*sin(headAngle*OlympusConstants.D2R)
+                                trajectoryFromHead.append(xyFromHead)
+                            }
+                            
+                            let xyMinMax: [Double] = getMinMaxValues(for: trajectoryFromHead)
+
+                            let headingStart = compensateHeading(heading: headingFromHead[headingFromHead.count-1]-180)
+                            let headingEnd = compensateHeading(heading: headingFromHead[0]-180)
+                            
+                            let searchRange: [Double] = getSearchAreaMinMax(xyMinMax: xyMinMax, heading: [headingStart, headingEnd], headCoord: headCoord, serverCoord: serverCoord, trajType: trajType, lengthCondition: OlympusConstants.USER_TRAJECTORY_LENGTH_PDR, diagonalLengthRatio: trajDiagonal/trajLength)
+                            searchInfo.searchRange = searchRange.map { Int($0) }
+                            let searchArea = getSearchCoordinates(areaMinMax: searchRange, interval: 1.0)
+                            
+                            // 임시
+                            searchInfo.searchArea = getSearchCoordinates(areaMinMax: searchRange, interval: 1.0)
+                            searchInfo.trajShape = trajectoryFromHead
+                            searchInfo.trajStartCoord = [headInfo.userX, headInfo.userY]
+                        }
+                    }
                 }
             } else {
                 // DR
@@ -541,11 +752,414 @@ public class OlympusTrajectoryController {
         return coordinates
     }
     
-    public func setPastInfo(trajInfo: [TrajectoryInfo], searchInfo: SearchInfo) {
-        self.pastTrajectoryInfo = trajInfo
-        self.pastSearchInfo = searchInfo
+    private func getSearchAreaMinMax(xyMinMax: [Double], heading: [Double], headCoord: [Double], serverCoord: [Double], trajType: TrajType, lengthCondition: Double, diagonalLengthRatio: Double) -> [Double] {
+        var areaMinMax: [Double] = []
+        
+        var xMin = xyMinMax[0]
+        var yMin = xyMinMax[1]
+        var xMax = xyMinMax[2]
+        var yMax = xyMinMax[3]
+        
+        let SEARCH_LENGTH: Double = lengthCondition*0.4
+        
+        let headingStart = heading[0]
+        let headingEnd = heading[1]
+
+        let startCos = cos(headingStart*OlympusConstants.D2R)
+        let startSin = sin(headingStart*OlympusConstants.D2R)
+
+        let endCos = cos(headingEnd*OlympusConstants.D2R)
+        let endSin = sin(headingEnd*OlympusConstants.D2R)
+        
+        switch (trajType) {
+        case .DR_IN_PHASE3:
+            let areaXrange = xMax - xMin
+            let areaYrange = yMax - yMin
+            let search_margin: Double = 4
+            if (areaXrange > areaYrange) {
+                var expandRatio = areaXrange/areaYrange
+                if (expandRatio > 1.5) {
+                    expandRatio = 1.5
+                }
+                xMin -= search_margin*expandRatio
+                xMax += search_margin*expandRatio
+                yMin -= search_margin
+                yMax += search_margin
+            } else if (areaXrange < areaYrange) {
+                var expandRatio = areaYrange/areaXrange
+                if (expandRatio > 1.5) {
+                    expandRatio = 1.5
+                }
+                xMin -= search_margin
+                xMax += search_margin
+                yMin -= search_margin*expandRatio
+                yMax += search_margin*expandRatio
+            } else {
+                xMin -= search_margin
+                xMax += search_margin
+                yMin -= search_margin
+                yMax += search_margin
+            }
+        case .DR_UNKNOWN:
+            print("DR_UNKNOWN")
+        case .DR_ALL_STRAIGHT:
+            if (startCos > 0) {
+                xMin = xMin - 1.2*SEARCH_LENGTH*startCos
+                xMax = xMax + 1.2*SEARCH_LENGTH*startCos
+            } else {
+                xMin = xMin + 1.2*SEARCH_LENGTH*startCos
+                xMax = xMax - 1.2*SEARCH_LENGTH*startCos
+            }
+
+            if (startSin > 0) {
+                yMin = yMin - 1.2*SEARCH_LENGTH*startSin
+                yMax = yMax + 1.2*SEARCH_LENGTH*startSin
+            } else {
+                yMin = yMin + 1.2*SEARCH_LENGTH*startSin
+                yMax = yMax - 1.2*SEARCH_LENGTH*startSin
+            }
+
+            if (endCos > 0) {
+                xMin = xMin - SEARCH_LENGTH*endCos
+                xMax = xMax + SEARCH_LENGTH*endCos
+            } else {
+                xMin = xMin + SEARCH_LENGTH*endCos
+                xMax = xMax - SEARCH_LENGTH*endCos
+            }
+
+            if (endSin > 0) {
+                yMin = yMin - SEARCH_LENGTH*endSin
+                yMax = yMax + SEARCH_LENGTH*endSin
+            } else {
+                yMin = yMin + SEARCH_LENGTH*endSin
+                yMax = yMax - SEARCH_LENGTH*endSin
+            }
+            
+            if (abs(xMin - xMax) < 5.0) {
+                xMin = xMin - lengthCondition*0.05
+                xMax = xMax + lengthCondition*0.05
+            }
+
+            if (abs(yMin - yMax) < 5.0) {
+                yMin = yMin - lengthCondition*0.05
+                yMax = yMax + lengthCondition*0.05
+            }
+            
+        case .DR_HEAD_STRAIGHT:
+            if (startCos > 0) {
+                xMin = xMin - 1.2*SEARCH_LENGTH*startCos
+                xMax = xMax + 1.2*SEARCH_LENGTH*startCos
+            } else {
+                xMin = xMin + 1.2*SEARCH_LENGTH*startCos
+                xMax = xMax - 1.2*SEARCH_LENGTH*startCos
+            }
+
+            if (startSin > 0) {
+                yMin = yMin - 1.2*SEARCH_LENGTH*startSin
+                yMax = yMax + 1.2*SEARCH_LENGTH*startSin
+            } else {
+                yMin = yMin + 1.2*SEARCH_LENGTH*startSin
+                yMax = yMax - 1.2*SEARCH_LENGTH*startSin
+            }
+
+            if (endCos > 0) {
+                xMin = xMin - SEARCH_LENGTH*endCos
+                xMax = xMax + SEARCH_LENGTH*endCos
+            } else {
+                xMin = xMin + SEARCH_LENGTH*endCos
+                xMax = xMax - SEARCH_LENGTH*endCos
+            }
+
+            if (endSin > 0) {
+                yMin = yMin - SEARCH_LENGTH*endSin
+                yMax = yMax + SEARCH_LENGTH*endSin
+            } else {
+                yMin = yMin + SEARCH_LENGTH*endSin
+                yMax = yMax - SEARCH_LENGTH*endSin
+            }
+            
+            let diffHeading = compensateHeading(heading: abs(headingStart - headingEnd))
+            let diffX = abs(xMax - xMin)
+            let diffY = abs(yMax - yMin)
+            let diffXy = abs(diffX - diffY)*0.2
+            
+            if (diffHeading > 150) {
+                if (diffX < diffY) {
+                    xMin = xMin - diffXy
+                    xMax = xMax + diffXy
+                } else {
+                    yMin = yMin - diffXy
+                    yMax = yMax + diffXy
+                }
+            } else {
+                // Check ㄹ Trajectory
+                if (diffHeading < 30) {
+                    if (diffX < diffY) {
+                        xMin = xMin - diffXy
+                        xMax = xMax + diffXy
+                    } else {
+                        yMin = yMin - diffXy
+                        yMax = yMax + diffXy
+                    }
+                }
+            }
+            
+        case .DR_TAIL_STRAIGHT:
+            if (startCos > 0) {
+                xMin = xMin - SEARCH_LENGTH*startCos
+                xMax = xMax + SEARCH_LENGTH*startCos
+            } else {
+                xMin = xMin + SEARCH_LENGTH*startCos
+                xMax = xMax - SEARCH_LENGTH*startCos
+            }
+
+            if (startSin > 0) {
+                yMin = yMin - SEARCH_LENGTH*startSin
+                yMax = yMax + SEARCH_LENGTH*startSin
+            } else {
+                yMin = yMin + SEARCH_LENGTH*startSin
+                yMax = yMax - SEARCH_LENGTH*startSin
+            }
+
+            if (endCos > 0) {
+                xMin = xMin - 1.2*SEARCH_LENGTH*endCos
+                xMax = xMax + 1.2*SEARCH_LENGTH*endCos
+            } else {
+                xMin = xMin + 1.2*SEARCH_LENGTH*endCos
+                xMax = xMax - 1.2*SEARCH_LENGTH*endCos
+            }
+
+            if (endSin > 0) {
+                yMin = yMin - 1.2*SEARCH_LENGTH*endSin
+                yMax = yMax + 1.2*SEARCH_LENGTH*endSin
+            } else {
+                yMin = yMin + 1.2*SEARCH_LENGTH*endSin
+                yMax = yMax - 1.2*SEARCH_LENGTH*endSin
+            }
+            
+            let diffHeading = compensateHeading(heading: abs(headingStart - headingEnd))
+            let diffX = abs(xMax - xMin)
+            let diffY = abs(yMax - yMin)
+            let diffXy = abs(diffX - diffY)*0.2
+            
+            if (diffHeading > 150) {
+                if (diffX < diffY) {
+                    xMin = xMin - diffXy
+                    xMax = xMax + diffXy
+                } else {
+                    yMin = yMin - diffXy
+                    yMax = yMax + diffXy
+                }
+            } else {
+                // Check ㄹ Trajectory
+                if (diffHeading < 30) {
+                    if (diffX < diffY) {
+                        xMin = xMin - diffXy
+                        xMax = xMax + diffXy
+                    } else {
+                        yMin = yMin - diffXy
+                        yMax = yMax + diffXy
+                    }
+                }
+            }
+        case .PDR_IN_PHASE3_NO_MAJOR_DIR:
+            print("HPDR_IN_PHASE3_NO_MAJOR_DIRere")
+        case .PDR_IN_PHASE3_HAS_MAJOR_DIR:
+            print("PDR_IN_PHASE3_HAS_MAJOR_DIR")
+        case .PDR_IN_PHASE4_ABNORMAL:
+            let areaXrange = xMax - xMin
+            let areaYrange = yMax - yMin
+            let search_margin: Double = 4
+            if (areaXrange > areaYrange) {
+                var expandRatio = areaXrange/areaYrange
+                if (expandRatio > 1.5) {
+                    expandRatio = 1.5
+                }
+                xMin -= search_margin*expandRatio
+                xMax += search_margin*expandRatio
+                yMin -= search_margin
+                yMax += search_margin
+            } else if (areaXrange < areaYrange) {
+                var expandRatio = areaYrange/areaXrange
+                if (expandRatio > 1.5) {
+                    expandRatio = 1.5
+                }
+                xMin -= search_margin
+                xMax += search_margin
+                yMin -= search_margin*expandRatio
+                yMax += search_margin*expandRatio
+            } else {
+                xMin -= search_margin
+                xMax += search_margin
+                yMin -= search_margin
+                yMax += search_margin
+            }
+        case .PDR_IN_PHASE4_NO_MAJOR_DIR:
+            let areaXrange = xMax - xMin
+            let areaYrange = yMax - yMin
+            let search_margin: Double = 4
+            if (areaXrange > areaYrange) {
+                var expandRatio = areaXrange/areaYrange
+                if (expandRatio > 1.5) {
+                    expandRatio = 1.5
+                }
+                xMin -= search_margin*expandRatio
+                xMax += search_margin*expandRatio
+                yMin -= search_margin
+                yMax += search_margin
+            } else if (areaXrange < areaYrange) {
+                var expandRatio = areaYrange/areaXrange
+                if (expandRatio > 1.5) {
+                    expandRatio = 1.5
+                }
+                xMin -= search_margin
+                xMax += search_margin
+                yMin -= search_margin*expandRatio
+                yMax += search_margin*expandRatio
+            } else {
+                xMin -= search_margin
+                xMax += search_margin
+                yMin -= search_margin
+                yMax += search_margin
+            }
+        case .PDR_IN_PHASE4_HAS_MAJOR_DIR:
+            var search_margin = 2*exp(3.4 * (diagonalLengthRatio-0.44))
+            if (search_margin < 2) {
+                search_margin = 2
+            } else if (search_margin > 10) {
+                search_margin = 10
+            }
+
+            let oppsite_margin = search_margin*0.6
+            
+            let centerCoord = [(xMax+xMin)/2, (yMax+yMin)/2]
+            let headToCenter = [headCoord[0]-serverCoord[0], headCoord[1]-serverCoord[1]]
+            
+            if (headToCenter[0] > 0 && headToCenter[1] > 0) {
+                // 1사분면
+                xMax += search_margin
+                yMax += search_margin
+                xMin -= oppsite_margin
+                yMin -= oppsite_margin
+            } else if (headToCenter[0] < 0 && headToCenter[1] > 0) {
+                // 2사분면
+                xMin -= search_margin
+                yMax += search_margin
+                xMax += oppsite_margin
+                yMin -= oppsite_margin
+            } else if (headToCenter[0] < 0 && headToCenter[1] < 0) {
+                // 3사분면
+                xMin -= search_margin
+                yMin -= search_margin
+                xMax += oppsite_margin
+                yMax += oppsite_margin
+            } else if (headToCenter[0] > 0 && headToCenter[1] < 0) {
+                // 4사분면
+                xMax += search_margin
+                yMin -= search_margin
+                xMin -= oppsite_margin
+                yMax += oppsite_margin
+            } else {
+                xMin -= search_margin
+                xMax += search_margin
+                yMin -= search_margin
+                yMax += search_margin
+            }
+            
+            if (diagonalLengthRatio < 0.6) {
+                let areaXrange = xMax - xMin
+                let areaYrange = yMax - yMin
+                let default_margin: Double = 4
+                if (areaXrange > areaYrange) {
+                    var expandRatio = areaXrange/areaYrange
+                    if (expandRatio > 1.5) {
+                        expandRatio = 1.5
+                    }
+                    xMin -= default_margin*expandRatio
+                    xMax += default_margin*expandRatio
+                } else if (areaXrange < areaYrange) {
+                    var expandRatio = areaYrange/areaXrange
+                    if (expandRatio > 1.5) {
+                        expandRatio = 1.5
+                    }
+                    yMin -= default_margin*expandRatio
+                    yMax += default_margin*expandRatio
+                } else {
+                    xMin -= default_margin
+                    xMax += default_margin
+                    yMin -= default_margin
+                    yMax += default_margin
+                }
+            }
+        default:
+            print("Do Nothing")
+        }
+        
+        areaMinMax = [xMin, yMin, xMax, yMax]
+        
+        return areaMinMax
     }
     
+    private func isTrajectoryStraight(for array: [Double], size: Int, mode: String, conditionPdr: Int, conditionDr: Int) -> TrajType {
+        var CONDITON: Int = 10
+        if (mode == OlympusConstants.MODE_PDR) {
+            CONDITON = conditionPdr
+        } else {
+            CONDITON = conditionDr
+        }
+        if (size < CONDITON) {
+            return TrajType.DR_UNKNOWN
+        }
+        
+        let straightAngle: Double = 1.5
+        // All Straight
+        let circularStandardDeviationAll = circularStandardDeviation(for: array)
+        if (circularStandardDeviationAll <= straightAngle) {
+            return TrajType.DR_ALL_STRAIGHT
+        }
+        
+        // Head Straight
+        let lastTenValues = Array(array[(size-CONDITON)..<size])
+        let circularStandardDeviationHead = circularStandardDeviation(for: lastTenValues)
+        if (circularStandardDeviationHead <= straightAngle) {
+            return TrajType.DR_HEAD_STRAIGHT
+        }
+        
+        // Tail Straight
+        let firstTenValues = Array(array[0..<CONDITON])
+        let circularStandardDeviationTail = circularStandardDeviation(for: firstTenValues)
+        if (circularStandardDeviationTail <= straightAngle) {
+            return TrajType.DR_TAIL_STRAIGHT
+        }
+        
+        return TrajType.DR_UNKNOWN
+    }
+    
+    private func findClosestValueIndex(to target: Int, in array: [Int]) -> Int? {
+        guard !array.isEmpty else {
+            return nil
+        }
+
+        var closestIndex = 0
+        var smallestDifference = abs(array[0] - target)
+
+        for i in 0..<array.count {
+            let value = array[i]
+            let difference = abs(value - target)
+            if difference < smallestDifference {
+                smallestDifference = difference
+                closestIndex = i
+            }
+        }
+
+        return closestIndex
+    }
+    
+    public func setPastInfo(trajInfo: [TrajectoryInfo], searchInfo: SearchInfo, matchedDirection: Int) {
+        self.pastTrajectoryInfo = trajInfo
+        self.pastSearchInfo = searchInfo
+        self.pastMatchedDirection = matchedDirection
+    }
     
     // Trajectory Compensation
     public func getTrajCompensationArray(currentTime: Int, trajLength: Double) -> [Double] {

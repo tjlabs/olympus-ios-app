@@ -72,6 +72,7 @@ class OlympusConstants {
     static var INDEX_THRESHOLD: Int = 11
     static let UVD_BUFFER_SIZE: Int = 10
     static let DR_INFO_BUFFER_SIZE: Int = 30
+    static let DR_BUFFER_SIZE_FOR_STRAIGHT: Int = 10
     
     // SLEEP
     static let SLEEP_THRESHOLD: Double = 600
@@ -144,6 +145,7 @@ class OlympusConstants {
     static let SCC_FOR_PHASE_BREAK: Double = 0.45
     static let SCC_FOR_PHASE_BREAK_IN_PHASE2: Double = 0.26
     static let COUNT_FOR_PHASE_BREAK_IN_PHASE2: Int = 7
+    static let HEADING_BUFFER_SIZE: Int = 5
     
     // Path-Matching
     static let HEADING_RANGE: Double = 46
