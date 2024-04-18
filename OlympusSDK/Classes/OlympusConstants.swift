@@ -179,8 +179,8 @@ class OlympusConstants {
             OlympusConstants.RQ_IDX = OlympusConstants.RQ_IDX_PDR
             OlympusConstants.USER_TRAJECTORY_LENGTH = OlympusConstants.USER_TRAJECTORY_LENGTH_PDR
 
-            OlympusConstants.INIT_INPUT_NUM = 3
-            OlympusConstants.VALUE_INPUT_NUM = 6
+            OlympusConstants.INIT_INPUT_NUM = 4 //
+            OlympusConstants.VALUE_INPUT_NUM = 6 // 6
             OlympusConstants.COORD_RANGE = OlympusConstants.COORD_RANGE_SMALL
             
             if (phase == OlympusConstants.PHASE_4) {

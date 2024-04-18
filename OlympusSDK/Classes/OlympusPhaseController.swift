@@ -187,7 +187,7 @@ public class OlympusPhaseController {
                 } else {
                     if (currentResult.index - previousResult.index) > indexCondition {
                         return phase
-                    } else if (currentResult.index < previousResult.index) {
+                    } else if (currentResult.index <= previousResult.index) {
                         print("PHASE : here 7 // \(serverResultArray)")
                         print("PHASE : here 7 // curIndex = \(currentResult.index) // preIndex = \(previousResult.index)")
                         return phase

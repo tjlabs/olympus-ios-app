@@ -530,6 +530,7 @@ public class OlympusTrajectoryController {
                             let minHeading = headHeadings.min() ?? 40
                             if let minIndex = zip(headHeadings.indices, headHeadings).min(by: { $0.1 < $1.1 })?.0 {
                                 let trajType = TrajType.PDR_IN_PHASE4_HAS_MAJOR_DIR
+                                searchInfo.trajType = trajType
                                 
                                 let headingForCompensation = headingLeastChangeSection.average - uvdRawHeading[0]
                                 let tailHeading = ppHeadings[minIndex] - headingForCompensation
@@ -580,6 +581,7 @@ public class OlympusTrajectoryController {
                     
                     if (!hasMajorDirection) {
                         let trajType = TrajType.PDR_IN_PHASE4_NO_MAJOR_DIR
+                        searchInfo.trajType = trajType
                         
                         let pastTraj = pastTrajectoryInfo
                         let pastDirection = pastMatchedDirection
@@ -631,6 +633,7 @@ public class OlympusTrajectoryController {
                             searchInfo.trajStartCoord = [headInfo.userX, headInfo.userY]
                         } else {
                             let trajType = TrajType.PDR_IN_PHASE4_ABNORMAL
+                            searchInfo.trajType = trajType
                             
                             searchDirection = [pastDirection+5, pastDirection-5, pastDirection]
                             
