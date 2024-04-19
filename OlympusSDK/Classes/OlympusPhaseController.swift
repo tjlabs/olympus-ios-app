@@ -188,8 +188,6 @@ public class OlympusPhaseController {
                     if (currentResult.index - previousResult.index) > indexCondition {
                         return phase
                     } else if (currentResult.index <= previousResult.index) {
-                        print("PHASE : here 7 // \(serverResultArray)")
-                        print("PHASE : here 7 // curIndex = \(currentResult.index) // preIndex = \(previousResult.index)")
                         return phase
                     } else {
                         var drBufferStartIndex: Int = 0
@@ -233,7 +231,6 @@ public class OlympusPhaseController {
                         }
                         
                         let rendezvousDistance = sqrt(diffX*diffX + diffY*diffY)
-                        print("PHASE : rendezvousDistance = \(rendezvousDistance)")
                         if (rendezvousDistance <= distanceCondition) && diffH <= headingCondition {
                             phase = 4
                         }

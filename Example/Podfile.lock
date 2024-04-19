@@ -1,16 +1,29 @@
 PODS:
-  - OlympusSDK (0.1.0)
+  - Charts (4.1.0):
+    - Charts/Core (= 4.1.0)
+  - Charts/Core (4.1.0):
+    - SwiftAlgorithms (~> 1.0)
+  - OlympusSDK (0.0.5)
+  - SwiftAlgorithms (1.0.0)
 
 DEPENDENCIES:
+  - Charts
   - OlympusSDK (from `../`)
+
+SPEC REPOS:
+  trunk:
+    - Charts
+    - SwiftAlgorithms
 
 EXTERNAL SOURCES:
   OlympusSDK:
     :path: "../"
 
 SPEC CHECKSUMS:
-  OlympusSDK: 371d3da52aa8cd9847c16f6ea40afe4002a65c7a
+  Charts: ce0768268078eee0336f122c3c4ca248e4e204c5
+  OlympusSDK: a0353c3177d026e54ed6b4cd647afd31461d20d0
+  SwiftAlgorithms: 38dda4731d19027fdeee1125f973111bf3386b53
 
-PODFILE CHECKSUM: c53da8f4c0cd8bf9d12b2a4d05f3070570c47e21
+PODFILE CHECKSUM: fe07661d8b0d47b7e73e5d46cc7537a89313957d
 
 COCOAPODS: 1.14.3

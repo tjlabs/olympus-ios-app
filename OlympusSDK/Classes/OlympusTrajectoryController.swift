@@ -406,7 +406,7 @@ public class OlympusTrajectoryController {
         return trajectoryInfo
     }
     
-    public func makeSearchInfo(trajectoryInfo: [TrajectoryInfo], pastTrajectoryInfo: [TrajectoryInfo], serverResultBuffer: [FineLocationTrackingFromServer], unitDRInfoBuffer: [UnitDRInfo], mode: String, PHASE: Int, isPhaseBreak: Bool, phaseBreakResult: FineLocationTrackingFromServer) -> SearchInfo {
+    public func makeSearchInfo(trajectoryInfo: [TrajectoryInfo], pastTrajectoryInfo: [TrajectoryInfo], serverResultBuffer: [FineLocationTrackingFromServer], unitDRInfoBuffer: [UnitDRInfo], isKF: Bool, mode: String, PHASE: Int, isPhaseBreak: Bool, phaseBreakResult: FineLocationTrackingFromServer) -> SearchInfo {
         var searchInfo = SearchInfo()
         var searchDirection: [Int] = [0, 90, 180, 270]
         
@@ -502,9 +502,13 @@ public class OlympusTrajectoryController {
                     let headInfoHeading = compensateHeading(heading: headInfo.userHeading)
                     
                     let recentServerResult: FineLocationTrackingFromServer = serverResultBuffer[serverResultBuffer.count-1]
-                    let propagtedResult = propagateUsingUvd(unitDRInfoBuffer: unitDRInfoBuffer, fltResult: recentServerResult)
+                    let propagatedResult = propagateUsingUvd(unitDRInfoBuffer: unitDRInfoBuffer, fltResult: recentServerResult)
                     var xyFromHead: [Double] = [headInfo.userX, headInfo.userY]
                     var xyForArea: [Double] = [headInfo.userX, headInfo.userY]
+                    if (propagatedResult.0) {
+                        xyFromHead = [recentServerResult.x + propagatedResult.1[0], recentServerResult.y + propagatedResult.1[1]]
+                        xyForArea = [recentServerResult.x + propagatedResult.1[0], recentServerResult.y + propagatedResult.1[1]]
+                    }
                     
                     let headCoord: [Double] = xyFromHead
                     let serverCoord: [Double] = [recentServerResult.x, recentServerResult.y]
@@ -572,7 +576,9 @@ public class OlympusTrajectoryController {
                                 // 임시
                                 searchInfo.searchArea = getSearchCoordinates(areaMinMax: searchRange, interval: 1.0)
                                 searchInfo.trajShape = trajectoryFromHead
-                                searchInfo.trajStartCoord = [headInfo.userX, headInfo.userY]
+                                searchInfo.trajStartCoord = headCoord
+                                
+                                hasMajorDirection = true
                             } else {
                                 hasMajorDirection = false
                             }
@@ -593,7 +599,6 @@ public class OlympusTrajectoryController {
                             pastTrajHeading.append(Int(round(pastTraj[i].heading)) + pastDirectionCompensation)
                         }
                         
-                        let isStraight = isTrajectoryStraight(for: uvdHeading, size: uvdHeading.count, mode: mode, conditionPdr: OlympusConstants.NUM_STRAIGHT_IDX_PDR, conditionDr: OlympusConstants.NUM_STRAIGHT_IDX_DR)
                         let closestIndex = findClosestValueIndex(to: searchInfo.tailIndex, in: pastTrajIndex)
                         if let headingIndex = closestIndex {
                             searchDirection = [pastTrajHeading[headingIndex], pastTrajHeading[headingIndex]-5, pastTrajHeading[headingIndex]+5]
@@ -628,7 +633,7 @@ public class OlympusTrajectoryController {
                             let searchArea = getSearchCoordinates(areaMinMax: searchRange, interval: 1.0)
                             
                             // 임시
-                            searchInfo.searchArea = getSearchCoordinates(areaMinMax: searchRange, interval: 1.0)
+                            searchInfo.searchArea = searchArea
                             searchInfo.trajShape = trajectoryFromHead
                             searchInfo.trajStartCoord = [headInfo.userX, headInfo.userY]
                         } else {
@@ -636,14 +641,15 @@ public class OlympusTrajectoryController {
                             searchInfo.trajType = trajType
                             
                             searchDirection = [pastDirection+5, pastDirection-5, pastDirection]
+                            searchInfo.searchDirection = searchDirection
                             
                             var headingCorrectionForHead: Double = 0
                             let headingCorrectionFromServer: Double = headInfo.userHeading - uvdHeading[uvdHeading.count-1]
-//                            if (!isKf) {
-//                                headingCorrectionForHead = 0
-//                            } else {
-//                                headingCorrectionForHead = headInfoHeading - headInfo.userHeading
-//                            }
+                            if (!isKF) {
+                                headingCorrectionForHead = 0
+                            } else {
+                                headingCorrectionForHead = headInfoHeading - headInfo.userHeading
+                            }
                             
                             var headingFromHead = [Double] (repeating: 0, count: uvdHeading.count)
                             for i in 0..<uvdHeading.count {
@@ -669,7 +675,7 @@ public class OlympusTrajectoryController {
                             let searchArea = getSearchCoordinates(areaMinMax: searchRange, interval: 1.0)
                             
                             // 임시
-                            searchInfo.searchArea = getSearchCoordinates(areaMinMax: searchRange, interval: 1.0)
+                            searchInfo.searchArea = searchArea
                             searchInfo.trajShape = trajectoryFromHead
                             searchInfo.trajStartCoord = [headInfo.userX, headInfo.userY]
                         }

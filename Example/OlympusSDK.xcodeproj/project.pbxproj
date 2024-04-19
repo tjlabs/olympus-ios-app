@@ -25,6 +25,9 @@
 		B31439802BAD439E002C072F /* UIViewControllerExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B314397F2BAD439E002C072F /* UIViewControllerExtension.swift */; };
 		B31439832BAD5A27002C072F /* ColorPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31439822BAD5A27002C072F /* ColorPalette.swift */; };
 		B31439872BAD5B76002C072F /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B31439862BAD5B76002C072F /* Colors.xcassets */; };
+		B3787E4A2BD209C400D5EEBC /* ImageCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3787E492BD209C400D5EEBC /* ImageCacheManager.swift */; };
+		B3787E4C2BD20C4D00D5EEBC /* UIImageExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3787E4B2BD20C4D00D5EEBC /* UIImageExtension.swift */; };
+		B3787E502BD2140F00D5EEBC /* S3_7F.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3787E4F2BD2140F00D5EEBC /* S3_7F.csv */; };
 		B3A7A5542BBBCAE200561897 /* CardViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A7A5532BBBCAE200561897 /* CardViewController.swift */; };
 		B3A7A55C2BBBD0FE00561897 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A7A55B2BBBD0FE00561897 /* NetworkManager.swift */; };
 		B3A7A55F2BBBD11A00561897 /* NetworkConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A7A55E2BBBD11A00561897 /* NetworkConstants.swift */; };
@@ -68,6 +71,9 @@
 		B314397F2BAD439E002C072F /* UIViewControllerExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewControllerExtension.swift; sourceTree = "<group>"; };
 		B31439822BAD5A27002C072F /* ColorPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPalette.swift; sourceTree = "<group>"; };
 		B31439862BAD5B76002C072F /* Colors.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Colors.xcassets; sourceTree = "<group>"; };
+		B3787E492BD209C400D5EEBC /* ImageCacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCacheManager.swift; sourceTree = "<group>"; };
+		B3787E4B2BD20C4D00D5EEBC /* UIImageExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageExtension.swift; sourceTree = "<group>"; };
+		B3787E4F2BD2140F00D5EEBC /* S3_7F.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = S3_7F.csv; sourceTree = "<group>"; };
 		B3A7A5532BBBCAE200561897 /* CardViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardViewController.swift; sourceTree = "<group>"; };
 		B3A7A55B2BBBD0FE00561897 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
 		B3A7A55E2BBBD11A00561897 /* NetworkConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkConstants.swift; sourceTree = "<group>"; };
@@ -130,10 +136,12 @@
 				607FACD51AFB9204008FA782 /* AppDelegate.swift */,
 				B3A7A5602BBBE1D400561897 /* Entity.swift */,
 				B3A7A5622BBBE2AE00561897 /* JSONConverter.swift */,
+				B3787E4F2BD2140F00D5EEBC /* S3_7F.csv */,
 				607FACD91AFB9204008FA782 /* Main.storyboard */,
 				607FACDE1AFB9204008FA782 /* LaunchScreen.xib */,
 				607FACDC1AFB9204008FA782 /* Images.xcassets */,
 				607FACD31AFB9204008FA782 /* Supporting Files */,
+				B3787E492BD209C400D5EEBC /* ImageCacheManager.swift */,
 			);
 			name = "Example for OlympusSDK";
 			path = OlympusSDK;
@@ -205,6 +213,7 @@
 				B314397B2BAD435D002C072F /* UITextViewExtension.swift */,
 				B314397D2BAD437F002C072F /* CALayerExtension.swift */,
 				B314397F2BAD439E002C072F /* UIViewControllerExtension.swift */,
+				B3787E4B2BD20C4D00D5EEBC /* UIImageExtension.swift */,
 			);
 			name = Extensions;
 			sourceTree = "<group>";
@@ -327,6 +336,7 @@
 			files = (
 				607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */,
 				B31439872BAD5B76002C072F /* Colors.xcassets in Resources */,
+				B3787E502BD2140F00D5EEBC /* S3_7F.csv in Resources */,
 				607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */,
 				607FACDD1AFB9204008FA782 /* Images.xcassets in Resources */,
 			);
@@ -371,11 +381,13 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-OlympusSDK_Example/Pods-OlympusSDK_Example-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/OlympusSDK/OlympusSDK.framework",
+				"${BUILT_PRODUCTS_DIR}/Charts/Charts.framework",
+				"${BUILT_PRODUCTS_DIR}/SwiftAlgorithms/Algorithms.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OlympusSDK.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Charts.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Algorithms.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -415,6 +427,8 @@
 				B3A7A55F2BBBD11A00561897 /* NetworkConstants.swift in Sources */,
 				B31439742BAD42F2002C072F /* StringExtension.swift in Sources */,
 				B31439722BAD42D5002C072F /* UIViewExtension.swift in Sources */,
+				B3787E4A2BD209C400D5EEBC /* ImageCacheManager.swift in Sources */,
+				B3787E4C2BD20C4D00D5EEBC /* UIImageExtension.swift in Sources */,
 				B31439802BAD439E002C072F /* UIViewControllerExtension.swift in Sources */,
 				B3A7A55C2BBBD0FE00561897 /* NetworkManager.swift in Sources */,
 				B314397A2BAD434B002C072F /* UITextFieldExtension.swift in Sources */,

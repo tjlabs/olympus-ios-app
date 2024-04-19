@@ -6,7 +6,7 @@ target 'OlympusSDK_Example' do
   use_frameworks!
   
   pod 'OlympusSDK', :path => '../'
-  pod 'DropDown'
+  pod 'Charts'
   
   target 'OlympusSDK_Tests' do
     inherit! :search_paths

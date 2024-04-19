@@ -582,6 +582,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 timeUpdateResult[0] = tuResult.x
                 timeUpdateResult[1] = tuResult.y
                 timeUpdateResult[2] = tuResult.absolute_heading
+                displayOutput.trajectoryOg = KF.inputTraj
+                displayOutput.trajectoryPm = KF.matchedTraj
                 // 임시
                 
                 KF.updateTuResultNow(result: currentTuResult)
@@ -627,8 +629,20 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             isPostUvdAnswered = false
             let phase4Trajectory = trajectoryInfo
             if (!stateManager.isBackground) {
-                let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase4Trajectory, pastTrajectoryInfo: trajController.pastTrajectoryInfo, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult)
+                let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase4Trajectory, pastTrajectoryInfo: trajController.pastTrajectoryInfo, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, isKF: KF.isRunning, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult)
+                
+                // 임시
+                let displaySearchType: Int = trajTypeConveter(trajType: searchInfo.trajType)
+                displayOutput.searchArea = searchInfo.searchArea
+                displayOutput.searchType = displaySearchType
+                displayOutput.userTrajectory = searchInfo.trajShape
+                displayOutput.trajectoryStartCoord = searchInfo.trajStartCoord
+                // 임시
+                
                 if (searchInfo.trajType != TrajType.DR_UNKNOWN) {
+                    print("Phase 4 : \(searchInfo.trajType)")
+                    print("Phase 4 : \(olympusResult.absolute_heading)")
+                    print("Phase 4 : \(searchInfo.searchDirection)")
                     processPhase4(currentTime: currentTime, mode: mode, trajectoryInfo: phase4Trajectory, searchInfo: searchInfo)
                 }
             }
@@ -638,24 +652,28 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             if (phaseController.PHASE == OlympusConstants.PHASE_2) {
                 let phase2Trajectory = trajectoryInfo
                 let trajLength = trajController.calculateTrajectoryLength(trajectoryInfo: phase2Trajectory)
-                let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase2Trajectory, pastTrajectoryInfo: trajController.pastTrajectoryInfo, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult)
+                let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase2Trajectory, pastTrajectoryInfo: trajController.pastTrajectoryInfo, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, isKF: KF.isRunning, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult)
                 if (trajLength >= OlympusConstants.REQUIRED_LENGTH_PHASE2) {
                     let phase2SearchInfo = trajController.controlPhase2SearchRange(searchInfo: searchInfo, trajLength: trajLength)
-                    processPhase2(currentTime: currentTime, mode: mode, trajectoryInfo: phase2Trajectory, searchInfo: phase2SearchInfo)
+//                    processPhase2(currentTime: currentTime, mode: mode, trajectoryInfo: phase2Trajectory, searchInfo: phase2SearchInfo)
                 }
             } else if (phaseController.PHASE == OlympusConstants.PHASE_1 || phaseController.PHASE == OlympusConstants.PHASE_3) {
                 // Phase 1 ~ 3
                 let phase3Trajectory = trajectoryInfo
-                let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase3Trajectory, pastTrajectoryInfo: trajController.pastTrajectoryInfo, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult)
+                let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase3Trajectory, pastTrajectoryInfo: trajController.pastTrajectoryInfo, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, isKF: KF.isRunning, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult)
                 
                 // 임시
                 let displaySearchType: Int = trajTypeConveter(trajType: searchInfo.trajType)
+                displayOutput.searchArea = searchInfo.searchArea
                 displayOutput.searchType = displaySearchType
                 displayOutput.userTrajectory = searchInfo.trajShape
                 displayOutput.trajectoryStartCoord = searchInfo.trajStartCoord
                 // 임시
                 
                 if (!isStartRouteTrack || isPhaseBreakInRouteTrack) {
+                    print("Phase 3 : \(searchInfo.trajType)")
+                    print("Phase 3 : \(olympusResult.absolute_heading)")
+                    print("Phase 3 : \(searchInfo.searchDirection)")
                     processPhase3(currentTime: currentTime, mode: mode, trajectoryInfo: phase3Trajectory, searchInfo: searchInfo)
                 }
             }
@@ -668,13 +686,13 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         if (stateManager.isVenusMode && self.timeRequest >= OlympusConstants.MINIMUM_RQ_INTERVAL) {
             self.timeRequest = 0
             let phase3Trajectory = trajectoryInfo
-            let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase3Trajectory, pastTrajectoryInfo: trajController.pastTrajectoryInfo, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult)
+            let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase3Trajectory, pastTrajectoryInfo: trajController.pastTrajectoryInfo, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, isKF: KF.isRunning, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult)
             processPhase3(currentTime: currentTime, mode: mode, trajectoryInfo: phase3Trajectory, searchInfo: searchInfo)
         } else {
             if (!stateManager.isGetFirstResponse && self.timeRequest >= OlympusConstants.MINIMUM_RQ_INTERVAL) {
                 self.timeRequest = 0
                 let phase3Trajectory = trajectoryInfo
-                let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase3Trajectory, pastTrajectoryInfo: trajController.pastTrajectoryInfo, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult)
+                let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase3Trajectory, pastTrajectoryInfo: trajController.pastTrajectoryInfo, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, isKF: KF.isRunning, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult)
                 processPhase3(currentTime: currentTime, mode: mode, trajectoryInfo: phase3Trajectory, searchInfo: searchInfo)
             }
         }
@@ -740,6 +758,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     }
     
     private func processPhase3(currentTime: Int, mode: String, trajectoryInfo: [TrajectoryInfo], searchInfo: SearchInfo) {
+        
         let trajCompensationArray = trajController.getTrajCompensationArray(currentTime: currentTime, trajLength: searchInfo.trajLength)
         if (mode == OlympusConstants.MODE_PDR) {
             self.currentLevel = removeLevelDirectionString(levelName: self.currentLevel)
@@ -751,6 +770,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
         
 //        self.phase2BadCount = 0
+        displayOutput.searchDirection = searchInfo.searchDirection
+        displayOutput.indexTx = unitDRInfoIndex
         var input = FineLocationTracking(user_id: self.user_id, mobile_time: currentTime, sector_id: self.sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM, building_name: self.currentBuilding, level_name_list: levelArray, phase: phaseController.PHASE, search_range: searchInfo.searchRange, search_direction_list: searchInfo.searchDirection, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation_list: trajCompensationArray, tail_index: searchInfo.tailIndex)
         stateManager.setNetworkCount(value: stateManager.networkCount+1)
         if (REGION_NAME != "Korea" && self.deviceModel == "iPhone SE (2nd generation)") { input.normalization_scale = 1.01 }
@@ -768,6 +789,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     trajController.updateTrajCompensationArray(result: fltResult)
                     if (fltResult.mobile_time > self.preServerResultMobileTime) {
                         // 임시
+                        displayOutput.indexRx = fltResult.index
+                        displayOutput.scc = fltResult.scc
+                        displayOutput.resultDirection = fltResult.search_direction
                         displayOutput.serverResult[0] = fltResult.x
                         displayOutput.serverResult[1] = fltResult.y
                         displayOutput.serverResult[2] = fltResult.absolute_heading
@@ -905,6 +929,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         if (isInLevelChangeArea) {
             levelArray = buildingLevelChanger.makeLevelChangeArray(buildingName: self.currentBuilding, levelName: self.currentLevel, buildingLevel: buildingLevelChanger.buildingsAndLevels)
         }
+        displayOutput.indexTx = unitDRInfoIndex
+        displayOutput.searchDirection = searchInfo.searchDirection
         var input = FineLocationTracking(user_id: self.user_id, mobile_time: currentTime, sector_id: self.sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM, building_name: self.currentBuilding, level_name_list: levelArray, phase: phaseController.PHASE, search_range: searchInfo.searchRange, search_direction_list: searchInfo.searchDirection, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation_list: trajCompensationArray, tail_index: searchInfo.tailIndex)
         stateManager.setNetworkCount(value: stateManager.networkCount+1)
         if (REGION_NAME != "Korea" && self.deviceModel == "iPhone SE (2nd generation)") { input.normalization_scale = 1.01 }
@@ -932,6 +958,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             // 임시
                             displayOutput.indexRx = fltResult.index
                             displayOutput.scc = fltResult.scc
+                            displayOutput.resultDirection = fltResult.search_direction
                             // 임시
                             
                             if (isPhaseBreak) {
@@ -940,6 +967,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 isPhaseBreak = false
                             }
                             
+                            trajController.setPastInfo(trajInfo: inputTraj, searchInfo: inputSearchInfo, matchedDirection: fltResult.search_direction)
                             var pmFltRsult = fltResult
                             var propagatedPmFltRsult = fltResult
                             if (KF.muFlag) {

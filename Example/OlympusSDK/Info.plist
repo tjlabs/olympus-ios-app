@@ -22,6 +22,11 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>TJLABS는 블루투스 신호를 이용하여 사용자에게 위치 정보를 제공하므로, 블루투스 관련 권한 허용이 필요합니다.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>

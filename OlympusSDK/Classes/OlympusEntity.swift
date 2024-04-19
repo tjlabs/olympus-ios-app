@@ -566,6 +566,8 @@ public struct ServiceResult {
     
     public var userTrajectory: [[Double]] = [[0, 0]]
     public var trajectoryStartCoord: [Double] = [0, 0]
+    public var searchDirection: [Int] = []
+    public var resultDirection: Int = 0
     public var searchArea: [[Double]] = [[0, 0]]
     public var searchType: Int = 0
     

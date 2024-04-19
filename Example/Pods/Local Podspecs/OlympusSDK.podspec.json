@@ -1,9 +1,13 @@
 {
   "name": "OlympusSDK",
-  "version": "0.1.0",
-  "summary": "A short description of OlympusSDK.",
+  "version": "0.0.5",
+  "summary": "OlympusSDK for iOS",
+  "swift_versions": "5.0",
+  "platforms": {
+    "ios": "15.0"
+  },
   "description": "TODO: Add long description of the pod here.",
-  "homepage": "https://github.com/tjlabs-dev/OlympusSDK",
+  "homepage": "https://www.tjlabscorp.com",
   "license": {
     "type": "MIT",
     "file": "LICENSE"
@@ -12,11 +16,10 @@
     "tjlabs-dev": "dev@tjlabscorp.com"
   },
   "source": {
-    "git": "https://github.com/tjlabs-dev/OlympusSDK.git",
-    "tag": "0.1.0"
+    "git": "https://github.com/tjlabs/olympus-ios-app.git",
+    "tag": "0.0.5"
   },
-  "platforms": {
-    "ios": "10.0"
-  },
-  "source_files": "OlympusSDK/Classes/**/*"
+  "source_files": "OlympusSDK/Classes/**/*",
+  "static_framework": true,
+  "swift_version": "5.0"
 }
