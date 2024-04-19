@@ -115,7 +115,7 @@ public class OlympusKalmanFilter: NSObject {
         
         if (mode == OlympusConstants.MODE_PDR) {
             // PDR
-            let isDrStraight: Bool = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, condition: 60.0)
+            let isDrStraight: Bool = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, condition: 80.0)
             let diffPathTrajMatchingIndex = unitDRInfoBuffer[unitDRInfoBuffer.count-1].index - self.pathTrajMatchingIndex
             if (!isDrStraight && diffPathTrajMatchingIndex > 7) {
                 self.pathTrajMatchingIndex = unitDRInfoBuffer[unitDRInfoBuffer.count-1].index
@@ -288,7 +288,7 @@ public class OlympusKalmanFilter: NSObject {
             let diffH = abs(tuHeading-muHeading)
             
             if (diffXY > 30 || diffH > OlympusConstants.HEADING_RANGE) {
-                let propagationResult = propagateUsingUvd(unitDRInfoBuffer: unitDRInfoBuffer, fltResult: fltResult)
+                let propagationResult = propagateUsingUvd(unitDRInfoBuffer: unitDRInfoBuffer, fltResult: pmFltResult)
                 let propagationValues: [Double] = propagationResult.1
                 
                 if (propagationResult.0) {

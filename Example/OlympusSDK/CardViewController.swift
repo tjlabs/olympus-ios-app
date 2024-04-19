@@ -296,13 +296,13 @@ class CardViewController: UIViewController, Observer {
             // Tail 직선
             set6.setColor(.blue3)
         case 4:
-            // Phase == 2 & Request
+            // PDR_IN_PHASE4_HAS_MAJOR_DIR & Phase == 2 Request 
             set6.setColor(.systemOrange)
         case 5:
             // PDR Phase < 4
             set6.setColor(.systemGreen)
         case 6:
-            // PDR Phase = 4
+            // PDR_IN_PHASE4_NO_MAJOR_DIR
             set6.setColor(.systemBlue)
         case 7:
             // PDR Phase = 4 & Empty Closest Index

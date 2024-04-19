@@ -162,8 +162,8 @@ public class OlympusPhaseController {
         var headingCondition: Double = 30
         if (mode == OlympusConstants.MODE_PDR) {
             pathType = 0
-            distanceCondition = 5
-            headingCondition = 10
+            distanceCondition = 3
+            headingCondition = 5
         }
         
         // Check Phase
