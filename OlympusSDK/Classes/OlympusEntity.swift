@@ -214,6 +214,7 @@ public struct UserVelocity: Encodable {
 public struct UserMask: Encodable {
     let user_id: String
     let mobile_time: Int
+    let section: Int
     let index: Int
     let x: Int
     let y: Int

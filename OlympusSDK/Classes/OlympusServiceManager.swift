@@ -579,32 +579,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             let diffHeading = unitDRInfo.heading - pastUvdHeading
             pastUvdHeading = unitDRInfo.heading
             if (KF.isRunning && KF.tuFlag) {
-                sectionController.controlSection(userVelocity: data)
-//                self.uvdForSection.append(data)
-//                self.uvdSectionHeadings.append(data.heading)
-//                let straightAngle: Double = 5
-//                let circularStandardDeviationAll = circularStandardDeviation(for: uvdSectionHeadings)
-//                if (circularStandardDeviationAll <= straightAngle) {
-//                    print("Section : Straight \(uvdSectionHeadings)")
-//                    if (self.uvdSectionHeadings.count >= 5) {
-//                        var isNeedRequest: Bool = false
-//                        if (rqSectionNumber != sectionNumber) {
-//                            isNeedRequest = true
-//                        } else if (data.index - rqSectionUvdIndex > 5) {
-//                            isNeedRequest = true
-//                        }
-//                        if (isNeedRequest) {
-//                            self.rqSectionNumber = self.sectionNumber
-//                            self.rqSectionUvdIndex = data.index
-//                            print("Section : Request !! Index Count >= 5")
-//                            print("Section : headings = \(uvdSectionHeadings)")
-//                        }
-//                    }
-//                } else {
-//                    sectionNumber += 1
-//                    self.uvdForSection = []
-//                    self.uvdSectionHeadings = []
-//                }
+                let isNeedRequest = sectionController.controlSection(userVelocity: data)
+                if (isNeedRequest) {
+                    let passedNode = OlympusPathMatchingCalculator.shared.getPassedNode()
+                }
                 
                 var tuResult = KF.timeUpdate(recentResult: olympusResult, length: unitUvdLength, diffHeading: diffHeading, isPossibleHeadingCorrection: isPossibleHeadingCorrection, unitDRInfoBuffer: unitDRInfoBuffer, mode: runMode)
                 tuResult.mobile_time = currentTime
@@ -875,7 +853,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             var copiedResult: FineLocationTrackingFromServer = fltResult
                             let propagationResult = propagateUsingUvd(unitDRInfoBuffer: unitDRInfoBuffer, fltResult: fltResult)
                             let propagationValues: [Double] = propagationResult.1
-                            var propagatedResult: [Double] = [pmResult.x+propagationValues[0] , pmResult.y+propagationValues[1], pmResult.absolute_heading+propagationValues[2]]
+                            let propagatedResult: [Double] = [pmResult.x+propagationValues[0] , pmResult.y+propagationValues[1], pmResult.absolute_heading+propagationValues[2]]
                             let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: fltResult.building_name, level: fltResult.level_name, x: propagatedResult[0], y: propagatedResult[1], heading: propagatedResult[2], isPast: false, HEADING_RANGE: OlympusConstants.COORD_RANGE, isUseHeading: true, pathType: 1, COORD_RANGE: OlympusConstants.COORD_RANGE)
                             copiedResult.x = pathMatchingResult.xyhs[0]
                             copiedResult.y = pathMatchingResult.xyhs[1]
@@ -1118,9 +1096,11 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 }
             }
             
-            let passedNode = OlympusPathMatchingCalculator.shared.updatePassedNode(currentResult: result, pastResult: preTemporalResult, pathType: pathTypeForNode)
+            if (KF.isRunning) {
+                OlympusPathMatchingCalculator.shared.updatePassedNode(currentResult: result, pastResult: preTemporalResult, pathType: pathTypeForNode)
+            }
             if (isStableMode) {
-                let data = UserMask(user_id: self.user_id, mobile_time: result.mobile_time, index: result.index, x: Int(result.x), y: Int(result.y), absolute_heading: result.absolute_heading)
+                let data = UserMask(user_id: self.user_id, mobile_time: result.mobile_time, section: sectionController.sectionNumber, index: result.index, x: Int(result.x), y: Int(result.y), absolute_heading: result.absolute_heading)
                 self.inputUserMask.append(data)
                 if ((self.inputUserMask.count) >= OlympusConstants.USER_MASK_INPUT_NUM) {
 //                    print("Mask : input = \(self.inputUserMask)")
@@ -1137,6 +1117,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             }
             
             self.temporalResult = result
+            self.preTemporalResult = result
         }
     }
     

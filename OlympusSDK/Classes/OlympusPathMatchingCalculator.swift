@@ -613,7 +613,6 @@ public class OlympusPathMatchingCalculator {
                 if (!minDistanceCoord.isEmpty) {
                     if (minDistanceCoord[2] <= 15 && minDistanceCoord[3] <= 5) {
                         isSuccess = true
-                        updatePassedNodeAfterPathTrajMatching(building: building, level: levelCopy, pathType: pathType, currentResult: [minDistanceCoord[0], minDistanceCoord[1]], pastResult: [x, y])
                     } else {
                         isSuccess = false
                     }
@@ -623,48 +622,6 @@ public class OlympusPathMatchingCalculator {
         }
         
         return (isSuccess, xyd, matchedTraj, inputTraj)
-    }
-    
-    private func updatePassedNodeAfterPathTrajMatching(building: String, level: String, pathType: Int, currentResult: [Double], pastResult: [Double]) {
-        let key: String = "\(building)_\(level)"
-        if (!(building.isEmpty) && !(level.isEmpty)) {
-            guard let mainType: [Int] = self.PpType[key] else { return }
-            guard let mainRoad: [[Double]] = self.PpCoord[key] else { return }
-            guard let mainNode: [Int] = self.PpNode[key] else { return }
-            
-            print("pastResult : \(pastResult)")
-            print("currentResult : \(currentResult)")
-            print("-------------------------------------")
-            if (!mainRoad.isEmpty) {
-                let roadX = mainRoad[0]
-                let roadY = mainRoad[1]
-                
-                let nodeXy = [pastResult[0], currentResult[1]]
-                let x = nodeXy[0]
-                let y = nodeXy[1]
-                
-                for i in 0..<roadX.count {
-                    let xPath = roadX[i]
-                    let yPath = roadY[i]
-                    let node = mainNode[i]
-                    
-                    let pathTypeLoaded = mainType[i]
-                    if (pathType == 1) {
-                        if (pathType != pathTypeLoaded) {
-                            continue
-                        }
-                    }
-                    
-                    if (xPath == x && yPath == y) {
-                        if (node != 0) {
-                            self.passedNode = node
-                            self.distFromNode = sqrt((xPath-currentResult[0])*(xPath-currentResult[0]) + (yPath-currentResult[1])*(yPath-currentResult[1]))
-                            print("Node Find (pathTrajMatching) : passedNode = \(self.passedNode) // dist = \(self.distFromNode)")
-                        }
-                    }
-                }
-            }
-        }
     }
     
     public func updatePassedNode(currentResult: FineLocationTrackingFromServer, pastResult: FineLocationTrackingFromServer, pathType: Int) {
@@ -693,6 +650,8 @@ public class OlympusPathMatchingCalculator {
                         let yPath = roadY[i]
                         let node = mainNode[i]
                         
+                        let candidates = [[pastResult.x, currentResult.y], [currentResult.x, pastResult.y]]
+                        
                         let pathTypeLoaded = mainType[i]
                         if (pathType == 1) {
                             if (pathType != pathTypeLoaded) {
@@ -704,7 +663,16 @@ public class OlympusPathMatchingCalculator {
                             if (node != 0) {
                                 self.passedNode = node
                                 self.distFromNode = sqrt((xPath-x)*(xPath-x) + (yPath-y)*(yPath-y))
-                                print("Node Find : passedNode = \(self.passedNode) // dist = \(self.distFromNode)")
+//                                print("Node Find (Normal) : passedNode = \(self.passedNode) // dist = \(self.distFromNode)")
+                            }
+                        } else {
+                            for j in 0..<candidates.count {
+                                let coordXy = candidates[j]
+                                if (xPath == coordXy[0] && yPath == coordXy[1] && node != 0) {
+                                    self.passedNode = node
+                                    self.distFromNode = sqrt((xPath-x)*(xPath-x) + (yPath-y)*(yPath-y))
+//                                    print("Node Find : passedNode (Jump) = \(self.passedNode) // dist = \(self.distFromNode)")
+                                }
                             }
                         }
                     }
@@ -712,6 +680,10 @@ public class OlympusPathMatchingCalculator {
                 
             }
         }
+    }
+    
+    public func getPassedNode() -> Int {
+        return self.passedNode
     }
     
     private func calDistacneFromNearestPp(coord: [Double], passedPp: [[Double]], mainRoad: [[Double]], mainType: [Int], pathType: Int, PADDING_VALUE: Double) -> [Double] {

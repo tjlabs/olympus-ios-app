@@ -9,15 +9,18 @@ public class OlympusSectionController {
     var rqSectionUvdIndex: Int = 0
     
     
-    public func controlSection(userVelocity: UserVelocity) {
+    public func controlSection(userVelocity: UserVelocity) -> Bool {
+        var isNeedRequest: Bool = false
+        
         uvdForSection.append(userVelocity)
         uvdSectionHeadings.append(userVelocity.heading)
+        
         let straightAngle: Double = 5
         let circularStandardDeviationAll = circularStandardDeviation(for: uvdSectionHeadings)
         if (circularStandardDeviationAll <= straightAngle) {
 //            print("Section : Straight \(uvdSectionHeadings)")
             if (uvdSectionHeadings.count >= 5) {
-                var isNeedRequest: Bool = false
+                
                 if (rqSectionNumber != sectionNumber) {
                     isNeedRequest = true
                 } else if (userVelocity.index - rqSectionUvdIndex > 5) {
@@ -35,5 +38,7 @@ public class OlympusSectionController {
             uvdForSection = []
             uvdSectionHeadings = []
         }
+        
+        return isNeedRequest
     }
 }
