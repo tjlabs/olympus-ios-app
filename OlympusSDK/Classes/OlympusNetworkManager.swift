@@ -11,8 +11,13 @@ public class OlympusNetworkManager {
     let uvdSession2: URLSession
     var uvdSessionCount: Int = 0
     
+    let umSession1: URLSession
+    let umSession2: URLSession
+    var umSessionCount: Int = 0
+    
     var rfdSessions = [URLSession]()
     var uvdSessions = [URLSession]()
+    var umSessions  = [URLSession]()
     
     let fltSession: URLSession
     let osrSession: URLSession
@@ -33,6 +38,14 @@ public class OlympusNetworkManager {
         self.uvdSession2 = URLSession(configuration: uvdConfig)
         self.uvdSessions.append(self.uvdSession1)
         self.uvdSessions.append(self.uvdSession2)
+        
+        let umConfig = URLSessionConfiguration.default
+        umConfig.timeoutIntervalForResource = TIMEOUT_VALUE_PUT
+        umConfig.timeoutIntervalForRequest = TIMEOUT_VALUE_PUT
+        self.umSession1 = URLSession(configuration: uvdConfig)
+        self.umSession2 = URLSession(configuration: uvdConfig)
+        self.umSessions.append(self.umSession1)
+        self.umSessions.append(self.umSession2)
         
         let fltConfig = URLSessionConfiguration.default
         fltConfig.timeoutIntervalForResource = TIMEOUT_VALUE_POST
@@ -285,7 +298,7 @@ public class OlympusNetworkManager {
             // [http 요청 수행 실시]
     //        print("")
     //        print("====================================")
-    //        print("PUT UV 데이터 :: ", input)
+    //        print("POST UV 데이터 :: ", input)
     //        print("====================================")
     //        print("")
             
@@ -332,6 +345,74 @@ public class OlympusNetworkManager {
         } else {
             DispatchQueue.main.async {
                 completion(406, "Fail to encode UVD", inputUvd)
+            }
+        }
+    }
+    
+    func postUserMask(url: String, input: [UserMask], completion: @escaping (Int, String, [UserMask]) -> Void) {
+        // [http 비동기 방식을 사용해서 http 요청 수행 실시]
+        let urlComponents = URLComponents(string: url)
+        var requestURL = URLRequest(url: (urlComponents?.url)!)
+        let inputUserMask = input
+
+        requestURL.httpMethod = "POST"
+        let encodingData = JSONConverter.encodeJson(param: input)
+        if (encodingData != nil) {
+            requestURL.httpBody = encodingData
+            requestURL.addValue("application/json", forHTTPHeaderField: "Content-Type")
+            requestURL.setValue("\(encodingData)", forHTTPHeaderField: "Content-Length")
+            
+            // [http 요청 수행 실시]
+//            print("")
+//            print("====================================")
+//            print("POST User Mask URL :: ", url)
+//            print("POST User Mask 데이터 :: ", input)
+//            print("====================================")
+//            print("")
+            
+            let umSession = self.umSessions[self.umSessionCount%2]
+            self.umSessionCount+=1
+            
+            let dataTask = umSession.dataTask(with: requestURL, completionHandler: { (data, response, error) in
+                let code = (response as? HTTPURLResponse)?.statusCode ?? 400
+                guard error == nil else {
+                    if let timeoutError = error as? URLError, timeoutError.code == .timedOut {
+                        DispatchQueue.main.async {
+                            completion(timeoutError.code.rawValue, error?.localizedDescription ?? "timed out", inputUserMask)
+                        }
+                    } else {
+                        DispatchQueue.main.async {
+                            completion(code, error?.localizedDescription ?? "Fail to send sensor measurements", inputUserMask)
+                        }
+                    }
+                    return
+                }
+
+                let successsRange = 200..<300
+                guard let statusCode = (response as? HTTPURLResponse)?.statusCode, successsRange.contains(statusCode)
+                else {
+                    DispatchQueue.main.async {
+                        completion(code, (response as? HTTPURLResponse)?.description ?? "Fail to send sensor measurements", inputUserMask)
+                    }
+                    return
+                }
+
+                let resultCode = (response as? HTTPURLResponse)?.statusCode ?? 500 // [상태 코드]
+                guard let resultLen = data else {
+                    DispatchQueue.main.async {
+                        completion(code, (response as? HTTPURLResponse)?.description ?? "Fail to send sensor measurements", inputUserMask)
+                    }
+                    return
+                }
+
+                DispatchQueue.main.async {
+                    completion(resultCode, String(input[input.count-1].index), inputUserMask)
+                }
+            })
+            dataTask.resume()
+        } else {
+            DispatchQueue.main.async {
+                completion(406, "Fail to encode UserMask", inputUserMask)
             }
         }
     }

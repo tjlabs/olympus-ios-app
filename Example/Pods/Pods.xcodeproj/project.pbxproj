@@ -164,6 +164,7 @@
 		B0A7C2F3CAB5C031F93D81777FD5A421 /* CandleChartDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25D78B99A72EA9A8AA7B58E7AC7FD615 /* CandleChartDataProvider.swift */; };
 		B2162A26B36709F6F1B6976DF1A65DAB /* DataRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50CB7A78A18D1FFE2B07803DC81A5B02 /* DataRenderer.swift */; };
 		B2DD7CF96035374C7AC80D88B8904691 /* ShapeRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D875B31F5F45EBC74D8BB9C9BF4489F /* ShapeRenderer.swift */; };
+		B3787E542BD5FD9900D5EEBC /* OlympusSectionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3787E532BD5FD9900D5EEBC /* OlympusSectionController.swift */; };
 		B4015BE1313094DACA3DBB86191C5030 /* CombinedHighlighter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F79AC7B70591619CC26CD10E3A028EEA /* CombinedHighlighter.swift */; };
 		B4D7DBBE6B8329E0947FFC9D1721B3CD /* YAxisRendererRadarChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = E76A5E91455F4AB7EC911603352BC67C /* YAxisRendererRadarChart.swift */; };
 		B6580C63B353D52672121417CD3E4DF9 /* LegendRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD2673F1823F8296C053AEA3C709F878 /* LegendRenderer.swift */; };
@@ -293,7 +294,7 @@
 		1D2F89AA96413858D121ECBAC05D24AE /* XAxisRendererRadarChart.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = XAxisRendererRadarChart.swift; path = Source/Charts/Renderers/XAxisRendererRadarChart.swift; sourceTree = "<group>"; };
 		1DC87571C9D338DBEB63CCD37713AEDD /* Range.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Range.swift; path = Source/Charts/Highlight/Range.swift; sourceTree = "<group>"; };
 		1E858C1E6AFECC937801E2C93FD0BBDC /* LineChartDataProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LineChartDataProvider.swift; path = Source/Charts/Interfaces/LineChartDataProvider.swift; sourceTree = "<group>"; };
-		1F55A1D227F2A4E5694DA7D6FD849B57 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; path = LICENSE; sourceTree = "<group>"; };
+		1F55A1D227F2A4E5694DA7D6FD849B57 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		21E37C7F2BCF3D6A411190DBF2499648 /* Pods-OlympusSDK_Tests-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-OlympusSDK_Tests-Info.plist"; sourceTree = "<group>"; };
 		247E3A9B695232C83A95BF2F08E3266C /* OlympusSensorManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OlympusSensorManager.swift; path = OlympusSDK/Classes/OlympusSensorManager.swift; sourceTree = "<group>"; };
 		25B0EE3D5A4E81397C3293FE3E95DA52 /* OlympusServiceManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OlympusServiceManager.swift; path = OlympusSDK/Classes/OlympusServiceManager.swift; sourceTree = "<group>"; };
@@ -375,7 +376,7 @@
 		69718EFDEB3F1668D71B9F111C110A8E /* BarChartDataSetProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BarChartDataSetProtocol.swift; path = Source/Charts/Data/Interfaces/BarChartDataSetProtocol.swift; sourceTree = "<group>"; };
 		69C7B0A9336B8613989906875E45C0DD /* Pods-OlympusSDK_Tests.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Pods-OlympusSDK_Tests.modulemap"; sourceTree = "<group>"; };
 		6D875B31F5F45EBC74D8BB9C9BF4489F /* ShapeRenderer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ShapeRenderer.swift; path = Source/Charts/Renderers/Scatter/ShapeRenderer.swift; sourceTree = "<group>"; };
-		6DC8C1DBF8808860275E2299E9C19C3B /* OlympusSDK.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; path = OlympusSDK.podspec; sourceTree = "<group>"; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		6DC8C1DBF8808860275E2299E9C19C3B /* OlympusSDK.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; path = OlympusSDK.podspec; sourceTree = "<group>"; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		6DDC3BFCB89620F0619614399B6F27CF /* Description.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Description.swift; path = Source/Charts/Components/Description.swift; sourceTree = "<group>"; };
 		6EB1BDF29CB23FE288CD29BDC7EE3BD8 /* ChartAnimationEasing.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ChartAnimationEasing.swift; path = Source/Charts/Animation/ChartAnimationEasing.swift; sourceTree = "<group>"; };
 		70B2CE0E0BC7F78E87DD63A4D4C12106 /* CrossShapeRenderer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CrossShapeRenderer.swift; path = Source/Charts/Renderers/Scatter/CrossShapeRenderer.swift; sourceTree = "<group>"; };
@@ -403,7 +404,7 @@
 		82404BE747254E47BB0840EDCDDE8CCA /* ChartLimitLine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ChartLimitLine.swift; path = Source/Charts/Components/ChartLimitLine.swift; sourceTree = "<group>"; };
 		82BE60B2B734484409E0C89D6810DBD7 /* HorizontalBarChartRenderer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = HorizontalBarChartRenderer.swift; path = Source/Charts/Renderers/HorizontalBarChartRenderer.swift; sourceTree = "<group>"; };
 		83C2153951A8F24B48F94B7EC5C57E96 /* BarChartRenderer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BarChartRenderer.swift; path = Source/Charts/Renderers/BarChartRenderer.swift; sourceTree = "<group>"; };
-		85497EF28F74B01E759B7C6ED59E364C /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; path = README.md; sourceTree = "<group>"; };
+		85497EF28F74B01E759B7C6ED59E364C /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		859C842A757018ABBE89F773D5809312 /* OlympusPeakValleyDetector.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OlympusPeakValleyDetector.swift; path = OlympusSDK/Classes/OlympusPeakValleyDetector.swift; sourceTree = "<group>"; };
 		8632A22D38474F19BF7B4C6B440654C9 /* XAxisRendererHorizontalBarChart.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = XAxisRendererHorizontalBarChart.swift; path = Source/Charts/Renderers/XAxisRendererHorizontalBarChart.swift; sourceTree = "<group>"; };
 		8804E986B5C349C26A903D1BB0EA81BD /* Renderer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Renderer.swift; path = Source/Charts/Renderers/Renderer.swift; sourceTree = "<group>"; };
@@ -427,7 +428,7 @@
 		9A26491F4CC96489AB0197D4618B1ACA /* CandleStickChartRenderer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CandleStickChartRenderer.swift; path = Source/Charts/Renderers/CandleStickChartRenderer.swift; sourceTree = "<group>"; };
 		9A57AA1ED1F885DBCF354E015E904619 /* LineScatterCandleRadarRenderer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LineScatterCandleRadarRenderer.swift; path = Source/Charts/Renderers/LineScatterCandleRadarRenderer.swift; sourceTree = "<group>"; };
 		9D56EAE88096A5ABCA79C75956A13276 /* OlympusStepLengthEstimator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OlympusStepLengthEstimator.swift; path = OlympusSDK/Classes/OlympusStepLengthEstimator.swift; sourceTree = "<group>"; };
-		9D940727FF8FB9C785EB98E56350EF41 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		9D940727FF8FB9C785EB98E56350EF41 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		9E6CD2A932AA956B86CCB308CE9A29A9 /* ChartDataEntry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ChartDataEntry.swift; path = Source/Charts/Data/Implementations/Standard/ChartDataEntry.swift; sourceTree = "<group>"; };
 		9EB14C98C7B8F58587B6A5592D9716A3 /* Split.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Split.swift; path = Sources/Algorithms/Split.swift; sourceTree = "<group>"; };
 		9FE018E0BB8C1F24EBED4650BF20AC7C /* PieRadarHighlighter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PieRadarHighlighter.swift; path = Source/Charts/Highlight/PieRadarHighlighter.swift; sourceTree = "<group>"; };
@@ -445,6 +446,7 @@
 		B04895D8E0B7A2E324862D10B2A089CB /* OlympusSDK.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = OlympusSDK.release.xcconfig; sourceTree = "<group>"; };
 		B1901EB11C7E5FFC634852FE040E44A1 /* JSONConverter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = JSONConverter.swift; path = OlympusSDK/Classes/JSONConverter.swift; sourceTree = "<group>"; };
 		B2ACEB78DA7846CF58B9F22169F4453B /* LineScatterCandleRadarChartDataSetProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LineScatterCandleRadarChartDataSetProtocol.swift; path = Source/Charts/Data/Interfaces/LineScatterCandleRadarChartDataSetProtocol.swift; sourceTree = "<group>"; };
+		B3787E532BD5FD9900D5EEBC /* OlympusSectionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusSectionController.swift; path = OlympusSDK/Classes/OlympusSectionController.swift; sourceTree = "<group>"; };
 		B3FE4B75E8691EE304B4BF48919D02E8 /* OlympusTrajectoryController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OlympusTrajectoryController.swift; path = OlympusSDK/Classes/OlympusTrajectoryController.swift; sourceTree = "<group>"; };
 		B41AEB2D6B466320C47405E7F89925C5 /* Cycle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Cycle.swift; path = Sources/Algorithms/Cycle.swift; sourceTree = "<group>"; };
 		B450425E1BFB51AD71012E45E8AE8867 /* OlympusUnitStatusEstimator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OlympusUnitStatusEstimator.swift; path = OlympusSDK/Classes/OlympusUnitStatusEstimator.swift; sourceTree = "<group>"; };
@@ -664,7 +666,6 @@
 				BC8AC016FBFFC557E50D474F7140EA01 /* Windows.swift */,
 				F16395E079A8B8537D5B492D0173099F /* Support Files */,
 			);
-			name = SwiftAlgorithms;
 			path = SwiftAlgorithms;
 			sourceTree = "<group>";
 		};
@@ -714,6 +715,7 @@
 				859C842A757018ABBE89F773D5809312 /* OlympusPeakValleyDetector.swift */,
 				7AD9F944CA4E8C4FF2186C1C9E4151F3 /* OlympusPhaseController.swift */,
 				290A681BEE3DED5159406E98C9A55886 /* OlympusRFDFunctions.swift */,
+				B3787E532BD5FD9900D5EEBC /* OlympusSectionController.swift */,
 				D5754B735DBA2D3CA0D901060232739C /* OlympusRflowCorrelator.swift */,
 				545F93098F0CF47DF71AF429A0D7853C /* OlympusRouteTracker.swift */,
 				61074AB802A2BEE8EDF61E848F342EDD /* OlympusRssCompensator.swift */,
@@ -740,7 +742,6 @@
 				FF2D49F227471164825DAD1A455553B4 /* Core */,
 				7797338AAB33F027B3E72F98C6916F53 /* Support Files */,
 			);
-			name = Charts;
 			path = Charts;
 			sourceTree = "<group>";
 		};
@@ -1387,6 +1388,7 @@
 				73796BAF4F4B60FDAC5B6BAC7A48B6C2 /* OlympusRFDFunctions.swift in Sources */,
 				1BB2A4F50DDC39465CDD94DD431EB9B9 /* OlympusRflowCorrelator.swift in Sources */,
 				0128D0C94AF26F9F7B7A2ADE327936C7 /* OlympusRouteTracker.swift in Sources */,
+				B3787E542BD5FD9900D5EEBC /* OlympusSectionController.swift in Sources */,
 				A272C37F81A0A23C3EE8B34B1CE1113C /* OlympusRssCompensator.swift in Sources */,
 				68D1802087B14EB6E459D98E922C6ADB /* OlympusSDK-dummy.m in Sources */,
 				397112C1319C7D5BB91BE9507AFC1F4F /* OlympusSensorManager.swift in Sources */,
@@ -1837,8 +1839,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRIP_INSTALLED_PRODUCT = NO;
-				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_VERSION = 5.0;
 				SYMROOT = "${SRCROOT}/../build";
 			};

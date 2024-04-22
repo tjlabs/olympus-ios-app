@@ -595,11 +595,12 @@ public class OlympusTrajectoryController {
                         
                         let pastTraj = pastTrajectoryInfo
                         let pastDirection = pastMatchedDirection
-                        print("Phase 4 : No major Direction ------------------------------")
-                        print("Phase 4 : pastDirection = \(pastDirection)")
+//                        print("Phase 4 : No major Direction ------------------------------")
+//                        print("Phase 4 : pastDirection = \(pastDirection)")
                         let pastDirectionCompensation = pastDirection - Int(round(pastTraj[0].heading))
-                        print("Phase 4 : pastDirectionCompensation = \(Int(round(pastTraj[0].heading)))")
-                        print("Phase 4 : pastDirectionCompensation = \(pastDirectionCompensation)")
+//                        print("Phase 4 : pastDirectionCompensation = \(Int(round(pastTraj[0].heading)))")
+//                        print("Phase 4 : pastDirectionCompensation = \(pastDirectionCompensation)")
+                        
                         var pastTrajIndex = [Int]()
                         var pastTrajHeading = [Int]()
                         for i in 0..<pastTraj.count {
@@ -607,10 +608,10 @@ public class OlympusTrajectoryController {
                             pastTrajHeading.append(Int(round(pastTraj[i].heading)) + pastDirectionCompensation)
                         }
                         
-                        print("Phase 4 : tailIndex = \(searchInfo.tailIndex) // pastTrajIndex = \(pastTrajIndex)")
+//                        print("Phase 4 : tailIndex = \(searchInfo.tailIndex) // pastTrajIndex = \(pastTrajIndex)")
                         let closestIndex = findClosestValueIndex(to: searchInfo.tailIndex, in: pastTrajIndex)
                         if let headingIndex = closestIndex {
-                            print("Phase 4 : headingIndex = \(headingIndex) // value = \(pastTrajHeading[headingIndex])")
+//                            print("Phase 4 : headingIndex = \(headingIndex) // value = \(pastTrajHeading[headingIndex])")
                             searchDirection = [pastTrajHeading[headingIndex], pastTrajHeading[headingIndex]-Int(HEADING_UNCERTANTIY), pastTrajHeading[headingIndex]+Int(HEADING_UNCERTANTIY)]
                             for i in 0..<searchDirection.count {
                                 searchDirection[i] = Int(compensateHeading(heading: Double(searchDirection[i])))

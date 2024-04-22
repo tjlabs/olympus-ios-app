@@ -66,6 +66,7 @@ class OlympusConstants {
     static var RQ_IDX: Int = 10
     static var RQ_IDX_PDR: Int = 4
     static var RQ_IDX_DR: Int = 10
+    static let USER_MASK_INPUT_NUM: Int = 5
     static var UVD_INPUT_NUM: Int = 3
     static var VALUE_INPUT_NUM: Int = 5
     static var INIT_INPUT_NUM: Int = 3

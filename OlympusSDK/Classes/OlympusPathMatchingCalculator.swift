@@ -2,8 +2,9 @@ public class OlympusPathMatchingCalculator {
     static var shared = OlympusPathMatchingCalculator()
     
     public var PpVersion = [String: String]()
-    public var PpCoord = [String: [[Double]]]()
     public var PpType = [String: [Int]]()
+    public var PpNode = [String: [Int]]()
+    public var PpCoord = [String: [[Double]]]()
     public var PpMinMax = [Double]()
     public var PpMagScale = [String: [Double]]()
     public var PpHeading = [String: [String]]()
@@ -15,12 +16,16 @@ public class OlympusPathMatchingCalculator {
     public var EntranceMatchingArea = [String: [[Double]]]()
     public var LevelChangeArea = [String: [[Double]]]()
     
+    var passedNode: Int = -1
+    var distFromNode: Double = 0
+    
     init() {
         
     }
     
-    public func parseRoad(data: String) -> ([Int], [[Double]], [Double], [String] ) {
+    public func parseRoad(data: String) -> ([Int], [Int], [[Double]], [Double], [String] ) {
         var roadType = [Int]()
+        var roadNode = [Int]()
         var road = [[Double]]()
         var roadScale = [Double]()
         var roadHeading = [String]()
@@ -31,29 +36,49 @@ public class OlympusPathMatchingCalculator {
         let roadString = data.components(separatedBy: .newlines)
         for i in 0..<roadString.count {
             if (roadString[i] != "") {
+                let lineString = roadString[i]
                 let lineData = roadString[i].components(separatedBy: ",")
                 
                 roadType.append(Int(Double(lineData[0])!))
-                roadX.append(Double(lineData[1])!)
-                roadY.append(Double(lineData[2])!)
-                roadScale.append(Double(lineData[3])!)
+                roadNode.append(Int(Double(lineData[1])!))
+                roadX.append(Double(lineData[2])!)
+                roadY.append(Double(lineData[3])!)
+                roadScale.append(Double(lineData[4])!)
                 
-                var headingArray: String = ""
-                if (lineData.count > 4) {
-                    for j in 4..<lineData.count {
-                        headingArray.append(lineData[j])
-                        if (lineData[j] != "") {
-                            headingArray.append(",")
+                let pattern = "\\[[^\\]]+\\]"
+                guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else {
+                    print("Invalid regular expression pattern")
+                    exit(1)
+                }
+                let matches = regex.matches(in: lineString, options: [], range: NSRange(location: 0, length: lineString.utf16.count))
+                let matchedStrings = matches.map { match -> String in
+                    let range = Range(match.range, in: lineString)!
+                    return String(lineString[range])
+                }
+                
+                var headingValues = ""
+                if (!matchedStrings.isEmpty) {
+                    let headingListString = matchedStrings[0]
+                    let headingArray = headingListString
+                        .replacingOccurrences(of: "[", with: "")
+                        .replacingOccurrences(of: "]", with: "")
+                        .components(separatedBy: ",")
+                        .compactMap { Double($0.trimmingCharacters(in: .whitespaces)) }
+                    
+                    for j in 0..<headingArray.count {
+                        headingValues.append(String(headingArray[j]))
+                        if (j < (headingArray.count-1)) {
+                            headingValues.append(",")
                         }
                     }
                 }
-                roadHeading.append(headingArray)
+                roadHeading.append(headingValues)
             }
         }
         road = [roadX, roadY]
         self.PpMinMax = [roadX.min() ?? 0, roadY.min() ?? 0, roadX.max() ?? 0, roadY.max() ?? 0]
         
-        return (roadType, road, roadScale, roadHeading)
+        return (roadType, roadNode, road, roadScale, roadHeading)
     }
     
     public func savePathPixelLocalUrl(key: String, url: String) {
@@ -93,7 +118,7 @@ public class OlympusPathMatchingCalculator {
                     if (ppLocalUrl.0) {
                         do {
                             let contents = ppLocalUrl.1!
-                            ( PpType[key], PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
+                            ( PpType[key], PpNode[key], PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
                             PpIsLoaded[key] = true
                         }
                     } else {
@@ -105,7 +130,7 @@ public class OlympusPathMatchingCalculator {
                             if error == nil {
                                 do {
                                     let contents = try String(contentsOf: url!)
-                                    ( PpType[key], PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
+                                    ( PpType[key], PpNode[key],PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
                                     savePathPixelVersion(key: key, ppVersion: value)
                                     savePathPixelLocalUrl(key: key, url: contents)
                                     PpIsLoaded[key] = true
@@ -128,7 +153,7 @@ public class OlympusPathMatchingCalculator {
                         if error == nil {
                             do {
                                 let contents = try String(contentsOf: url!)
-                                ( PpType[key], PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
+                                ( PpType[key], PpNode[key], PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
                                 savePathPixelVersion(key: key, ppVersion: value)
                                 savePathPixelLocalUrl(key: key, url: contents)
                                 PpIsLoaded[key] = true
@@ -152,7 +177,7 @@ public class OlympusPathMatchingCalculator {
                             do {
                                 let contents = try String(contentsOf: url!)
                                 print(key)
-                                ( PpType[key], PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
+                                ( PpType[key], PpNode[key], PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
                                 savePathPixelVersion(key: key, ppVersion: value)
                                 savePathPixelLocalUrl(key: key, url: contents)
                                 PpIsLoaded[key] = true
@@ -478,10 +503,10 @@ public class OlympusPathMatchingCalculator {
                 let roadX = mainRoad[0]
                 let roadY = mainRoad[1]
                 
-                var xMin = x - PADDING_VALUE
-                var xMax = x + PADDING_VALUE
-                var yMin = y - PADDING_VALUE
-                var yMax = y + PADDING_VALUE
+                let xMin = x - PADDING_VALUE
+                let xMax = x + PADDING_VALUE
+                let yMin = y - PADDING_VALUE
+                let yMax = y + PADDING_VALUE
                 
                 var ppXydArray = [[Double]]()
                 var minDistanceCoord = [Double]()
@@ -583,20 +608,110 @@ public class OlympusPathMatchingCalculator {
                             }
                         }
                     }
-                    
-                    if (!minDistanceCoord.isEmpty) {
-                        if (minDistanceCoord[2] <= 15 && minDistanceCoord[3] <= 5) {
-                            isSuccess = true
-                        } else {
-                            isSuccess = false
-                        }
-                        xyd = minDistanceCoord
+                }
+                
+                if (!minDistanceCoord.isEmpty) {
+                    if (minDistanceCoord[2] <= 15 && minDistanceCoord[3] <= 5) {
+                        isSuccess = true
+                        updatePassedNodeAfterPathTrajMatching(building: building, level: levelCopy, pathType: pathType, currentResult: [minDistanceCoord[0], minDistanceCoord[1]], pastResult: [x, y])
+                    } else {
+                        isSuccess = false
                     }
+                    xyd = minDistanceCoord
                 }
             }
         }
         
         return (isSuccess, xyd, matchedTraj, inputTraj)
+    }
+    
+    private func updatePassedNodeAfterPathTrajMatching(building: String, level: String, pathType: Int, currentResult: [Double], pastResult: [Double]) {
+        let key: String = "\(building)_\(level)"
+        if (!(building.isEmpty) && !(level.isEmpty)) {
+            guard let mainType: [Int] = self.PpType[key] else { return }
+            guard let mainRoad: [[Double]] = self.PpCoord[key] else { return }
+            guard let mainNode: [Int] = self.PpNode[key] else { return }
+            
+            print("pastResult : \(pastResult)")
+            print("currentResult : \(currentResult)")
+            print("-------------------------------------")
+            if (!mainRoad.isEmpty) {
+                let roadX = mainRoad[0]
+                let roadY = mainRoad[1]
+                
+                let nodeXy = [pastResult[0], currentResult[1]]
+                let x = nodeXy[0]
+                let y = nodeXy[1]
+                
+                for i in 0..<roadX.count {
+                    let xPath = roadX[i]
+                    let yPath = roadY[i]
+                    let node = mainNode[i]
+                    
+                    let pathTypeLoaded = mainType[i]
+                    if (pathType == 1) {
+                        if (pathType != pathTypeLoaded) {
+                            continue
+                        }
+                    }
+                    
+                    if (xPath == x && yPath == y) {
+                        if (node != 0) {
+                            self.passedNode = node
+                            self.distFromNode = sqrt((xPath-currentResult[0])*(xPath-currentResult[0]) + (yPath-currentResult[1])*(yPath-currentResult[1]))
+                            print("Node Find (pathTrajMatching) : passedNode = \(self.passedNode) // dist = \(self.distFromNode)")
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    public func updatePassedNode(currentResult: FineLocationTrackingFromServer, pastResult: FineLocationTrackingFromServer, pathType: Int) {
+        let diffX = abs(currentResult.x - pastResult.x)
+        let diffY = abs(currentResult.y - pastResult.y)
+        
+        let x = currentResult.x
+        let y = currentResult.y
+        
+        let building = currentResult.building_name
+        let level = removeLevelDirectionString(levelName: currentResult.level_name)
+        
+        let key: String = "\(building)_\(level)"
+        if (diffX != 0 || diffY != 0) {
+            if (!(building.isEmpty) && !(level.isEmpty)) {
+                guard let mainType: [Int] = self.PpType[key] else { return }
+                guard let mainRoad: [[Double]] = self.PpCoord[key] else { return }
+                guard let mainNode: [Int] = self.PpNode[key] else { return }
+                
+                if (!mainRoad.isEmpty) {
+                    let roadX = mainRoad[0]
+                    let roadY = mainRoad[1]
+                    
+                    for i in 0..<roadX.count {
+                        let xPath = roadX[i]
+                        let yPath = roadY[i]
+                        let node = mainNode[i]
+                        
+                        let pathTypeLoaded = mainType[i]
+                        if (pathType == 1) {
+                            if (pathType != pathTypeLoaded) {
+                                continue
+                            }
+                        }
+                        
+                        if (xPath == x && yPath == y) {
+                            if (node != 0) {
+                                self.passedNode = node
+                                self.distFromNode = sqrt((xPath-x)*(xPath-x) + (yPath-y)*(yPath-y))
+                                print("Node Find : passedNode = \(self.passedNode) // dist = \(self.distFromNode)")
+                            }
+                        }
+                    }
+                }
+                
+            }
+        }
     }
     
     private func calDistacneFromNearestPp(coord: [Double], passedPp: [[Double]], mainRoad: [[Double]], mainType: [Int], pathType: Int, PADDING_VALUE: Double) -> [Double] {

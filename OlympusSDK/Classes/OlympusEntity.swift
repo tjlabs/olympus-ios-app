@@ -211,6 +211,15 @@ public struct UserVelocity: Encodable {
     let looking: Bool
 }
 
+public struct UserMask: Encodable {
+    let user_id: String
+    let mobile_time: Int
+    let index: Int
+    let x: Int
+    let y: Int
+    let absolute_heading: Double
+}
+
 public struct MobileResult: Encodable {
     public var user_id: String
     public var mobile_time: Int

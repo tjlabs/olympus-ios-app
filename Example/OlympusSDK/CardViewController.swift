@@ -109,16 +109,16 @@ class CardViewController: UIViewController, Observer {
                     let rp: [String] = item
                     if (rp.count >= 2) {
                         if (mode == "pdr") {
-                            guard let x: Double = Double(rp[1]) else { return [[Double]]() }
-                            guard let y: Double = Double(rp[2].components(separatedBy: "\r")[0]) else { return [[Double]]() }
+                            guard let x: Double = Double(rp[2]) else { return [[Double]]() }
+                            guard let y: Double = Double(rp[3].components(separatedBy: "\r")[0]) else { return [[Double]]() }
                             
                             rpX.append(x)
                             rpY.append(y)
                         } else {
                             let pathType = Int(rp[0])
                             if (pathType == 1) {
-                                guard let x: Double = Double(rp[1]) else { return [[Double]]() }
-                                guard let y: Double = Double(rp[2].components(separatedBy: "\r")[0]) else { return [[Double]]() }
+                                guard let x: Double = Double(rp[2]) else { return [[Double]]() }
+                                guard let y: Double = Double(rp[3].components(separatedBy: "\r")[0]) else { return [[Double]]() }
                                 
                                 rpX.append(x)
                                 rpY.append(y)

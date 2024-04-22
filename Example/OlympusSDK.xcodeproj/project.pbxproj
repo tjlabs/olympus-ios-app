@@ -27,7 +27,7 @@
 		B31439872BAD5B76002C072F /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B31439862BAD5B76002C072F /* Colors.xcassets */; };
 		B3787E4A2BD209C400D5EEBC /* ImageCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3787E492BD209C400D5EEBC /* ImageCacheManager.swift */; };
 		B3787E4C2BD20C4D00D5EEBC /* UIImageExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3787E4B2BD20C4D00D5EEBC /* UIImageExtension.swift */; };
-		B3787E502BD2140F00D5EEBC /* S3_7F.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3787E4F2BD2140F00D5EEBC /* S3_7F.csv */; };
+		B3787E562BD6336900D5EEBC /* S3_7F.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3787E552BD6336900D5EEBC /* S3_7F.csv */; };
 		B3A7A5542BBBCAE200561897 /* CardViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A7A5532BBBCAE200561897 /* CardViewController.swift */; };
 		B3A7A55C2BBBD0FE00561897 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A7A55B2BBBD0FE00561897 /* NetworkManager.swift */; };
 		B3A7A55F2BBBD11A00561897 /* NetworkConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A7A55E2BBBD11A00561897 /* NetworkConstants.swift */; };
@@ -73,7 +73,7 @@
 		B31439862BAD5B76002C072F /* Colors.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Colors.xcassets; sourceTree = "<group>"; };
 		B3787E492BD209C400D5EEBC /* ImageCacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCacheManager.swift; sourceTree = "<group>"; };
 		B3787E4B2BD20C4D00D5EEBC /* UIImageExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageExtension.swift; sourceTree = "<group>"; };
-		B3787E4F2BD2140F00D5EEBC /* S3_7F.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = S3_7F.csv; sourceTree = "<group>"; };
+		B3787E552BD6336900D5EEBC /* S3_7F.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = S3_7F.csv; sourceTree = "<group>"; };
 		B3A7A5532BBBCAE200561897 /* CardViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardViewController.swift; sourceTree = "<group>"; };
 		B3A7A55B2BBBD0FE00561897 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
 		B3A7A55E2BBBD11A00561897 /* NetworkConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkConstants.swift; sourceTree = "<group>"; };
@@ -136,7 +136,7 @@
 				607FACD51AFB9204008FA782 /* AppDelegate.swift */,
 				B3A7A5602BBBE1D400561897 /* Entity.swift */,
 				B3A7A5622BBBE2AE00561897 /* JSONConverter.swift */,
-				B3787E4F2BD2140F00D5EEBC /* S3_7F.csv */,
+				B3787E552BD6336900D5EEBC /* S3_7F.csv */,
 				607FACD91AFB9204008FA782 /* Main.storyboard */,
 				607FACDE1AFB9204008FA782 /* LaunchScreen.xib */,
 				607FACDC1AFB9204008FA782 /* Images.xcassets */,
@@ -336,7 +336,7 @@
 			files = (
 				607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */,
 				B31439872BAD5B76002C072F /* Colors.xcassets in Resources */,
-				B3787E502BD2140F00D5EEBC /* S3_7F.csv in Resources */,
+				B3787E562BD6336900D5EEBC /* S3_7F.csv in Resources */,
 				607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */,
 				607FACDD1AFB9204008FA782 /* Images.xcassets in Resources */,
 			);
