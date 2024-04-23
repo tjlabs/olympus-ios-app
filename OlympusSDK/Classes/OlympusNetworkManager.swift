@@ -58,6 +58,16 @@ public class OlympusNetworkManager {
         self.osrSession = URLSession(configuration: osrConfig)
     }
     
+    func initailze() {
+        self.rfdSessionCount = 0
+        self.uvdSessionCount = 0
+        self.umSessionCount = 0
+        
+        self.rfdSessions = [URLSession]()
+        self.uvdSessions = [URLSession]()
+        self.umSessions  = [URLSession]()
+    }
+    
     func postUserLogin(url: String, input: LoginInput, completion: @escaping (Int, String) -> Void) {
         // [http 비동기 방식을 사용해서 http 요청 수행 실시]
         let urlComponents = URLComponents(string: url)

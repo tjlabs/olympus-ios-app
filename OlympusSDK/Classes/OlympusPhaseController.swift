@@ -26,6 +26,12 @@ public class OlympusPhaseController {
         self.notificationCenterRemoveObserver()
     }
     
+    public func initalize() {
+        self.phase2BadCount = 0
+        self.phase2count = 0
+        self.phase3count = 0
+        self.PHASE = 1
+    }
     
     public func setPhaseLengthParam(lengthConditionPdr: Double, lengthConditionDr: Double) {
         self.PHASE3_LENGTH_CONDITION_PDR = lengthConditionPdr

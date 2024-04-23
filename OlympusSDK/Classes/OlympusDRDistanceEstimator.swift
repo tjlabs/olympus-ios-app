@@ -44,7 +44,6 @@ public class OlympusDRDistanceEstimator: NSObject {
     public var isSufficientRfdBuffer: Bool = false
     public var isSufficientRfdVelocityBuffer: Bool = false
     public var isSufficientRfdAutoModeBuffer: Bool = false
-    
     public var isStartRouteTrack: Bool = false
     
     public func argmax(array: [Float]) -> Int {

@@ -22,6 +22,11 @@ public class OlympusRssCompensator {
     
     var timeStackEst: Double = 0
     
+    public func initalize() {
+        self.timeAfterResponse = 0
+        self.timeStackEst = 0
+    }
+    
     
     public func loadRssiCompensationParam(sector_id: Int, device_model: String, os_version: Int, completion: @escaping (Bool, Double, String) -> Void) {
         var loadedNormalizationScale: Double = 1.0
@@ -146,11 +151,6 @@ public class OlympusRssCompensator {
                 }
             }
         }
-    }
-    
-    public func clearEntranceWardRssi() {
-        self.entranceWardRssi = [String: Double]()
-        self.allEntranceWardRssi = [String: Double]()
     }
     
     public func getMaxRssi() -> Double {

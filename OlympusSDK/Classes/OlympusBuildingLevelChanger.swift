@@ -35,6 +35,19 @@ public class OlympusBuildingLevelChanger {
     
     var trajEditedObserver: Any!
     
+    public func initialize() {
+        self.isDetermineSpot = false
+        self.travelingOsrDistance = 0
+        self.lastSpotId = 0
+        self.currentSpot = 0
+        self.spotCutIndex = 0
+        self.buildingLevelChangedTime = 0
+        self.buildingsAndLevels = [String:[String]]()
+        self.phase2Range = []
+        self.phase2Direction = []
+        self.preOutputMobileTime = 0
+    }
+    
     func accumulateOsrDistance(unitLength: Double, isGetFirstResponse: Bool, mode: String, result: FineLocationTrackingResult) {
         if (isGetFirstResponse && mode == OlympusConstants.MODE_DR) {
             let lastResult = result

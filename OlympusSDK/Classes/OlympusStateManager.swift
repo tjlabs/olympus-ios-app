@@ -24,6 +24,28 @@ public class OlympusStateManager: NSObject {
         observers.forEach { $0.isStateDidChange(newValue: state) }
     }
     
+    public func initalize() {
+        self.lastScannedEntranceOuterWardTime = 0
+        self.isIndoor = false
+        self.isBleOff = false
+        self.isBackground = false
+        self.isBecomeForeground = false
+        self.isStop = false
+        self.isVenusMode = false
+        self.isNetworkConnectReported = false
+        
+        self.timeForInit = 0
+        self.timeBleOff = 0
+        self.timeBecomeForeground = 0
+        self.timeEmptyRF = 0
+        self.timeTrimFailRF = 0
+        
+        self.isSleepMode = true
+        self.timeSleepRF = 0
+        self.timeSleepUV = 0
+        self.timeIndexNotChanged = 0
+    }
+    
     public var EntranceOuterWards = [String]()
     public var lastScannedEntranceOuterWardTime: Double = 0
     

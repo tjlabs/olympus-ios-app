@@ -26,6 +26,29 @@ public class OlympusTrajectoryController {
     
     init() {}
     
+    public func initalize() {
+        self.isMovePhase2To4 = false
+        self.distanceAfterPhase2To4 = 0
+        
+        self.userTrajectoryInfo = []
+        self.pastTrajectoryInfo = []
+        self.pastSearchInfo = SearchInfo()
+        self.pastMatchedDirection = 0
+        
+        self.isNeedTrajCheck = false
+        self.isUnknownTraj = false
+        self.sendFailUvdIndexes = [Int]()
+        self.validIndex = 0
+        self.isNeedRemoveIndexSendFailArray = false
+        
+        self.phase2ReqCount = 0
+        
+        self.trajCompensation = 1.0
+        self.trajCompensationBadCount = 0
+        self.isFltRequested = false
+        self.fltRequestTime = 0
+    }
+    
     public func clearUserTrajectoryInfo() {
         self.userTrajectoryInfo = [TrajectoryInfo]()
     }

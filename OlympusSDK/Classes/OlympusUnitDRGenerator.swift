@@ -36,6 +36,7 @@ public class OlympusUnitDRGenerator: NSObject {
     public var isSufficientRfdBuffer: Bool = false
     public var isSufficientRfdVelocityBuffer: Bool = false
     public var isSufficientRfdAutoMode: Bool = false
+
     
     public func setMode(mode: String) {
         unitMode = mode

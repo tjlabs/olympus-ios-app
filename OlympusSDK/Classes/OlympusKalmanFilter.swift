@@ -39,9 +39,32 @@ public class OlympusKalmanFilter: NSObject {
     var tuResultNow = FineLocationTrackingFromServer()
     var tuResultWhenUvdPosted = FineLocationTrackingFromServer()
     
+    public var isRunning: Bool = false
+    
     override init() { }
     
-    public var isRunning: Bool = false
+    public func initalize() {
+        self.tuResult = FineLocationTrackingFromServer()
+        self.muResult = FineLocationTrackingFromServer()
+        
+        self.tuFlag = false
+        self.muFlag = false
+        
+        self.pathTrajMatchingIndex = 0
+        self.matchedTraj = [[Double]]()
+        self.inputTraj = [[Double]]()
+        
+        self.uvdIndexBuffer = [Int]()
+        self.uvdHeadingBuffer = [Double]()
+        self.tuResultBuffer = [[Double]]()
+        self.isNeedUvdIndexBufferClear = false
+        self.usedUvdIndex = 0
+        
+        self.tuResultNow = FineLocationTrackingFromServer()
+        self.tuResultWhenUvdPosted = FineLocationTrackingFromServer()
+        
+        self.isRunning = false
+    }
     
     public func deactivateKalmanFilter() {
         self.isRunning = false
@@ -125,7 +148,6 @@ public class OlympusKalmanFilter: NSObject {
                 if (pathTrajMatchingResult.isSuccess) {
                     outputResult.x = pathTrajMatchingResult.xyd[0]*0.5 + updatedX*0.5
                     outputResult.y = pathTrajMatchingResult.xyd[1]*0.5 + updatedY*0.5
-                    
                     self.matchedTraj = pathTrajMatchingResult.matchedTraj
                     self.inputTraj = pathTrajMatchingResult.inputTraj
                 } else {
@@ -135,8 +157,8 @@ public class OlympusKalmanFilter: NSObject {
                 let isDrVeryStraight: Bool = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, condition: 10.0)
                 if (isDrVeryStraight) {
                     let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 0, COORD_RANGE: OlympusConstants.COORD_RANGE)
-                    outputResult.x = pathMatchingResult.xyhs[0]*0.2 + updatedX*0.8
-                    outputResult.y = pathMatchingResult.xyhs[1]*0.2 + updatedY*0.8
+                    outputResult.x = pathMatchingResult.xyhs[0]*0.5 + updatedX*0.5
+                    outputResult.y = pathMatchingResult.xyhs[1]*0.5 + updatedY*0.5
                     if (pathMatchingResult.0) { outputResult.absolute_heading = compensateHeading(heading: pathMatchingResult.xyhs[2]) }
                 }
                 initPathTrajMatchingInfo()

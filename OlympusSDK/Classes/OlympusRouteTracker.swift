@@ -16,6 +16,14 @@ public class OlympusRouteTracker {
     var currentEntranceIndex: Int = 0
     var currentEntranceLength: Int = 0
     
+    public func initalize() {
+        self.indexAfterRouteTrack = 0
+        self.entranceVelocityScale = 1.0
+        self.currentEntrance = ""
+        self.currentEntranceIndex = 0
+        self.currentEntranceLength = 0
+    }
+    
     private func parseEntrance(data: String) -> ([String], [[Double]]) {
         var entracneLevelArray = [String]()
         var entranceArray = [[Double]]()

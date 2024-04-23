@@ -32,6 +32,7 @@ class OlympusConstants {
     static let PHASE_2: Int = 2
     static let PHASE_3: Int = 3
     static let PHASE_4: Int = 4
+    static let PHASE_5: Int = 5
     
     
     // Sector Info //

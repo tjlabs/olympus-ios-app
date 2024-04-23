@@ -8,9 +8,17 @@ public class OlympusSectionController {
     var rqSectionNumber: Int = 0
     var rqSectionUvdIndex: Int = 0
     
+    public func initalize() {
+        self.uvdForSection = []
+        self.uvdSectionHeadings = []
+        self.sectionNumber = 0
+        self.rqSectionNumber = 0
+        self.rqSectionUvdIndex = 0
+    }
     
-    public func controlSection(userVelocity: UserVelocity) -> Bool {
+    public func controlSection(userVelocity: UserVelocity) -> (Bool, Int) {
         var isNeedRequest: Bool = false
+        var requestType: Int = -1
         
         uvdForSection.append(userVelocity)
         uvdSectionHeadings.append(userVelocity.heading)
@@ -23,8 +31,10 @@ public class OlympusSectionController {
                 
                 if (rqSectionNumber != sectionNumber) {
                     isNeedRequest = true
+                    requestType = 0
                 } else if (userVelocity.index - rqSectionUvdIndex > 5) {
                     isNeedRequest = true
+                    requestType = 1
                 }
                 if (isNeedRequest) {
                     rqSectionNumber = sectionNumber
@@ -39,6 +49,6 @@ public class OlympusSectionController {
             uvdSectionHeadings = []
         }
         
-        return isNeedRequest
+        return (isNeedRequest, requestType)
     }
 }
