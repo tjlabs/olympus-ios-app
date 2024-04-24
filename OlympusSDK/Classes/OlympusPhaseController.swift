@@ -53,7 +53,7 @@ public class OlympusPhaseController {
         let scc = serverResult.scc
         
         if (building_name != "" && level_name != "") {
-            if (scc >= 0.62) {
+            if (scc >= OlympusConstants.PHASE_BECOME3_SCC) {
                 phase = 3
             } else {
                 phase = 1
@@ -68,7 +68,7 @@ public class OlympusPhaseController {
         
         let scc = serverResult.scc
         
-        if (scc < 0.45) {
+        if (scc < OlympusConstants.PHASE_BREAK_SCC) {
             phase = 1
         } else if (serverResult.x == 0 && serverResult.y == 0) {
             phase = 1

@@ -34,7 +34,6 @@ public class OlympusSectionController {
         let straightAngle: Double = OlympusConstants.SECTION_STRAIGHT_ANGLE
         let circularStandardDeviationAll = circularStandardDeviation(for: uvdSectionHeadings)
         if (circularStandardDeviationAll <= straightAngle) {
-//            print("Section : Straight \(uvdSectionHeadings)")
             if (uvdSectionHeadings.count >= OlympusConstants.REQUIRED_SECTION_STRAIGHT_IDX) {
                 if (rqSectionNumber != sectionNumber) {
                     isNeedRequest = true
@@ -46,15 +45,17 @@ public class OlympusSectionController {
                 if (isNeedRequest) {
                     rqSectionNumber = sectionNumber
                     rqSectionUvdIndex = userVelocity.index
-//                    print("Section : Request !! Index Count >= 5")
-//                    print("Section : headings = \(uvdSectionHeadings)")
                 }
             }
             userStraightIndexes.append(userVelocity.index)
         } else {
+            print("Anchor : Index = \(userVelocity.index)")
+            print("Anchor : num(uvdSectionHeadings) = \(uvdSectionHeadings.count)")
+            print("Anchor : userStraightIndexes = \(userStraightIndexes)")
             if (uvdSectionHeadings.count >= OlympusConstants.REQUIRED_SECTION_STRAIGHT_IDX && !userStraightIndexes.isEmpty) {
                 let newAnchorTailIndex = userStraightIndexes[0]
                 anchorTailIndexCandidates.append(newAnchorTailIndex)
+                updateAnchorTailIndex(userIndex: userVelocity.index, anchorTailIndex: self.anchorTailIndex, indexCandidates: self.anchorTailIndexCandidates)
             }
             sectionNumber += 1
             uvdForSection = []
@@ -73,14 +74,30 @@ public class OlympusSectionController {
         self.anchorTailIndex = value
     }
     
-    private func updateAnchorTailIndex(userIndex: Int, preIndex: Int, indexCandidates: [Int]) {
-        if (userIndex - preIndex) > 40 {
+    private func updateAnchorTailIndex(userIndex: Int, anchorTailIndex: Int, indexCandidates: [Int]) {
+        print("Anchor : userIndex - anchorTailIndex = \(userIndex - anchorTailIndex)")
+        if (userIndex - anchorTailIndex) > 40 {
+            var newIndexCandidates = [Int]()
+            
             for idx in indexCandidates {
-                let diffIndex = idx - preIndex
-                if (0 < diffIndex) && (diffIndex < 10) {
-                    
+                let diffIndex = idx - anchorTailIndex
+                print("Anchor : diffIndex = \(diffIndex)")
+                if (diffIndex > 0 && diffIndex <= 40) {
+                    newIndexCandidates.append(idx)
                 }
             }
+            
+            print("Anchor (before) : tailIndex = \(self.anchorTailIndex)")
+            print("Anchor (before) : tailIndex Candidates = \(self.anchorTailIndexCandidates)")
+            if (newIndexCandidates.isEmpty) {
+                let lastIndex = self.anchorTailIndexCandidates[self.anchorTailIndexCandidates.count-1]
+                self.anchorTailIndexCandidates = [lastIndex]
+                self.anchorTailIndex = lastIndex
+            }
+            self.anchorTailIndexCandidates = newIndexCandidates
+            self.anchorTailIndex = anchorTailIndexCandidates[0]
+            print("Anchor (after) : tailIndex = \(self.anchorTailIndex)")
+            print("Anchor (after) : tailIndex Candidates = \(self.anchorTailIndexCandidates)")
         }
     }
 }

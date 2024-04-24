@@ -135,11 +135,11 @@ public class OlympusKalmanFilter: NSObject {
         outputResult.x = updatedX
         outputResult.y = updatedY
         outputResult.absolute_heading = updatedHeading
-        
-        var isDidPathTrajMatching: Bool = false
-        
+ 
         if (mode == OlympusConstants.MODE_PDR) {
             // PDR
+            var isDidPathTrajMatching: Bool = false
+            
             let isDrStraight: Bool = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, condition: 80.0)
             let diffPathTrajMatchingIndex = unitDRInfoBuffer[unitDRInfoBuffer.count-1].index - self.pathTrajMatchingIndex
             if (!isDrStraight && diffPathTrajMatchingIndex > 7) {
@@ -166,32 +166,33 @@ public class OlympusKalmanFilter: NSObject {
                 }
                 initPathTrajMatchingInfo()
             }
+            
+            if (!isDidPathTrajMatching) {
+                let limitationResult = OlympusPathMatchingCalculator.shared.getTimeUpdateLimitation()
+                if (limitationResult.limitType == .Y_LIMIT) {
+//                    print("(Link Info) : Y Limit // before = \(outputResult.x) , \(outputResult.y)")
+                    if (outputResult.y < limitationResult.limitValues[0]) {
+                        outputResult.y = limitationResult.limitValues[0]
+                    } else if (outputResult.y > limitationResult.limitValues[1]) {
+                        outputResult.y = limitationResult.limitValues[1]
+                    }
+//                    print("(Link Info) : Y Limit // after = \(outputResult.x) , \(outputResult.y)")
+//                    print("(Link Info) -------------------------------------- ")
+                } else if (limitationResult.limitType == .X_LIMIT) {
+//                    print("(Link Info) : X Limit // before = \(outputResult.x) , \(outputResult.y)")
+                    if (outputResult.x < limitationResult.limitValues[0]) {
+                        outputResult.x = limitationResult.limitValues[0]
+                    } else if (outputResult.x > limitationResult.limitValues[1]) {
+                        outputResult.x = limitationResult.limitValues[1]
+                    }
+//                    print("(Link Info) : X Limit // after = \(outputResult.x) , \(outputResult.y)")
+//                    print("(Link Info) -------------------------------------- ")
+                }
+            }
         } else {
             // DR
         }
         
-        if (!isDidPathTrajMatching) {
-            let limitationResult = OlympusPathMatchingCalculator.shared.getTimeUpdateLimitation()
-            if (limitationResult.limitType == .Y_LIMIT) {
-                print("(Link Info) : Y Limit // before = \(outputResult.x) , \(outputResult.y)")
-                if (outputResult.y < limitationResult.limitValues[0]) {
-                    outputResult.y = limitationResult.limitValues[0]
-                } else if (outputResult.y > limitationResult.limitValues[1]) {
-                    outputResult.y = limitationResult.limitValues[1]
-                }
-                print("(Link Info) : Y Limit // after = \(outputResult.x) , \(outputResult.y)")
-                print("(Link Info) -------------------------------------- ")
-            } else if (limitationResult.limitType == .X_LIMIT) {
-                print("(Link Info) : X Limit // before = \(outputResult.x) , \(outputResult.y)")
-                if (outputResult.x < limitationResult.limitValues[0]) {
-                    outputResult.x = limitationResult.limitValues[0]
-                } else if (outputResult.x > limitationResult.limitValues[1]) {
-                    outputResult.x = limitationResult.limitValues[1]
-                }
-                print("(Link Info) : X Limit // after = \(outputResult.x) , \(outputResult.y)")
-                print("(Link Info) -------------------------------------- ")
-            }
-        }
         
         tuResult = outputResult
         
