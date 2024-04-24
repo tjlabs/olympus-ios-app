@@ -761,7 +761,7 @@ public class OlympusPathMatchingCalculator {
                     x += PIXEL_LENGTH*cos(direction*OlympusConstants.D2R)
                     y += PIXEL_LENGTH*sin(direction*OlympusConstants.D2R)
 //                    print("(Node Check) x ,y = \(x), \(y)")
-                    let matchedNodeResult = getMatchedNodeWiithCoord(fltResult: fltResult, originCoord: nodeCoord, coordToCheck: [x, y], pathType: pathType, PIXELS_TO_CHECK: PIXELS_TO_CHECK)
+                    let matchedNodeResult = getMatchedNodeWithCoord(fltResult: fltResult, originCoord: nodeCoord, coordToCheck: [x, y], pathType: pathType, PIXELS_TO_CHECK: PIXELS_TO_CHECK)
 //                    print("(Node Check) matchedNodeResult = \(matchedNodeResult)")
                     if (matchedNodeResult.0) {
                         break
@@ -779,7 +779,7 @@ public class OlympusPathMatchingCalculator {
         return nodeCandidates
     }
     
-    private func getMatchedNodeWiithCoord(fltResult: FineLocationTrackingFromServer, originCoord: [Double], coordToCheck: [Double], pathType: Int, PIXELS_TO_CHECK: Int) -> (Bool, Int) {
+    private func getMatchedNodeWithCoord(fltResult: FineLocationTrackingFromServer, originCoord: [Double], coordToCheck: [Double], pathType: Int, PIXELS_TO_CHECK: Int) -> (Bool, Int) {
         let building = fltResult.building_name
         let level = fltResult.level_name
         let levelCopy: String = removeLevelDirectionString(levelName: level)

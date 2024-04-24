@@ -29,7 +29,7 @@ public class OlympusSectionController {
         var requestType: Int = -1
         
         uvdForSection.append(userVelocity)
-        uvdSectionHeadings.append(userVelocity.heading)
+        uvdSectionHeadings.append(compensateHeading(heading: userVelocity.heading))
         
         let straightAngle: Double = OlympusConstants.SECTION_STRAIGHT_ANGLE
         let circularStandardDeviationAll = circularStandardDeviation(for: uvdSectionHeadings)
@@ -45,6 +45,7 @@ public class OlympusSectionController {
                 if (isNeedRequest) {
                     rqSectionNumber = sectionNumber
                     rqSectionUvdIndex = userVelocity.index
+                    print("(Phase5) : section = \(rqSectionNumber)")
                 }
             }
             userStraightIndexes.append(userVelocity.index)

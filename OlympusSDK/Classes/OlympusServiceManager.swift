@@ -585,6 +585,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 
                 let sectionResult = sectionController.controlSection(userVelocity: data)
                 if (sectionResult.0) {
+                    displayOutput.indexTx = data.index
                     var nodeCandidates = [Int]()
                     if (sectionResult.1 == 0) {
                         // get nodeCandidates
@@ -654,7 +655,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase4Trajectory, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, isKF: KF.isRunning, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult)
                 
                 // 임시
-                let displaySearchType: Int = trajTypeConveter(trajType: searchInfo.trajType)
+                let displaySearchType: Int = trajTypeConverter(trajType: searchInfo.trajType)
                 displayOutput.searchArea = searchInfo.searchArea
                 displayOutput.searchType = displaySearchType
                 displayOutput.userTrajectory = searchInfo.trajShape
@@ -682,7 +683,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase3Trajectory, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, isKF: KF.isRunning, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult)
                 
                 // 임시
-                let displaySearchType: Int = trajTypeConveter(trajType: searchInfo.trajType)
+                let displaySearchType: Int = trajTypeConverter(trajType: searchInfo.trajType)
                 displayOutput.searchArea = searchInfo.searchArea
                 displayOutput.searchType = displaySearchType
                 displayOutput.userTrajectory = searchInfo.trajShape
@@ -1226,7 +1227,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     }
     
     // 임시
-    private func trajTypeConveter(trajType: TrajType) -> Int {
+    private func trajTypeConverter(trajType: TrajType) -> Int {
         var convertedValue: Int = -3
         switch (trajType) {
         case .DR_IN_PHASE3:
