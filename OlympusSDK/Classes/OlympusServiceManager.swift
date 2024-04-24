@@ -593,6 +593,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         if (runMode == OlympusConstants.MODE_PDR) { pathType = 0 }
                         nodeCandidates = OlympusPathMatchingCalculator.shared.getNodeCandidates(fltResult: tuResult, pathType: pathType)
                     }
+                    print("node")
                     var searchInfo = trajController.makeSearchInfo(trajectoryInfo: trajectoryInfo, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, isKF: KF.isRunning, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult)
                     let anchorTailIndex = sectionController.getAnchorTailIndex()
                     searchInfo.tailIndex = anchorTailIndex

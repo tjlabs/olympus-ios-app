@@ -151,6 +151,7 @@ class OlympusConstants {
     static let SCC_FOR_PHASE_BREAK_IN_PHASE2: Double = 0.26
     static let COUNT_FOR_PHASE_BREAK_IN_PHASE2: Int = 7
     static let HEADING_BUFFER_SIZE: Int = 5
+    static let REQUIRED_PATH_TRAJ_MATHING_INDEX: Int = 5
     static let SECTION_STRAIGHT_ANGLE: Double = 5 // degree
     static let REQUIRED_SECTION_STRAIGHT_IDX: Int = 5
     static let REQUIRED_SECTION_RQ_IDX: Int = 5

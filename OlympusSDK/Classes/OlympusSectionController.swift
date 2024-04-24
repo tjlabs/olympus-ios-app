@@ -45,7 +45,6 @@ public class OlympusSectionController {
                 if (isNeedRequest) {
                     rqSectionNumber = sectionNumber
                     rqSectionUvdIndex = userVelocity.index
-                    print("(Phase5) : section = \(rqSectionNumber)")
                 }
             }
             userStraightIndexes.append(userVelocity.index)
