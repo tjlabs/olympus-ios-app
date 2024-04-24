@@ -28,7 +28,7 @@ public class OlympusRflowCorrelator {
         self.rfdAutoModeBufferLength = (self.D_AUTO + self.T_AUTO)
     }
     
-    public func initalize() {
+    public func initialize() {
         self.rfdVelocityBuffer = [[String: Double]]()
         self.rflowQueue = [Double]()
         self.rfdAutoModeBuffer = [[String: Double]]()

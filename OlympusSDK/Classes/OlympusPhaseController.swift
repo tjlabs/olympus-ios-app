@@ -26,7 +26,7 @@ public class OlympusPhaseController {
         self.notificationCenterRemoveObserver()
     }
     
-    public func initalize() {
+    public func initialize() {
         self.phase2BadCount = 0
         self.phase2count = 0
         self.phase3count = 0

@@ -22,7 +22,7 @@ public class OlympusRssCompensator {
     
     var timeStackEst: Double = 0
     
-    public func initalize() {
+    public func initialize() {
         self.timeAfterResponse = 0
         self.timeStackEst = 0
     }

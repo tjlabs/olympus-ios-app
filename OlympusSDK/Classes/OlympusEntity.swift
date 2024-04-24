@@ -546,6 +546,10 @@ public enum TrajType {
          PDR_IN_PHASE4_ABNORMAL
 }
 
+public enum LimitationType {
+    case X_LIMIT, Y_LIMIT, NO_LIMIT
+}
+
 public struct SearchInfo {
     public var searchRange: [Int] = []
     public var searchArea: [[Double]] = [[0, 0]]

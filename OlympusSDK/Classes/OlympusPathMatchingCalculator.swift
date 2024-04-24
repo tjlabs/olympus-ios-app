@@ -20,6 +20,8 @@ public class OlympusPathMatchingCalculator {
     var passedNodeCoord: [Double] = [0, 0]
     var passedNodeHeadings = [Double]()
     var distFromNode: Double = -1
+    var linkCoord: [Double] = [0, 0]
+    var linkDirections = [Double]()
     
     init() {
         
@@ -27,9 +29,11 @@ public class OlympusPathMatchingCalculator {
     
     public func initialize() {
         self.passedNode = -1
-        self.distFromNode = -1
         self.passedNodeCoord = [0, 0]
         self.passedNodeHeadings = [Double]()
+        self.distFromNode = -1
+        self.linkCoord = [0, 0]
+        self.linkDirections = [Double]()
     }
     
     public func parseRoad(data: String) -> ([Int], [Int], [[Double]], [Double], [String] ) {
@@ -633,7 +637,7 @@ public class OlympusPathMatchingCalculator {
         return (isSuccess, xyd, matchedTraj, inputTraj)
     }
     
-    public func updatePassedNode(currentResult: FineLocationTrackingFromServer, pastResult: FineLocationTrackingFromServer, pathType: Int) {
+    public func updateNodeAndLinkInfo(currentResult: FineLocationTrackingFromServer, pastResult: FineLocationTrackingFromServer, pathType: Int) {
         let diffX = abs(currentResult.x - pastResult.x)
         let diffY = abs(currentResult.y - pastResult.y)
         
@@ -671,17 +675,19 @@ public class OlympusPathMatchingCalculator {
                         }
                         
                         if (xPath == x && yPath == y) {
+                            var ppHeadingValues = [Double]()
+                            let headingData = headingArray.components(separatedBy: ",")
+                            for j in 0..<headingData.count {
+                                if(!headingData[j].isEmpty) {
+                                    let mapHeading = Double(headingData[j])!
+                                    ppHeadingValues.append(mapHeading)
+                                }
+                            }
+                            self.linkCoord = [xPath, yPath]
+                            self.linkDirections = ppHeadingValues
                             if (node != 0) {
                                 self.passedNode = node
                                 self.passedNodeCoord = [xPath, yPath]
-                                var ppHeadingValues = [Double]()
-                                let headingData = headingArray.components(separatedBy: ",")
-                                for j in 0..<headingData.count {
-                                    if(!headingData[j].isEmpty) {
-                                        let mapHeading = Double(headingData[j])!
-                                        ppHeadingValues.append(mapHeading)
-                                    }
-                                }
                                 self.passedNodeHeadings = ppHeadingValues
                                 self.distFromNode = sqrt((xPath-x)*(xPath-x) + (yPath-y)*(yPath-y))
 //                                print("Node Find (Normal) : passedNode = \(self.passedNode) // dist = \(self.distFromNode)")
@@ -828,6 +834,32 @@ public class OlympusPathMatchingCalculator {
             }
         }
         return (isPpEndPoint, matchedNode)
+    }
+    
+    public func getTimeUpdateLimitation() -> (limitType: LimitationType, limitValues: [Double]) {
+        var limitType: LimitationType = .NO_LIMIT
+        var limitValues: [Double] = [0, 0]
+        
+        let coordX = linkCoord[0]
+        let coordY = linkCoord[1]
+        
+        let directions = linkDirections
+        
+        print("(Link Info) : coord = \(coordX) , \(coordY) // directions = \(directions)")
+        
+        if directions.count == 2 {
+            if (directions[0] == 0 && directions[1] == 180) {
+                limitType = .Y_LIMIT
+                limitValues = [coordY - 0.45, coordY + 0.45]
+                print("(Link Info) : Y Limit // values = \(limitValues)")
+            } else if (directions[0] == 90 && directions[1] == 270) {
+                limitType = .X_LIMIT
+                limitValues = [coordX - 0.45, coordX + 0.45]
+                print("(Link Info) : X Limit // values = \(limitValues)")
+            }
+        }
+        
+        return (limitType, limitValues)
     }
     
     private func calDistacneFromNearestPp(coord: [Double], passedPp: [[Double]], mainRoad: [[Double]], mainType: [Int], pathType: Int, PADDING_VALUE: Double) -> [Double] {

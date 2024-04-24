@@ -8,12 +8,20 @@ public class OlympusSectionController {
     var rqSectionNumber: Int = 0
     var rqSectionUvdIndex: Int = 0
     
-    public func initalize() {
+    var userStraightIndexes: [Int] = []
+    var anchorTailIndex: Int = 0
+    var anchorTailIndexCandidates: [Int] = []
+    
+    public func initialize() {
         self.uvdForSection = []
         self.uvdSectionHeadings = []
         self.sectionNumber = 0
         self.rqSectionNumber = 0
         self.rqSectionUvdIndex = 0
+        
+        self.userStraightIndexes = []
+        self.anchorTailIndex = 0
+        self.anchorTailIndexCandidates = []
     }
     
     public func controlSection(userVelocity: UserVelocity) -> (Bool, Int) {
@@ -23,16 +31,15 @@ public class OlympusSectionController {
         uvdForSection.append(userVelocity)
         uvdSectionHeadings.append(userVelocity.heading)
         
-        let straightAngle: Double = 5
+        let straightAngle: Double = OlympusConstants.SECTION_STRAIGHT_ANGLE
         let circularStandardDeviationAll = circularStandardDeviation(for: uvdSectionHeadings)
         if (circularStandardDeviationAll <= straightAngle) {
 //            print("Section : Straight \(uvdSectionHeadings)")
-            if (uvdSectionHeadings.count >= 5) {
-                
+            if (uvdSectionHeadings.count >= OlympusConstants.REQUIRED_SECTION_STRAIGHT_IDX) {
                 if (rqSectionNumber != sectionNumber) {
                     isNeedRequest = true
                     requestType = 0
-                } else if (userVelocity.index - rqSectionUvdIndex > 5) {
+                } else if (userVelocity.index - rqSectionUvdIndex > OlympusConstants.REQUIRED_SECTION_RQ_IDX) {
                     isNeedRequest = true
                     requestType = 1
                 }
@@ -43,12 +50,37 @@ public class OlympusSectionController {
 //                    print("Section : headings = \(uvdSectionHeadings)")
                 }
             }
+            userStraightIndexes.append(userVelocity.index)
         } else {
+            if (uvdSectionHeadings.count >= OlympusConstants.REQUIRED_SECTION_STRAIGHT_IDX && !userStraightIndexes.isEmpty) {
+                let newAnchorTailIndex = userStraightIndexes[0]
+                anchorTailIndexCandidates.append(newAnchorTailIndex)
+            }
             sectionNumber += 1
             uvdForSection = []
             uvdSectionHeadings = []
+            userStraightIndexes = []
         }
         
         return (isNeedRequest, requestType)
+    }
+    
+    public func getAnchorTailIndex() -> Int {
+        return self.anchorTailIndex
+    }
+    
+    public func setInitialAnchorTailIndex(value: Int) {
+        self.anchorTailIndex = value
+    }
+    
+    private func updateAnchorTailIndex(userIndex: Int, preIndex: Int, indexCandidates: [Int]) {
+        if (userIndex - preIndex) > 40 {
+            for idx in indexCandidates {
+                let diffIndex = idx - preIndex
+                if (0 < diffIndex) && (diffIndex < 10) {
+                    
+                }
+            }
+        }
     }
 }

@@ -16,6 +16,7 @@ class OlympusConstants {
     static let ABNORMAL_MAG_THRESHOLD: Double = 2000
     static let ABNORMAL_MAG_COUNT = 500
     
+    
     // Validity
     static let VALID_SOLUTION: Int = 1
     static let RECOVERING_SOLUTION: Int = 2
@@ -53,17 +54,17 @@ class OlympusConstants {
     
     
     // RFD //
-    static var BLE_VALID_TIME: Double = 1000
+    static var BLE_VALID_TIME: Double = 1000 // miliseconds
     static let RFD_INTERVAL: TimeInterval = 1/2 //second
     static var RFD_INPUT_NUM: Int = 7
     static var DEVICE_MIN_RSSI: Double = -99.0
     static let EST_RC_INTERVAL: Double = 5.0
-    static let REQUIRED_RC_CONVERGENCE_TIME: Double = 180 // 3min
+    static let REQUIRED_RC_CONVERGENCE_TIME: Double = 180 // seconds
     static let OUTDOOR_THRESHOLD: Double = 10 // seconds
     static let DEVICE_MIN_UPDATE_THRESHOLD: Double = -97.0
     
     // UVD //
-    static var UVD_INTERVAL: TimeInterval = 1/40 // second
+    static var UVD_INTERVAL: TimeInterval = 1/40 // seconds
     static var RQ_IDX: Int = 10
     static var RQ_IDX_PDR: Int = 4
     static var RQ_IDX_DR: Int = 10
@@ -77,11 +78,11 @@ class OlympusConstants {
     static let DR_BUFFER_SIZE_FOR_STRAIGHT: Int = 10
     
     // SLEEP
-    static let SLEEP_THRESHOLD: Double = 600
-    static let STOP_THRESHOLD: Double = 2
+    static let SLEEP_THRESHOLD: Double = 600 // seconds
+    static let STOP_THRESHOLD: Double = 2 // seconds
     
     // Request
-    static let MINIMUM_RQ_INTERVAL: Double = 2
+    static let MINIMUM_RQ_TIME: Double = 2 // seconds
     static var REQUIRED_LENGTH_PHASE2: Double = 40
     
     // DR & PDR //
@@ -126,21 +127,21 @@ class OlympusConstants {
     static let STEP_VALID_TIME: Double = 1000
     static let RF_SC_THRESHOLD_PDR: Double = 0.55
     
-    static let MODE_CHANGE_TIME_CONDITION: Double = 10*1000
+    static let MODE_CHANGE_TIME_CONDITION: Double = 10*1000 // miliseconds
     static let MODE_CHANGE_RFLOW_TIME_OVER: Double = 0.1
     static let MODE_CHANGE_RFLOW_FORCE: Double = 0.065
     
     // OnSpotRecognition
-    static let OSR_INTERVAL: TimeInterval = 2 // second
+    static let OSR_INTERVAL: TimeInterval = 2 // seconds
     static let DEFAULT_SPOT_DISTANCE: Double = 80
-    static let MINIMUM_BUILDING_LEVEL_CHANGE_TIME = 7000
+    static let MINIMUM_BUILDING_LEVEL_CHANGE_TIME = 7000 // miliseconds
     
     // Output Update
-    static let OUTPUT_INTERVAL: TimeInterval = 1/5 // second
+    static let OUTPUT_INTERVAL: TimeInterval = 1/5 // seconds
     
     // Threshold //
-    static let BLE_OFF_THRESHOLD: Double = 4
-    static var TIME_INIT_THRESHOLD: Double = 25
+    static let BLE_OFF_THRESHOLD: Double = 4 // seconds
+    static var TIME_INIT_THRESHOLD: Double = 25 // seconds
     static var UNKNOWN_TRAJ_CUT_IDX: Int = 25
     static let OUTERWARD_SCAN_THRESHOLD: Double = -85.0
     static var REQUIRED_LENGTH_FOR_MAJOR_HEADING: Double = 10
@@ -148,6 +149,9 @@ class OlympusConstants {
     static let SCC_FOR_PHASE_BREAK_IN_PHASE2: Double = 0.26
     static let COUNT_FOR_PHASE_BREAK_IN_PHASE2: Int = 7
     static let HEADING_BUFFER_SIZE: Int = 5
+    static let SECTION_STRAIGHT_ANGLE: Double = 5 // degree
+    static let REQUIRED_SECTION_STRAIGHT_IDX: Int = 5
+    static let REQUIRED_SECTION_RQ_IDX: Int = 5
     
     // Path-Matching
     static let HEADING_RANGE: Double = 46

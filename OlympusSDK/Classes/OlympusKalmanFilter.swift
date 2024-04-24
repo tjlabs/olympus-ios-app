@@ -43,7 +43,7 @@ public class OlympusKalmanFilter: NSObject {
     
     override init() { }
     
-    public func initalize() {
+    public func initialize() {
         self.tuResult = FineLocationTrackingFromServer()
         self.muResult = FineLocationTrackingFromServer()
         
@@ -136,6 +136,8 @@ public class OlympusKalmanFilter: NSObject {
         outputResult.y = updatedY
         outputResult.absolute_heading = updatedHeading
         
+        var isDidPathTrajMatching: Bool = false
+        
         if (mode == OlympusConstants.MODE_PDR) {
             // PDR
             let isDrStraight: Bool = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, condition: 80.0)
@@ -153,6 +155,7 @@ public class OlympusKalmanFilter: NSObject {
                 } else {
                     initPathTrajMatchingInfo()
                 }
+                isDidPathTrajMatching = true
             } else {
                 let isDrVeryStraight: Bool = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, condition: 10.0)
                 if (isDrVeryStraight) {
@@ -165,6 +168,29 @@ public class OlympusKalmanFilter: NSObject {
             }
         } else {
             // DR
+        }
+        
+        if (!isDidPathTrajMatching) {
+            let limitationResult = OlympusPathMatchingCalculator.shared.getTimeUpdateLimitation()
+            if (limitationResult.limitType == .Y_LIMIT) {
+                print("(Link Info) : Y Limit // before = \(outputResult.x) , \(outputResult.y)")
+                if (outputResult.y < limitationResult.limitValues[0]) {
+                    outputResult.y = limitationResult.limitValues[0]
+                } else if (outputResult.y > limitationResult.limitValues[1]) {
+                    outputResult.y = limitationResult.limitValues[1]
+                }
+                print("(Link Info) : Y Limit // after = \(outputResult.x) , \(outputResult.y)")
+                print("(Link Info) -------------------------------------- ")
+            } else if (limitationResult.limitType == .X_LIMIT) {
+                print("(Link Info) : X Limit // before = \(outputResult.x) , \(outputResult.y)")
+                if (outputResult.x < limitationResult.limitValues[0]) {
+                    outputResult.x = limitationResult.limitValues[0]
+                } else if (outputResult.x > limitationResult.limitValues[1]) {
+                    outputResult.x = limitationResult.limitValues[1]
+                }
+                print("(Link Info) : X Limit // after = \(outputResult.x) , \(outputResult.y)")
+                print("(Link Info) -------------------------------------- ")
+            }
         }
         
         tuResult = outputResult

@@ -26,7 +26,7 @@ public class OlympusTrajectoryController {
     
     init() {}
     
-    public func initalize() {
+    public func initialize() {
         self.isMovePhase2To4 = false
         self.distanceAfterPhase2To4 = 0
         

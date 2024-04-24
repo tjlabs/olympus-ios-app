@@ -24,7 +24,7 @@ public class OlympusStateManager: NSObject {
         observers.forEach { $0.isStateDidChange(newValue: state) }
     }
     
-    public func initalize() {
+    public func initialize() {
         self.lastScannedEntranceOuterWardTime = 0
         self.isIndoor = false
         self.isBleOff = false

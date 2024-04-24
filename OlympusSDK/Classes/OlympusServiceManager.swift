@@ -85,6 +85,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     var isInNetworkBadEntrance: Bool = false
     var isStartRouteTrack: Bool = false
     var isInEntranceLevel: Bool = false
+    var stableModeInitFlag: Bool = true
     
     var pastReportTime: Double = 0
     var pastReportFlag: Int = 0
@@ -140,7 +141,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         self.temporalResult.level_name = newLevel
     }
     
-    private func initalize() {
+    private func initialize() {
         
     }
     
@@ -696,13 +697,13 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     func requestOlympusResultInStop(trajectoryInfo: [TrajectoryInfo], mode: String) {
         let currentTime = getCurrentTimeInMilliseconds()
         self.timeRequest += OlympusConstants.UVD_INTERVAL
-        if (stateManager.isVenusMode && self.timeRequest >= OlympusConstants.MINIMUM_RQ_INTERVAL) {
+        if (stateManager.isVenusMode && self.timeRequest >= OlympusConstants.MINIMUM_RQ_TIME) {
             self.timeRequest = 0
             let phase3Trajectory = trajectoryInfo
             let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase3Trajectory, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, isKF: KF.isRunning, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult)
             processPhase3(currentTime: currentTime, mode: mode, trajectoryInfo: phase3Trajectory, searchInfo: searchInfo)
         } else {
-            if (!stateManager.isGetFirstResponse && self.timeRequest >= OlympusConstants.MINIMUM_RQ_INTERVAL) {
+            if (!stateManager.isGetFirstResponse && self.timeRequest >= OlympusConstants.MINIMUM_RQ_TIME) {
                 self.timeRequest = 0
                 let phase3Trajectory = trajectoryInfo
                 let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase3Trajectory, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, isKF: KF.isRunning, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult)
@@ -1039,7 +1040,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
         displayOutput.indexTx = unitDRInfoIndex
         displayOutput.searchDirection = searchInfo.searchDirection
-        var input = FineLocationTracking(user_id: self.user_id, mobile_time: currentTime, sector_id: self.sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM, building_name: self.currentBuilding, level_name_list: levelArray, phase: phaseController.PHASE, search_range: searchInfo.searchRange, search_direction_list: searchInfo.searchDirection, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation_list: trajCompensationArray, tail_index: searchInfo.tailIndex)
+        var input = FineLocationTracking(user_id: self.user_id, mobile_time: currentTime, sector_id: self.sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM, building_name: self.currentBuilding, level_name_list: levelArray, phase: 5, search_range: searchInfo.searchRange, search_direction_list: searchInfo.searchDirection, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation_list: trajCompensationArray, tail_index: searchInfo.tailIndex)
         stateManager.setNetworkCount(value: stateManager.networkCount+1)
         if (REGION_NAME != "Korea" && self.deviceModel == "iPhone SE (2nd generation)") { input.normalization_scale = 1.01 }
         OlympusNetworkManager.shared.postFLT(url: CALC_FLT_URL, input: input, userTraj: trajectoryInfo, searchInfo: searchInfo, completion: { [self] statusCode, returnedString, inputPhase, inputTraj, inputSearchInfo in
@@ -1071,10 +1072,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             let buildingName: String = result.building_name
             let levelName: String = removeLevelDirectionString(levelName: result.level_name)
             
-            var pathTypeForNode = 0
+            var pathTypeForNodeAndLink = 0
             var isPmFailed: Bool = false
             if (runMode == OlympusConstants.MODE_PDR) {
-                pathTypeForNode = 0
+                pathTypeForNodeAndLink = 0
                 let isUseHeading: Bool = false
                 let correctResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: isUseHeading, pathType: 0, COORD_RANGE: OlympusConstants.COORD_RANGE)
                 if (correctResult.isSuccess) {
@@ -1096,7 +1097,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     isPmFailed = true
                 }
             } else {
-                pathTypeForNode = 1
+                pathTypeForNodeAndLink = 1
                 var isUseHeading: Bool = true
                 if (stateManager.isVenusMode) {
                     isUseHeading = false
@@ -1130,19 +1131,22 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             }
             
             if (KF.isRunning) {
-                OlympusPathMatchingCalculator.shared.updatePassedNode(currentResult: result, pastResult: preTemporalResult, pathType: pathTypeForNode)
+                OlympusPathMatchingCalculator.shared.updateNodeAndLinkInfo(currentResult: result, pastResult: preTemporalResult, pathType: pathTypeForNodeAndLink)
             }
+            
             if (isStableMode) {
+                if (stableModeInitFlag) {
+                    sectionController.setInitialAnchorTailIndex(value: result.index)
+                    stableModeInitFlag = false
+                }
+                
                 let data = UserMask(user_id: self.user_id, mobile_time: result.mobile_time, section: sectionController.sectionNumber, index: result.index, x: Int(result.x), y: Int(result.y), absolute_heading: result.absolute_heading)
                 self.inputUserMask.append(data)
                 if ((self.inputUserMask.count) >= OlympusConstants.USER_MASK_INPUT_NUM) {
-//                    print("Mask : input = \(self.inputUserMask)")
                     OlympusNetworkManager.shared.postUserMask(url: REC_UMD_URL, input: self.inputUserMask, completion: { [self] statusCode, returendString, inputUserMask in
-//                        print("Post User Mask : \(statusCode) // returnedString = \(returendString)")
-                        if (statusCode == 200) {
-                            
-                        } else {
-                            
+                        if (statusCode != 200) {
+//                            let localTime = getLocalTimeString()
+//                            let msg: String = localTime + " , (Olympus) Error : UserMask \(statusCode) // " + returnedString
                         }
                     })
                     inputUserMask = []
