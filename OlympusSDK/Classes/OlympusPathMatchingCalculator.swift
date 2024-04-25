@@ -738,9 +738,9 @@ public class OlympusPathMatchingCalculator {
         let heading = fltResult.absolute_heading
         let nodeCoord = passedNodeCoord
         let nodeHeadings = passedNodeHeadings
+        print("(Node Check) User Heading = \(fltResult.x) , \(fltResult.y) , \(heading)")
         print("(Node Check) Passed Node (Num) = \(self.passedNode)")
         print("(Node Check) Passed Node (Heading) = \(nodeHeadings)")
-        print("(Node Check) User Heading = \(heading)")
         
         var diffHeading = [Double]()
         var candidateDirections = [Double]()
@@ -764,7 +764,7 @@ public class OlympusPathMatchingCalculator {
         print("(Node Check) Passed Node candidateDirections = \(candidateDirections)")
         
         let PIXEL_LENGTH: Double = 1.0
-        let PIXELS_TO_CHECK: Int = 5
+        let PIXELS_TO_CHECK: Int = 10
         
         if (!candidateDirections.isEmpty) {
             for direction in candidateDirections {
@@ -786,7 +786,7 @@ public class OlympusPathMatchingCalculator {
         }
         
         print("(Node Check) Passed Node (Node Candidates) = \(nodeCandidates)")
-        
+        print("(Node Check) -----------------------------------------------")
         return nodeCandidates
     }
     

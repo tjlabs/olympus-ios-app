@@ -82,7 +82,7 @@ public class OlympusSectionController {
             for idx in indexCandidates {
                 let diffIndex = idx - anchorTailIndex
                 print("Anchor : diffIndex = \(diffIndex)")
-                if (diffIndex > 0 && diffIndex <= 40) {
+                if diffIndex > 0 {
                     newIndexCandidates.append(idx)
                 }
             }
