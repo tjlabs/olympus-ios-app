@@ -147,7 +147,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     
     public func startService(user_id: String, region: String, sector_id: Int, service: String, mode: String, completion: @escaping (Bool, String) -> Void) {
         let success_msg: String =  " , (Olympus) Success : OlmpusService Start"
-        
         if (user_id.isEmpty || user_id.contains(" ")) {
             let msg: String = getLocalTimeString() + " , (Olympus) Error : User ID(input = \(user_id)) cannot be empty or contain space"
             completion(false, msg)

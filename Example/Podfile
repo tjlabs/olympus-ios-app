@@ -7,7 +7,10 @@ target 'OlympusSDK_Example' do
   
   pod 'OlympusSDK', :path => '../'
   pod 'Charts'
-  
+
+  pod 'Firebase/Analytics'
+  pod 'Firebase/Crashlytics'
+
   target 'OlympusSDK_Tests' do
     inherit! :search_paths
 

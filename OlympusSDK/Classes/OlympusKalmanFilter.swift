@@ -142,7 +142,7 @@ public class OlympusKalmanFilter: NSObject {
             
             let isDrStraight: Bool = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, condition: 80.0)
             let diffPathTrajMatchingIndex = unitDRInfoBuffer[unitDRInfoBuffer.count-1].index - self.pathTrajMatchingIndex
-            if (!isDrStraight && diffPathTrajMatchingIndex >= OlympusConstants.REQUIRED_PATH_TRAJ_MATHING_INDEX) {
+            if (!isDrStraight && diffPathTrajMatchingIndex >= OlympusConstants.REQUIRED_PATH_TRAJ_MATCHING_INDEX) {
                 self.pathTrajMatchingIndex = unitDRInfoBuffer[unitDRInfoBuffer.count-1].index
                 let drBufferForPathMatching = Array(unitDRInfoBuffer.suffix(OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT))
                 
