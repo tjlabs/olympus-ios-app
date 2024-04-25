@@ -364,6 +364,15 @@ struct FineLocationTracking: Encodable {
     var device_min_rss: Int
     var sc_compensation_list: [Double]
     var tail_index: Int
+    
+    var head_section: Int
+    var node_list: [Int]
+}
+
+struct StableInfo: Encodable {
+    var tail_index: Int
+    var head_section: Int
+    var node_list: [Int]
 }
 
 public struct FineLocationTrackingResult: Codable {

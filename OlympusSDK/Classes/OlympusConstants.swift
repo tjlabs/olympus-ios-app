@@ -58,7 +58,7 @@ class OlympusConstants {
     // RFD //
     static var BLE_VALID_TIME: Double = 1000 // miliseconds
     static let RFD_INTERVAL: TimeInterval = 1/2 //second
-    static var RFD_INPUT_NUM: Int = 7
+    static var RFD_INPUT_NUM: Int = 6
     static var DEVICE_MIN_RSSI: Double = -99.0
     static let EST_RC_INTERVAL: Double = 5.0
     static let REQUIRED_RC_CONVERGENCE_TIME: Double = 180 // seconds
