@@ -76,7 +76,23 @@ public class OlympusPhaseController {
         
         return phase
     }
-//    
+    
+    public func phase5control(serverResult: FineLocationTrackingFromServer, mode: String) -> Int {
+        var phase: Int = 5
+        
+        let scc = serverResult.scc
+        
+        if (scc < OlympusConstants.PHASE_BREAK_SCC) {
+            phase = 1
+        } else if (serverResult.x == 0 && serverResult.y == 0) {
+            phase = 1
+        }
+        
+        return phase
+    }
+    
+    
+//
 //    public func isNotLooking(inputUserTrajectory: [TrajectoryInfo]) -> Bool {
 //        var isNotLooking: Bool = false
 //        
@@ -141,6 +157,8 @@ public class OlympusPhaseController {
             }
         case 4:
             phase = self.phase4control(serverResult: currentResult, mode: mode)
+        case 5:
+            phase = self.phase5control(serverResult: currentResult, mode: mode)
         default:
             phase = 0
         }

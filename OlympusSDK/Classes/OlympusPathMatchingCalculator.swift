@@ -613,7 +613,7 @@ public class OlympusPathMatchingCalculator {
                             } else {
                                 let distanceCurrent = distanceSum
                                 let distancePast = minDistanceCoord[2]
-                                if (distanceCurrent < distancePast && distWithPast <= 3) {
+                                if (distanceCurrent < distancePast && distWithPast <= 5) {
                                     minDistanceCoord = [xPath, yPath, distanceSum, distWithPast]
                                     matchedTraj = trajectoryFromHead
                                     inputTraj = trajectoryOriginal
@@ -735,7 +735,7 @@ public class OlympusPathMatchingCalculator {
     public func getNodeCandidates(fltResult: FineLocationTrackingFromServer, pathType: Int, isBadCaseInStableMode: Bool) -> [Int] {
         var nodeCandidates = [Int]()
         nodeCandidates.append(passedNode)
-        if (isBadCaseInStableMode) {
+        if (!isBadCaseInStableMode) {
             return nodeCandidates
         }
         let heading = fltResult.absolute_heading
