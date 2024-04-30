@@ -132,9 +132,9 @@ public func propagateUsingUvd(unitDRInfoBuffer: [UnitDRInfo], fltResult: FineLoc
     return (isSuccess, propagationValues)
 }
 
-public func isDrBufferStraight(unitDRInfoBuffer: [UnitDRInfo], condition: Double) -> Bool {
-    if (unitDRInfoBuffer.count >= OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT) {
-        let firstIndex = unitDRInfoBuffer.count-OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT
+public func isDrBufferStraight(unitDRInfoBuffer: [UnitDRInfo], numIndex: Int, condition: Double) -> Bool {
+    if (unitDRInfoBuffer.count >= numIndex) {
+        let firstIndex = unitDRInfoBuffer.count-numIndex
         let firstHeading: Double = unitDRInfoBuffer[firstIndex].heading
         let lastHeading: Double = unitDRInfoBuffer[unitDRInfoBuffer.count-1].heading
         var diffHeading: Double = abs(lastHeading - firstHeading)

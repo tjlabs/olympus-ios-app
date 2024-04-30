@@ -746,6 +746,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: fltResult.x, y: fltResult.y, heading: fltResult.absolute_heading, isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, COORD_RANGE: OlympusConstants.COORD_RANGE)
                         resultCorrected.0 = pathMatchingResult.isSuccess
                         resultCorrected.1 = pathMatchingResult.xyhs
+                        
                         let isResultStraight = isResultHeadingStraight(unitDRInfoBuffer: self.unitDRInfoBuffer, fltResult: fltResult)
                         if (!isResultStraight) { resultCorrected.1[2] = fltResult.absolute_heading }
                         resultCorrected.1[2] = compensateHeading(heading: resultCorrected.1[2])
@@ -756,11 +757,44 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             if (phaseController.phase2BadCount > OlympusConstants.COUNT_FOR_PHASE_BREAK_IN_PHASE2) {
                                 phaseBreakInPhase2()
                             }
-                        } else if (resultPhase.0 == 4) {
+                        } else if (resultPhase.0 == OlympusConstants.PHASE_4) {
+                            var copeidResult: FineLocationTrackingFromServer = fltResult
+                            let propagationResult = propagateUsingUvd(unitDRInfoBuffer: unitDRInfoBuffer, fltResult: fltResult)
+                            let propagationValues: [Double] = propagationResult.1
+                            var propagatedResult: [Double] = [resultCorrected.1[0]+propagationValues[0] , resultCorrected.1[1]+propagationValues[1], resultCorrected.1[2]+propagationValues[2]]
+                            if (propagationResult.0) {
+                                if (runMode == OlympusConstants.MODE_PDR) {
+                                    let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: propagatedResult[0], y: propagatedResult[1], heading: propagatedResult[2], isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 0, COORD_RANGE: OlympusConstants.COORD_RANGE)
+                                    propagatedResult = pathMatchingResult.xyhs
+                                } else {
+                                    let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: propagatedResult[0], y: propagatedResult[1], heading: propagatedResult[2], isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, COORD_RANGE: OlympusConstants.COORD_RANGE)
+                                    propagatedResult = pathMatchingResult.xyhs
+                                }
+                            }
+                            
                             if (KF.isRunning) {
-                                
+                                let trajLength = searchInfo.trajLength
+                                if (fltResult.scc > OlympusConstants.SCC_FOR_PHASE2_RESULT_USE) {
+                                    copeidResult.x = propagatedResult[0]
+                                    copeidResult.y = propagatedResult[1]
+                                    copeidResult.absolute_heading = propagatedResult[2]
+                                    
+                                    let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: copeidResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+                                    currentBuilding = updatedResult.building_name
+                                    currentLevel = updatedResult.level_name
+                                    makeTemporalResult(input: updatedResult, isStableMode: false)
+                                    KF.activateKalmanFilter(fltResult: updatedResult)
+                                }
                             } else {
+                                copeidResult.x = propagatedResult[0]
+                                copeidResult.y = propagatedResult[1]
+                                copeidResult.absolute_heading = propagatedResult[2]
                                 
+                                let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: copeidResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+                                currentBuilding = updatedResult.building_name
+                                currentLevel = updatedResult.level_name
+                                makeTemporalResult(input: updatedResult, isStableMode: false)
+                                KF.activateKalmanFilter(fltResult: updatedResult)
                             }
                         }
                         self.preServerResultMobileTime = fltResult.mobile_time
@@ -786,7 +820,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             levelArray = buildingLevelChanger.makeLevelChangeArray(buildingName: self.currentBuilding, levelName: self.currentLevel, buildingLevel: buildingLevelChanger.buildingsAndLevels)
         }
         
-//        self.phase2BadCount = 0
         displayOutput.searchDirection = searchInfo.searchDirection
         displayOutput.indexTx = unitDRInfoIndex
         phase3RqIndex = unitDRInfoIndex
@@ -1222,16 +1255,15 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 let data = UserMask(user_id: self.user_id, mobile_time: result.mobile_time, section_number: sectionController.sectionNumber, index: result.index, x: Int(result.x), y: Int(result.y), absolute_heading: result.absolute_heading)
                 self.inputUserMask.append(data)
                 if ((self.inputUserMask.count) >= OlympusConstants.USER_MASK_INPUT_NUM) {
-                    OlympusNetworkManager.shared.postUserMask(url: REC_UMD_URL, input: self.inputUserMask, completion: { [self] statusCode, returendString, inputUserMask in
+                    OlympusNetworkManager.shared.postUserMask(url: REC_UMD_URL, input: self.inputUserMask, completion: { statusCode, returnedString, inputUserMask in
                         if (statusCode != 200) {
-//                            let localTime = getLocalTimeString()
-//                            let msg: String = localTime + " , (Olympus) Error : UserMask \(statusCode) // " + returnedString
+                            let localTime = getLocalTimeString()
+                            let msg: String = localTime + " , (Olympus) Error : UserMask \(statusCode) // " + returnedString
                         }
                     })
                     inputUserMask = []
                 }
                 stackUserMask(data: data)
-//                checkBadCase(userMaskBuffer: self.userMaskBuffer, mode: self.runMode)
                 self.isBadCaseInStableMode = checkBadCase(unitDRInfoBuffer: self.unitDRInfoBuffer, userMaskBuffer: self.userMaskBuffer, mode: self.runMode)
                 print("Check Bad Case : isBadCaseInStableMode = \(self.isBadCaseInStableMode)")
                 print("Check Bad Case : -------------------------)")
@@ -1280,65 +1312,15 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
     }
     
-//    private func checkBadCaseOg(userMaskBuffer: [UserMask], mode: String) {
-//        var isBadCase: Bool = false
-//        
-//        if (userMaskBuffer.count >= OlympusConstants.REQUIRED_BAD_CASE_CHECK_IDX) {
-//            var movingDistance: Double = 0
-//            
-//            var isStartCal: Bool = false
-//            for i in userMaskBuffer.count-OlympusConstants.REQUIRED_BAD_CASE_CHECK_IDX..<userMaskBuffer.count {
-//                if (!isStartCal) {
-//                    isStartCal = true
-//                } else {
-//                    let diffX = userMaskBuffer[i].x - userMaskBuffer[i-1].x
-//                    let diffY = userMaskBuffer[i].y - userMaskBuffer[i-1].y
-//                    movingDistance += sqrt(Double(diffX*diffX + diffY*diffY))
-//                }
-//            }
-//            
-//            var DISTANCE_THRESHOLD: Double = 10
-//            if (mode == OlympusConstants.MODE_PDR) {
-//                DISTANCE_THRESHOLD = 1
-//            } else {
-//                DISTANCE_THRESHOLD = Double(OlympusConstants.REQUIRED_BAD_CASE_CHECK_IDX) * (1/3)
-//            }
-//            print("Check Bad Case : DISTANCE_THRESHOLD = \(DISTANCE_THRESHOLD)")
-//            print("Check Bad Case : movingDistance = \(movingDistance)")
-//            
-//            if movingDistance <= DISTANCE_THRESHOLD {
-//                isBadCase = true
-//            }
-//        }
-//        
-//        if (isBadCase) {
-//            self.isBadCaseInStableMode = true
-//        } else {
-//            if (self.isBadCaseInStableMode) {
-//                self.goodCaseCount += 1
-//                if (self.goodCaseCount > 2) {
-//                    self.isBadCaseInStableMode = false
-//                    self.goodCaseCount = 0
-//                }
-//            } else {
-//                self.isBadCaseInStableMode = false
-//                self.goodCaseCount = 0
-//            }
-//        }
-//        
-//        print("Check Bad Case : isBadCaseInStableMode = \(self.isBadCaseInStableMode)")
-//        print("Check Bad Case : -------------------------)")
-//    }
-    
     private func checkBadCase(unitDRInfoBuffer: [UnitDRInfo], userMaskBuffer: [UserMask], mode: String) -> Bool {
         var isBadCase = false
         
-        if (unitDRInfoBuffer.count >= 15 && userMaskBuffer.count >= 15) {
-            let recentUnitDRInfoBuffer = getUnitDRInfoFromLast(from: unitDRInfoBuffer, N: 15)
-            let recentUserMaskBuffer = getUserMaskFromLast(from: userMaskBuffer, N: 15)
+        if (unitDRInfoBuffer.count >= OlympusConstants.REQUIRED_BAD_CASE_CHECK_IDX && userMaskBuffer.count >= OlympusConstants.REQUIRED_BAD_CASE_CHECK_IDX) {
+            let recentUnitDRInfoBuffer = getUnitDRInfoFromLast(from: unitDRInfoBuffer, N: OlympusConstants.REQUIRED_BAD_CASE_CHECK_IDX)
+            let recentUserMaskBuffer = getUserMaskFromLast(from: userMaskBuffer, N: OlympusConstants.REQUIRED_BAD_CASE_CHECK_IDX)
             
-            var lastUserMask = recentUserMaskBuffer[recentUserMaskBuffer.count-1]
-            var headInfo = lastUserMask
+            let lastUserMask = recentUserMaskBuffer[recentUserMaskBuffer.count-1]
+            let headInfo = lastUserMask
             
             var xyFromHead: [Double] = [Double(headInfo.x), Double(headInfo.y)]
             var trajectoryFromHead = [[Double]]()
@@ -1350,7 +1332,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             }
             
             for i in (1..<recentUnitDRInfoBuffer.count).reversed() {
-                var headAngle = compensateUvdHeading[i]
+                let headAngle = compensateUvdHeading[i]
                 xyFromHead[0] = xyFromHead[0] + recentUnitDRInfoBuffer[i].length * cos(headAngle * OlympusConstants.D2R)
                 xyFromHead[1] = xyFromHead[1] + recentUnitDRInfoBuffer[i].length * sin(headAngle * OlympusConstants.D2R)
                 trajectoryFromHead.append(xyFromHead)

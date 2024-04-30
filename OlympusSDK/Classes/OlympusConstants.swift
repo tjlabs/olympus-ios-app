@@ -77,7 +77,7 @@ class OlympusConstants {
     static var INDEX_THRESHOLD: Int = 11
     static let UVD_BUFFER_SIZE: Int = 10
     static let DR_INFO_BUFFER_SIZE: Int = 30
-    static let DR_BUFFER_SIZE_FOR_STRAIGHT: Int = 10
+    static let DR_BUFFER_SIZE_FOR_STRAIGHT: Int = 12 //10
     
     // SLEEP
     static let SLEEP_THRESHOLD: Double = 600 // seconds
@@ -149,13 +149,15 @@ class OlympusConstants {
     static var REQUIRED_LENGTH_FOR_MAJOR_HEADING: Double = 10
     static let SCC_FOR_PHASE_BREAK: Double = 0.45
     static let SCC_FOR_PHASE_BREAK_IN_PHASE2: Double = 0.26
+    static let SCC_FOR_PHASE2_RESULT_USE: Double = 0.6
     static let COUNT_FOR_PHASE_BREAK_IN_PHASE2: Int = 7
     static let HEADING_BUFFER_SIZE: Int = 5
     static let REQUIRED_PATH_TRAJ_MATCHING_INDEX: Int = 5
     static let SECTION_STRAIGHT_ANGLE: Double = 5 // degree
     static let REQUIRED_SECTION_STRAIGHT_IDX: Int = 5
     static let REQUIRED_SECTION_RQ_IDX: Int = 5
-    static let REQUIRED_BAD_CASE_CHECK_IDX: Int = 5
+    static let REQUIRED_BAD_CASE_CHECK_IDX: Int = 15
+//    static let REQUIRED_BAD_CASE_
     
     // Path-Matching
     static let HEADING_RANGE: Double = 46
