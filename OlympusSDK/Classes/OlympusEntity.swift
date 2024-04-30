@@ -214,7 +214,7 @@ public struct UserVelocity: Encodable {
 public struct UserMask: Encodable {
     let user_id: String
     let mobile_time: Int
-    let section: Int
+    let section_number: Int
     let index: Int
     let x: Int
     let y: Int
@@ -365,14 +365,14 @@ struct FineLocationTracking: Encodable {
     var sc_compensation_list: [Double]
     var tail_index: Int
     
-    var head_section: Int
-    var node_list: [Int]
+    var head_section_number: Int
+    var node_number_list: [Int]
 }
 
 struct StableInfo: Encodable {
     var tail_index: Int
-    var head_section: Int
-    var node_list: [Int]
+    var head_section_number: Int
+    var node_number_list: [Int]
 }
 
 public struct FineLocationTrackingResult: Codable {

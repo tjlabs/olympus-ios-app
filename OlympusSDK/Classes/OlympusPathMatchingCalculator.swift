@@ -732,9 +732,12 @@ public class OlympusPathMatchingCalculator {
         }
     }
     
-    public func getNodeCandidates(fltResult: FineLocationTrackingFromServer, pathType: Int) -> [Int] {
+    public func getNodeCandidates(fltResult: FineLocationTrackingFromServer, pathType: Int, isBadCaseInStableMode: Bool) -> [Int] {
         var nodeCandidates = [Int]()
         nodeCandidates.append(passedNode)
+        if (isBadCaseInStableMode) {
+            return nodeCandidates
+        }
         let heading = fltResult.absolute_heading
         let nodeCoord = passedNodeCoord
         let nodeHeadings = passedNodeHeadings

@@ -86,6 +86,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     var isStartRouteTrack: Bool = false
     var isInEntranceLevel: Bool = false
     var stableModeInitFlag: Bool = true
+    var goodCaseCount: Int = 0
+    var isBadCaseInStableMode: Bool = false
     
     var pastReportTime: Double = 0
     var pastReportFlag: Int = 0
@@ -94,6 +96,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     var preServerResultMobileTime: Int = 0
     var serverResultBuffer: [FineLocationTrackingFromServer] = []
     var unitDRInfoBuffer: [UnitDRInfo] = []
+    var userMaskBuffer: [UserMask] = []
     
     var headingBufferForCorrection: [Double] = []
     var isPossibleHeadingCorrection: Bool = false
@@ -590,10 +593,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         // get nodeCandidates
                         var pathType: Int = 1
                         if (runMode == OlympusConstants.MODE_PDR) { pathType = 0 }
-                        nodeCandidates = OlympusPathMatchingCalculator.shared.getNodeCandidates(fltResult: tuResult, pathType: pathType)
+                        nodeCandidates = OlympusPathMatchingCalculator.shared.getNodeCandidates(fltResult: tuResult, pathType: pathType, isBadCaseInStableMode: self.isBadCaseInStableMode)
                     }
                     let anchorTailIndex = sectionController.getAnchorTailIndex()
-                    let stableInfo = StableInfo(tail_index: anchorTailIndex, head_section: sectionController.rqSectionNumber, node_list: nodeCandidates)
+                    let stableInfo = StableInfo(tail_index: anchorTailIndex, head_section_number: sectionController.rqSectionNumber, node_number_list: nodeCandidates)
                     processPhase5(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo)
                 }
                 
@@ -716,7 +719,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     private func processPhase2(currentTime: Int, mode: String, trajectoryInfo: [TrajectoryInfo], searchInfo: SearchInfo) {
         let trajCompensationArray = trajController.getTrajCompensationArray(currentTime: currentTime, trajLength: searchInfo.trajLength)
         
-        var input = FineLocationTracking(user_id: self.user_id, mobile_time: currentTime, sector_id: self.sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM, building_name: self.currentBuilding, level_name_list: [self.currentLevel], phase: OlympusConstants.PHASE_2, search_range: searchInfo.searchRange, search_direction_list: searchInfo.searchDirection, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation_list: trajCompensationArray, tail_index: searchInfo.tailIndex, head_section: 0, node_list: [])
+        var input = FineLocationTracking(user_id: self.user_id, mobile_time: currentTime, sector_id: self.sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM, building_name: self.currentBuilding, level_name_list: [self.currentLevel], phase: OlympusConstants.PHASE_2, search_range: searchInfo.searchRange, search_direction_list: searchInfo.searchDirection, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation_list: trajCompensationArray, tail_index: searchInfo.tailIndex, head_section_number: 0, node_number_list: [])
         stateManager.setNetworkCount(value: stateManager.networkCount+1)
         if (REGION_NAME != "Korea" && self.deviceModel == "iPhone SE (2nd generation)") { input.normalization_scale = 1.01 }
         OlympusNetworkManager.shared.postFLT(url: CALC_FLT_URL, input: input, userTraj: trajectoryInfo, searchInfo: searchInfo, completion: { [self] statusCode, returnedString, inputPhase, inputTraj, inputSearchInfo in
@@ -787,7 +790,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         displayOutput.searchDirection = searchInfo.searchDirection
         displayOutput.indexTx = unitDRInfoIndex
         phase3RqIndex = unitDRInfoIndex
-        var input = FineLocationTracking(user_id: self.user_id, mobile_time: currentTime, sector_id: self.sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM, building_name: self.currentBuilding, level_name_list: levelArray, phase: phaseController.PHASE, search_range: searchInfo.searchRange, search_direction_list: searchInfo.searchDirection, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation_list: trajCompensationArray, tail_index: searchInfo.tailIndex, head_section: 0, node_list: [])
+        var input = FineLocationTracking(user_id: self.user_id, mobile_time: currentTime, sector_id: self.sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM, building_name: self.currentBuilding, level_name_list: levelArray, phase: phaseController.PHASE, search_range: searchInfo.searchRange, search_direction_list: searchInfo.searchDirection, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation_list: trajCompensationArray, tail_index: searchInfo.tailIndex, head_section_number: 0, node_number_list: [])
         stateManager.setNetworkCount(value: stateManager.networkCount+1)
         if (REGION_NAME != "Korea" && self.deviceModel == "iPhone SE (2nd generation)") { input.normalization_scale = 1.01 }
         OlympusNetworkManager.shared.postFLT(url: CALC_FLT_URL, input: input, userTraj: trajectoryInfo, searchInfo: searchInfo, completion: { [self] statusCode, returnedString, inputPhase, inputTraj, inputSearchInfo in
@@ -941,7 +944,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
         displayOutput.indexTx = unitDRInfoIndex
         displayOutput.searchDirection = searchInfo.searchDirection
-        var input = FineLocationTracking(user_id: self.user_id, mobile_time: currentTime, sector_id: self.sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM, building_name: self.currentBuilding, level_name_list: levelArray, phase: phaseController.PHASE, search_range: searchInfo.searchRange, search_direction_list: searchInfo.searchDirection, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation_list: trajCompensationArray, tail_index: searchInfo.tailIndex, head_section: 0, node_list: [])
+        var input = FineLocationTracking(user_id: self.user_id, mobile_time: currentTime, sector_id: self.sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM, building_name: self.currentBuilding, level_name_list: levelArray, phase: phaseController.PHASE, search_range: searchInfo.searchRange, search_direction_list: searchInfo.searchDirection, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation_list: trajCompensationArray, tail_index: searchInfo.tailIndex, head_section_number: 0, node_number_list: [])
         stateManager.setNetworkCount(value: stateManager.networkCount+1)
         if (REGION_NAME != "Korea" && self.deviceModel == "iPhone SE (2nd generation)") { input.normalization_scale = 1.01 }
         OlympusNetworkManager.shared.postFLT(url: CALC_FLT_URL, input: input, userTraj: trajectoryInfo, searchInfo: searchInfo, completion: { [self] statusCode, returnedString, inputPhase, inputTraj, inputSearchInfo in
@@ -1040,7 +1043,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
         displayOutput.indexTx = unitDRInfoIndex
 //        displayOutput.searchDirection = searchInfo.searchDirection
-        var input = FineLocationTracking(user_id: self.user_id, mobile_time: currentTime, sector_id: self.sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM, building_name: self.currentBuilding, level_name_list: levelArray, phase: 5, search_range: [], search_direction_list: [], normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation_list: [1.01], tail_index: stableInfo.tail_index, head_section: stableInfo.head_section, node_list: stableInfo.node_list)
+        var input = FineLocationTracking(user_id: self.user_id, mobile_time: currentTime, sector_id: self.sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM, building_name: self.currentBuilding, level_name_list: levelArray, phase: 5, search_range: [], search_direction_list: [], normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation_list: [1.01], tail_index: stableInfo.tail_index, head_section_number: stableInfo.head_section_number, node_number_list: stableInfo.node_number_list)
         stateManager.setNetworkCount(value: stateManager.networkCount+1)
         if (REGION_NAME != "Korea" && self.deviceModel == "iPhone SE (2nd generation)") { input.normalization_scale = 1.01 }
         OlympusNetworkManager.shared.postFLT(url: CALC_FLT_URL, input: input, userTraj: trajectoryInfo, searchInfo: SearchInfo(), completion: { [self] statusCode, returnedString, inputPhase, inputTraj, inputSearchInfo in
@@ -1140,7 +1143,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     stableModeInitFlag = false
                 }
                 
-                let data = UserMask(user_id: self.user_id, mobile_time: result.mobile_time, section: sectionController.sectionNumber, index: result.index, x: Int(result.x), y: Int(result.y), absolute_heading: result.absolute_heading)
+                let data = UserMask(user_id: self.user_id, mobile_time: result.mobile_time, section_number: sectionController.sectionNumber, index: result.index, x: Int(result.x), y: Int(result.y), absolute_heading: result.absolute_heading)
                 self.inputUserMask.append(data)
                 if ((self.inputUserMask.count) >= OlympusConstants.USER_MASK_INPUT_NUM) {
                     OlympusNetworkManager.shared.postUserMask(url: REC_UMD_URL, input: self.inputUserMask, completion: { [self] statusCode, returendString, inputUserMask in
@@ -1151,6 +1154,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     })
                     inputUserMask = []
                 }
+                stackUserMask(data: data)
+                checkBadCase(userMaskBuffer: self.userMaskBuffer, mode: self.runMode)
             }
             
             self.temporalResult = result
@@ -1188,6 +1193,66 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             self.unitDRInfoBuffer.remove(at: 0)
         }
     }
+    
+    private func stackUserMask(data: UserMask) {
+        self.userMaskBuffer.append(data)
+        if (self.userMaskBuffer.count > OlympusConstants.DR_INFO_BUFFER_SIZE) {
+            self.userMaskBuffer.remove(at: 0)
+        }
+    }
+    
+    private func checkBadCase(userMaskBuffer: [UserMask], mode: String) {
+        var isBadCase: Bool = false
+        
+        if (userMaskBuffer.count >= OlympusConstants.REQUIRED_BAD_CASE_CHECK_IDX) {
+            var movingDistance: Double = 0
+            
+            var isStartCal: Bool = false
+            for i in userMaskBuffer.count-OlympusConstants.REQUIRED_BAD_CASE_CHECK_IDX..<userMaskBuffer.count {
+                if (!isStartCal) {
+                    isStartCal = true
+                } else {
+                    let diffX = userMaskBuffer[i].x - userMaskBuffer[i-1].x
+                    let diffY = userMaskBuffer[i].y - userMaskBuffer[i-1].y
+                    movingDistance += sqrt(Double(diffX*diffX + diffY*diffY))
+                }
+            }
+            
+            var DISTANCE_THRESHOLD: Double = 10
+            if (mode == OlympusConstants.MODE_PDR) {
+//                DISTANCE_THRESHOLD = Double(OlympusConstants.REQUIRED_BAD_CASE_CHECK_IDX) * 0.5 * (1/3)
+                DISTANCE_THRESHOLD = 1
+            } else {
+                DISTANCE_THRESHOLD = Double(OlympusConstants.REQUIRED_BAD_CASE_CHECK_IDX) * (1/3)
+            }
+            print("Check Bad Case : DISTANCE_THRESHOLD = \(DISTANCE_THRESHOLD)")
+            print("Check Bad Case : movingDistance = \(movingDistance)")
+            
+            if movingDistance <= DISTANCE_THRESHOLD {
+                isBadCase = true
+            }
+        }
+        
+        if (isBadCase) {
+            self.isBadCaseInStableMode = true
+        } else {
+            if (self.isBadCaseInStableMode) {
+                self.goodCaseCount += 1
+                if (self.goodCaseCount > 2) {
+                    self.isBadCaseInStableMode = false
+                    self.goodCaseCount = 0
+                }
+            } else {
+                self.isBadCaseInStableMode = false
+                self.goodCaseCount = 0
+            }
+        }
+        
+        print("Check Bad Case : isBadCaseInStableMode = \(self.isBadCaseInStableMode)")
+        print("Check Bad Case : -------------------------)")
+    }
+    
+    
     private func stackServerResult(serverResult: FineLocationTrackingFromServer) {
         self.serverResultBuffer.append(serverResult)
         if (self.serverResultBuffer.count > 10) {

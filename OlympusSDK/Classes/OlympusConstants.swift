@@ -155,6 +155,7 @@ class OlympusConstants {
     static let SECTION_STRAIGHT_ANGLE: Double = 5 // degree
     static let REQUIRED_SECTION_STRAIGHT_IDX: Int = 5
     static let REQUIRED_SECTION_RQ_IDX: Int = 5
+    static let REQUIRED_BAD_CASE_CHECK_IDX: Int = 5
     
     // Path-Matching
     static let HEADING_RANGE: Double = 46
