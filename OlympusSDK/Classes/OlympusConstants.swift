@@ -3,7 +3,7 @@ class OlympusConstants {
     static let MODE_DR = "dr"
     static let MODE_PDR = "pdr"
     static let MODE_AUTO = "auto"
-    static let OLMPUS_SERVICES: [String] = ["SD", "BD", "CLD", "FLD", "CLE", "FLT", "FLT+", "OSA"]
+    static let OLYMPUS_SERVICES: [String] = ["SD", "BD", "CLD", "FLD", "CLE", "FLT", "FLT+", "OSA"]
     static let SERVICE_FLT = "FLT"
     
     static let R2D: Double = 180 / Double.pi

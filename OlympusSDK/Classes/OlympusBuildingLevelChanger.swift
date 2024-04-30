@@ -28,7 +28,6 @@ public class OlympusBuildingLevelChanger {
     public var spotCutIndex: Int = 0
     public var buildingLevelChangedTime: Int = 0
     public var buildingsAndLevels = [String:[String]]()
-    
     public var phase2Range: [Int] = []
     public var phase2Direction: [Int] = []
     public var preOutputMobileTime: Int = 0

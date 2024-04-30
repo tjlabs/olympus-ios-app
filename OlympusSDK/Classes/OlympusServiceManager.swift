@@ -101,7 +101,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     var headingBufferForCorrection: [Double] = []
     var isPossibleHeadingCorrection: Bool = false
     
-    
     var temporalResult =  FineLocationTrackingFromServer()
     var preTemporalResult = FineLocationTrackingFromServer()
     var routeTrackResult = FineLocationTrackingFromServer()
@@ -134,6 +133,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     }
     
     func isStateDidChange(newValue: Int) {
+        if (newValue == OUTDOOR_FLAG) {
+            self.initialize(isStopService: false)
+            
+        }
         self.reporting(input: newValue)
     }
     
@@ -144,12 +147,73 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         self.temporalResult.level_name = newLevel
     }
     
-    private func initialize() {
+    private func initialize(isStopService: Bool) {
+        buildingLevelChanger.initialize()
+        KF.initialize()
+        OlympusPathMatchingCalculator.shared.initialize()
+        phaseController.initialize()
+        rflowCorrelator.initialize()
+        routeTracker.initialize()
+        rssCompensator.initialize()
+        sectionController.initialize()
+        stateManager.initialize(isStopService: isStopService)
+        trajController.initialize()
         
+        inputReceivedForce = []
+        inputUserVelocity = []
+        inputUserMask = []
+        isSaveMobileResult = false
+        
+        bleTrimed = [String: [[Double]]]()
+        bleAvg = [String: Double]()
+        
+        pastUvdTime = 0
+        pastUvdHeading = 0
+        isPostUvdAnswered = false
+        
+        currentBuilding = ""
+        currentLevel = ""
+        indexPast = 0
+        phase3RqIndex = 0
+        
+        isStartComplete = false
+        isPhaseBreak = false
+        isPhaseBreakInRouteTrack = false
+        isInNetworkBadEntrance = false
+        isStartRouteTrack = false
+        isInEntranceLevel = false
+        stableModeInitFlag = true
+        goodCaseCount = 0
+        isBadCaseInStableMode = false
+        
+        pastReportTime = 0
+        pastReportFlag = 0
+        
+        timeRequest = 0
+        preServerResultMobileTime = 0
+        serverResultBuffer = []
+        unitDRInfoBuffer = []
+        userMaskBuffer = []
+        
+        headingBufferForCorrection  = []
+        isPossibleHeadingCorrection = false
+        
+        temporalResult =  FineLocationTrackingFromServer()
+        preTemporalResult = FineLocationTrackingFromServer()
+        routeTrackResult = FineLocationTrackingFromServer()
+        phaseBreakResult = FineLocationTrackingFromServer()
+        
+        currentTuResult = FineLocationTrackingFromServer()
+        olympusResult = FineLocationTrackingResult()
+        olympusVelocity = 0
+        
+        // 임시
+        displayOutput = ServiceResult()
+        timeUpdateResult = [0, 0, 0]
     }
     
     public func startService(user_id: String, region: String, sector_id: Int, service: String, mode: String, completion: @escaping (Bool, String) -> Void) {
-        let success_msg: String =  " , (Olympus) Success : OlmpusService Start"
+        let success_msg: String =  " , (Olympus) Success : OlympusService Start"
         if (user_id.isEmpty || user_id.contains(" ")) {
             let msg: String = getLocalTimeString() + " , (Olympus) Error : User ID(input = \(user_id)) cannot be empty or contain space"
             completion(false, msg)
@@ -216,7 +280,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         var isSuccess: Bool = true
         var msg: String = ""
         
-        if (!OlympusConstants.OLMPUS_SERVICES.contains(service)) {
+        if (!OlympusConstants.OLYMPUS_SERVICES.contains(service)) {
             msg = localTime + " , (Olympus) Error : Invalid Service Name"
             return (isSuccess, msg)
         } else {
@@ -272,7 +336,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             self.bleManager.stopScan()
             
             if (self.service.contains(OlympusConstants.SERVICE_FLT)) {
-                initVariables()
+                self.initialize(isStopService: true)
 //                paramEstimator.saveNormalizationScale(scale: self.normalizationScale, sector_id: self.sector_id)
 //                self.postParam(sector_id: self.sector_id, normailzationScale: self.normalizationScale)
             }
@@ -282,38 +346,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             message = localTime + " , (Olympus) Fail : After the service has fully started, it can be stop "
             return (false, message)
         }
-    }
-    
-    private func initVariables() {
-        runMode = OlympusConstants.MODE_DR
-        currentMode = OlympusConstants.MODE_DR
-        currentBuilding = ""
-        currentLevel = ""
-        
-        isStartComplete = false
-        isPhaseBreak = false
-        isPhaseBreakInRouteTrack = false
-        isInNetworkBadEntrance = false
-        isStartRouteTrack = false
-        isInEntranceLevel = false
-        
-        pastReportTime = 0
-        pastReportFlag = 0
-        
-        timeRequest = 0
-        preServerResultMobileTime = 0
-        serverResultBuffer = []
-        unitDRInfoBuffer = []
-        
-        temporalResult =  FineLocationTrackingFromServer()
-        preTemporalResult = FineLocationTrackingFromServer()
-        routeTrackResult = FineLocationTrackingFromServer()
-        
-        olympusResult = FineLocationTrackingResult()
-        olympusVelocity = 0
-        
-        unitDRInfo = UnitDRInfo()
-        trajController.clearUserTrajectoryInfo()
     }
     
     private func setSectorInfo(sector_id: Int, sector_info_from_server: SectorInfoFromServer) {

@@ -24,7 +24,7 @@ public class OlympusStateManager: NSObject {
         observers.forEach { $0.isStateDidChange(newValue: state) }
     }
     
-    public func initialize() {
+    public func initialize(isStopService: Bool) {
         self.lastScannedEntranceOuterWardTime = 0
         self.isIndoor = false
         self.isBleOff = false
@@ -34,7 +34,6 @@ public class OlympusStateManager: NSObject {
         self.isVenusMode = false
         self.isNetworkConnectReported = false
         
-        self.timeForInit = 0
         self.timeBleOff = 0
         self.timeBecomeForeground = 0
         self.timeEmptyRF = 0
@@ -44,6 +43,13 @@ public class OlympusStateManager: NSObject {
         self.timeSleepRF = 0
         self.timeSleepUV = 0
         self.timeIndexNotChanged = 0
+        self.networkCount = 0
+        
+        if (isStopService) {
+            self.timeForInit = OlympusConstants.TIME_INIT_THRESHOLD+1
+        } else {
+            self.timeForInit = 0
+        }
     }
     
     public var EntranceOuterWards = [String]()
@@ -68,7 +74,7 @@ public class OlympusStateManager: NSObject {
     private var timeSleepRF: Double = 0
     private var timeSleepUV: Double = 0
     private var timeIndexNotChanged: Double = 0
-    
+    public var networkCount: Int = 0
 
     private var startObserver: Any!
     private var venusObserver: Any!
@@ -79,7 +85,7 @@ public class OlympusStateManager: NSObject {
     private var foregroundObserver: Any!
     private var trajEditedObserver: Any!
     
-    public var networkCount: Int = 0
+    
     
     public func setVariblesWhenBleIsNotEmpty() {
         self.timeBleOff = 0
@@ -142,8 +148,6 @@ public class OlympusStateManager: NSObject {
                 if (!self.isBleOff) {
                     let isOutdoor = self.determineIsOutdoor(olympusResult: olympusResult, currentTime: currentTime, inFailCondition: false)
                     if (isOutdoor) {
-//                        self.initVariables()
-//                        self.currentLevel = "B0"
                         self.isIndoor = false
                         notifyObservers(state: OUTDOOR_FLAG)
                     }
