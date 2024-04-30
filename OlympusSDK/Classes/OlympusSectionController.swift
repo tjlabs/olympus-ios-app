@@ -76,7 +76,7 @@ public class OlympusSectionController {
     
     private func updateAnchorTailIndex(userIndex: Int, anchorTailIndex: Int, indexCandidates: [Int]) {
         print("Anchor : userIndex - anchorTailIndex = \(userIndex - anchorTailIndex)")
-        if (userIndex - anchorTailIndex) > 40 {
+        if (userIndex - anchorTailIndex) > 100 {
             var newIndexCandidates = [Int]()
             
             for idx in indexCandidates {

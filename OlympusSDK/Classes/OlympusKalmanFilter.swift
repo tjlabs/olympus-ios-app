@@ -203,7 +203,7 @@ public class OlympusKalmanFilter: NSObject {
         return outputResult
     }
     
-    public func preProcessForMeasuremetUpdate(fltResult: FineLocationTrackingFromServer, unitDRInfoBuffer: [UnitDRInfo], mode: String, isNeedCalDhFromUvd: Bool) -> [Double] {
+    public func preProcessForMeasurementUpdate(fltResult: FineLocationTrackingFromServer, unitDRInfoBuffer: [UnitDRInfo], mode: String, isNeedCalDhFromUvd: Bool) -> [Double] {
         let uvdIndexBuffer: [Int] = self.uvdIndexBuffer
         let uvdHeadingBuffer: [Double] = self.uvdHeadingBuffer
         let tuResultBuffer: [[Double]] = self.tuResultBuffer

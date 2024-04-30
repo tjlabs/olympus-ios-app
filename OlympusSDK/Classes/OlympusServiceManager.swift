@@ -1001,7 +1001,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                     }
                                 }
                                 
-                                let dxdydh = KF.preProcessForMeasuremetUpdate(fltResult: pmFltRsult, unitDRInfoBuffer: unitDRInfoBuffer, mode: runMode, isNeedCalDhFromUvd: isNeedCalDhFromUvd)
+                                let dxdydh = KF.preProcessForMeasurementUpdate(fltResult: pmFltRsult, unitDRInfoBuffer: unitDRInfoBuffer, mode: runMode, isNeedCalDhFromUvd: isNeedCalDhFromUvd)
                                 propagatedPmFltRsult.x = pmFltRsult.x + dxdydh[0]
                                 propagatedPmFltRsult.y = pmFltRsult.y + dxdydh[1]
                                 if (isPossibleHeadingCorrection) {
@@ -1066,7 +1066,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     displayOutput.phase = String(resultPhase.0)
                     // 임시
                     
-                    if (KF.isRunning && resultPhase.0 == OlympusConstants.PHASE_4) {
+                    if (KF.isRunning && resultPhase.0 == OlympusConstants.PHASE_5) {
                         if (!(fltResult.x == 0 && fltResult.y == 0) && !buildingLevelChanger.isDetermineSpot && phaseController.PHASE != OlympusConstants.PHASE_2) {
                             // 임시
                             displayOutput.indexRx = fltResult.index
@@ -1100,7 +1100,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                     }
                                 }
                                 
-                                let dxdydh = KF.preProcessForMeasuremetUpdate(fltResult: pmFltRsult, unitDRInfoBuffer: unitDRInfoBuffer, mode: runMode, isNeedCalDhFromUvd: isNeedCalDhFromUvd)
+                                let dxdydh = KF.preProcessForMeasurementUpdate(fltResult: pmFltRsult, unitDRInfoBuffer: unitDRInfoBuffer, mode: runMode, isNeedCalDhFromUvd: isNeedCalDhFromUvd)
                                 propagatedPmFltRsult.x = pmFltRsult.x + dxdydh[0]
                                 propagatedPmFltRsult.y = pmFltRsult.y + dxdydh[1]
                                 if (isPossibleHeadingCorrection) {
@@ -1231,7 +1231,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     inputUserMask = []
                 }
                 stackUserMask(data: data)
-                checkBadCase(userMaskBuffer: self.userMaskBuffer, mode: self.runMode)
+//                checkBadCase(userMaskBuffer: self.userMaskBuffer, mode: self.runMode)
+                self.isBadCaseInStableMode = checkBadCase(unitDRInfoBuffer: self.unitDRInfoBuffer, userMaskBuffer: self.userMaskBuffer, mode: self.runMode)
+                print("Check Bad Case : isBadCaseInStableMode = \(self.isBadCaseInStableMode)")
+                print("Check Bad Case : -------------------------)")
             }
             
             self.temporalResult = result
@@ -1277,57 +1280,141 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
     }
     
-    private func checkBadCase(userMaskBuffer: [UserMask], mode: String) {
-        var isBadCase: Bool = false
+//    private func checkBadCaseOg(userMaskBuffer: [UserMask], mode: String) {
+//        var isBadCase: Bool = false
+//        
+//        if (userMaskBuffer.count >= OlympusConstants.REQUIRED_BAD_CASE_CHECK_IDX) {
+//            var movingDistance: Double = 0
+//            
+//            var isStartCal: Bool = false
+//            for i in userMaskBuffer.count-OlympusConstants.REQUIRED_BAD_CASE_CHECK_IDX..<userMaskBuffer.count {
+//                if (!isStartCal) {
+//                    isStartCal = true
+//                } else {
+//                    let diffX = userMaskBuffer[i].x - userMaskBuffer[i-1].x
+//                    let diffY = userMaskBuffer[i].y - userMaskBuffer[i-1].y
+//                    movingDistance += sqrt(Double(diffX*diffX + diffY*diffY))
+//                }
+//            }
+//            
+//            var DISTANCE_THRESHOLD: Double = 10
+//            if (mode == OlympusConstants.MODE_PDR) {
+//                DISTANCE_THRESHOLD = 1
+//            } else {
+//                DISTANCE_THRESHOLD = Double(OlympusConstants.REQUIRED_BAD_CASE_CHECK_IDX) * (1/3)
+//            }
+//            print("Check Bad Case : DISTANCE_THRESHOLD = \(DISTANCE_THRESHOLD)")
+//            print("Check Bad Case : movingDistance = \(movingDistance)")
+//            
+//            if movingDistance <= DISTANCE_THRESHOLD {
+//                isBadCase = true
+//            }
+//        }
+//        
+//        if (isBadCase) {
+//            self.isBadCaseInStableMode = true
+//        } else {
+//            if (self.isBadCaseInStableMode) {
+//                self.goodCaseCount += 1
+//                if (self.goodCaseCount > 2) {
+//                    self.isBadCaseInStableMode = false
+//                    self.goodCaseCount = 0
+//                }
+//            } else {
+//                self.isBadCaseInStableMode = false
+//                self.goodCaseCount = 0
+//            }
+//        }
+//        
+//        print("Check Bad Case : isBadCaseInStableMode = \(self.isBadCaseInStableMode)")
+//        print("Check Bad Case : -------------------------)")
+//    }
+    
+    private func checkBadCase(unitDRInfoBuffer: [UnitDRInfo], userMaskBuffer: [UserMask], mode: String) -> Bool {
+        var isBadCase = false
         
-        if (userMaskBuffer.count >= OlympusConstants.REQUIRED_BAD_CASE_CHECK_IDX) {
-            var movingDistance: Double = 0
+        if (unitDRInfoBuffer.count >= 15 && userMaskBuffer.count >= 15) {
+            let recentUnitDRInfoBuffer = getUnitDRInfoFromLast(from: unitDRInfoBuffer, N: 15)
+            let recentUserMaskBuffer = getUserMaskFromLast(from: userMaskBuffer, N: 15)
             
-            var isStartCal: Bool = false
-            for i in userMaskBuffer.count-OlympusConstants.REQUIRED_BAD_CASE_CHECK_IDX..<userMaskBuffer.count {
-                if (!isStartCal) {
-                    isStartCal = true
-                } else {
-                    let diffX = userMaskBuffer[i].x - userMaskBuffer[i-1].x
-                    let diffY = userMaskBuffer[i].y - userMaskBuffer[i-1].y
-                    movingDistance += sqrt(Double(diffX*diffX + diffY*diffY))
-                }
+            var lastUserMask = recentUserMaskBuffer[recentUserMaskBuffer.count-1]
+            var headInfo = lastUserMask
+            
+            var xyFromHead: [Double] = [Double(headInfo.x), Double(headInfo.y)]
+            var trajectoryFromHead = [[Double]]()
+            trajectoryFromHead.append(xyFromHead)
+            
+            var compensateUvdHeading = [Double] (repeating: 0, count: recentUnitDRInfoBuffer.count)
+            for i in 0..<recentUnitDRInfoBuffer.count {
+                compensateUvdHeading[i] = compensateHeading(heading: recentUnitDRInfoBuffer[i].heading - recentUnitDRInfoBuffer[recentUnitDRInfoBuffer.count-1].heading + lastUserMask.absolute_heading - 180)
             }
             
+            for i in (1..<recentUnitDRInfoBuffer.count).reversed() {
+                var headAngle = compensateUvdHeading[i]
+                xyFromHead[0] = xyFromHead[0] + recentUnitDRInfoBuffer[i].length * cos(headAngle * OlympusConstants.D2R)
+                xyFromHead[1] = xyFromHead[1] + recentUnitDRInfoBuffer[i].length * sin(headAngle * OlympusConstants.D2R)
+                trajectoryFromHead.append(xyFromHead)
+            }
+            
+            let userMaskPositionXBuffer: [Double] = recentUserMaskBuffer.map({ Double($0.x) }).reversed()
+            let userMaskPositionYBuffer: [Double] = recentUserMaskBuffer.map({ Double($0.y) }).reversed()
+
+            var sum = 0.0
+            for i in 0..<recentUserMaskBuffer.count {
+                let diffX = trajectoryFromHead[i][0] - userMaskPositionXBuffer[i]
+                let diffY = trajectoryFromHead[i][1] - userMaskPositionYBuffer[i]
+                let distance = sqrt(diffX * diffX + diffY * diffY)
+                sum += distance
+            }
+
+            let avgDistanceError = sum / Double(recentUserMaskBuffer.count)
+
             var DISTANCE_THRESHOLD: Double = 10
             if (mode == OlympusConstants.MODE_PDR) {
-//                DISTANCE_THRESHOLD = Double(OlympusConstants.REQUIRED_BAD_CASE_CHECK_IDX) * 0.5 * (1/3)
-                DISTANCE_THRESHOLD = 1
+                DISTANCE_THRESHOLD = 3
             } else {
-                DISTANCE_THRESHOLD = Double(OlympusConstants.REQUIRED_BAD_CASE_CHECK_IDX) * (1/3)
+                DISTANCE_THRESHOLD = 10
             }
-            print("Check Bad Case : DISTANCE_THRESHOLD = \(DISTANCE_THRESHOLD)")
-            print("Check Bad Case : movingDistance = \(movingDistance)")
             
-            if movingDistance <= DISTANCE_THRESHOLD {
-                isBadCase = true
-            }
+            if (avgDistanceError >= DISTANCE_THRESHOLD){isBadCase = true}
         }
         
-        if (isBadCase) {
-            self.isBadCaseInStableMode = true
-        } else {
-            if (self.isBadCaseInStableMode) {
-                self.goodCaseCount += 1
-                if (self.goodCaseCount > 2) {
-                    self.isBadCaseInStableMode = false
-                    self.goodCaseCount = 0
-                }
-            } else {
-                self.isBadCaseInStableMode = false
-                self.goodCaseCount = 0
-            }
-        }
-        
-        print("Check Bad Case : isBadCaseInStableMode = \(self.isBadCaseInStableMode)")
-        print("Check Bad Case : -------------------------)")
+        return isBadCase
     }
     
+    private func getUnitDRInfoFromLast(from unitDRInfoBuffer: [UnitDRInfo], N: Int) -> [UnitDRInfo] {
+        let size = unitDRInfoBuffer.count
+        guard size >= N else {
+            return unitDRInfoBuffer
+        }
+        
+        let startIndex = size - N
+        let endIndex = size
+        
+        var result: [UnitDRInfo] = []
+        for i in startIndex..<endIndex {
+            result.append(unitDRInfoBuffer[i])
+        }
+
+        return result
+    }
+    
+    private func getUserMaskFromLast(from userMaskBuffer: [UserMask], N: Int) -> [UserMask] {
+        let size = userMaskBuffer.count
+        guard size >= N else {
+            return userMaskBuffer
+        }
+        
+        let startIndex = size - N
+        let endIndex = size
+        
+        var result: [UserMask] = []
+        for i in startIndex..<endIndex {
+            result.append(userMaskBuffer[i])
+        }
+
+        return result
+    }
     
     private func stackServerResult(serverResult: FineLocationTrackingFromServer) {
         self.serverResultBuffer.append(serverResult)

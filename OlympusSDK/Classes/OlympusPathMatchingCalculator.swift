@@ -613,7 +613,7 @@ public class OlympusPathMatchingCalculator {
                             } else {
                                 let distanceCurrent = distanceSum
                                 let distancePast = minDistanceCoord[2]
-                                if (distanceCurrent < distancePast && distWithPast <= 5) {
+                                if (distanceCurrent < distancePast && distWithPast <= 3) {
                                     minDistanceCoord = [xPath, yPath, distanceSum, distWithPast]
                                     matchedTraj = trajectoryFromHead
                                     inputTraj = trajectoryOriginal
