@@ -850,9 +850,13 @@ public class OlympusPathMatchingCalculator {
         return (isPpEndPoint, matchedNode)
     }
     
-    public func getTimeUpdateLimitation() -> (limitType: LimitationType, limitValues: [Double]) {
+    public func getTimeUpdateLimitation(mode: String) -> (limitType: LimitationType, limitValues: [Double]) {
         var limitType: LimitationType = .NO_LIMIT
         var limitValues: [Double] = [0, 0]
+        var LIMIT: Double = 0.9
+        if (mode == OlympusConstants.MODE_PDR) {
+            LIMIT = 0.45
+        }
         
         let coordX = linkCoord[0]
         let coordY = linkCoord[1]
@@ -864,11 +868,11 @@ public class OlympusPathMatchingCalculator {
         if directions.count == 2 {
             if (directions[0] == 0 && directions[1] == 180) {
                 limitType = .Y_LIMIT
-                limitValues = [coordY - 0.45, coordY + 0.45]
+                limitValues = [coordY - LIMIT, coordY + LIMIT]
                 print("(Link Info) : Y Limit // values = \(limitValues)")
             } else if (directions[0] == 90 && directions[1] == 270) {
                 limitType = .X_LIMIT
-                limitValues = [coordX - 0.45, coordX + 0.45]
+                limitValues = [coordX - LIMIT, coordX + LIMIT]
                 print("(Link Info) : X Limit // values = \(limitValues)")
             }
         }

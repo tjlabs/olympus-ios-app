@@ -717,6 +717,74 @@ public class OlympusTrajectoryController {
                 }
             } else {
                 // DR
+                if (PHASE != 2 && PHASE < 4) {
+                    searchInfo.tailIndex = trajectoryInfo[0].index
+                    
+                    let PADDING_VALUE = OlympusConstants.USER_TRAJECTORY_LENGTH_DR*1.2
+                    // PDR Phase 1 ~ 3
+                    if (isPhaseBreak && (phaseBreakResult.building_name != "" && phaseBreakResult.level_name != "")) {
+                        userX = phaseBreakResult.x
+                        userY = phaseBreakResult.y
+                    }
+                    let searchRange: [Double] = [userX - PADDING_VALUE, userY - PADDING_VALUE, userX + PADDING_VALUE, userY + PADDING_VALUE]
+                    searchInfo.searchRange = searchRange.map { Int($0) }
+                
+                    let ppHeadings = OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: userBuilding, level: userLevel, x: userX, y: userY, heading: userHeading, PADDING_VALUE: PADDING_VALUE, mode: mode)
+                    var searchHeadings: [Double] = []
+                    if (trajLength <= 30) {
+                        searchHeadings = ppHeadings
+                    } else {
+                        let headingLeastChangeSection = extractSectionWithLeastChange(inputArray: uvdRawHeading)
+                        if (headingLeastChangeSection.isEmpty) {
+                            let diffHeadingHeadTail = abs(uvdRawHeading[uvdRawHeading.count-1] - uvdRawHeading[0])
+                            if (diffHeadingHeadTail < 5) {
+                                for ppHeading in ppHeadings {
+                                    let defaultHeading = ppHeading - diffHeadingHeadTail
+                                    searchHeadings.append(compensateHeading(heading: defaultHeading))
+                                }
+                            } else {
+                                for ppHeading in ppHeadings {
+                                    let defaultHeading = ppHeading - diffHeadingHeadTail
+                                    
+                                    searchHeadings.append(compensateHeading(heading: defaultHeading - 10))
+                                    searchHeadings.append(compensateHeading(heading: defaultHeading))
+                                    searchHeadings.append(compensateHeading(heading: defaultHeading + 10))
+                                }
+                            }
+                        } else {
+                            let headingForCompensation = headingLeastChangeSection.average - uvdRawHeading[0]
+                            for ppHeading in ppHeadings {
+                                searchHeadings.append(compensateHeading(heading: ppHeading - headingForCompensation))
+                            }
+                        }
+                    }
+                    let uniqueSearchHeadings = Array(Set(searchHeadings))
+                    searchInfo.searchDirection = uniqueSearchHeadings.map { Int($0) }
+                    
+                    let headInfo = trajectoryInfo[trajectoryInfo.count-1]
+                    var xyFromHead: [Double] = [headInfo.userX, headInfo.userY]
+                    
+                    let headingCorrectionFromServer: Double = headInfo.userHeading - uvdHeading[uvdHeading.count-1]
+                    var headingFromHead = [Double] (repeating: 0, count: uvdHeading.count)
+                    
+                    for i in 0..<uvdHeading.count {
+                        headingFromHead[i] = compensateHeading(heading: uvdHeading[i] - 180 + headingCorrectionFromServer)
+                    }
+                    
+                    var trajectoryFromHead = [[Double]]()
+                    trajectoryFromHead.append(xyFromHead)
+                    for i in (1..<trajectoryInfo.count).reversed() {
+                        let headAngle = headingFromHead[i]
+                        xyFromHead[0] = xyFromHead[0] + trajectoryInfo[i].length*cos(headAngle*OlympusConstants.D2R)
+                        xyFromHead[1] = xyFromHead[1] + trajectoryInfo[i].length*sin(headAngle*OlympusConstants.D2R)
+                        trajectoryFromHead.append(xyFromHead)
+                    }
+
+                    // 임시
+                    searchInfo.searchArea = getSearchCoordinates(areaMinMax: searchRange, interval: 1.0)
+                    searchInfo.trajShape = trajectoryFromHead
+                    searchInfo.trajStartCoord = [headInfo.userX, headInfo.userY]
+                }
             }
         } else {
             // Empty TrajectoryInfo

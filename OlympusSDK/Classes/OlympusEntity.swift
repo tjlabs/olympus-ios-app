@@ -447,6 +447,7 @@ public struct FineLocationTrackingFromServer: Codable {
 
 // On Spot Recognition
 struct OnSpotRecognition: Encodable {
+    var operating_system: String
     var user_id: String
     var mobile_time: Int
     var normalization_scale: Double

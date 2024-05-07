@@ -49,8 +49,10 @@ class CardViewController: UIViewController, Observer {
     
     var region: String = ""
     var userId: String = ""
-    var sector_id: Int = 2
-    var mode: String = "pdr"
+//    var sector_id: Int = 2
+//    var mode: String = "pdr"
+    var sector_id: Int = 6
+    var mode: String = "auto"
     
     var currentBuilding: String = ""
     var currentLevel: String = ""
@@ -424,7 +426,7 @@ class CardViewController: UIViewController, Observer {
     
     func updateCoord(data: CoordToDisplay, flag: Bool) {
         indexTx.text = String(serviceManager.displayOutput.indexTx)
-        indexRx.text = String(serviceManager.displayOutput.indexRx)
+        indexRx.text = String(serviceManager.displayOutput.indexRx) + " // " + String(serviceManager.displayOutput.phase)
         scc.text = String(serviceManager.displayOutput.scc)
         
         let directionArray = serviceManager.displayOutput.searchDirection

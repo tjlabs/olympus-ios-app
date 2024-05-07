@@ -443,13 +443,13 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
         
         
-        if (self.osrTimer == nil) {
-            let queueOSR = DispatchQueue(label: Bundle.main.bundleIdentifier! + ".osrTimer")
-            self.osrTimer = DispatchSource.makeTimerSource(queue: queueOSR)
-            self.osrTimer!.schedule(deadline: .now(), repeating: OlympusConstants.OSR_INTERVAL)
-            self.osrTimer!.setEventHandler(handler: self.osrTimerUpdate)
-            self.osrTimer!.resume()
-        }
+//        if (self.osrTimer == nil) {
+//            let queueOSR = DispatchQueue(label: Bundle.main.bundleIdentifier! + ".osrTimer")
+//            self.osrTimer = DispatchSource.makeTimerSource(queue: queueOSR)
+//            self.osrTimer!.schedule(deadline: .now(), repeating: OlympusConstants.OSR_INTERVAL)
+//            self.osrTimer!.setEventHandler(handler: self.osrTimerUpdate)
+//            self.osrTimer!.resume()
+//        }
     }
     
     func stopTimer() {
@@ -480,6 +480,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             case .success(let trimmedData):
                 self.bleAvg = OlympusRFDFunctions.shared.avgBleData(bleDictionary: trimmedData)
 //                self.bleAvg = ["TJ-00CB-00000386-0000":-70.0]  // COEX B0 1
+//                self.bleAvg = ["TJ-00CB-0000030D-0000":-70.0]  // COEX B2
                 stateManager.getLastScannedEntranceOuterWardTime(bleAvg: self.bleAvg, entranceOuterWards: stateManager.EntranceOuterWards)
                 let enterInNetworkBadEntrance = stateManager.checkEnterInNetworkBadEntrance(bleAvg: self.bleAvg)
                 if (enterInNetworkBadEntrance.0) {
@@ -894,7 +895,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         if (isInLevelChangeArea) {
             levelArray = buildingLevelChanger.makeLevelChangeArray(buildingName: self.currentBuilding, levelName: self.currentLevel, buildingLevel: buildingLevelChanger.buildingsAndLevels)
         }
-        
+        displayOutput.phase = String(phaseController.PHASE)
         displayOutput.searchDirection = searchInfo.searchDirection
         displayOutput.indexTx = unitDRInfoIndex
         phase3RqIndex = unitDRInfoIndex
@@ -1172,6 +1173,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         if (isInLevelChangeArea) {
             levelArray = buildingLevelChanger.makeLevelChangeArray(buildingName: self.currentBuilding, levelName: self.currentLevel, buildingLevel: buildingLevelChanger.buildingsAndLevels)
         }
+        displayOutput.phase = "5"
         displayOutput.indexTx = unitDRInfoIndex
 //        displayOutput.searchDirection = searchInfo.searchDirection
         var input = FineLocationTracking(user_id: self.user_id, mobile_time: currentTime, sector_id: self.sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM, building_name: self.currentBuilding, level_name_list: levelArray, phase: 5, search_range: [], search_direction_list: [], normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation_list: [1.01], tail_index: stableInfo.tail_index, head_section_number: stableInfo.head_section_number, node_number_list: stableInfo.node_number_list)

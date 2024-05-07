@@ -182,7 +182,7 @@ public class OlympusKalmanFilter: NSObject {
             }
             
             if (!isDidPathTrajMatching) {
-                let limitationResult = OlympusPathMatchingCalculator.shared.getTimeUpdateLimitation()
+                let limitationResult = OlympusPathMatchingCalculator.shared.getTimeUpdateLimitation(mode: mode)
                 if (limitationResult.limitType == .Y_LIMIT) {
 //                    print("(Link Info) : Y Limit // before = \(outputResult.x) , \(outputResult.y)")
                     if (outputResult.y < limitationResult.limitValues[0]) {
@@ -204,7 +204,40 @@ public class OlympusKalmanFilter: NSObject {
                 }
             }
         } else {
+//            let isDrStraight: Bool = isDrBufferStraight(unitDRInfoBuffer, unitDRInfoBuffer, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT, condition: 10.0)
+//            val pathMatchingResult =  OlympusPathMatchingCalculator.pathMatching(tuResult.building_name, levelName,updatedX,updatedY,updatedHeading,false,OlympusConstants.HEADING_RANGE,true,
+//                    1, OlympusConstants.COORD_RANGE)
+//
+//            outputResult.x = (pathMatchingResult.second.x *0.5 + updatedX*0.5).toFloat()
+//            outputResult.y = (pathMatchingResult.second.y*0.5 + updatedY*0.5).toFloat()
+//            outputResult.absolute_heading = compensateHeading(updatedHeading)
+//
+//            if (pathMatchingResult.first && isDrStraight){
+//                outputResult.absolute_heading = compensateHeading(pathMatchingResult.second.heading)
+//            }
+            
+            
             // DR
+            let limitationResult = OlympusPathMatchingCalculator.shared.getTimeUpdateLimitation(mode: mode)
+            if (limitationResult.limitType == .Y_LIMIT) {
+//                    print("(Link Info) : Y Limit // before = \(outputResult.x) , \(outputResult.y)")
+                if (outputResult.y < limitationResult.limitValues[0]) {
+                    outputResult.y = limitationResult.limitValues[0]
+                } else if (outputResult.y > limitationResult.limitValues[1]) {
+                    outputResult.y = limitationResult.limitValues[1]
+                }
+//                    print("(Link Info) : Y Limit // after = \(outputResult.x) , \(outputResult.y)")
+//                    print("(Link Info) -------------------------------------- ")
+            } else if (limitationResult.limitType == .X_LIMIT) {
+//                    print("(Link Info) : X Limit // before = \(outputResult.x) , \(outputResult.y)")
+                if (outputResult.x < limitationResult.limitValues[0]) {
+                    outputResult.x = limitationResult.limitValues[0]
+                } else if (outputResult.x > limitationResult.limitValues[1]) {
+                    outputResult.x = limitationResult.limitValues[1]
+                }
+//                    print("(Link Info) : X Limit // after = \(outputResult.x) , \(outputResult.y)")
+//                    print("(Link Info) -------------------------------------- ")
+            }
         }
         
         
