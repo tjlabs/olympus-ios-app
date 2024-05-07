@@ -13,8 +13,12 @@ class CardViewController: UIViewController, Observer {
     @IBOutlet weak var searchDirections: UILabel!
     @IBOutlet weak var resultDirection: UILabel!
     
+    @IBOutlet weak var saveButton: UIButton!
+    
     var headingImage = UIImage(named: "heading")
     var coordToDisplay = CoordToDisplay()
+    var isSaved: Bool = false
+    
     
     override func viewDidDisappear(_ animated: Bool) {
         serviceManager.removeObserver(self)
@@ -49,10 +53,10 @@ class CardViewController: UIViewController, Observer {
     
     var region: String = ""
     var userId: String = ""
-//    var sector_id: Int = 2
-//    var mode: String = "pdr"
-    var sector_id: Int = 6
-    var mode: String = "auto"
+    var sector_id: Int = 2
+    var mode: String = "pdr"
+//    var sector_id: Int = 6
+//    var mode: String = "auto"
     
     var currentBuilding: String = ""
     var currentLevel: String = ""
@@ -86,6 +90,10 @@ class CardViewController: UIViewController, Observer {
     override func viewWillDisappear(_ animated: Bool) {
         serviceManager.stopService()
         self.stopTimer()
+    }
+    
+    @IBAction func tapStopButton(_ sender: UIButton) {
+        self.isSaved = serviceManager.saveSimulationFile()
     }
     
     private func loadPp(fileName: String) -> [[Double]] {
@@ -495,5 +503,8 @@ class CardViewController: UIViewController, Observer {
     
     @objc func timerUpdate() {
         self.updateCoord(data: self.coordToDisplay, flag: true)
+        if (self.isSaved) {
+            saveButton.isHidden = true
+        }
     }
 }

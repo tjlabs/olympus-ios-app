@@ -143,6 +143,22 @@
                             </imageView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="qAV-mb-3wF" customClass="ScatterChartView" customModule="Charts">
                                 <rect key="frame" x="0.0" y="89" width="393" height="380"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="aVd-5L-8Gu">
+                                        <rect key="frame" x="349" y="5" width="39" height="34"/>
+                                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                        <state key="normal" title="Save">
+                                            <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="tapStopButton:" destination="IhS-Xv-jYF" eventType="touchUpInside" id="tha-OJ-1ut"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="aVd-5L-8Gu" secondAttribute="trailing" constant="5" id="SAa-Ot-foQ"/>
+                                    <constraint firstItem="aVd-5L-8Gu" firstAttribute="top" secondItem="qAV-mb-3wF" secondAttribute="top" constant="5" id="yow-qx-kMS"/>
+                                </constraints>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Kwx-75-RMj">
                                 <rect key="frame" x="0.0" y="499" width="393" height="50"/>
@@ -317,6 +333,7 @@
                         <outlet property="indexRx" destination="aks-q3-GjB" id="DYP-z7-oYy"/>
                         <outlet property="indexTx" destination="T5K-Sc-tc6" id="UTa-Y5-A0E"/>
                         <outlet property="resultDirection" destination="3yQ-GQ-WVZ" id="nqC-Ok-Wnw"/>
+                        <outlet property="saveButton" destination="aVd-5L-8Gu" id="Qoc-I7-yks"/>
                         <outlet property="scatterChart" destination="qAV-mb-3wF" id="xNO-rq-z7t"/>
                         <outlet property="scc" destination="JV6-ke-d5B" id="zqg-q2-bUx"/>
                         <outlet property="searchDirections" destination="WlA-VI-yzi" id="cld-EQ-afw"/>

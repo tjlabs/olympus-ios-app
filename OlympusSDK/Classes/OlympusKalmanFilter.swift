@@ -204,17 +204,16 @@ public class OlympusKalmanFilter: NSObject {
                 }
             }
         } else {
-//            let isDrStraight: Bool = isDrBufferStraight(unitDRInfoBuffer, unitDRInfoBuffer, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT, condition: 10.0)
-//            val pathMatchingResult =  OlympusPathMatchingCalculator.pathMatching(tuResult.building_name, levelName,updatedX,updatedY,updatedHeading,false,OlympusConstants.HEADING_RANGE,true,
-//                    1, OlympusConstants.COORD_RANGE)
-//
-//            outputResult.x = (pathMatchingResult.second.x *0.5 + updatedX*0.5).toFloat()
-//            outputResult.y = (pathMatchingResult.second.y*0.5 + updatedY*0.5).toFloat()
-//            outputResult.absolute_heading = compensateHeading(updatedHeading)
-//
-//            if (pathMatchingResult.first && isDrStraight){
-//                outputResult.absolute_heading = compensateHeading(pathMatchingResult.second.heading)
-//            }
+            let isDrStraight: Bool = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_HEADING_CORR_NUM_IDX, condition: 10.0)
+            let pathMatchingResult =  OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, COORD_RANGE: OlympusConstants.COORD_RANGE)
+
+            outputResult.x = (pathMatchingResult.1[0]*0.5 + updatedX*0.5)
+            outputResult.y = (pathMatchingResult.1[1]*0.5 + updatedY*0.5)
+            outputResult.absolute_heading = compensateHeading(heading: updatedHeading)
+
+            if (pathMatchingResult.0 && isDrStraight){
+                outputResult.absolute_heading = compensateHeading(heading: pathMatchingResult.1[2])
+            }
             
             
             // DR

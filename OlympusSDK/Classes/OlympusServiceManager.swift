@@ -3,6 +3,11 @@ import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
     public static let sdkVersion: String = "0.0.5"
+    var isSimulationMode: Bool = false
+    var simulationBleData = [[String: Double]]()
+    var simulationSensorData = [OlympusSensorData]()
+    var bleLineCount: Int = 0
+    var sensorLineCount: Int = 0
     
     func tracking(input: FineLocationTrackingResult) {
         for observer in observers {
@@ -247,6 +252,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                                     self.isStartComplete = true
                                                     self.startTimer()
                                                     NotificationCenter.default.post(name: .serviceStarted, object: nil, userInfo: nil)
+                                                    
+                                                    self.initSimulationMode()
                                                     completion(true, getLocalTimeString() + success_msg)
                                                 }
                                             } else {
@@ -327,6 +334,18 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         return (isSuccess, msg)
     }
     
+    private func initSimulationMode() {
+        OlympusFileManager.shared.createFiles(time: getCurrentTimeInMilliseconds())
+        
+        if (isSimulationMode) {
+            let result = OlympusFileManager.shared.loadFilesForSimulation()
+            simulationBleData = result.0
+            simulationSensorData = result.1
+//            print("(OlympusFileManager) : sensor = \(result.0)")
+//            print("(OlympusFileManager) : ble = \(result.1)" )
+        }
+    }
+    
     public func stopService() -> (Bool, String) {
         let localTime: String = getLocalTimeString()
         var message: String = localTime + " , (Olympus) Success : Stop Service"
@@ -341,11 +360,17 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //                self.postParam(sector_id: self.sector_id, normailzationScale: self.normalizationScale)
             }
             
+            
             return (true, message)
         } else {
             message = localTime + " , (Olympus) Fail : After the service has fully started, it can be stop "
             return (false, message)
         }
+    }
+    
+    public func saveSimulationFile() -> Bool {
+        OlympusFileManager.shared.saveFilesForSimulation()
+        return true
     }
     
     private func setSectorInfo(sector_id: Int, sector_info_from_server: SectorInfoFromServer) {
@@ -443,13 +468,13 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
         
         
-//        if (self.osrTimer == nil) {
-//            let queueOSR = DispatchQueue(label: Bundle.main.bundleIdentifier! + ".osrTimer")
-//            self.osrTimer = DispatchSource.makeTimerSource(queue: queueOSR)
-//            self.osrTimer!.schedule(deadline: .now(), repeating: OlympusConstants.OSR_INTERVAL)
-//            self.osrTimer!.setEventHandler(handler: self.osrTimerUpdate)
-//            self.osrTimer!.resume()
-//        }
+        if (self.osrTimer == nil) {
+            let queueOSR = DispatchQueue(label: Bundle.main.bundleIdentifier! + ".osrTimer")
+            self.osrTimer = DispatchSource.makeTimerSource(queue: queueOSR)
+            self.osrTimer!.schedule(deadline: .now(), repeating: OlympusConstants.OSR_INTERVAL)
+            self.osrTimer!.setEventHandler(handler: self.osrTimerUpdate)
+            self.osrTimer!.resume()
+        }
     }
     
     func stopTimer() {
@@ -467,20 +492,19 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     }
     
     @objc func receivedForceTimerUpdate() {
+        handleRfd()
+    }
+    
+    private func handleRfd() {
         let localTime: String = getLocalTimeString()
-        stateManager.checkBleOff(bluetoothReady: bleManager.bluetoothReady, bleLastScannedTime: bleManager.bleLastScannedTime)
-        stateManager.updateTimeForInit()
-        
-        let validTime = OlympusConstants.BLE_VALID_TIME
-        let currentTime = getCurrentTimeInMilliseconds() - (Int(validTime)/2)
-        let bleDictionary: [String: [[Double]]]? = bleManager.bleDictionary
-        if let bleData = bleDictionary {
-            let trimmedResult = OlympusRFDFunctions.shared.trimBleData(bleInput: bleData, nowTime: getCurrentTimeInMillisecondsDouble(), validTime: validTime)
-            switch trimmedResult {
-            case .success(let trimmedData):
-                self.bleAvg = OlympusRFDFunctions.shared.avgBleData(bleDictionary: trimmedData)
-//                self.bleAvg = ["TJ-00CB-00000386-0000":-70.0]  // COEX B0 1
-//                self.bleAvg = ["TJ-00CB-0000030D-0000":-70.0]  // COEX B2
+        if (isSimulationMode) {
+            stateManager.updateTimeForInit()
+            let validTime = OlympusConstants.BLE_VALID_TIME
+            let currentTime = getCurrentTimeInMilliseconds() - (Int(validTime)/2)
+            
+            if (bleLineCount < simulationBleData.count-1) {
+                let bleData = simulationBleData[bleLineCount]
+                self.bleAvg = bleData
                 stateManager.getLastScannedEntranceOuterWardTime(bleAvg: self.bleAvg, entranceOuterWards: stateManager.EntranceOuterWards)
                 let enterInNetworkBadEntrance = stateManager.checkEnterInNetworkBadEntrance(bleAvg: self.bleAvg)
                 if (enterInNetworkBadEntrance.0) {
@@ -490,57 +514,124 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     isInNetworkBadEntrance = isOn.1
                     NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_3])
                 }
-            case .failure(_):
-                print("Trim Fail")
-                let isNeedClearBle = stateManager.checkBleError(olympusResult: self.olympusResult)
-                if (isNeedClearBle) {
-                    self.bleAvg = [String: Double]()
+                
+                rssCompensator.refreshWardMinRssi(bleData: self.bleAvg)
+                rssCompensator.refreshWardMaxRssi(bleData: self.bleAvg)
+                let maxRssi = rssCompensator.getMaxRssi()
+                let minRssi = rssCompensator.getMinRssi()
+                let diffMinMaxRssi = abs(maxRssi - minRssi)
+                if (minRssi <= OlympusConstants.DEVICE_MIN_UPDATE_THRESHOLD) {
+                    let deviceMin: Double = rssCompensator.getDeviceMinRss()
+                    OlympusConstants.DEVICE_MIN_RSSI = deviceMin
+                }
+                rssCompensator.stackTimeAfterResponse(isGetFirstResponse: stateManager.isGetFirstResponse, isIndoor: stateManager.isIndoor)
+                rssCompensator.estimateNormalizationScale(isGetFirstResponse: stateManager.isGetFirstResponse, isIndoor: stateManager.isIndoor, currentLevel: self.currentLevel, diffMinMaxRssi: diffMinMaxRssi, minRssi: minRssi)
+                
+                if (!stateManager.isBackground) {
+                    let isSufficientRfdBuffer = rflowCorrelator.accumulateRfdBuffer(bleData: self.bleAvg)
+                    let isSufficientRfdVelocityBuffer = rflowCorrelator.accumulateRfdVelocityBuffer(bleData: self.bleAvg)
+                    let isSufficientRfdAutoMode = rflowCorrelator.accumulateRfdAutoModeBuffer(bleData: self.bleAvg)
+                    if(!self.isStartRouteTrack) {
+                        unitDRGenerator.setRflow(rflow: rflowCorrelator.getRflow(), rflowForVelocity: rflowCorrelator.getRflowForVelocityScale(), rflowForAutoMode: rflowCorrelator.getRflowForAutoMode(), isSufficient: isSufficientRfdBuffer, isSufficientForVelocity: isSufficientRfdVelocityBuffer, isSufficientForAutoMode: isSufficientRfdAutoMode)
+                    }
+                }
+                
+                if (!self.bleAvg.isEmpty) {
+                    stateManager.setVariblesWhenBleIsNotEmpty()
+                    let data = ReceivedForce(user_id: self.user_id, mobile_time: currentTime, ble: self.bleAvg, pressure: self.sensorManager.pressure)
+                    self.inputReceivedForce.append(data)
+                    if ((inputReceivedForce.count) >= OlympusConstants.RFD_INPUT_NUM) {
+                        OlympusNetworkManager.shared.postReceivedForce(url: REC_RFD_URL, input: inputReceivedForce, completion: { [self] statusCode, returnedString, inputRfd in
+                            if (statusCode != 200) {
+        //                        let localTime = getLocalTimeString()
+        //                        let msg: String = localTime + " , (Olympus) Error : RFD \(statusCode) // " + returnedString
+                                if (stateManager.isIndoor && stateManager.isGetFirstResponse && !stateManager.isBackground) { NotificationCenter.default.post(name: .errorSendRfd, object: nil, userInfo: nil) }
+                            }
+                        })
+                        inputReceivedForce = []
+                    }
+                    
+                } else if (!stateManager.isBackground) {
+                    stateManager.checkOutdoorBleEmpty(lastBleDiscoveredTime: bleManager.bleDiscoveredTime, olympusResult: self.olympusResult)
+                    stateManager.checkEnterSleepMode(service: self.service, type: 0)
+                }
+                bleLineCount += 1
+            }
+        } else {
+            stateManager.checkBleOff(bluetoothReady: bleManager.bluetoothReady, bleLastScannedTime: bleManager.bleLastScannedTime)
+            stateManager.updateTimeForInit()
+            
+            let validTime = OlympusConstants.BLE_VALID_TIME
+            let currentTime = getCurrentTimeInMilliseconds() - (Int(validTime)/2)
+            let bleDictionary: [String: [[Double]]]? = bleManager.bleDictionary
+            if let bleData = bleDictionary {
+                let trimmedResult = OlympusRFDFunctions.shared.trimBleData(bleInput: bleData, nowTime: getCurrentTimeInMillisecondsDouble(), validTime: validTime)
+                switch trimmedResult {
+                case .success(let trimmedData):
+                    self.bleAvg = OlympusRFDFunctions.shared.avgBleData(bleDictionary: trimmedData)
+                    stateManager.getLastScannedEntranceOuterWardTime(bleAvg: self.bleAvg, entranceOuterWards: stateManager.EntranceOuterWards)
+                    let enterInNetworkBadEntrance = stateManager.checkEnterInNetworkBadEntrance(bleAvg: self.bleAvg)
+                    if (enterInNetworkBadEntrance.0) {
+                        let isOn = routeTracker.startRouteTracking(result: enterInNetworkBadEntrance.1, isStartRouteTrack: self.isStartRouteTrack)
+                        unitDRGenerator.setIsStartRouteTrack(isStartRoutTrack: isOn.0)
+                        isStartRouteTrack = isOn.0
+                        isInNetworkBadEntrance = isOn.1
+                        NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_3])
+                    }
+                case .failure(_):
+                    print("Trim Fail")
+                    let isNeedClearBle = stateManager.checkBleError(olympusResult: self.olympusResult)
+                    if (isNeedClearBle) {
+                        self.bleAvg = [String: Double]()
+                    }
+                }
+                
+                rssCompensator.refreshWardMinRssi(bleData: self.bleAvg)
+                rssCompensator.refreshWardMaxRssi(bleData: self.bleAvg)
+                let maxRssi = rssCompensator.getMaxRssi()
+                let minRssi = rssCompensator.getMinRssi()
+                let diffMinMaxRssi = abs(maxRssi - minRssi)
+                if (minRssi <= OlympusConstants.DEVICE_MIN_UPDATE_THRESHOLD) {
+                    let deviceMin: Double = rssCompensator.getDeviceMinRss()
+                    OlympusConstants.DEVICE_MIN_RSSI = deviceMin
+                }
+                rssCompensator.stackTimeAfterResponse(isGetFirstResponse: stateManager.isGetFirstResponse, isIndoor: stateManager.isIndoor)
+                rssCompensator.estimateNormalizationScale(isGetFirstResponse: stateManager.isGetFirstResponse, isIndoor: stateManager.isIndoor, currentLevel: self.currentLevel, diffMinMaxRssi: diffMinMaxRssi, minRssi: minRssi)
+            } else {
+                let msg: String = localTime + " , (Olympus) Warnings : Fail to get recent BLE"
+                print(msg)
+            }
+            
+            OlympusFileManager.shared.writeBleData(time: currentTime, data: bleAvg)
+            
+            if (!stateManager.isBackground) {
+                let isSufficientRfdBuffer = rflowCorrelator.accumulateRfdBuffer(bleData: self.bleAvg)
+                let isSufficientRfdVelocityBuffer = rflowCorrelator.accumulateRfdVelocityBuffer(bleData: self.bleAvg)
+                let isSufficientRfdAutoMode = rflowCorrelator.accumulateRfdAutoModeBuffer(bleData: self.bleAvg)
+                if(!self.isStartRouteTrack) {
+                    unitDRGenerator.setRflow(rflow: rflowCorrelator.getRflow(), rflowForVelocity: rflowCorrelator.getRflowForVelocityScale(), rflowForAutoMode: rflowCorrelator.getRflowForAutoMode(), isSufficient: isSufficientRfdBuffer, isSufficientForVelocity: isSufficientRfdVelocityBuffer, isSufficientForAutoMode: isSufficientRfdAutoMode)
                 }
             }
             
-            rssCompensator.refreshWardMinRssi(bleData: self.bleAvg)
-            rssCompensator.refreshWardMaxRssi(bleData: self.bleAvg)
-            let maxRssi = rssCompensator.getMaxRssi()
-            let minRssi = rssCompensator.getMinRssi()
-            let diffMinMaxRssi = abs(maxRssi - minRssi)
-            if (minRssi <= OlympusConstants.DEVICE_MIN_UPDATE_THRESHOLD) {
-                let deviceMin: Double = rssCompensator.getDeviceMinRss()
-                OlympusConstants.DEVICE_MIN_RSSI = deviceMin
+            if (!self.bleAvg.isEmpty) {
+                stateManager.setVariblesWhenBleIsNotEmpty()
+                let data = ReceivedForce(user_id: self.user_id, mobile_time: currentTime, ble: self.bleAvg, pressure: self.sensorManager.pressure)
+                self.inputReceivedForce.append(data)
+                if ((inputReceivedForce.count) >= OlympusConstants.RFD_INPUT_NUM) {
+                    OlympusNetworkManager.shared.postReceivedForce(url: REC_RFD_URL, input: inputReceivedForce, completion: { [self] statusCode, returnedString, inputRfd in
+                        if (statusCode != 200) {
+    //                        let localTime = getLocalTimeString()
+    //                        let msg: String = localTime + " , (Olympus) Error : RFD \(statusCode) // " + returnedString
+                            if (stateManager.isIndoor && stateManager.isGetFirstResponse && !stateManager.isBackground) { NotificationCenter.default.post(name: .errorSendRfd, object: nil, userInfo: nil) }
+                        }
+                    })
+                    inputReceivedForce = []
+                }
+                
+            } else if (!stateManager.isBackground) {
+                stateManager.checkOutdoorBleEmpty(lastBleDiscoveredTime: bleManager.bleDiscoveredTime, olympusResult: self.olympusResult)
+                stateManager.checkEnterSleepMode(service: self.service, type: 0)
             }
-            rssCompensator.stackTimeAfterResponse(isGetFirstResponse: stateManager.isGetFirstResponse, isIndoor: stateManager.isIndoor)
-            rssCompensator.estimateNormalizationScale(isGetFirstResponse: stateManager.isGetFirstResponse, isIndoor: stateManager.isIndoor, currentLevel: self.currentLevel, diffMinMaxRssi: diffMinMaxRssi, minRssi: minRssi)
-        } else {
-            let msg: String = localTime + " , (Olympus) Warnings : Fail to get recent BLE"
-            print(msg)
-        }
-        
-        if (!stateManager.isBackground) {
-            let isSufficientRfdBuffer = rflowCorrelator.accumulateRfdBuffer(bleData: self.bleAvg)
-            let isSufficientRfdVelocityBuffer = rflowCorrelator.accumulateRfdVelocityBuffer(bleData: self.bleAvg)
-            let isSufficientRfdAutoMode = rflowCorrelator.accumulateRfdAutoModeBuffer(bleData: self.bleAvg)
-            if(!self.isStartRouteTrack) {
-                unitDRGenerator.setRflow(rflow: rflowCorrelator.getRflow(), rflowForVelocity: rflowCorrelator.getRflowForVelocityScale(), rflowForAutoMode: rflowCorrelator.getRflowForAutoMode(), isSufficient: isSufficientRfdBuffer, isSufficientForVelocity: isSufficientRfdVelocityBuffer, isSufficientForAutoMode: isSufficientRfdAutoMode)
-            }
-        }
-        
-        if (!self.bleAvg.isEmpty) {
-            stateManager.setVariblesWhenBleIsNotEmpty()
-            let data = ReceivedForce(user_id: self.user_id, mobile_time: currentTime, ble: self.bleAvg, pressure: self.sensorManager.pressure)
-            self.inputReceivedForce.append(data)
-            if ((inputReceivedForce.count) >= OlympusConstants.RFD_INPUT_NUM) {
-                OlympusNetworkManager.shared.postReceivedForce(url: REC_RFD_URL, input: inputReceivedForce, completion: { [self] statusCode, returnedString, inputRfd in
-                    if (statusCode != 200) {
-//                        let localTime = getLocalTimeString()
-//                        let msg: String = localTime + " , (Olympus) Error : RFD \(statusCode) // " + returnedString
-                        if (stateManager.isIndoor && stateManager.isGetFirstResponse && !stateManager.isBackground) { NotificationCenter.default.post(name: .errorSendRfd, object: nil, userInfo: nil) }
-                    }
-                })
-                inputReceivedForce = []
-            }
-            
-        } else if (!stateManager.isBackground) {
-            stateManager.checkOutdoorBleEmpty(lastBleDiscoveredTime: bleManager.bleDiscoveredTime, olympusResult: self.olympusResult)
-            stateManager.checkEnterSleepMode(service: self.service, type: 0)
         }
     }
     
@@ -549,8 +640,19 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         
         self.controlMode()
         OlympusConstants().setModeParam(mode: self.runMode, phase: phaseController.PHASE)
+        var sensorData = OlympusSensorData()
+//        let sensorData = sensorManager.sensorData
         if (service.contains(OlympusConstants.SERVICE_FLT)) {
-            unitDRInfo = unitDRGenerator.generateDRInfo(sensorData: sensorManager.sensorData)
+            if (isSimulationMode) {
+                if (sensorLineCount < simulationSensorData.count-1) {
+                    sensorData = simulationSensorData[sensorLineCount]
+                    sensorLineCount += 1
+                }
+            } else {
+                sensorData = sensorManager.sensorData
+            }
+            unitDRInfo = unitDRGenerator.generateDRInfo(sensorData: sensorData)
+            OlympusFileManager.shared.writeSensorData(data: sensorData)
         }
         
         var backgroundScale: Double = 1.0
@@ -674,6 +776,280 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 stateManager.checkEnterSleepMode(service: self.service, type: 1)
             }
             requestOlympusResultInStop(trajectoryInfo: trajController.pastTrajectoryInfo, mode: self.runMode)
+        }
+    }
+    
+    private func handleUvd() {
+        if (isSimulationMode) {
+            if (sensorLineCount < simulationSensorData.count-1) {
+                let currentTime = getCurrentTimeInMilliseconds()
+                
+                self.controlMode()
+                OlympusConstants().setModeParam(mode: self.runMode, phase: phaseController.PHASE)
+                let sensorData = simulationSensorData[sensorLineCount]
+                if (service.contains(OlympusConstants.SERVICE_FLT)) {
+                    unitDRInfo = unitDRGenerator.generateDRInfo(sensorData: sensorData)
+                    OlympusFileManager.shared.writeSensorData(data: sensorData)
+                }
+                
+                var backgroundScale: Double = 1.0
+                if (stateManager.isBackground && runMode == OlympusConstants.MODE_DR) {
+                    let diffTime = currentTime - self.pastUvdTime
+                    backgroundScale = Double(diffTime)/(1000/OlympusConstants.SAMPLE_HZ)
+                }
+                self.pastUvdTime = currentTime
+                
+                if (unitDRInfo.isIndexChanged && !stateManager.isVenusMode) {
+                    // 임시
+                    displayOutput.isIndexChanged = unitDRInfo.isIndexChanged
+                    displayOutput.length = unitDRInfo.length
+                    displayOutput.velocity = unitDRInfo.velocity * 3.6
+                    // 임시
+                    
+                    stateManager.setVariblesWhenIsIndexChanged()
+                    stackHeadingForCheckCorrection()
+                    isPossibleHeadingCorrection = checkHeadingCorrection(buffer: headingBufferForCorrection)
+                    stackUnitDRInfo()
+                    olympusVelocity = unitDRInfo.velocity * 3.6
+                    var unitUvdLength: Double = 0
+                    if (stateManager.isBackground) {
+                        unitUvdLength = unitDRInfo.length*backgroundScale
+                    } else {
+                        unitUvdLength = unitDRInfo.length
+                    }
+                    unitUvdLength = round(unitUvdLength*10000)/10000
+                    self.unitDRInfoIndex = unitDRInfo.index
+                    
+                    let data = UserVelocity(user_id: self.user_id, mobile_time: currentTime, index: unitDRInfo.index, length: unitUvdLength, heading: round(unitDRInfo.heading*100)/100, looking: unitDRInfo.lookingFlag)
+                    inputUserVelocity.append(data)
+                    
+                    trajController.checkPhase2To4(unitLength: unitUvdLength)
+                    buildingLevelChanger.accumulateOsrDistance(unitLength: unitUvdLength, isGetFirstResponse: stateManager.isGetFirstResponse, mode: self.runMode, result: self.olympusResult)
+                    
+                    let isInEntranceLevel = stateManager.checkInEntranceLevel(result: self.olympusResult, isStartRouteTrack: self.isStartRouteTrack)
+                    unitDRGenerator.setIsInEntranceLevel(flag: isInEntranceLevel)
+                    let entrancaeVelocityScale: Double = routeTracker.getEntranceVelocityScale(isGetFirstResponse: stateManager.isGetFirstResponse, isStartRouteTrack: self.isStartRouteTrack)
+                    unitDRGenerator.setEntranceVelocityScale(scale: entrancaeVelocityScale)
+                    let numBleChannels = OlympusRFDFunctions.shared.checkBleChannelNum(bleAvg: self.bleAvg)
+                    trajController.checkTrajectoryInfo(isPhaseBreak: self.isPhaseBreak, isBecomeForeground: stateManager.isBecomeForeground, isGetFirstResponse: stateManager.isGetFirstResponse, timeForInit: stateManager.timeForInit)
+                    let trajectoryInfo = trajController.getTrajectoryInfo(unitDRInfo: unitDRInfo, unitLength: unitUvdLength, olympusResult: self.olympusResult, isKF: KF.isRunning, tuResult: timeUpdateResult, isPmSuccess: false, numBleChannels: numBleChannels, mode: self.runMode, isDetermineSpot: buildingLevelChanger.isDetermineSpot, spotCutIndex: buildingLevelChanger.spotCutIndex)
+                    
+                    if ((inputUserVelocity.count) >= OlympusConstants.UVD_INPUT_NUM) {
+                        OlympusNetworkManager.shared.postUserVelocity(url: REC_UVD_URL, input: inputUserVelocity, completion: { [self] statusCode, returnedString, inputUvd in
+                            if (statusCode == 200) {
+                                KF.updateTuResultWhenUvdPosted(result: currentTuResult)
+                                self.isPostUvdAnswered = true
+                            } else {
+        //                        let localTime = getLocalTimeString()
+        //                        let msg: String = localTime + " , (Olympus) Error : UVD \(statusCode) // " + returnedString
+                                if (stateManager.isIndoor && stateManager.isGetFirstResponse && !stateManager.isBackground) { NotificationCenter.default.post(name: .errorSendUvd, object: nil, userInfo: nil) }
+                                trajController.stackPostUvdFailData(inputUvd: inputUvd)
+                            }
+                        })
+                        inputUserVelocity = []
+                    }
+                    
+                    // Time Update
+                    let diffHeading = unitDRInfo.heading - pastUvdHeading
+                    pastUvdHeading = unitDRInfo.heading
+                    if (KF.isRunning && KF.tuFlag) {
+                        var tuResult = KF.timeUpdate(recentResult: olympusResult, length: unitUvdLength, diffHeading: diffHeading, isPossibleHeadingCorrection: isPossibleHeadingCorrection, unitDRInfoBuffer: unitDRInfoBuffer, mode: runMode)
+                        tuResult.mobile_time = currentTime
+                        currentTuResult = tuResult
+                        
+                        let sectionResult = sectionController.controlSection(userVelocity: data)
+                        if (sectionResult.0) {
+                            displayOutput.indexTx = data.index
+                            var nodeCandidates = [Int]()
+                            if (sectionResult.1 == 0) {
+                                // get nodeCandidates
+                                var pathType: Int = 1
+                                if (runMode == OlympusConstants.MODE_PDR) { pathType = 0 }
+                                nodeCandidates = OlympusPathMatchingCalculator.shared.getNodeCandidates(fltResult: tuResult, pathType: pathType, isBadCaseInStableMode: self.isBadCaseInStableMode)
+                            }
+                            let anchorTailIndex = sectionController.getAnchorTailIndex()
+                            let stableInfo = StableInfo(tail_index: anchorTailIndex, head_section_number: sectionController.rqSectionNumber, node_number_list: nodeCandidates)
+                            processPhase5(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo)
+                        }
+                        
+                        
+                        // 임시
+                        timeUpdateResult[0] = tuResult.x
+                        timeUpdateResult[1] = tuResult.y
+                        timeUpdateResult[2] = tuResult.absolute_heading
+                        displayOutput.trajectoryOg = KF.inputTraj
+                        displayOutput.trajectoryPm = KF.matchedTraj
+                        // 임시
+                        
+                        KF.updateTuResultNow(result: currentTuResult)
+                        KF.updateTuInformation(unitDRInfo: unitDRInfo)
+                        makeTemporalResult(input: tuResult, isStableMode: true)
+                    }
+                    
+                    
+                    // Route Tracking
+                    if (isStartRouteTrack) {
+                        let routeTrackResult = routeTracker.getRouteTrackResult(temporalResult: self.temporalResult, currentLevel: currentLevel, isVenusMode: stateManager.isVenusMode, isKF: KF.isRunning, isPhaseBreakInRouteTrack: isPhaseBreakInRouteTrack)
+                        if (routeTrackResult.isRouteTrackFinished) {
+                            isStartRouteTrack = false
+                            unitDRGenerator.setIsStartRouteTrack(isStartRoutTrack: false)
+                            isPhaseBreakInRouteTrack = false
+                            isInNetworkBadEntrance = false
+                            
+                            self.currentBuilding = routeTrackResult.1.building_name
+                            self.currentLevel = routeTrackResult.1.level_name
+                        } else {
+                            self.routeTrackResult = routeTrackResult.1
+                        }
+                    }
+                    
+                    requestOlympusResult(trajectoryInfo: trajectoryInfo, mode: self.runMode)
+                } else {
+                    if (!unitDRInfo.isIndexChanged) {
+                        let isStop = stateManager.checkStopWhenIsIndexNotChanage()
+                        if (isStop) {
+                            olympusVelocity = 0
+                        }
+                        stateManager.checkEnterSleepMode(service: self.service, type: 1)
+                    }
+                    requestOlympusResultInStop(trajectoryInfo: trajController.pastTrajectoryInfo, mode: self.runMode)
+                }
+                
+                sensorLineCount += 1
+            }
+        } else {
+            let currentTime = getCurrentTimeInMilliseconds()
+            
+            self.controlMode()
+            OlympusConstants().setModeParam(mode: self.runMode, phase: phaseController.PHASE)
+            let sensorData = sensorManager.sensorData
+            if (service.contains(OlympusConstants.SERVICE_FLT)) {
+                unitDRInfo = unitDRGenerator.generateDRInfo(sensorData: sensorData)
+                OlympusFileManager.shared.writeSensorData(data: sensorData)
+            }
+            
+            var backgroundScale: Double = 1.0
+            if (stateManager.isBackground && runMode == OlympusConstants.MODE_DR) {
+                let diffTime = currentTime - self.pastUvdTime
+                backgroundScale = Double(diffTime)/(1000/OlympusConstants.SAMPLE_HZ)
+            }
+            self.pastUvdTime = currentTime
+            
+            if (unitDRInfo.isIndexChanged && !stateManager.isVenusMode) {
+                // 임시
+                displayOutput.isIndexChanged = unitDRInfo.isIndexChanged
+                displayOutput.length = unitDRInfo.length
+                displayOutput.velocity = unitDRInfo.velocity * 3.6
+                // 임시
+                
+                stateManager.setVariblesWhenIsIndexChanged()
+                stackHeadingForCheckCorrection()
+                isPossibleHeadingCorrection = checkHeadingCorrection(buffer: headingBufferForCorrection)
+                stackUnitDRInfo()
+                olympusVelocity = unitDRInfo.velocity * 3.6
+                var unitUvdLength: Double = 0
+                if (stateManager.isBackground) {
+                    unitUvdLength = unitDRInfo.length*backgroundScale
+                } else {
+                    unitUvdLength = unitDRInfo.length
+                }
+                unitUvdLength = round(unitUvdLength*10000)/10000
+                self.unitDRInfoIndex = unitDRInfo.index
+                
+                let data = UserVelocity(user_id: self.user_id, mobile_time: currentTime, index: unitDRInfo.index, length: unitUvdLength, heading: round(unitDRInfo.heading*100)/100, looking: unitDRInfo.lookingFlag)
+                inputUserVelocity.append(data)
+                
+                trajController.checkPhase2To4(unitLength: unitUvdLength)
+                buildingLevelChanger.accumulateOsrDistance(unitLength: unitUvdLength, isGetFirstResponse: stateManager.isGetFirstResponse, mode: self.runMode, result: self.olympusResult)
+                
+                let isInEntranceLevel = stateManager.checkInEntranceLevel(result: self.olympusResult, isStartRouteTrack: self.isStartRouteTrack)
+                unitDRGenerator.setIsInEntranceLevel(flag: isInEntranceLevel)
+                let entrancaeVelocityScale: Double = routeTracker.getEntranceVelocityScale(isGetFirstResponse: stateManager.isGetFirstResponse, isStartRouteTrack: self.isStartRouteTrack)
+                unitDRGenerator.setEntranceVelocityScale(scale: entrancaeVelocityScale)
+                let numBleChannels = OlympusRFDFunctions.shared.checkBleChannelNum(bleAvg: self.bleAvg)
+                trajController.checkTrajectoryInfo(isPhaseBreak: self.isPhaseBreak, isBecomeForeground: stateManager.isBecomeForeground, isGetFirstResponse: stateManager.isGetFirstResponse, timeForInit: stateManager.timeForInit)
+                let trajectoryInfo = trajController.getTrajectoryInfo(unitDRInfo: unitDRInfo, unitLength: unitUvdLength, olympusResult: self.olympusResult, isKF: KF.isRunning, tuResult: timeUpdateResult, isPmSuccess: false, numBleChannels: numBleChannels, mode: self.runMode, isDetermineSpot: buildingLevelChanger.isDetermineSpot, spotCutIndex: buildingLevelChanger.spotCutIndex)
+                
+                if ((inputUserVelocity.count) >= OlympusConstants.UVD_INPUT_NUM) {
+                    OlympusNetworkManager.shared.postUserVelocity(url: REC_UVD_URL, input: inputUserVelocity, completion: { [self] statusCode, returnedString, inputUvd in
+                        if (statusCode == 200) {
+                            KF.updateTuResultWhenUvdPosted(result: currentTuResult)
+                            self.isPostUvdAnswered = true
+                        } else {
+    //                        let localTime = getLocalTimeString()
+    //                        let msg: String = localTime + " , (Olympus) Error : UVD \(statusCode) // " + returnedString
+                            if (stateManager.isIndoor && stateManager.isGetFirstResponse && !stateManager.isBackground) { NotificationCenter.default.post(name: .errorSendUvd, object: nil, userInfo: nil) }
+                            trajController.stackPostUvdFailData(inputUvd: inputUvd)
+                        }
+                    })
+                    inputUserVelocity = []
+                }
+                
+                // Time Update
+                let diffHeading = unitDRInfo.heading - pastUvdHeading
+                pastUvdHeading = unitDRInfo.heading
+                if (KF.isRunning && KF.tuFlag) {
+                    var tuResult = KF.timeUpdate(recentResult: olympusResult, length: unitUvdLength, diffHeading: diffHeading, isPossibleHeadingCorrection: isPossibleHeadingCorrection, unitDRInfoBuffer: unitDRInfoBuffer, mode: runMode)
+                    tuResult.mobile_time = currentTime
+                    currentTuResult = tuResult
+                    
+                    let sectionResult = sectionController.controlSection(userVelocity: data)
+                    if (sectionResult.0) {
+                        displayOutput.indexTx = data.index
+                        var nodeCandidates = [Int]()
+                        if (sectionResult.1 == 0) {
+                            // get nodeCandidates
+                            var pathType: Int = 1
+                            if (runMode == OlympusConstants.MODE_PDR) { pathType = 0 }
+                            nodeCandidates = OlympusPathMatchingCalculator.shared.getNodeCandidates(fltResult: tuResult, pathType: pathType, isBadCaseInStableMode: self.isBadCaseInStableMode)
+                        }
+                        let anchorTailIndex = sectionController.getAnchorTailIndex()
+                        let stableInfo = StableInfo(tail_index: anchorTailIndex, head_section_number: sectionController.rqSectionNumber, node_number_list: nodeCandidates)
+                        processPhase5(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo)
+                    }
+                    
+                    
+                    // 임시
+                    timeUpdateResult[0] = tuResult.x
+                    timeUpdateResult[1] = tuResult.y
+                    timeUpdateResult[2] = tuResult.absolute_heading
+                    displayOutput.trajectoryOg = KF.inputTraj
+                    displayOutput.trajectoryPm = KF.matchedTraj
+                    // 임시
+                    
+                    KF.updateTuResultNow(result: currentTuResult)
+                    KF.updateTuInformation(unitDRInfo: unitDRInfo)
+                    makeTemporalResult(input: tuResult, isStableMode: true)
+                }
+                
+                
+                // Route Tracking
+                if (isStartRouteTrack) {
+                    let routeTrackResult = routeTracker.getRouteTrackResult(temporalResult: self.temporalResult, currentLevel: currentLevel, isVenusMode: stateManager.isVenusMode, isKF: KF.isRunning, isPhaseBreakInRouteTrack: isPhaseBreakInRouteTrack)
+                    if (routeTrackResult.isRouteTrackFinished) {
+                        isStartRouteTrack = false
+                        unitDRGenerator.setIsStartRouteTrack(isStartRoutTrack: false)
+                        isPhaseBreakInRouteTrack = false
+                        isInNetworkBadEntrance = false
+                        
+                        self.currentBuilding = routeTrackResult.1.building_name
+                        self.currentLevel = routeTrackResult.1.level_name
+                    } else {
+                        self.routeTrackResult = routeTrackResult.1
+                    }
+                }
+                
+                requestOlympusResult(trajectoryInfo: trajectoryInfo, mode: self.runMode)
+            } else {
+                if (!unitDRInfo.isIndexChanged) {
+                    let isStop = stateManager.checkStopWhenIsIndexNotChanage()
+                    if (isStop) {
+                        olympusVelocity = 0
+                    }
+                    stateManager.checkEnterSleepMode(service: self.service, type: 1)
+                }
+                requestOlympusResultInStop(trajectoryInfo: trajController.pastTrajectoryInfo, mode: self.runMode)
+            }
         }
     }
     
