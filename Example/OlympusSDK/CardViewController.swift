@@ -88,12 +88,12 @@ class CardViewController: UIViewController, Observer {
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        serviceManager.stopService()
-        self.stopTimer()
     }
     
     @IBAction func tapStopButton(_ sender: UIButton) {
         self.isSaved = serviceManager.saveSimulationFile()
+        serviceManager.stopService()
+        self.stopTimer()
     }
     
     private func loadPp(fileName: String) -> [[Double]] {

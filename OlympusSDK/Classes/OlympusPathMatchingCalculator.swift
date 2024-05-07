@@ -27,6 +27,12 @@ public class OlympusPathMatchingCalculator {
         
     }
     
+    private struct Point {
+        var x: Double
+        var y: Double
+        var direction: Double
+    }
+    
     public func initialize() {
         self.passedNode = -1
         self.passedNodeCoord = [0, 0]
@@ -207,30 +213,32 @@ public class OlympusPathMatchingCalculator {
         }
     }
     
-    public func pathMatching(building: String, level: String, x: Double, y: Double, heading: Double, isPast: Bool, HEADING_RANGE: Double, isUseHeading: Bool, pathType: Int, COORD_RANGE: Double) -> (isSuccess: Bool, xyhs: [Double]) {
+    public func pathMatching(building: String, level: String, x: Double, y: Double, heading: Double, isPast: Bool, HEADING_RANGE: Double, isUseHeading: Bool, pathType: Int, COORD_RANGE: Double) -> (isSuccess: Bool, xyhs: [Double], bestHeading: Double) {
         var isSuccess: Bool = false
         var xyhs: [Double] = [x, y, heading, 1.0]
+        var bestHeading: Double = heading
+        
         let levelCopy: String = removeLevelDirectionString(levelName: level)
         let key: String = "\(building)_\(levelCopy)"
         if (isPast) {
             isSuccess = true
-            return (isSuccess, xyhs)
+            return (isSuccess, xyhs, bestHeading)
         }
         
         if (!(building.isEmpty) && !(level.isEmpty)) {
             guard let mainType: [Int] = self.PpType[key] else {
-                return (isSuccess, xyhs)
+                return (isSuccess, xyhs, bestHeading)
             }
             guard let mainRoad: [[Double]] = self.PpCoord[key] else {
-                return (isSuccess, xyhs)
+                return (isSuccess, xyhs, bestHeading)
             }
             
             guard let mainMagScale: [Double] = self.PpMagScale[key] else {
-                return (isSuccess, xyhs)
+                return (isSuccess, xyhs, bestHeading)
             }
             
             guard let mainHeading: [String] = self.PpHeading[key] else {
-                return (isSuccess, xyhs)
+                return (isSuccess, xyhs, bestHeading)
             }
             
             let pathhMatchingArea = self.checkInEntranceMatchingArea(x: x, y: y, building: building, level: levelCopy)
@@ -348,6 +356,17 @@ public class OlympusPathMatchingCalculator {
                                     }
                                     
                                     xyhs = [roadX[index], roadY[index], correctedHeading, correctedScale]
+                                    bestHeading = correctedHeading
+//                                    let headingArray = mainHeading[index]
+//                                    if (!headingArray.isEmpty) {
+//                                        let headingData = headingArray.components(separatedBy: ",")
+//                                        for j in 0..<headingData.count {
+//                                            if(!headingData[j].isEmpty) {
+//                                                let mapHeading = Double(headingData[j])!
+//                                                headings.append(mapHeading)
+//                                            }
+//                                        }
+//                                    }
                                 } else {
                                     let sortedIdsh = idshArrayWhenFail.sorted(by: {$0[1] < $1[1] })
                                     var index: Int = 0
@@ -366,6 +385,30 @@ public class OlympusPathMatchingCalculator {
                                     }
                                     
                                     xyhs = [roadX[index], roadY[index], heading, correctedScale]
+                                    
+                                    let headingArray = mainHeading[index]
+                                    if (!headingArray.isEmpty) {
+                                        let headingData = headingArray.components(separatedBy: ",")
+                                        var diffHeading = [Double]()
+                                        for j in 0..<headingData.count {
+                                            if(!headingData[j].isEmpty) {
+                                                let mapHeading = Double(headingData[j])!
+                                                if (heading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
+                                                    diffHeading.append(abs(heading - (mapHeading+360)))
+                                                } else if (mapHeading > 270 && (heading >= 0 && heading < 90)) {
+                                                    diffHeading.append(abs(mapHeading - (heading+360)))
+                                                } else {
+                                                    diffHeading.append(abs(heading - mapHeading))
+                                                }
+                                            }
+                                        }
+                                        
+                                        if (!diffHeading.isEmpty) {
+                                            let idxHeading = diffHeading.firstIndex(of: diffHeading.min()!)
+                                            let minHeading = Double(headingData[idxHeading!])!
+                                            bestHeading = minHeading
+                                        }
+                                    }
                                 }
                             } else {
                                 // Heading 미사용
@@ -388,6 +431,30 @@ public class OlympusPathMatchingCalculator {
                                         }
                                         
                                         xyhs = [roadX[index], roadY[index], heading, correctedScale]
+                                        
+                                        let headingArray = mainHeading[index]
+                                        if (!headingArray.isEmpty) {
+                                            let headingData = headingArray.components(separatedBy: ",")
+                                            var diffHeading = [Double]()
+                                            for j in 0..<headingData.count {
+                                                if(!headingData[j].isEmpty) {
+                                                    let mapHeading = Double(headingData[j])!
+                                                    if (heading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
+                                                        diffHeading.append(abs(heading - (mapHeading+360)))
+                                                    } else if (mapHeading > 270 && (heading >= 0 && heading < 90)) {
+                                                        diffHeading.append(abs(mapHeading - (heading+360)))
+                                                    } else {
+                                                        diffHeading.append(abs(heading - mapHeading))
+                                                    }
+                                                }
+                                            }
+                                            
+                                            if (!diffHeading.isEmpty) {
+                                                let idxHeading = diffHeading.firstIndex(of: diffHeading.min()!)
+                                                let minHeading = Double(headingData[idxHeading!])!
+                                                bestHeading = minHeading
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -398,7 +465,7 @@ public class OlympusPathMatchingCalculator {
         }
         
         xyhs[2] = compensateHeading(heading: xyhs[2])
-        return (isSuccess, xyhs)
+        return (isSuccess, xyhs, bestHeading)
     }
     
     public func checkInEntranceMatchingArea(x: Double, y: Double, building: String, level: String) -> (Bool, [Double]) {
@@ -637,7 +704,7 @@ public class OlympusPathMatchingCalculator {
         return (isSuccess, xyd, matchedTraj, inputTraj)
     }
     
-    public func updateNodeAndLinkInfo(currentResult: FineLocationTrackingFromServer, pastResult: FineLocationTrackingFromServer, pathType: Int) {
+    public func updateNodeAndLinkInfo(currentResult: FineLocationTrackingFromServer, currentResultHeading: Double, pastResult: FineLocationTrackingFromServer, pastResultHeading: Double, pathType: Int) {
         let diffX = abs(currentResult.x - pastResult.x)
         let diffY = abs(currentResult.y - pastResult.y)
         
@@ -648,6 +715,11 @@ public class OlympusPathMatchingCalculator {
         let level = removeLevelDirectionString(levelName: currentResult.level_name)
         
         let PADDING_VALUE = OlympusConstants.COORD_RANGE_LARGE
+        var isNodePassed: Bool = false
+        var nodeCandidates = [Int]()
+        var xCandidates = [Double]()
+        var yCandidates = [Double]()
+        var headingCandidates = [String]()
         
         let key: String = "\(building)_\(level)"
         if (diffX != 0 || diffY != 0) {
@@ -666,13 +738,12 @@ public class OlympusPathMatchingCalculator {
                     let yMin = y - PADDING_VALUE
                     let yMax = y + PADDING_VALUE
                     
+                    
                     for i in 0..<roadX.count {
                         let xPath = roadX[i]
                         let yPath = roadY[i]
                         let node = mainNode[i]
                         let headingArray = mainHeading[i]
-                        
-                        let candidates = [[pastResult.x, currentResult.y], [currentResult.x, pastResult.y]]
                         
                         let pathTypeLoaded = mainType[i]
                         if (pathType == 1) {
@@ -684,6 +755,13 @@ public class OlympusPathMatchingCalculator {
                         // XY 범위 안에 있는 값 중에 검사
                         if (xPath >= xMin && xPath <= xMax) {
                             if (yPath >= yMin && yPath <= yMax) {
+                                if (node != 0) {
+                                    nodeCandidates.append(node)
+                                    xCandidates.append(xPath)
+                                    yCandidates.append(yPath)
+                                    headingCandidates.append(headingArray)
+                                }
+                                
                                 if (xPath == x && yPath == y) {
                                     var ppHeadingValues = [Double]()
                                     let headingData = headingArray.components(separatedBy: ",")
@@ -696,39 +774,75 @@ public class OlympusPathMatchingCalculator {
                                     self.linkCoord = [xPath, yPath]
                                     self.linkDirections = ppHeadingValues
                                     if (node != 0) {
+                                        isNodePassed = true
                                         self.passedNode = node
                                         self.passedNodeCoord = [xPath, yPath]
                                         self.passedNodeHeadings = ppHeadingValues
                                         self.distFromNode = sqrt((xPath-x)*(xPath-x) + (yPath-y)*(yPath-y))
-        //                                print("Node Find (Normal) : passedNode = \(self.passedNode) // dist = \(self.distFromNode)")
-                                    }
-                                } else {
-                                    for j in 0..<candidates.count {
-                                        let coordXy = candidates[j]
-                                        if (xPath == coordXy[0] && yPath == coordXy[1] && node != 0) {
-                                            self.passedNode = node
-                                            self.passedNodeCoord = [xPath, yPath]
-                                            var ppHeadingValues = [Double]()
-                                            let headingData = headingArray.components(separatedBy: ",")
-                                            for j in 0..<headingData.count {
-                                                if(!headingData[j].isEmpty) {
-                                                    let mapHeading = Double(headingData[j])!
-                                                    ppHeadingValues.append(mapHeading)
-                                                }
-                                            }
-                                            self.passedNodeHeadings = ppHeadingValues
-                                            self.distFromNode = sqrt((xPath-x)*(xPath-x) + (yPath-y)*(yPath-y))
-        //                                    print("Node Find : passedNode (Jump) = \(self.passedNode) // dist = \(self.distFromNode)")
-                                        }
+//                                        print("Node Find (Normal) : passedNode = \(self.passedNode) // dist = \(self.distFromNode)")
                                     }
                                 }
                             }
                         }
-
+                    }
+                    
+                    if (!isNodePassed) {
+                        if pastResult.x != currentResult.x && pastResult.y != currentResult.y {
+                            let point1 = Point(x: pastResult.x, y: pastResult.y, direction: pastResultHeading*OlympusConstants.D2R)
+                            let point2 = Point(x: currentResult.x, y: currentResult.y, direction: currentResultHeading*OlympusConstants.D2R)
+                            if let intersectionPoint = findIntersection(point1: point1, point2: point2) {
+                                var distanceArray = [Double]()
+                                print("(Node Find) : xCandidates = \(xCandidates)")
+                                print("(Node Find) : yCandidates = \(yCandidates)")
+                                for i in 0..<xCandidates.count {
+                                    let xValue = xCandidates[i]
+                                    let yValue = yCandidates[i]
+                                    
+                                    let diffValue = sqrt((intersectionPoint.x - xValue)*(intersectionPoint.x - xValue) + (intersectionPoint.y - yValue)*(intersectionPoint.y - yValue))
+                                    distanceArray.append(diffValue)
+                                }
+                                
+                                if (!distanceArray.isEmpty) {
+                                    let minValue = distanceArray.min()!
+                                    let idxMin = distanceArray.firstIndex(of: minValue)!
+                                    print("(Node Find) : distanceArray = \(distanceArray)")
+                                    if minValue <= 10 {
+                                        self.passedNode = nodeCandidates[idxMin]
+                                        self.passedNodeCoord = [xCandidates[idxMin], yCandidates[idxMin]]
+                                        var ppHeadingValues = [Double]()
+                                        let headingData = headingCandidates[idxMin].components(separatedBy: ",")
+                                        for j in 0..<headingData.count {
+                                            if(!headingData[j].isEmpty) {
+                                                let mapHeading = Double(headingData[j])!
+                                                ppHeadingValues.append(mapHeading)
+                                            }
+                                        }
+                                        self.passedNodeHeadings = ppHeadingValues
+                                        self.distFromNode = sqrt((xCandidates[idxMin]-x)*(xCandidates[idxMin]-x) + (yCandidates[idxMin]-y)*(yCandidates[idxMin]-y))
+                                        print("(Node Find) : passedNode (Jump) = \(self.passedNode) // dist = \(self.distFromNode)")
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
-                
             }
+        }
+    }
+    
+    private func findIntersection(point1: Point, point2: Point) -> Point? {
+        let radian1 = point1.direction
+        let radian2 = point2.direction
+
+        let slope1 = tan(radian1)
+        let slope2 = tan(radian2)
+        
+        if slope1 == slope2 {
+            return nil
+        } else {
+            let x = (slope1 * point1.x - slope2 * point2.x + point2.y - point1.y) / (slope1 - slope2)
+            let y = slope1 * (x - point1.x) + point1.y
+            return Point(x: x, y: y, direction: -1)
         }
     }
     

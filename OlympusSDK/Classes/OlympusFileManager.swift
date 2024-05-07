@@ -5,17 +5,14 @@ public class OlympusFileManager {
     
     var sensorFileUrl: URL? = nil
     var bleFileUrl: URL? = nil
-    
-    var fileUrls = [URL]()
+
     var sensorData = [OlympusSensorData]()
-    
     var bleTime = [Int]()
     var bleData = [[String: Double]]()
     
     init() {}
     
     private func createExportDirectory() -> URL? {
-        // Find document directory URL
         guard let documentDirectoryUrl = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
             print(getLocalTimeString() + " , (OlympusFileManager) : Unable to access document directory.")
             return nil

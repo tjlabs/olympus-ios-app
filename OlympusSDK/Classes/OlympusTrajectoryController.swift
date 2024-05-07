@@ -720,7 +720,7 @@ public class OlympusTrajectoryController {
                 if (PHASE != 2 && PHASE < 4) {
                     searchInfo.tailIndex = trajectoryInfo[0].index
                     
-                    let PADDING_VALUE = OlympusConstants.USER_TRAJECTORY_LENGTH_DR*1.2
+                    let PADDING_VALUE = OlympusConstants.USER_TRAJECTORY_LENGTH_DR
                     // PDR Phase 1 ~ 3
                     if (isPhaseBreak && (phaseBreakResult.building_name != "" && phaseBreakResult.level_name != "")) {
                         userX = phaseBreakResult.x
