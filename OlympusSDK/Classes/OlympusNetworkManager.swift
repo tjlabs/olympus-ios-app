@@ -5,14 +5,17 @@ public class OlympusNetworkManager {
     
     let rfdSession1: URLSession
     let rfdSession2: URLSession
+    let rfdSession3: URLSession
     var rfdSessionCount: Int = 0
     
     let uvdSession1: URLSession
     let uvdSession2: URLSession
+    let uvdSession3: URLSession
     var uvdSessionCount: Int = 0
     
     let umSession1: URLSession
     let umSession2: URLSession
+    let umSession3: URLSession
     var umSessionCount: Int = 0
     
     var rfdSessions = [URLSession]()
@@ -24,28 +27,34 @@ public class OlympusNetworkManager {
     
     init() {
         let rfdConfig = URLSessionConfiguration.default
-        rfdConfig.timeoutIntervalForResource = TIMEOUT_VALUE_PUT
-        rfdConfig.timeoutIntervalForRequest = TIMEOUT_VALUE_PUT
+        rfdConfig.timeoutIntervalForResource = TIMEOUT_VALUE_POST
+        rfdConfig.timeoutIntervalForRequest = TIMEOUT_VALUE_POST
         self.rfdSession1 = URLSession(configuration: rfdConfig)
         self.rfdSession2 = URLSession(configuration: rfdConfig)
+        self.rfdSession3 = URLSession(configuration: rfdConfig)
         self.rfdSessions.append(self.rfdSession1)
         self.rfdSessions.append(self.rfdSession2)
+        self.rfdSessions.append(self.rfdSession3)
         
         let uvdConfig = URLSessionConfiguration.default
-        uvdConfig.timeoutIntervalForResource = TIMEOUT_VALUE_PUT
-        uvdConfig.timeoutIntervalForRequest = TIMEOUT_VALUE_PUT
+        uvdConfig.timeoutIntervalForResource = TIMEOUT_VALUE_POST
+        uvdConfig.timeoutIntervalForRequest = TIMEOUT_VALUE_POST
         self.uvdSession1 = URLSession(configuration: uvdConfig)
         self.uvdSession2 = URLSession(configuration: uvdConfig)
+        self.uvdSession3 = URLSession(configuration: uvdConfig)
         self.uvdSessions.append(self.uvdSession1)
         self.uvdSessions.append(self.uvdSession2)
+        self.uvdSessions.append(self.uvdSession3)
         
         let umConfig = URLSessionConfiguration.default
-        umConfig.timeoutIntervalForResource = TIMEOUT_VALUE_PUT
-        umConfig.timeoutIntervalForRequest = TIMEOUT_VALUE_PUT
+        umConfig.timeoutIntervalForResource = TIMEOUT_VALUE_POST
+        umConfig.timeoutIntervalForRequest = TIMEOUT_VALUE_POST
         self.umSession1 = URLSession(configuration: uvdConfig)
         self.umSession2 = URLSession(configuration: uvdConfig)
+        self.umSession3 = URLSession(configuration: uvdConfig)
         self.umSessions.append(self.umSession1)
         self.umSessions.append(self.umSession2)
+        self.umSessions.append(self.umSession3)
         
         let fltConfig = URLSessionConfiguration.default
         fltConfig.timeoutIntervalForResource = TIMEOUT_VALUE_POST
@@ -237,7 +246,7 @@ public class OlympusNetworkManager {
 //            print("====================================")
 //            print("")
 
-            let rfdSession = self.rfdSessions[self.rfdSessionCount%2]
+            let rfdSession = self.rfdSessions[self.rfdSessionCount%3]
             self.rfdSessionCount+=1
             let dataTask = rfdSession.dataTask(with: requestURL, completionHandler: { (data, response, error) in
                 let code = (response as? HTTPURLResponse)?.statusCode ?? 500
@@ -312,7 +321,7 @@ public class OlympusNetworkManager {
     //        print("====================================")
     //        print("")
             
-            let uvdSession = self.uvdSessions[self.uvdSessionCount%2]
+            let uvdSession = self.uvdSessions[self.uvdSessionCount%3]
             self.uvdSessionCount+=1
             
             let dataTask = uvdSession.dataTask(with: requestURL, completionHandler: { (data, response, error) in
@@ -380,7 +389,7 @@ public class OlympusNetworkManager {
 //            print("====================================")
 //            print("")
             
-            let umSession = self.umSessions[self.umSessionCount%2]
+            let umSession = self.umSessions[self.umSessionCount%3]
             self.umSessionCount+=1
             
             let dataTask = umSession.dataTask(with: requestURL, completionHandler: { (data, response, error) in

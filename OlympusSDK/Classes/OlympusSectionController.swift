@@ -93,9 +93,11 @@ public class OlympusSectionController {
                 let lastIndex = self.anchorTailIndexCandidates[self.anchorTailIndexCandidates.count-1]
                 self.anchorTailIndexCandidates = [lastIndex]
                 self.anchorTailIndex = lastIndex
+            } else {
+                self.anchorTailIndexCandidates = newIndexCandidates
+                self.anchorTailIndex = anchorTailIndexCandidates[0]
             }
-            self.anchorTailIndexCandidates = newIndexCandidates
-            self.anchorTailIndex = anchorTailIndexCandidates[0]
+            
             print("Anchor (after) : tailIndex = \(self.anchorTailIndex)")
             print("Anchor (after) : tailIndex Candidates = \(self.anchorTailIndexCandidates)")
         }

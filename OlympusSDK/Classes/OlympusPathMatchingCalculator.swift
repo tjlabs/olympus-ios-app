@@ -878,7 +878,7 @@ public class OlympusPathMatchingCalculator {
                 candidateDirections.append(mapHeading)
             }
         }
-        print("(Node Check) Passed Node candidateDirections = \(candidateDirections)")
+        print("(Node Check) Passed Node : candidateDirections = \(candidateDirections)")
         
         let PIXEL_LENGTH: Double = 1.0
         let PIXELS_TO_CHECK: Int = 10
@@ -902,7 +902,7 @@ public class OlympusPathMatchingCalculator {
             }
         }
         
-        print("(Node Check) Passed Node (Node Candidates) = \(nodeCandidates)")
+        print("(Node Check) Passed Node : Node Candidates = \(nodeCandidates)")
         print("(Node Check) -----------------------------------------------")
         return nodeCandidates
     }
@@ -977,17 +977,17 @@ public class OlympusPathMatchingCalculator {
         
         let directions = linkDirections
         
-        print("(Link Info) : coord = \(coordX) , \(coordY) // directions = \(directions)")
+//        print("(Link Info) : coord = \(coordX) , \(coordY) // directions = \(directions)")
         
         if directions.count == 2 {
             if (directions[0] == 0 && directions[1] == 180) {
                 limitType = .Y_LIMIT
                 limitValues = [coordY - LIMIT, coordY + LIMIT]
-                print("(Link Info) : Y Limit // values = \(limitValues)")
+//                print("(Link Info) : Y Limit // values = \(limitValues)")
             } else if (directions[0] == 90 && directions[1] == 270) {
                 limitType = .X_LIMIT
                 limitValues = [coordX - LIMIT, coordX + LIMIT]
-                print("(Link Info) : X Limit // values = \(limitValues)")
+//                print("(Link Info) : X Limit // values = \(limitValues)")
             }
         }
         

@@ -57,8 +57,9 @@ class OlympusConstants {
     
     // RFD //
     static var BLE_VALID_TIME: Double = 1000 // miliseconds
+//    static var BLE_VALID_TIME: Double = 1500 // miliseconds
     static let RFD_INTERVAL: TimeInterval = 1/2 //second
-    static var RFD_INPUT_NUM: Int = 6
+    static var RFD_INPUT_NUM: Int = 4
     static var DEVICE_MIN_RSSI: Double = -99.0
     static let EST_RC_INTERVAL: Double = 5.0
     static let REQUIRED_RC_CONVERGENCE_TIME: Double = 180 // seconds
@@ -155,10 +156,10 @@ class OlympusConstants {
     static let HEADING_BUFFER_SIZE: Int = 5
     static let REQUIRED_PATH_TRAJ_MATCHING_INDEX: Int = 5
     static let SECTION_STRAIGHT_ANGLE: Double = 5 // degree
-    static let REQUIRED_SECTION_STRAIGHT_IDX: Int = 10
-    static let REQUIRED_SECTION_RQ_IDX: Int = 10
-//    static let REQUIRED_SECTION_STRAIGHT_IDX: Int = 50
-//    static let REQUIRED_SECTION_RQ_IDX: Int = 30
+//    static let REQUIRED_SECTION_STRAIGHT_IDX: Int = 10
+//    static let REQUIRED_SECTION_RQ_IDX: Int = 10
+    static let REQUIRED_SECTION_STRAIGHT_IDX: Int = 30
+    static let REQUIRED_SECTION_RQ_IDX: Int = 50
     static let REQUIRED_BAD_CASE_CHECK_IDX: Int = 15
     
     // Path-Matching

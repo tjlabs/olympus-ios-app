@@ -53,10 +53,10 @@ class CardViewController: UIViewController, Observer {
     
     var region: String = ""
     var userId: String = ""
-    var sector_id: Int = 2
-    var mode: String = "pdr"
-//    var sector_id: Int = 6
-//    var mode: String = "auto"
+//    var sector_id: Int = 2
+//    var mode: String = "pdr"
+    var sector_id: Int = 6
+    var mode: String = "auto"
     
     var currentBuilding: String = ""
     var currentLevel: String = ""

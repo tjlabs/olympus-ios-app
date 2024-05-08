@@ -8,6 +8,7 @@ public class OlympusTrajectoryController {
     public var pastTrajectoryInfo: [TrajectoryInfo] = []
     public var pastSearchInfo = SearchInfo()
     public var pastMatchedDirection: Int = 0
+    public var accumulatedLengthWhenPhase2: Double = 0
     
     public var isNeedTrajCheck: Bool = false
     public var isUnknownTraj: Bool = false
@@ -323,6 +324,7 @@ public class OlympusTrajectoryController {
             let newTraj = getTrajectoryFromLast(from: self.userTrajectoryInfo, N: spotCutIndex)
             self.userTrajectoryInfo = newTraj
             self.phase2ReqCount = 0
+            self.accumulatedLengthWhenPhase2 = calculateTrajectoryLength(trajectoryInfo: newTraj)
             
             NotificationCenter.default.post(name: .trajEditedAfterOsr, object: nil, userInfo: nil)
             NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_2])
@@ -720,7 +722,7 @@ public class OlympusTrajectoryController {
                 if (PHASE != 2 && PHASE < 4) {
                     searchInfo.tailIndex = trajectoryInfo[0].index
                     
-                    let PADDING_VALUE = OlympusConstants.USER_TRAJECTORY_LENGTH_DR
+                    let PADDING_VALUE = OlympusConstants.USER_TRAJECTORY_LENGTH_DR*0.8
                     // PDR Phase 1 ~ 3
                     if (isPhaseBreak && (phaseBreakResult.building_name != "" && phaseBreakResult.level_name != "")) {
                         userX = phaseBreakResult.x
@@ -745,10 +747,9 @@ public class OlympusTrajectoryController {
                             } else {
                                 for ppHeading in ppHeadings {
                                     let defaultHeading = ppHeading - diffHeadingHeadTail
-                                    
-                                    searchHeadings.append(compensateHeading(heading: defaultHeading - 10))
+//                                    searchHeadings.append(compensateHeading(heading: defaultHeading - 10))
                                     searchHeadings.append(compensateHeading(heading: defaultHeading))
-                                    searchHeadings.append(compensateHeading(heading: defaultHeading + 10))
+//                                    searchHeadings.append(compensateHeading(heading: defaultHeading + 10))
                                 }
                             }
                         } else {
@@ -794,16 +795,111 @@ public class OlympusTrajectoryController {
         return searchInfo
     }
     
-    public func controlPhase2SearchRange(searchInfo: SearchInfo, trajLength: Double) -> SearchInfo {
-        var result = searchInfo
-        self.phase2ReqCount += 1
-        if (self.phase2ReqCount > 2) {
-            let expandRange: Int = Int((trajLength - OlympusConstants.REQUIRED_LENGTH_PHASE2)/2)
-            result.searchRange = [result.searchRange[0]-expandRange, result.searchRange[1]-expandRange, result.searchRange[2]+expandRange, result.searchRange[3]+expandRange]
+    public func makeSearchInfoInPhase2(trajectoryInfo: [TrajectoryInfo], unitDRInfoBuffer: [UnitDRInfo], phase2Range: [Int], phase2Direction: [Int]) -> SearchInfo {
+        var searchInfo = SearchInfo()
+        let trajLength = calculateTrajectoryLength(trajectoryInfo: trajectoryInfo)
+        searchInfo.trajLength = trajLength
+        
+        if (!trajectoryInfo.isEmpty) {
+            var uvdRawHeading = [Double]()
+            var uvdHeading = [Double]()
+            for value in trajectoryInfo {
+                uvdRawHeading.append(value.heading)
+                uvdHeading.append(compensateHeading(heading: value.heading))
+            }
+            let userBuilding    = trajectoryInfo[trajectoryInfo.count-1].userBuilding
+            let userLevel       = trajectoryInfo[trajectoryInfo.count-1].userLevel
+            var userX           = trajectoryInfo[trajectoryInfo.count-1].userX
+            var userY           = trajectoryInfo[trajectoryInfo.count-1].userY
+            let userHeading     = trajectoryInfo[trajectoryInfo.count-1].userHeading
+            
+            searchInfo.tailIndex = trajectoryInfo[0].index
+            
+            let headInfo = trajectoryInfo[trajectoryInfo.count-1]
+            var xyFromHead: [Double] = [headInfo.userX, headInfo.userY]
+            let headingCorrectionFromServer: Double = headInfo.userHeading - uvdHeading[uvdHeading.count-1]
+            var headingFromHead = [Double] (repeating: 0, count: uvdHeading.count)
+            for i in 0..<uvdHeading.count {
+                headingFromHead[i] = compensateHeading(heading: uvdHeading[i] - 180 + headingCorrectionFromServer)
+            }
+            
+            var trajectoryFromHead = [[Double]]()
+            trajectoryFromHead.append(xyFromHead)
+            for i in (1..<trajectoryInfo.count).reversed() {
+                let headAngle = headingFromHead[i]
+                xyFromHead[0] = xyFromHead[0] + trajectoryInfo[i].length*cos(headAngle*OlympusConstants.D2R)
+                xyFromHead[1] = xyFromHead[1] + trajectoryInfo[i].length*sin(headAngle*OlympusConstants.D2R)
+                trajectoryFromHead.append(xyFromHead)
+            }
+            
+            
+            let diffLength: Double = trajLength - self.accumulatedLengthWhenPhase2
+            var searchRange: [Int] = phase2Range
+            if (diffLength >= 15) {
+                var serverPhase2Range = phase2Range
+                serverPhase2Range[0] = serverPhase2Range[0] - Int(diffLength/4)
+                serverPhase2Range[1] = serverPhase2Range[1] - Int(diffLength/4)
+                serverPhase2Range[2] = serverPhase2Range[2] + Int(diffLength/4)
+                serverPhase2Range[3] = serverPhase2Range[3] + Int(diffLength/4)
+                searchRange = serverPhase2Range
+            }
+            
+            if (self.phase2ReqCount >= 3) {
+                let centerPhase2Range: [Int] = [Int((phase2Range[2]-phase2Range[0])/2), Int((phase2Range[3]-phase2Range[1])/2)]
+                let userX = trajectoryInfo[trajectoryInfo.count-1].userX
+                let userY = trajectoryInfo[trajectoryInfo.count-1].userY
+                let diffXy: [Int] = [Int(userX) - centerPhase2Range[0], Int(userY) - centerPhase2Range[1]]
+                
+                searchRange[0] = searchRange[0] + diffXy[0]
+                searchRange[1] = searchRange[1] + diffXy[1]
+                searchRange[2] = searchRange[2] + diffXy[0]
+                searchRange[3] = searchRange[3] + diffXy[1]
+            }
+            
+            searchInfo.searchRange = searchRange
+            searchInfo.searchArea = getSearchCoordinates(areaMinMax: searchRange.map { Double($0) }, interval: 1.0)
+            
+            var searchHeadings: [Double] = []
+            let ppHeadings = phase2Direction.map { Double($0) }
+            if (trajLength >= 40) {
+                let headingLeastChangeSection = extractSectionWithLeastChange(inputArray: uvdRawHeading)
+                if (headingLeastChangeSection.isEmpty) {
+                    let diffHeadingHeadTail = abs(uvdRawHeading[uvdRawHeading.count-1] - uvdRawHeading[0])
+                    for ppHeading in ppHeadings {
+                        let defaultHeading = ppHeading - diffHeadingHeadTail
+                        searchHeadings.append(compensateHeading(heading: defaultHeading))
+                    }
+                } else {
+                    let headingForCompensation = headingLeastChangeSection.average - uvdRawHeading[0]
+                    for ppHeading in ppHeadings {
+                        searchHeadings.append(compensateHeading(heading: ppHeading - headingForCompensation))
+                    }
+                }
+                let trajType = TrajType.DR_RQ_IN_PHASE2
+                searchInfo.trajType = trajType
+            } else {
+                searchHeadings = ppHeadings
+                let trajType = TrajType.DR_NO_RQ_IN_PHASE2
+                searchInfo.trajType = trajType
+            }
+            
+            let uniqueSearchHeadings = Array(Set(searchHeadings))
+            searchInfo.searchDirection = uniqueSearchHeadings.map { Int($0) }
         }
         
-        return result
+        return searchInfo
     }
+    
+//    public func controlPhase2SearchRange(searchInfo: SearchInfo, trajLength: Double) -> SearchInfo {
+//        var result = searchInfo
+//        self.phase2ReqCount += 1
+//        if (self.phase2ReqCount > 2) {
+//            let expandRange: Int = Int((trajLength - OlympusConstants.REQUIRED_LENGTH_PHASE2)/2)
+//            result.searchRange = [result.searchRange[0]-expandRange, result.searchRange[1]-expandRange, result.searchRange[2]+expandRange, result.searchRange[3]+expandRange]
+//        }
+//        
+//        return result
+//    }
     
     private func extractSectionWithLeastChange(inputArray: [Double]) -> [Double] {
         var resultArray = [Double]()

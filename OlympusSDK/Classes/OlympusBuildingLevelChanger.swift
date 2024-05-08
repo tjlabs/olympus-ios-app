@@ -17,8 +17,8 @@ public class OlympusBuildingLevelChanger {
         observers = observers.filter { $0 !== observer }
     }
     
-    private func notifyObservers(building: String, level: String) {
-        observers.forEach { $0.isBuildingLevelChanged(newBuilding: building, newLevel: level)}
+    private func notifyObservers(building: String, level: String, range: [Int], direction: [Int]) {
+        observers.forEach { $0.isBuildingLevelChanged(newBuilding: building, newLevel: level, newRange: range, newDirection: direction)}
     }
     
     public var isDetermineSpot: Bool = false
@@ -108,8 +108,6 @@ public class OlympusBuildingLevelChanger {
             if (result.building_name != currentBuilding || resultLevelName != currentLevel) {
                 if ((result.mobile_time - self.buildingLevelChangedTime) > TIME_CONDITION) {
                     // Building Level 이 바뀐지 7초 이상 지남 -> 서버 결과를 이용해 바뀌어야 한다고 판단
-                    self.notifyObservers(building: result.building_name, level: levelDestination)
-                    
 //                    self.timeUpdateOutput.building_name = result.building_name
 //                    self.timeUpdateOutput.level_name = levelDestination
 //                    self.measurementOutput.building_name = result.building_name
@@ -128,6 +126,7 @@ public class OlympusBuildingLevelChanger {
                     self.travelingOsrDistance = 0
                     self.buildingLevelChangedTime = currentTime
                     
+                    self.notifyObservers(building: result.building_name, level: levelDestination, range: self.phase2Range, direction: self.phase2Direction)
                     self.isDetermineSpot = true
                     self.spotCutIndex = self.determineSpotCutIndex(entranceString: currentEntrance)
                 }
@@ -140,7 +139,6 @@ public class OlympusBuildingLevelChanger {
                 if (result.building_name != currentBuilding || resultLevelName != currentLevel) {
                     if ((result.mobile_time - self.buildingLevelChangedTime) > TIME_CONDITION) {
                         // Building Level 이 바뀐지 7초 이상 지남 -> 서버 결과를 이용해 바뀌어야 한다고 판단
-                        self.notifyObservers(building: result.building_name, level: levelDestination)
                         
 //                        self.timeUpdateOutput.building_name = result.building_name
 //                        self.timeUpdateOutput.level_name = levelDestination
@@ -160,6 +158,7 @@ public class OlympusBuildingLevelChanger {
                         self.travelingOsrDistance = 0
                         self.buildingLevelChangedTime = currentTime
                         
+                        self.notifyObservers(building: result.building_name, level: levelDestination, range: self.phase2Range, direction: self.phase2Direction)
                         self.isDetermineSpot = true
                         self.spotCutIndex = self.determineSpotCutIndex(entranceString: currentEntrance)
                     }

@@ -178,7 +178,8 @@ public class OlympusPhaseController {
         // Conditions //
         var sccCondition: Double = 0.5
         var isPoolChannel: Bool = false
-        let indexCondition: Int = Int(Double(UVD_INTERVAL)*1.5)
+//        let indexCondition: Int = Int(Double(UVD_INTERVAL)*1.5)
+        let indexCondition: Int = Int(Double(OlympusConstants.RQ_IDX)*2)
         if (inputPhase == OlympusConstants.PHASE_2) {
             sccCondition = 0.5
         }
@@ -200,8 +201,10 @@ public class OlympusPhaseController {
             if (currentResult.scc < sccCondition) {
                 return phase
             } else if (previousResult.index == 0 || currentResult.index == 0) {
+//                print(getLocalTimeString() + " , (Olympus) Check Phase3->4 : preIndex = \(previousResult.index) // curIndex = \(currentResult.index)")
                 return phase
             } else if (currentResult.cumulative_length < (TRAJ_LENGTH/2)) {
+//                print(getLocalTimeString() + " , (Olympus) Check Phase3->4 : cumulative_length = \(currentResult.cumulative_length) // TRAJ_LENGTH/2 = \(TRAJ_LENGTH/2)")
                 return phase
             } else {
                 if (inputPhase != 2) {
@@ -211,8 +214,10 @@ public class OlympusPhaseController {
                     return phase
                 } else {
                     if (currentResult.index - previousResult.index) > indexCondition {
+                        print(getLocalTimeString() + " , (Olympus) Check Phase3->4 : preIndex = \(previousResult.index) // curIndex = \(currentResult.index) // indexCondition = \(indexCondition)")
                         return phase
                     } else if (currentResult.index <= previousResult.index) {
+                        print(getLocalTimeString() + " , (Olympus) Check Phase3->4 : cur <= pre // preIndex = \(previousResult.index) // curIndex = \(currentResult.index)")
                         return phase
                     } else {
                         var drBufferStartIndex: Int = 0
