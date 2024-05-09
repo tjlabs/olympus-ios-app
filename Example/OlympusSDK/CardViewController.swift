@@ -458,6 +458,7 @@ class CardViewController: UIViewController, Observer {
 //            }
 //        }
         
+        print(getLocalTimeString() + " , (VC) : pBuilding = \(pastBuilding) , pLevel = \(pastLevel) // cBuilding = \(currentBuilding) , cLevel = \(currentLevel)")
         if (pastBuilding != currentBuilding || pastLevel != currentLevel) {
             displayLevelImage(building: currentBuilding, level: currentLevel, flag: flag)
         }

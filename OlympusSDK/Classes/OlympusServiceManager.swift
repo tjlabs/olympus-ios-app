@@ -1392,7 +1392,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         } else {
                             if (resultPhase.0 == OlympusConstants.PHASE_4 && !stateManager.isVenusMode) {
                                 // Phase 3 --> 4 && KF start
-                                var copeidResult: FineLocationTrackingFromServer = fltResult
+                                var copiedResult: FineLocationTrackingFromServer = fltResult
                                 let propagationResult = propagateUsingUvd(unitDRInfoBuffer: unitDRInfoBuffer, fltResult: fltResult)
                                 let propagationValues: [Double] = propagationResult.1
                                 var propagatedResult: [Double] = [pmResult.x+propagationValues[0] , pmResult.y+propagationValues[1], pmResult.absolute_heading+propagationValues[2]]
@@ -1405,11 +1405,11 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                         propagatedResult = pathMatchingResult.xyhs
                                     }
                                 }
-                                copeidResult.x = propagatedResult[0]
-                                copeidResult.y = propagatedResult[1]
-                                copeidResult.absolute_heading = propagatedResult[2]
+                                copiedResult.x = propagatedResult[0]
+                                copiedResult.y = propagatedResult[1]
+                                copiedResult.absolute_heading = propagatedResult[2]
                                 
-                                let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: copeidResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+                                let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: copiedResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
                                 currentBuilding = updatedResult.building_name
                                 currentLevel = updatedResult.level_name
                                 makeTemporalResult(input: updatedResult, isStableMode: false)
@@ -1688,12 +1688,14 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 if (stateManager.isVenusMode) {
                     isUseHeading = false
                 }
-                let correctResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: isUseHeading, pathType: 1, COORD_RANGE: OlympusConstants.COORD_RANGE)
-                if (correctResult.isSuccess) {
-                    result.x = correctResult.xyhs[0]
-                    result.y = correctResult.xyhs[1]
-                    result.absolute_heading = correctResult.xyhs[2]
-                    temporalResultHeading = correctResult.bestHeading
+                let correctedResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: isUseHeading, pathType: 1, COORD_RANGE: OlympusConstants.COORD_RANGE)
+                if (correctedResult.isSuccess) {
+                    unitDRGenerator.setVelocityScale(scale: correctedResult.xyhs[3])
+                    
+                    result.x = correctedResult.xyhs[0]
+                    result.y = correctedResult.xyhs[1]
+                    result.absolute_heading = correctedResult.xyhs[2]
+                    temporalResultHeading = correctedResult.bestHeading
                 } else {
                     let key: String = "\(buildingName)_\(levelName)"
                     var ppIsLoaded: Bool = true

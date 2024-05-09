@@ -881,7 +881,10 @@ public class OlympusPathMatchingCalculator {
         print("(Node Check) Passed Node : candidateDirections = \(candidateDirections)")
         
         let PIXEL_LENGTH: Double = 1.0
-        let PIXELS_TO_CHECK: Int = 10
+        var PIXELS_TO_CHECK: Int = 10
+        if (pathType == 1) {
+            PIXELS_TO_CHECK = 30
+        }
         
         if (!candidateDirections.isEmpty) {
             for direction in candidateDirections {
