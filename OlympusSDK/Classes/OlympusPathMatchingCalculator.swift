@@ -23,10 +23,7 @@ public class OlympusPathMatchingCalculator {
     var linkCoord: [Double] = [0, 0]
     var linkDirections = [Double]()
     
-    var nodeCandidatesWhenRequest = [Int]()
-    var nodeCoordWhenRequest = [Double]()
-    var nodeHeadingsWhenRequest = [Double]()
-    var userResult =  FineLocationTrackingFromServer()
+    var nodeInfo = NodeInfo(nodeCandidates: [], nodeCoord: [], nodeHeadings: [], userResult: FineLocationTrackingFromServer())
     
     init() {
         
@@ -860,7 +857,7 @@ public class OlympusPathMatchingCalculator {
         let nodeHeadings = passedNodeHeadings
         
         if (requestType == 1) {
-            nodeCandidates = nodeCandidatesWhenRequest
+            nodeCandidates = nodeInfo.nodeCandidates
         } else {
             if (nodeNumber != -1) {
                 nodeCandidates.append(nodeNumber)
@@ -932,10 +929,10 @@ public class OlympusPathMatchingCalculator {
     public func getNodeCandidatesForRecovery(pathType: Int) {
         var nodeCandidates = [Int]()
         
-        let fltResult = userResult
+        let fltResult = nodeInfo.userResult
         let heading = fltResult.absolute_heading
-        let nodeCoord = nodeCoordWhenRequest
-        let nodeHeadings = nodeHeadingsWhenRequest
+        let nodeCoord = nodeInfo.nodeCoord
+        let nodeHeadings = nodeInfo.nodeHeadings
         
         var diffHeading = [Double]()
         var candidateDirections = [Double]()
@@ -1046,10 +1043,10 @@ public class OlympusPathMatchingCalculator {
     
     private func updateNodeInfoWhenRequest(nodeCandidates: [Int], nodeCoord: [Double], nodeHeadings: [Double], userResult: FineLocationTrackingFromServer) {
         print(getLocalTimeString() + " , (Olympus) updatetNodeCandidatesWhenRequest : \(nodeCandidates)")
-        self.nodeCandidatesWhenRequest = nodeCandidates
-        self.nodeCoordWhenRequest = nodeCoord
-        self.nodeHeadingsWhenRequest = nodeHeadings
-        self.userResult = userResult
+        nodeInfo.nodeCandidates = nodeCandidates
+        nodeInfo.nodeCoord = nodeCoord
+        nodeInfo.nodeHeadings = nodeHeadings
+        nodeInfo.userResult = userResult
     }
     
     

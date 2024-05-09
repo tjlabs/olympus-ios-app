@@ -571,6 +571,13 @@ public struct SearchInfo {
     public var trajLength: Double = 0
 }
 
+struct NodeInfo {
+    var nodeCandidates: [Int]
+    var nodeCoord: [Double]
+    var nodeHeadings: [Double]
+    var userResult: FineLocationTrackingFromServer
+}
+
 
 // 임시
 public struct ServiceResult {
