@@ -37,6 +37,10 @@ class CardViewController: UIViewController, Observer {
                 self.isBleOnlyMode = false
             }
             
+            if (building.count < 2 && level.count < 2) {
+                print("(VC) Error : \(result)")
+            }
+            
             self.coordToDisplay.building = building
             self.coordToDisplay.level = level
             self.coordToDisplay.x = x
@@ -504,7 +508,9 @@ class CardViewController: UIViewController, Observer {
     }
     
     @objc func timerUpdate() {
-        self.updateCoord(data: self.coordToDisplay, flag: true)
+        DispatchQueue.main.async {
+            self.updateCoord(data: self.coordToDisplay, flag: true)
+        }
         if (self.isSaved) {
             saveButton.isHidden = true
         }

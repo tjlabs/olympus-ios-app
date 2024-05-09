@@ -173,7 +173,7 @@ public class OlympusKalmanFilter: NSObject {
             } else {
                 let isDrVeryStraight: Bool = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT, condition: 10.0)
                 if (isDrVeryStraight) {
-                    let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 0, COORD_RANGE: OlympusConstants.COORD_RANGE)
+                    let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 0, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
                     outputResult.x = pathMatchingResult.xyhs[0]*0.5 + updatedX*0.5
                     outputResult.y = pathMatchingResult.xyhs[1]*0.5 + updatedY*0.5
                     if (pathMatchingResult.0) { outputResult.absolute_heading = compensateHeading(heading: pathMatchingResult.xyhs[2]) }
@@ -205,7 +205,7 @@ public class OlympusKalmanFilter: NSObject {
             }
         } else {
             let isDrStraight: Bool = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_HEADING_CORR_NUM_IDX, condition: 10.0)
-            let pathMatchingResult =  OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, COORD_RANGE: OlympusConstants.COORD_RANGE)
+            let pathMatchingResult =  OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
 
             outputResult.x = (pathMatchingResult.1[0]*0.5 + updatedX*0.5)
             outputResult.y = (pathMatchingResult.1[1]*0.5 + updatedY*0.5)
@@ -313,13 +313,13 @@ public class OlympusKalmanFilter: NSObject {
         var isPmSuccess: Bool = false
         var pmPropagatedPmFltResult = propagatedPmFltResult
         if (mode == OlympusConstants.MODE_PDR) {
-            let pmResult = OlympusPathMatchingCalculator.shared.pathMatching(building: propagatedPmFltResult.building_name, level: propagatedPmFltResult.level_name, x: propagatedPmFltResult.x, y: propagatedPmFltResult.y, heading: propagatedPmFltResult.absolute_heading, isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 0, COORD_RANGE: OlympusConstants.COORD_RANGE)
+            let pmResult = OlympusPathMatchingCalculator.shared.pathMatching(building: propagatedPmFltResult.building_name, level: propagatedPmFltResult.level_name, x: propagatedPmFltResult.x, y: propagatedPmFltResult.y, heading: propagatedPmFltResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 0, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
             isPmSuccess = pmResult.isSuccess
             pmPropagatedPmFltResult.x = pmResult.xyhs[0]
             pmPropagatedPmFltResult.y = pmResult.xyhs[1]
             pmPropagatedPmFltResult.absolute_heading = pmResult.xyhs[2]
         } else {
-            let pmResult = OlympusPathMatchingCalculator.shared.pathMatching(building: propagatedPmFltResult.building_name, level: propagatedPmFltResult.level_name, x: propagatedPmFltResult.x, y: propagatedPmFltResult.y, heading: propagatedPmFltResult.absolute_heading, isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, COORD_RANGE: OlympusConstants.COORD_RANGE)
+            let pmResult = OlympusPathMatchingCalculator.shared.pathMatching(building: propagatedPmFltResult.building_name, level: propagatedPmFltResult.level_name, x: propagatedPmFltResult.x, y: propagatedPmFltResult.y, heading: propagatedPmFltResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
             isPmSuccess = pmResult.isSuccess
             pmPropagatedPmFltResult.x = pmResult.xyhs[0]
             pmPropagatedPmFltResult.y = pmResult.xyhs[1]
@@ -356,13 +356,13 @@ public class OlympusKalmanFilter: NSObject {
         var isPmMuSuccess: Bool = false
         var pmMuResult = muResult
         if (mode == OlympusConstants.MODE_PDR) {
-            let pmResult = OlympusPathMatchingCalculator.shared.pathMatching(building: muResult.building_name, level: muResult.level_name, x: muResult.x, y: muResult.y, heading: muResult.absolute_heading, isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 0, COORD_RANGE: OlympusConstants.COORD_RANGE)
+            let pmResult = OlympusPathMatchingCalculator.shared.pathMatching(building: muResult.building_name, level: muResult.level_name, x: muResult.x, y: muResult.y, heading: muResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 0, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
             isPmMuSuccess = pmResult.isSuccess
             pmMuResult.x = pmResult.xyhs[0]
             pmMuResult.y = pmResult.xyhs[1]
             pmMuResult.absolute_heading = pmResult.xyhs[2]
         } else {
-            let pmResult = OlympusPathMatchingCalculator.shared.pathMatching(building: muResult.building_name, level: muResult.level_name, x: muResult.x, y: muResult.y, heading: muResult.absolute_heading, isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, COORD_RANGE: OlympusConstants.COORD_RANGE)
+            let pmResult = OlympusPathMatchingCalculator.shared.pathMatching(building: muResult.building_name, level: muResult.level_name, x: muResult.x, y: muResult.y, heading: muResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
             isPmMuSuccess = pmResult.isSuccess
             pmMuResult.x = pmResult.xyhs[0]
             pmMuResult.y = pmResult.xyhs[1]
@@ -389,10 +389,10 @@ public class OlympusKalmanFilter: NSObject {
                 if (propagationResult.0) {
                     var propagatedResult: [Double] = [pmFltResult.x+propagationValues[0] , pmFltResult.y+propagationValues[1], pmFltResult.absolute_heading+propagationValues[2]]
                     if (mode == OlympusConstants.MODE_PDR) {
-                        let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: fltResult.building_name, level: fltResult.level_name, x: propagatedResult[0], y: propagatedResult[1], heading: propagatedResult[2], isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 0, COORD_RANGE: OlympusConstants.COORD_RANGE)
+                        let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: fltResult.building_name, level: fltResult.level_name, x: propagatedResult[0], y: propagatedResult[1], heading: propagatedResult[2], HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 0, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
                         propagatedResult = pathMatchingResult.xyhs
                     } else {
-                        let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: fltResult.building_name, level: fltResult.level_name, x: propagatedResult[0], y: propagatedResult[1], heading: propagatedResult[2], isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, COORD_RANGE: OlympusConstants.COORD_RANGE)
+                        let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: fltResult.building_name, level: fltResult.level_name, x: propagatedResult[0], y: propagatedResult[1], heading: propagatedResult[2], HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
                         propagatedResult = pathMatchingResult.xyhs
                     }
                     updatedResult.x = propagatedResult[0]
@@ -414,7 +414,7 @@ public class OlympusKalmanFilter: NSObject {
         } else {
             var pathType: Int = 1
             if (mode == OlympusConstants.MODE_PDR) { pathType = 0 }
-            let pmResult = OlympusPathMatchingCalculator.shared.pathMatching(building: muResult.building_name, level: muResult.level_name, x: muResult.x, y: muResult.y, heading: muResult.absolute_heading, isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: pathType, COORD_RANGE: OlympusConstants.COORD_RANGE)
+            let pmResult = OlympusPathMatchingCalculator.shared.pathMatching(building: muResult.building_name, level: muResult.level_name, x: muResult.x, y: muResult.y, heading: muResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: pathType, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
             updatedResult.x = pmResult.xyhs[0]
             updatedResult.y = pmResult.xyhs[1]
             updatedResult.absolute_heading = pmResult.xyhs[2]

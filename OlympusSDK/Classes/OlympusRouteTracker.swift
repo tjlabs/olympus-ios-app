@@ -304,7 +304,7 @@ public class OlympusRouteTracker {
         let buildingName = result.building_name
         let levelName = removeLevelDirectionString(levelName: result.level_name)
         
-        let resultPm = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 1, COORD_RANGE: OlympusConstants.COORD_RANGE)
+        let resultPm = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 1, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
         
         let coordX = resultPm.xyhs[0]
         let coordY = resultPm.xyhs[1]

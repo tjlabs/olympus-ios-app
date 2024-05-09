@@ -234,8 +234,8 @@ public class OlympusPhaseController {
                             }
                         }
 
-                        let previousPmResult = OlympusPathMatchingCalculator.shared.pathMatching(building: previousResult.building_name, level: previousResult.level_name, x: previousResult.x, y: previousResult.y, heading: previousResult.absolute_heading, isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: pathType, COORD_RANGE: OlympusConstants.COORD_RANGE)
-                        let currentPmResult = OlympusPathMatchingCalculator.shared.pathMatching(building: currentResult.building_name, level: currentResult.level_name, x: currentResult.x, y: currentResult.y, heading: currentResult.absolute_heading, isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: pathType, COORD_RANGE: OlympusConstants.COORD_RANGE)
+                        let previousPmResult = OlympusPathMatchingCalculator.shared.pathMatching(building: previousResult.building_name, level: previousResult.level_name, x: previousResult.x, y: previousResult.y, heading: previousResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: pathType, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
+                        let currentPmResult = OlympusPathMatchingCalculator.shared.pathMatching(building: currentResult.building_name, level: currentResult.level_name, x: currentResult.x, y: currentResult.y, heading: currentResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: pathType, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
                         
                         var propagatedXyh: [Double] = [previousPmResult.xyhs[0], previousPmResult.xyhs[1], previousPmResult.xyhs[2]]
                         for i in drBufferStartIndex..<drBufferEndIndex {
@@ -251,7 +251,7 @@ public class OlympusPhaseController {
                         propagatedXyh[2] += dh
                         propagatedXyh[2] = compensateHeading(heading: propagatedXyh[2])
                         
-                        let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: currentResult.building_name, level: currentResult.level_name, x: propagatedXyh[0], y: propagatedXyh[1], heading: propagatedXyh[2], isPast: false, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: pathType, COORD_RANGE: OlympusConstants.COORD_RANGE)
+                        let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: currentResult.building_name, level: currentResult.level_name, x: propagatedXyh[0], y: propagatedXyh[1], heading: propagatedXyh[2], HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: pathType, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
                         let diffX = abs(pathMatchingResult.xyhs[0] - currentPmResult.xyhs[0])
                         let diffY = abs(pathMatchingResult.xyhs[1] - currentPmResult.xyhs[1])
                         let currentResultHeading = compensateHeading(heading: currentPmResult.xyhs[2])

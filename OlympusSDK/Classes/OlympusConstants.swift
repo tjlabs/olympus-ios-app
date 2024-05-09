@@ -36,6 +36,7 @@ class OlympusConstants {
     static let PHASE_5: Int = 5
     static let PHASE_BECOME3_SCC: Double = 0.62
     static let PHASE_BREAK_SCC: Double = 0.45
+    static let PHASE5_RECOVERY_SCC: Double = 0.55
     
     
     // Sector Info //
@@ -164,9 +165,10 @@ class OlympusConstants {
     
     // Path-Matching
     static let HEADING_RANGE: Double = 46
-    static var COORD_RANGE: Double = 10
-    static var COORD_RANGE_SMALL: Double = 10
-    static var COORD_RANGE_LARGE: Double = 20
+    static var PADDING_VALUE: Double = 10
+    static var PADDING_VALUE_SMALL: Double = 10
+    static var PADDING_VALUE_LARGE: Double = 20
+    static var PADDING_VALUES: [Double] = [10, 10, 10, 10]
     
     
     public func setSectorInfoConstants(sector_info: SectorInfo) {
@@ -196,7 +198,8 @@ class OlympusConstants {
 
             OlympusConstants.INIT_INPUT_NUM = 4 //
             OlympusConstants.VALUE_INPUT_NUM = 6 // 6
-            OlympusConstants.COORD_RANGE = OlympusConstants.COORD_RANGE_SMALL
+            OlympusConstants.PADDING_VALUE = OlympusConstants.PADDING_VALUE_SMALL
+            OlympusConstants.PADDING_VALUES = [Double] (repeating: OlympusConstants.PADDING_VALUE, count: 4)
             
             if (phase == OlympusConstants.PHASE_4) {
                 OlympusConstants.UVD_INPUT_NUM = OlympusConstants.VALUE_INPUT_NUM
@@ -211,7 +214,8 @@ class OlympusConstants {
 
             OlympusConstants.INIT_INPUT_NUM = 5
             OlympusConstants.VALUE_INPUT_NUM = OlympusConstants.UVD_BUFFER_SIZE
-            OlympusConstants.COORD_RANGE = OlympusConstants.COORD_RANGE_LARGE
+            OlympusConstants.PADDING_VALUE = OlympusConstants.PADDING_VALUE_LARGE
+            OlympusConstants.PADDING_VALUES = [Double] (repeating: OlympusConstants.PADDING_VALUE, count: 4)
             
             if (phase == OlympusConstants.PHASE_4) {
                 OlympusConstants.UVD_INPUT_NUM = OlympusConstants.VALUE_INPUT_NUM

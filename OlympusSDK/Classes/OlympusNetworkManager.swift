@@ -436,11 +436,11 @@ public class OlympusNetworkManager {
         }
     }
     
-    func postFLT(url: String, input: FineLocationTracking, userTraj: [TrajectoryInfo], searchInfo: SearchInfo, completion: @escaping (Int, String, Int, [TrajectoryInfo], SearchInfo) -> Void) {
+    func postFLT(url: String, input: FineLocationTracking, userTraj: [TrajectoryInfo], searchInfo: SearchInfo, completion: @escaping (Int, String, FineLocationTracking, [TrajectoryInfo], SearchInfo) -> Void) {
         // [http 비동기 방식을 사용해서 http 요청 수행 실시]
         let urlComponents = URLComponents(string: url)
         var requestURL = URLRequest(url: (urlComponents?.url)!)
-        let inputPhase: Int = input.phase
+        let fltInput = input
         let inputTraj: [TrajectoryInfo] = userTraj
         let inputSearchInfo: SearchInfo = searchInfo
         
@@ -465,7 +465,7 @@ public class OlympusNetworkManager {
                 guard error == nil else {
                     // [콜백 반환]
                     DispatchQueue.main.async {
-                        completion(500, error?.localizedDescription ?? "Fail", inputPhase, inputTraj, inputSearchInfo)
+                        completion(500, error?.localizedDescription ?? "Fail", fltInput, inputTraj, inputSearchInfo)
                     }
                     return
                 }
@@ -476,7 +476,7 @@ public class OlympusNetworkManager {
                 else {
                     // [콜백 반환]
                     DispatchQueue.main.async {
-                        completion(500, (response as? HTTPURLResponse)?.description ?? "Fail", inputPhase, inputTraj, inputSearchInfo)
+                        completion(500, (response as? HTTPURLResponse)?.description ?? "Fail", fltInput, inputTraj, inputSearchInfo)
                     }
                     return
                 }
@@ -484,7 +484,7 @@ public class OlympusNetworkManager {
                 // [response 데이터 획득]
                 let resultCode = (response as? HTTPURLResponse)?.statusCode ?? 500 // [상태 코드]
                 guard let resultLen = data else {
-                    completion(resultCode, (response as? HTTPURLResponse)?.description ?? "Fail", inputPhase, inputTraj, inputSearchInfo)
+                    completion(resultCode, (response as? HTTPURLResponse)?.description ?? "Fail", fltInput, inputTraj, inputSearchInfo)
                     return
                 }
                 let resultData = String(data: resultLen, encoding: .utf8) ?? "" // [데이터 확인]
@@ -496,14 +496,14 @@ public class OlympusNetworkManager {
 //                    print("RESPONSE FLT 데이터 :: ", resultData)
 //                    print("====================================")
 //                    print("")
-                    completion(resultCode, resultData, inputPhase, inputTraj, inputSearchInfo)
+                    completion(resultCode, resultData, fltInput, inputTraj, inputSearchInfo)
                 }
             })
 
             // [network 통신 실행]
             dataTask.resume()
         } else {
-            completion(500, "Fail to encode", inputPhase, inputTraj, inputSearchInfo)
+            completion(500, "Fail to encode", fltInput, inputTraj, inputSearchInfo)
         }
     }
     
