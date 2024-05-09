@@ -1043,13 +1043,13 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         displayOutput.serverResult[2] = fltResult.absolute_heading
                         // 임시
                         stackServerResult(serverResult: fltResult)
+                        phaseBreakResult = fltResult
                         let resultPhase = phaseController.controlPhase(serverResultArray: serverResultBuffer, drBuffer: unitDRInfoBuffer, UVD_INTERVAL: OlympusConstants.UVD_INPUT_NUM, TRAJ_LENGTH: OlympusConstants.USER_TRAJECTORY_LENGTH, inputPhase: inputPhase, mode: runMode, isVenusMode: stateManager.isVenusMode)
                         // 임시
                         displayOutput.phase = String(resultPhase.0)
                         // 임시
                         if (resultPhase.1) {
                             trajController.setIsNeedTrajCheck(flag: true)
-                            phaseBreakResult = fltResult
                         }
                         
                         let buildingName = fltResult.building_name
