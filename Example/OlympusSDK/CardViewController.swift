@@ -447,21 +447,22 @@ class CardViewController: UIViewController, Observer {
         let isIndoor = data.isIndoor
         var limits: [Double] = [0, 0, 0, 0]
         
-//        if (data.building == "") {
+        if (data.building == "") {
 //            currentBuilding = buildings[0]
-//        } else {
-//            currentBuilding = data.building
-//            if (data.level == "") {
+        } else {
+            currentBuilding = data.building
+            if (data.level == "") {
 //                currentLevel = levels[currentBuilding]![0]
-//            } else {
-//                currentLevel = data.level
-//            }
-//        }
-        
-        print(getLocalTimeString() + " , (VC) : pBuilding = \(pastBuilding) , pLevel = \(pastLevel) // cBuilding = \(currentBuilding) , cLevel = \(currentLevel)")
-        if (pastBuilding != currentBuilding || pastLevel != currentLevel) {
-            displayLevelImage(building: currentBuilding, level: currentLevel, flag: flag)
+            } else {
+                currentLevel = data.level
+            }
         }
+        
+        
+//        print(getLocalTimeString() + " , (VC) : pBuilding = \(pastBuilding) , pLevel = \(pastLevel) // cBuilding = \(currentBuilding) , cLevel = \(currentLevel)")
+//        if (pastBuilding != currentBuilding || pastLevel != currentLevel) {
+//            displayLevelImage(building: currentBuilding, level: currentLevel, flag: flag)
+//        }
         
         pastBuilding = currentBuilding
         pastLevel = currentLevel

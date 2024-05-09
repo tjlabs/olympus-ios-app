@@ -72,6 +72,8 @@ public class OlympusFileManager {
         } catch {
             print(getLocalTimeString() + " , (OlympusFileManager) : Error: \(error)")
         }
+        
+        sensorData = [OlympusSensorData]()
     }
     
     private func saveBleData() {
@@ -95,6 +97,9 @@ public class OlympusFileManager {
         } catch {
             print(getLocalTimeString() + " , (OlympusFileManager) : Error: \(error)")
         }
+        
+        bleTime = [Int]()
+        bleData = [[String: Double]]()
     }
     
     public func saveFilesForSimulation() {
@@ -117,7 +122,8 @@ public class OlympusFileManager {
                 let csvData = try String(contentsOf: bleSimulationUrl)
                 let bleRows = csvData.components(separatedBy: "\n")
                 for row in bleRows {
-                    let columns = row.components(separatedBy: ",")
+                    let replacedRow = row.replacingOccurrences(of: "\r", with: "")
+                    let columns = replacedRow.components(separatedBy: ",")
                     if columns[0] != "time" {
                         var bleDict = [String: Double]()
                         if (columns.count > 1) {
@@ -148,7 +154,8 @@ public class OlympusFileManager {
                 let csvData = try String(contentsOf: sensorSimulationUrl)
                 let sensorRows = csvData.components(separatedBy: "\n")
                 for row in sensorRows {
-                    let columns = row.components(separatedBy: ",")
+                    let replacedRow = row.replacingOccurrences(of: "\r", with: "")
+                    let columns = replacedRow.components(separatedBy: ",")
                     if columns[0] != "time" && columns.count > 1 {
                         var olympusSensorData = OlympusSensorData()
                         olympusSensorData.time = Double(columns[0])!

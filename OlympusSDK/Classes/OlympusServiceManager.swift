@@ -649,7 +649,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         self.controlMode()
         OlympusConstants().setModeParam(mode: self.runMode, phase: phaseController.PHASE)
         var sensorData = OlympusSensorData()
-//        let sensorData = sensorManager.sensorData
+        sensorData.time = Double(currentTime)
+
         if (service.contains(OlympusConstants.SERVICE_FLT)) {
             if (isSimulationMode) {
                 if (sensorLineCount < simulationSensorData.count-1) {
@@ -732,12 +733,11 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 if (sectionResult.0) {
                     displayOutput.indexTx = data.index
                     var nodeCandidates = [Int]()
-                    if (sectionResult.1 == 0) {
-                        // get nodeCandidates
-                        var pathType: Int = 1
-                        if (runMode == OlympusConstants.MODE_PDR) { pathType = 0 }
-                        nodeCandidates = OlympusPathMatchingCalculator.shared.getNodeCandidates(fltResult: tuResult, pathType: pathType, isBadCaseInStableMode: self.isBadCaseInStableMode)
-                    }
+                    var pathType: Int = 1
+                    if (runMode == OlympusConstants.MODE_PDR) { pathType = 0 }
+                    print(getLocalTimeString() + " , (Olympus) Request Phase 5 : isBadCaseInStableMode = \(self.isBadCaseInStableMode)")
+                    nodeCandidates = OlympusPathMatchingCalculator.shared.getNodeCandidates(fltResult: tuResult, pathType: pathType, requestType: sectionResult.1, isBadCaseInStableMode: self.isBadCaseInStableMode)
+                    
                     let anchorTailIndex = sectionController.getAnchorTailIndex()
                     let stableInfo = StableInfo(tail_index: anchorTailIndex, head_section_number: sectionController.rqSectionNumber, node_number_list: nodeCandidates)
                     
@@ -745,7 +745,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     let userTraj = convertUserMask2Trajectory(userMask: userMaskForDisplay)
                     displayOutput.trajectoryStartCoord = userTraj[0]
                     displayOutput.userTrajectory = userTraj
-                    print(getLocalTimeString() + " , (Olympus) Request Phase 5 : \(data.index)")
+                    print(getLocalTimeString() + " , (Olympus) Request Phase 5 : \(data.index) // requestType : = \(sectionResult.1) // nodeCandidates = \(nodeCandidates)")
                     processPhase5(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo)
                 }
                 
@@ -790,280 +790,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 stateManager.checkEnterSleepMode(service: self.service, type: 1)
             }
             requestOlympusResultInStop(trajectoryInfo: trajController.pastTrajectoryInfo, mode: self.runMode)
-        }
-    }
-    
-    private func handleUvd() {
-        if (isSimulationMode) {
-            if (sensorLineCount < simulationSensorData.count-1) {
-                let currentTime = getCurrentTimeInMilliseconds()
-                
-                self.controlMode()
-                OlympusConstants().setModeParam(mode: self.runMode, phase: phaseController.PHASE)
-                let sensorData = simulationSensorData[sensorLineCount]
-                if (service.contains(OlympusConstants.SERVICE_FLT)) {
-                    unitDRInfo = unitDRGenerator.generateDRInfo(sensorData: sensorData)
-                    OlympusFileManager.shared.writeSensorData(data: sensorData)
-                }
-                
-                var backgroundScale: Double = 1.0
-                if (stateManager.isBackground && runMode == OlympusConstants.MODE_DR) {
-                    let diffTime = currentTime - self.pastUvdTime
-                    backgroundScale = Double(diffTime)/(1000/OlympusConstants.SAMPLE_HZ)
-                }
-                self.pastUvdTime = currentTime
-                
-                if (unitDRInfo.isIndexChanged && !stateManager.isVenusMode) {
-                    // 임시
-                    displayOutput.isIndexChanged = unitDRInfo.isIndexChanged
-                    displayOutput.length = unitDRInfo.length
-                    displayOutput.velocity = unitDRInfo.velocity * 3.6
-                    // 임시
-                    
-                    stateManager.setVariblesWhenIsIndexChanged()
-                    stackHeadingForCheckCorrection()
-                    isPossibleHeadingCorrection = checkHeadingCorrection(buffer: headingBufferForCorrection)
-                    stackUnitDRInfo()
-                    olympusVelocity = unitDRInfo.velocity * 3.6
-                    var unitUvdLength: Double = 0
-                    if (stateManager.isBackground) {
-                        unitUvdLength = unitDRInfo.length*backgroundScale
-                    } else {
-                        unitUvdLength = unitDRInfo.length
-                    }
-                    unitUvdLength = round(unitUvdLength*10000)/10000
-                    self.unitDRInfoIndex = unitDRInfo.index
-                    
-                    let data = UserVelocity(user_id: self.user_id, mobile_time: currentTime, index: unitDRInfo.index, length: unitUvdLength, heading: round(unitDRInfo.heading*100)/100, looking: unitDRInfo.lookingFlag)
-                    inputUserVelocity.append(data)
-                    
-                    trajController.checkPhase2To4(unitLength: unitUvdLength)
-                    buildingLevelChanger.accumulateOsrDistance(unitLength: unitUvdLength, isGetFirstResponse: stateManager.isGetFirstResponse, mode: self.runMode, result: self.olympusResult)
-                    
-                    let isInEntranceLevel = stateManager.checkInEntranceLevel(result: self.olympusResult, isStartRouteTrack: self.isStartRouteTrack)
-                    unitDRGenerator.setIsInEntranceLevel(flag: isInEntranceLevel)
-                    let entrancaeVelocityScale: Double = routeTracker.getEntranceVelocityScale(isGetFirstResponse: stateManager.isGetFirstResponse, isStartRouteTrack: self.isStartRouteTrack)
-                    unitDRGenerator.setEntranceVelocityScale(scale: entrancaeVelocityScale)
-                    let numBleChannels = OlympusRFDFunctions.shared.checkBleChannelNum(bleAvg: self.bleAvg)
-                    trajController.checkTrajectoryInfo(isPhaseBreak: self.isPhaseBreak, isBecomeForeground: stateManager.isBecomeForeground, isGetFirstResponse: stateManager.isGetFirstResponse, timeForInit: stateManager.timeForInit)
-                    let trajectoryInfo = trajController.getTrajectoryInfo(unitDRInfo: unitDRInfo, unitLength: unitUvdLength, olympusResult: self.olympusResult, isKF: KF.isRunning, tuResult: timeUpdateResult, isPmSuccess: false, numBleChannels: numBleChannels, mode: self.runMode, isDetermineSpot: buildingLevelChanger.isDetermineSpot, spotCutIndex: buildingLevelChanger.spotCutIndex)
-                    
-                    if ((inputUserVelocity.count) >= OlympusConstants.UVD_INPUT_NUM) {
-                        OlympusNetworkManager.shared.postUserVelocity(url: REC_UVD_URL, input: inputUserVelocity, completion: { [self] statusCode, returnedString, inputUvd in
-                            if (statusCode == 200) {
-                                KF.updateTuResultWhenUvdPosted(result: currentTuResult)
-                                self.isPostUvdAnswered = true
-                            } else {
-        //                        let localTime = getLocalTimeString()
-        //                        let msg: String = localTime + " , (Olympus) Error : UVD \(statusCode) // " + returnedString
-                                if (stateManager.isIndoor && stateManager.isGetFirstResponse && !stateManager.isBackground) { NotificationCenter.default.post(name: .errorSendUvd, object: nil, userInfo: nil) }
-                                trajController.stackPostUvdFailData(inputUvd: inputUvd)
-                            }
-                        })
-                        inputUserVelocity = []
-                    }
-                    
-                    // Time Update
-                    let diffHeading = unitDRInfo.heading - pastUvdHeading
-                    pastUvdHeading = unitDRInfo.heading
-                    if (KF.isRunning && KF.tuFlag) {
-                        var tuResult = KF.timeUpdate(recentResult: olympusResult, length: unitUvdLength, diffHeading: diffHeading, isPossibleHeadingCorrection: isPossibleHeadingCorrection, unitDRInfoBuffer: unitDRInfoBuffer, mode: runMode)
-                        tuResult.mobile_time = currentTime
-                        currentTuResult = tuResult
-                        
-                        let sectionResult = sectionController.controlSection(userVelocity: data)
-                        if (sectionResult.0) {
-                            displayOutput.indexTx = data.index
-                            var nodeCandidates = [Int]()
-                            if (sectionResult.1 == 0) {
-                                // get nodeCandidates
-                                var pathType: Int = 1
-                                if (runMode == OlympusConstants.MODE_PDR) { pathType = 0 }
-                                nodeCandidates = OlympusPathMatchingCalculator.shared.getNodeCandidates(fltResult: tuResult, pathType: pathType, isBadCaseInStableMode: self.isBadCaseInStableMode)
-                            }
-                            let anchorTailIndex = sectionController.getAnchorTailIndex()
-                            let stableInfo = StableInfo(tail_index: anchorTailIndex, head_section_number: sectionController.rqSectionNumber, node_number_list: nodeCandidates)
-                            processPhase5(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo)
-                        }
-                        
-                        
-                        // 임시
-                        timeUpdateResult[0] = tuResult.x
-                        timeUpdateResult[1] = tuResult.y
-                        timeUpdateResult[2] = tuResult.absolute_heading
-                        displayOutput.trajectoryOg = KF.inputTraj
-                        displayOutput.trajectoryPm = KF.matchedTraj
-                        // 임시
-                        
-                        KF.updateTuResultNow(result: currentTuResult)
-                        KF.updateTuInformation(unitDRInfo: unitDRInfo)
-                        makeTemporalResult(input: tuResult, isStableMode: true)
-                    }
-                    
-                    
-                    // Route Tracking
-                    if (isStartRouteTrack) {
-                        let routeTrackResult = routeTracker.getRouteTrackResult(temporalResult: self.temporalResult, currentLevel: currentLevel, isVenusMode: stateManager.isVenusMode, isKF: KF.isRunning, isPhaseBreakInRouteTrack: isPhaseBreakInRouteTrack)
-                        if (routeTrackResult.isRouteTrackFinished) {
-                            isStartRouteTrack = false
-                            unitDRGenerator.setIsStartRouteTrack(isStartRoutTrack: false)
-                            isPhaseBreakInRouteTrack = false
-                            isInNetworkBadEntrance = false
-                            
-                            self.currentBuilding = routeTrackResult.1.building_name
-                            self.currentLevel = routeTrackResult.1.level_name
-                        } else {
-                            self.routeTrackResult = routeTrackResult.1
-                        }
-                    }
-                    
-                    requestOlympusResult(trajectoryInfo: trajectoryInfo, mode: self.runMode)
-                } else {
-                    if (!unitDRInfo.isIndexChanged) {
-                        let isStop = stateManager.checkStopWhenIsIndexNotChanage()
-                        if (isStop) {
-                            olympusVelocity = 0
-                        }
-                        stateManager.checkEnterSleepMode(service: self.service, type: 1)
-                    }
-                    requestOlympusResultInStop(trajectoryInfo: trajController.pastTrajectoryInfo, mode: self.runMode)
-                }
-                
-                sensorLineCount += 1
-            }
-        } else {
-            let currentTime = getCurrentTimeInMilliseconds()
-            
-            self.controlMode()
-            OlympusConstants().setModeParam(mode: self.runMode, phase: phaseController.PHASE)
-            let sensorData = sensorManager.sensorData
-            if (service.contains(OlympusConstants.SERVICE_FLT)) {
-                unitDRInfo = unitDRGenerator.generateDRInfo(sensorData: sensorData)
-                OlympusFileManager.shared.writeSensorData(data: sensorData)
-            }
-            
-            var backgroundScale: Double = 1.0
-            if (stateManager.isBackground && runMode == OlympusConstants.MODE_DR) {
-                let diffTime = currentTime - self.pastUvdTime
-                backgroundScale = Double(diffTime)/(1000/OlympusConstants.SAMPLE_HZ)
-            }
-            self.pastUvdTime = currentTime
-            
-            if (unitDRInfo.isIndexChanged && !stateManager.isVenusMode) {
-                // 임시
-                displayOutput.isIndexChanged = unitDRInfo.isIndexChanged
-                displayOutput.length = unitDRInfo.length
-                displayOutput.velocity = unitDRInfo.velocity * 3.6
-                // 임시
-                
-                stateManager.setVariblesWhenIsIndexChanged()
-                stackHeadingForCheckCorrection()
-                isPossibleHeadingCorrection = checkHeadingCorrection(buffer: headingBufferForCorrection)
-                stackUnitDRInfo()
-                olympusVelocity = unitDRInfo.velocity * 3.6
-                var unitUvdLength: Double = 0
-                if (stateManager.isBackground) {
-                    unitUvdLength = unitDRInfo.length*backgroundScale
-                } else {
-                    unitUvdLength = unitDRInfo.length
-                }
-                unitUvdLength = round(unitUvdLength*10000)/10000
-                self.unitDRInfoIndex = unitDRInfo.index
-                
-                let data = UserVelocity(user_id: self.user_id, mobile_time: currentTime, index: unitDRInfo.index, length: unitUvdLength, heading: round(unitDRInfo.heading*100)/100, looking: unitDRInfo.lookingFlag)
-                inputUserVelocity.append(data)
-                
-                trajController.checkPhase2To4(unitLength: unitUvdLength)
-                buildingLevelChanger.accumulateOsrDistance(unitLength: unitUvdLength, isGetFirstResponse: stateManager.isGetFirstResponse, mode: self.runMode, result: self.olympusResult)
-                
-                let isInEntranceLevel = stateManager.checkInEntranceLevel(result: self.olympusResult, isStartRouteTrack: self.isStartRouteTrack)
-                unitDRGenerator.setIsInEntranceLevel(flag: isInEntranceLevel)
-                let entrancaeVelocityScale: Double = routeTracker.getEntranceVelocityScale(isGetFirstResponse: stateManager.isGetFirstResponse, isStartRouteTrack: self.isStartRouteTrack)
-                unitDRGenerator.setEntranceVelocityScale(scale: entrancaeVelocityScale)
-                let numBleChannels = OlympusRFDFunctions.shared.checkBleChannelNum(bleAvg: self.bleAvg)
-                trajController.checkTrajectoryInfo(isPhaseBreak: self.isPhaseBreak, isBecomeForeground: stateManager.isBecomeForeground, isGetFirstResponse: stateManager.isGetFirstResponse, timeForInit: stateManager.timeForInit)
-                let trajectoryInfo = trajController.getTrajectoryInfo(unitDRInfo: unitDRInfo, unitLength: unitUvdLength, olympusResult: self.olympusResult, isKF: KF.isRunning, tuResult: timeUpdateResult, isPmSuccess: false, numBleChannels: numBleChannels, mode: self.runMode, isDetermineSpot: buildingLevelChanger.isDetermineSpot, spotCutIndex: buildingLevelChanger.spotCutIndex)
-                
-                if ((inputUserVelocity.count) >= OlympusConstants.UVD_INPUT_NUM) {
-                    OlympusNetworkManager.shared.postUserVelocity(url: REC_UVD_URL, input: inputUserVelocity, completion: { [self] statusCode, returnedString, inputUvd in
-                        if (statusCode == 200) {
-                            KF.updateTuResultWhenUvdPosted(result: currentTuResult)
-                            self.isPostUvdAnswered = true
-                        } else {
-    //                        let localTime = getLocalTimeString()
-    //                        let msg: String = localTime + " , (Olympus) Error : UVD \(statusCode) // " + returnedString
-                            if (stateManager.isIndoor && stateManager.isGetFirstResponse && !stateManager.isBackground) { NotificationCenter.default.post(name: .errorSendUvd, object: nil, userInfo: nil) }
-                            trajController.stackPostUvdFailData(inputUvd: inputUvd)
-                        }
-                    })
-                    inputUserVelocity = []
-                }
-                
-                // Time Update
-                let diffHeading = unitDRInfo.heading - pastUvdHeading
-                pastUvdHeading = unitDRInfo.heading
-                if (KF.isRunning && KF.tuFlag) {
-                    var tuResult = KF.timeUpdate(recentResult: olympusResult, length: unitUvdLength, diffHeading: diffHeading, isPossibleHeadingCorrection: isPossibleHeadingCorrection, unitDRInfoBuffer: unitDRInfoBuffer, mode: runMode)
-                    tuResult.mobile_time = currentTime
-                    currentTuResult = tuResult
-                    
-                    let sectionResult = sectionController.controlSection(userVelocity: data)
-                    if (sectionResult.0) {
-                        displayOutput.indexTx = data.index
-                        var nodeCandidates = [Int]()
-                        if (sectionResult.1 == 0) {
-                            // get nodeCandidates
-                            var pathType: Int = 1
-                            if (runMode == OlympusConstants.MODE_PDR) { pathType = 0 }
-                            nodeCandidates = OlympusPathMatchingCalculator.shared.getNodeCandidates(fltResult: tuResult, pathType: pathType, isBadCaseInStableMode: self.isBadCaseInStableMode)
-                        }
-                        let anchorTailIndex = sectionController.getAnchorTailIndex()
-                        let stableInfo = StableInfo(tail_index: anchorTailIndex, head_section_number: sectionController.rqSectionNumber, node_number_list: nodeCandidates)
-                        processPhase5(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo)
-                    }
-                    
-                    
-                    // 임시
-                    timeUpdateResult[0] = tuResult.x
-                    timeUpdateResult[1] = tuResult.y
-                    timeUpdateResult[2] = tuResult.absolute_heading
-                    displayOutput.trajectoryOg = KF.inputTraj
-                    displayOutput.trajectoryPm = KF.matchedTraj
-                    // 임시
-                    
-                    KF.updateTuResultNow(result: currentTuResult)
-                    KF.updateTuInformation(unitDRInfo: unitDRInfo)
-                    makeTemporalResult(input: tuResult, isStableMode: true)
-                }
-                
-                
-                // Route Tracking
-                if (isStartRouteTrack) {
-                    let routeTrackResult = routeTracker.getRouteTrackResult(temporalResult: self.temporalResult, currentLevel: currentLevel, isVenusMode: stateManager.isVenusMode, isKF: KF.isRunning, isPhaseBreakInRouteTrack: isPhaseBreakInRouteTrack)
-                    if (routeTrackResult.isRouteTrackFinished) {
-                        isStartRouteTrack = false
-                        unitDRGenerator.setIsStartRouteTrack(isStartRoutTrack: false)
-                        isPhaseBreakInRouteTrack = false
-                        isInNetworkBadEntrance = false
-                        
-                        self.currentBuilding = routeTrackResult.1.building_name
-                        self.currentLevel = routeTrackResult.1.level_name
-                    } else {
-                        self.routeTrackResult = routeTrackResult.1
-                    }
-                }
-                
-                requestOlympusResult(trajectoryInfo: trajectoryInfo, mode: self.runMode)
-            } else {
-                if (!unitDRInfo.isIndexChanged) {
-                    let isStop = stateManager.checkStopWhenIsIndexNotChanage()
-                    if (isStop) {
-                        olympusVelocity = 0
-                    }
-                    stateManager.checkEnterSleepMode(service: self.service, type: 1)
-                }
-                requestOlympusResultInStop(trajectoryInfo: trajController.pastTrajectoryInfo, mode: self.runMode)
-            }
         }
     }
     
@@ -1548,7 +1274,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         displayOutput.indexTx = unitDRInfoIndex
 //        displayOutput.searchDirection = searchInfo.searchDirection
         var input = FineLocationTracking(user_id: self.user_id, mobile_time: currentTime, sector_id: self.sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM, building_name: self.currentBuilding, level_name_list: levelArray, phase: 5, search_range: [], search_direction_list: [], normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation_list: [1.01], tail_index: stableInfo.tail_index, head_section_number: stableInfo.head_section_number, node_number_list: stableInfo.node_number_list)
-        print(getLocalTimeString() + " , (Olympus) Request Phase 5 : input = \(input)")
+//        print(getLocalTimeString() + " , (Olympus) Request Phase 5 : input = \(input)")
         stateManager.setNetworkCount(value: stateManager.networkCount+1)
         if (REGION_NAME != "Korea" && self.deviceModel == "iPhone SE (2nd generation)") { input.normalization_scale = 1.01 }
         OlympusNetworkManager.shared.postFLT(url: CALC_FLT_URL, input: input, userTraj: trajectoryInfo, searchInfo: SearchInfo(), completion: { [self] statusCode, returnedString, inputPhase, inputTraj, inputSearchInfo in
@@ -1655,6 +1381,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         if (result.x != 0 && result.y != 0 && result.building_name != "" && result.level_name != "") {
             let buildingName: String = result.building_name
             let levelName: String = removeLevelDirectionString(levelName: result.level_name)
+            result.level_name = levelName
             
             var temporalResultHeading: Double = result.absolute_heading
             var pathTypeForNodeAndLink = 0

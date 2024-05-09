@@ -23,6 +23,8 @@ public class OlympusPathMatchingCalculator {
     var linkCoord: [Double] = [0, 0]
     var linkDirections = [Double]()
     
+    var nodeCandidatesWhenRequest = [Int]()
+    
     init() {
         
     }
@@ -846,67 +848,75 @@ public class OlympusPathMatchingCalculator {
         }
     }
     
-    public func getNodeCandidates(fltResult: FineLocationTrackingFromServer, pathType: Int, isBadCaseInStableMode: Bool) -> [Int] {
+    public func getNodeCandidates(fltResult: FineLocationTrackingFromServer, pathType: Int, requestType: Int, isBadCaseInStableMode: Bool) -> [Int] {
         var nodeCandidates = [Int]()
-        nodeCandidates.append(passedNode)
-        if (!isBadCaseInStableMode) {
-            return nodeCandidates
-        }
-        let heading = fltResult.absolute_heading
-        let nodeCoord = passedNodeCoord
-        let nodeHeadings = passedNodeHeadings
-        print("(Node Check) User Heading = \(fltResult.x) , \(fltResult.y) , \(heading)")
-        print("(Node Check) Passed Node (Num) = \(self.passedNode)")
-        print("(Node Check) Passed Node (Heading) = \(nodeHeadings)")
         
-        var diffHeading = [Double]()
-        var candidateDirections = [Double]()
-        for mapHeading in nodeHeadings {
-            var diffValue: Double = 0
-            if (heading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
-                diffValue = abs(heading - (mapHeading+360))
-            } else if (mapHeading > 270 && (heading >= 0 && heading < 90)) {
-                diffValue = abs(mapHeading - (heading+360))
-            } else {
-                diffValue = abs(heading - mapHeading)
+        if (requestType == 1) {
+            nodeCandidates = self.nodeCandidatesWhenRequest
+        } else {
+            nodeCandidates.append(passedNode)
+            if (!isBadCaseInStableMode) {
+                updatetNodeCandidatesWhenRequest(nodeCandidates: nodeCandidates)
+                return nodeCandidates
             }
-            diffHeading.append(diffValue)
+            let heading = fltResult.absolute_heading
+            let nodeCoord = passedNodeCoord
+            let nodeHeadings = passedNodeHeadings
+            print("(Node Check) User Heading = \(fltResult.x) , \(fltResult.y) , \(heading)")
+            print("(Node Check) Passed Node (Num) = \(self.passedNode)")
+            print("(Node Check) Passed Node (Heading) = \(nodeHeadings)")
             
-            let MARGIN: Double = 30
-            
-            if !(diffValue <= MARGIN || (diffValue >= 180-MARGIN && diffValue <= 180+MARGIN)) {
-                candidateDirections.append(mapHeading)
+            var diffHeading = [Double]()
+            var candidateDirections = [Double]()
+            for mapHeading in nodeHeadings {
+                var diffValue: Double = 0
+                if (heading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
+                    diffValue = abs(heading - (mapHeading+360))
+                } else if (mapHeading > 270 && (heading >= 0 && heading < 90)) {
+                    diffValue = abs(mapHeading - (heading+360))
+                } else {
+                    diffValue = abs(heading - mapHeading)
+                }
+                diffHeading.append(diffValue)
+                
+                let MARGIN: Double = 30
+                
+                if !(diffValue <= MARGIN || (diffValue >= 180-MARGIN && diffValue <= 180+MARGIN)) {
+                    candidateDirections.append(mapHeading)
+                }
             }
-        }
-        print("(Node Check) Passed Node : candidateDirections = \(candidateDirections)")
-        
-        let PIXEL_LENGTH: Double = 1.0
-        var PIXELS_TO_CHECK: Int = 10
-        if (pathType == 1) {
-            PIXELS_TO_CHECK = 30
-        }
-        
-        if (!candidateDirections.isEmpty) {
-            for direction in candidateDirections {
-                var x: Double = nodeCoord[0]
-                var y: Double = nodeCoord[1]
-                for _ in 0..<PIXELS_TO_CHECK {
-                    x += PIXEL_LENGTH*cos(direction*OlympusConstants.D2R)
-                    y += PIXEL_LENGTH*sin(direction*OlympusConstants.D2R)
-                    let matchedNodeResult = getMatchedNodeWithCoord(fltResult: fltResult, originCoord: nodeCoord, coordToCheck: [x, y], pathType: pathType, PIXELS_TO_CHECK: PIXELS_TO_CHECK)
-                    if (matchedNodeResult.0) {
-                        break
-                    } else {
-                        if (matchedNodeResult.1 != -1) {
-                            nodeCandidates.append(matchedNodeResult.1)
+            print("(Node Check) Passed Node : candidateDirections = \(candidateDirections)")
+            
+            let PIXEL_LENGTH: Double = 1.0
+            var PIXELS_TO_CHECK: Int = 10
+            if (pathType == 1) {
+                PIXELS_TO_CHECK = 30
+            }
+            
+            if (!candidateDirections.isEmpty) {
+                for direction in candidateDirections {
+                    var x: Double = nodeCoord[0]
+                    var y: Double = nodeCoord[1]
+                    for _ in 0..<PIXELS_TO_CHECK {
+                        x += PIXEL_LENGTH*cos(direction*OlympusConstants.D2R)
+                        y += PIXEL_LENGTH*sin(direction*OlympusConstants.D2R)
+                        let matchedNodeResult = getMatchedNodeWithCoord(fltResult: fltResult, originCoord: nodeCoord, coordToCheck: [x, y], pathType: pathType, PIXELS_TO_CHECK: PIXELS_TO_CHECK)
+                        if (matchedNodeResult.0) {
+                            break
+                        } else {
+                            if (matchedNodeResult.1 != -1) {
+                                nodeCandidates.append(matchedNodeResult.1)
+                            }
                         }
                     }
                 }
             }
+            
+            print("(Node Check) Passed Node : Node Candidates = \(nodeCandidates)")
+            print("(Node Check) -----------------------------------------------")
         }
         
-        print("(Node Check) Passed Node : Node Candidates = \(nodeCandidates)")
-        print("(Node Check) -----------------------------------------------")
+        updatetNodeCandidatesWhenRequest(nodeCandidates: nodeCandidates)
         return nodeCandidates
     }
     
@@ -966,6 +976,12 @@ public class OlympusPathMatchingCalculator {
         }
         return (isPpEndPoint, matchedNode)
     }
+    
+    private func updatetNodeCandidatesWhenRequest(nodeCandidates: [Int]) {
+        print(getLocalTimeString() + " , (Olympus) updatetNodeCandidatesWhenRequest : \(nodeCandidates)")
+        self.nodeCandidatesWhenRequest = nodeCandidates
+    }
+    
     
     public func getTimeUpdateLimitation(mode: String) -> (limitType: LimitationType, limitValues: [Double]) {
         var limitType: LimitationType = .NO_LIMIT
