@@ -833,7 +833,7 @@ public class OlympusPathMatchingCalculator {
                                         self.passedNodeCoord = [xPath, yPath]
                                         self.passedNodeHeadings = ppHeadingValues
                                         self.distFromNode = sqrt((xPath-x)*(xPath-x) + (yPath-y)*(yPath-y))
-//                                        print("Node Find (Normal) : passedNode = \(self.passedNode) // dist = \(self.distFromNode)")
+                                        print("(Node Find) : passedNode (Normal) = \(self.passedNode) // dist = \(self.distFromNode)")
                                     }
                                 }
                             }
@@ -842,11 +842,12 @@ public class OlympusPathMatchingCalculator {
                     
                     if (!isNodePassed) {
                         if pastResult.x != currentResult.x && pastResult.y != currentResult.y {
-                            let point1 = Point(x: pastResult.x, y: pastResult.y, direction: pastResultHeading*OlympusConstants.D2R)
-                            let point2 = Point(x: currentResult.x, y: currentResult.y, direction: currentResultHeading*OlympusConstants.D2R)
+                            let point1 = Point(x: pastResult.x, y: pastResult.y, direction: pastResultHeading)
+                            let point2 = Point(x: currentResult.x, y: currentResult.y, direction: currentResultHeading)
                             if let intersectionPoint = findIntersection(point1: point1, point2: point2) {
                                 var distanceArray = [Double]()
-                                print("(Node Find) : xCandidates = \(xCandidates)")
+                                print("(Node Find) : Intersection : point1 = \(point1) // point2 = \(point2) // intersection = \(intersectionPoint)")
+                                print("(Node Find) : xCandidates = \(xCandidates)") // 269도 // 179.9도
                                 print("(Node Find) : yCandidates = \(yCandidates)")
                                 for i in 0..<xCandidates.count {
                                     let xValue = xCandidates[i]
@@ -860,7 +861,7 @@ public class OlympusPathMatchingCalculator {
                                     let minValue = distanceArray.min()!
                                     let idxMin = distanceArray.firstIndex(of: minValue)!
                                     print("(Node Find) : distanceArray = \(distanceArray)")
-                                    if minValue <= 10 {
+                                    if minValue <= 20 {
                                         self.passedNode = nodeCandidates[idxMin]
                                         self.passedNodeCoord = [xCandidates[idxMin], yCandidates[idxMin]]
                                         var ppHeadingValues = [Double]()
@@ -889,13 +890,13 @@ public class OlympusPathMatchingCalculator {
         
         if (isPhaseBreak) {
             paddingValues = [Double] (repeating: OlympusConstants.PADDING_VALUE, count: 4)
-            print(getLocalTimeString() + " , (Olympus) isPhaseBreak // paddingValues = \(paddingValues)")
+//            print(getLocalTimeString() + " , (Olympus) isPhaseBreak // paddingValues = \(paddingValues)")
             return paddingValues
         }
         
         let directions = linkDirections
         
-        print(getLocalTimeString() + " , (Olympus) linkDirections = \(linkDirections)")
+//        print(getLocalTimeString() + " , (Olympus) linkDirections = \(linkDirections)")
         var isDefault: Bool = true
         if directions.count == 2 {
             if (directions.contains(0) && directions.contains(180)) {
@@ -909,9 +910,9 @@ public class OlympusPathMatchingCalculator {
         
         if (isDefault) {
             paddingValues = [Double] (repeating: OlympusConstants.PADDING_VALUE, count: 4)
-            print(getLocalTimeString() + " , (Olympus) Default // paddingValues = \(paddingValues)")
+//            print(getLocalTimeString() + " , (Olympus) Default // paddingValues = \(paddingValues)")
         } else {
-            print(getLocalTimeString() + " , (Olympus) XYLimit // paddingValues = \(paddingValues)")
+//            print(getLocalTimeString() + " , (Olympus) XYLimit // paddingValues = \(paddingValues)")
         }
         
         return paddingValues
@@ -919,18 +920,25 @@ public class OlympusPathMatchingCalculator {
     
     
     private func findIntersection(point1: Point, point2: Point) -> Point? {
-        let radian1 = point1.direction
-        let radian2 = point2.direction
+        let radian1 = point1.direction*OlympusConstants.D2R
+        let radian2 = point2.direction*OlympusConstants.D2R
 
-        let slope1 = tan(radian1)
-        let slope2 = tan(radian2)
-        
-        if slope1 == slope2 {
+        if radian1 == radian2 {
             return nil
         } else {
-            let x = (slope1 * point1.x - slope2 * point2.x + point2.y - point1.y) / (slope1 - slope2)
-            let y = slope1 * (x - point1.x) + point1.y
-            return Point(x: x, y: y, direction: -1)
+            if point1.direction == 90 || point1.direction == 270 {
+                return Point(x: point1.x, y: point2.y, direction: -1)
+            } else if (point2.direction == 90 || point2.direction == 270) {
+                return Point(x: point2.x, y: point1.y, direction: -1)
+            } else {
+                let slope1 = tan(radian1)
+                let slope2 = tan(radian2)
+                print("(Node Find) : Intersection : slope1 = \(slope1) // slope2 = \(slope2)")
+                
+                let x = (slope1 * point1.x - slope2 * point2.x + point2.y - point1.y) / (slope1 - slope2)
+                let y = slope1 * (x - point1.x) + point1.y
+                return Point(x: x, y: y, direction: -1)
+            }
         }
     }
     
