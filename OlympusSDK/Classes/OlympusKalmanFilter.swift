@@ -206,15 +206,21 @@ public class OlympusKalmanFilter: NSObject {
         } else {
             let isDrStraight: Bool = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_HEADING_CORR_NUM_IDX, condition: 10.0)
             let pathMatchingResult =  OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
-
-            outputResult.x = (pathMatchingResult.1[0]*0.5 + updatedX*0.5)
-            outputResult.y = (pathMatchingResult.1[1]*0.5 + updatedY*0.5)
-            outputResult.absolute_heading = compensateHeading(heading: updatedHeading)
-
-            if (pathMatchingResult.0 && isDrStraight){
-                outputResult.absolute_heading = compensateHeading(heading: pathMatchingResult.1[2])
-            }
             
+            if (pathMatchingResult.isSuccess) {
+                outputResult.x = (pathMatchingResult.1[0]*0.5 + updatedX*0.5)
+                outputResult.y = (pathMatchingResult.1[1]*0.5 + updatedY*0.5)
+                outputResult.absolute_heading = compensateHeading(heading: updatedHeading)
+
+                if (pathMatchingResult.0 && isDrStraight){
+                    outputResult.absolute_heading = compensateHeading(heading: pathMatchingResult.1[2])
+                }
+            } else {
+                let pathMatchingResult =  OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 1, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
+                outputResult.x = (pathMatchingResult.1[0]*0.5 + updatedX*0.5)
+                outputResult.y = (pathMatchingResult.1[1]*0.5 + updatedY*0.5)
+                outputResult.absolute_heading = compensateHeading(heading: updatedHeading)
+            }
             
             // DR
             let limitationResult = OlympusPathMatchingCalculator.shared.getTimeUpdateLimitation(mode: mode)

@@ -160,7 +160,7 @@ class OlympusConstants {
 //    static let REQUIRED_SECTION_STRAIGHT_IDX: Int = 10
 //    static let REQUIRED_SECTION_RQ_IDX: Int = 10
     static let REQUIRED_SECTION_STRAIGHT_IDX: Int = 20
-    static let REQUIRED_SECTION_RQ_IDX: Int = 50
+    static let REQUIRED_SECTION_RQ_IDX: Int = 20
     static let REQUIRED_BAD_CASE_CHECK_IDX: Int = 15
     
     // Path-Matching

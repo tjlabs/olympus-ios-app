@@ -473,7 +473,7 @@ public class OlympusTrajectoryController {
                     var searchHeadings: [Double] = []
                     var hasMajorDirection: Bool = false
                     if (trajLength > reqLengthForMajorHeading) {
-                        let ppHeadings = OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: userBuilding, level: userLevel, x: userX, y: userY, heading: userHeading, PADDING_VALUE: PADDING_VALUE, mode: mode)
+                        let ppHeadings = OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: userBuilding, level: userLevel, x: userX, y: userY, PADDING_VALUE: PADDING_VALUE, mode: mode)
                         let headingLeastChangeSection = extractSectionWithLeastChange(inputArray: uvdRawHeading)
                         if (headingLeastChangeSection.isEmpty) {
                             hasMajorDirection = false
@@ -542,7 +542,7 @@ public class OlympusTrajectoryController {
                     if (trajLength < 10) {
                         hasMajorDirection = false
                     } else {
-                        let ppHeadings = OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: userBuilding, level: userLevel, x: userX, y: userY, heading: userHeading, PADDING_VALUE: PADDING_VALUE, mode: mode)
+                        let ppHeadings = OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: userBuilding, level: userLevel, x: userX, y: userY, PADDING_VALUE: PADDING_VALUE, mode: mode)
                         var searchHeadings: [Double] = []
                         var headHeadings: [Double] = []
                         let headingLeastChangeSection = extractSectionWithLeastChange(inputArray: uvdRawHeading)
@@ -731,7 +731,7 @@ public class OlympusTrajectoryController {
                     let searchRange: [Double] = [userX - PADDING_VALUE, userY - PADDING_VALUE, userX + PADDING_VALUE, userY + PADDING_VALUE]
                     searchInfo.searchRange = searchRange.map { Int($0) }
                 
-                    let ppHeadings = OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: userBuilding, level: userLevel, x: userX, y: userY, heading: userHeading, PADDING_VALUE: PADDING_VALUE, mode: mode)
+                    let ppHeadings = OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: userBuilding, level: userLevel, x: userX, y: userY, PADDING_VALUE: PADDING_VALUE, mode: mode)
                     var searchHeadings: [Double] = []
                     if (trajLength <= 30) {
                         searchHeadings = ppHeadings
@@ -901,7 +901,7 @@ public class OlympusTrajectoryController {
 //        return result
 //    }
     
-    private func extractSectionWithLeastChange(inputArray: [Double]) -> [Double] {
+    public func extractSectionWithLeastChange(inputArray: [Double]) -> [Double] {
         var resultArray = [Double]()
         guard inputArray.count > 7 else {
             return []

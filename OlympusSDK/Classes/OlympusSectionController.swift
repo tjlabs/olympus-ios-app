@@ -49,9 +49,9 @@ public class OlympusSectionController {
             }
             userStraightIndexes.append(userVelocity.index)
         } else {
-            print("Anchor : Index = \(userVelocity.index)")
-            print("Anchor : num(uvdSectionHeadings) = \(uvdSectionHeadings.count)")
-            print("Anchor : userStraightIndexes = \(userStraightIndexes)")
+//            print("Anchor : Index = \(userVelocity.index)")
+//            print("Anchor : num(uvdSectionHeadings) = \(uvdSectionHeadings.count)")
+//            print("Anchor : userStraightIndexes = \(userStraightIndexes)")
             if (uvdSectionHeadings.count >= OlympusConstants.REQUIRED_SECTION_STRAIGHT_IDX && !userStraightIndexes.isEmpty) {
                 let newAnchorTailIndex = userStraightIndexes[0]
                 anchorTailIndexCandidates.append(newAnchorTailIndex)
@@ -75,20 +75,20 @@ public class OlympusSectionController {
     }
     
     private func updateAnchorTailIndex(userIndex: Int, anchorTailIndex: Int, indexCandidates: [Int]) {
-        print("Anchor : userIndex - anchorTailIndex = \(userIndex - anchorTailIndex)")
+//        print("Anchor : userIndex - anchorTailIndex = \(userIndex - anchorTailIndex)")
         if (userIndex - anchorTailIndex) > 100 {
             var newIndexCandidates = [Int]()
             
             for idx in indexCandidates {
                 let diffIndex = idx - anchorTailIndex
-                print("Anchor : diffIndex = \(diffIndex)")
+//                print("Anchor : diffIndex = \(diffIndex)")
                 if diffIndex > 0 {
                     newIndexCandidates.append(idx)
                 }
             }
             
-            print("Anchor (before) : tailIndex = \(self.anchorTailIndex)")
-            print("Anchor (before) : tailIndex Candidates = \(self.anchorTailIndexCandidates)")
+//            print("Anchor (before) : tailIndex = \(self.anchorTailIndex)")
+//            print("Anchor (before) : tailIndex Candidates = \(self.anchorTailIndexCandidates)")
             if (newIndexCandidates.isEmpty) {
                 let lastIndex = self.anchorTailIndexCandidates[self.anchorTailIndexCandidates.count-1]
                 self.anchorTailIndexCandidates = [lastIndex]
@@ -98,8 +98,8 @@ public class OlympusSectionController {
                 self.anchorTailIndex = anchorTailIndexCandidates[0]
             }
             
-            print("Anchor (after) : tailIndex = \(self.anchorTailIndex)")
-            print("Anchor (after) : tailIndex Candidates = \(self.anchorTailIndexCandidates)")
+//            print("Anchor (after) : tailIndex = \(self.anchorTailIndex)")
+//            print("Anchor (after) : tailIndex Candidates = \(self.anchorTailIndexCandidates)")
         }
     }
 }

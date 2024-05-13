@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
-    public static let sdkVersion: String = "0.0.5"
+    public static let sdkVersion: String = "0.0.6"
     var isSimulationMode: Bool = true
     var simulationBleData = [[String: Double]]()
     var simulationSensorData = [OlympusSensorData]()
@@ -736,19 +736,53 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 if (sectionResult.0) {
                     displayOutput.indexTx = data.index
                     var nodeCandidates = [Int]()
+                    var nodeCandidatesDirections = [[Double]]()
                     var pathType: Int = 1
                     if (runMode == OlympusConstants.MODE_PDR) { pathType = 0 }
 //                    print(getLocalTimeString() + " , (Olympus) Request Phase 5 : isBadCaseInStableMode = \(self.isBadCaseInStableMode)")
-                    nodeCandidates = OlympusPathMatchingCalculator.shared.getNodeCandidates(fltResult: tuResult, pathType: pathType, requestType: sectionResult.1, isBadCaseInStableMode: self.isBadCaseInStableMode)
+                    let nodeCandidatesResult = OlympusPathMatchingCalculator.shared.getNodeCandidates(fltResult: tuResult, pathType: pathType, requestType: sectionResult.1, isBadCaseInStableMode: self.isBadCaseInStableMode)
+                    nodeCandidates = nodeCandidatesResult.0
+                    nodeCandidatesDirections = nodeCandidatesResult.1
                     
                     let anchorTailIndex = sectionController.getAnchorTailIndex()
                     let stableInfo = StableInfo(tail_index: anchorTailIndex, head_section_number: sectionController.rqSectionNumber, node_number_list: nodeCandidates)
                     
                     let userMaskForDisplay = getUserMaskFromIndex(from: self.userMaskBufferDisplay, index: anchorTailIndex)
-                    let userTraj = convertUserMask2Trajectory(userMask: userMaskForDisplay)
-                    displayOutput.trajectoryStartCoord = userTraj[0]
-                    displayOutput.userTrajectory = userTraj
+                    let userTrajToDsiplay = convertUserMask2Trajectory(userMask: userMaskForDisplay)
+                    displayOutput.trajectoryStartCoord = userTrajToDsiplay[0]
+                    displayOutput.userTrajectory = userTrajToDsiplay
                     print(getLocalTimeString() + " , (Olympus) Request Phase 5 : \(data.index) // anchor = \(anchorTailIndex) // requestType = \(sectionResult.1) // nodeCandidates = \(nodeCandidates)")
+                    
+                    if (nodeCandidates.count > 1) {
+                        let ppHeadings: [Double] = flattenAndUniquify(nodeCandidatesDirections)
+                        let passedNodeMatchedIndex: Int = OlympusPathMatchingCalculator.shared.getPassedNodeMatchedIndex()
+                        let uvdBuffer: [UnitDRInfo] = getUnitDRInfoFromUvdIndex(from: unitDRInfoBuffer, uvdIndex: passedNodeMatchedIndex)
+                        var uvRawHeading = [Double]()
+                        for value in uvdBuffer {
+                            uvRawHeading.append(value.heading)
+                        }
+                        
+                        var searchHeadings: [Double] = []
+                        var hasMajorDirection: Bool = false
+                        let headingLeastChangeSection = trajController.extractSectionWithLeastChange(inputArray: uvRawHeading)
+                        if (headingLeastChangeSection.isEmpty) {
+                            hasMajorDirection = false
+                        } else {
+                            let headingForCompensation = headingLeastChangeSection.average - uvRawHeading[0]
+                            for ppHeading in ppHeadings {
+                                let tailHeading = ppHeading - headingForCompensation
+                                searchHeadings.append(compensateHeading(heading: tailHeading))
+                            }
+                            hasMajorDirection = true
+                        }
+                        
+                        if (!hasMajorDirection) {
+                            searchHeadings = [0, 90, 180, 270]
+                        }
+                        let searchDirections = searchHeadings.map { Int($0) }
+                        
+                    }
+                    
                     if (!self.isInRecoveryProcess) {
                         processPhase5(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo)
                     }
@@ -1744,6 +1778,17 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         var result: [UnitDRInfo] = []
         for i in startIndex..<endIndex {
             result.append(unitDRInfoBuffer[i])
+        }
+
+        return result
+    }
+    
+    private func getUnitDRInfoFromUvdIndex(from unitDRInfoBuffer: [UnitDRInfo], uvdIndex: Int) -> [UnitDRInfo] {
+        var result: [UnitDRInfo] = []
+        for i in 0..<unitDRInfoBuffer.count {
+            if unitDRInfoBuffer[i].index >= uvdIndex {
+                result.append(unitDRInfoBuffer[i])
+            }
         }
 
         return result

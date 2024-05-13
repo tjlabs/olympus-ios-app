@@ -151,3 +151,13 @@ public func isDrBufferStraight(unitDRInfoBuffer: [UnitDRInfo], numIndex: Int, co
         return true
     }
 }
+
+public func flattenAndUniquify(_ array2D: [[Double]]) -> [Double] {
+    var uniqueElements: Set<Double> = Set()
+    
+    for subArray in array2D {
+        uniqueElements.formUnion(subArray)
+    }
+    
+    return Array(uniqueElements)
+}
