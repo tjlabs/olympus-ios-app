@@ -367,6 +367,7 @@ struct FineLocationTracking: Encodable {
     
     var head_section_number: Int
     var node_number_list: [Int]
+    var node_index: Int
 }
 
 struct StableInfo: Encodable {

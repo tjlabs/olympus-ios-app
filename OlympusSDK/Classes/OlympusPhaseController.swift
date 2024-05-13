@@ -72,6 +72,8 @@ public class OlympusPhaseController {
             phase = 1
         } else if (serverResult.x == 0 && serverResult.y == 0) {
             phase = 1
+        } else {
+            phase = 5
         }
         
         return phase
