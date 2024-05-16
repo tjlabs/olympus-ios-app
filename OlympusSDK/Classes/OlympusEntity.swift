@@ -576,6 +576,7 @@ struct NodeInfo {
     var nodeCandidates: [Int]
     var nodeCoord: [Double]
     var nodeHeadings: [Double]
+    var nodeMatchedIndex: Int
     var userResult: FineLocationTrackingFromServer
 }
 

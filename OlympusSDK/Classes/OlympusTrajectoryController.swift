@@ -474,7 +474,7 @@ public class OlympusTrajectoryController {
                     var hasMajorDirection: Bool = false
                     if (trajLength > reqLengthForMajorHeading) {
                         let ppHeadings = OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: userBuilding, level: userLevel, x: userX, y: userY, PADDING_VALUE: PADDING_VALUE, mode: mode)
-                        let headingLeastChangeSection = extractSectionWithLeastChange(inputArray: uvdRawHeading)
+                        let headingLeastChangeSection = extractSectionWithLeastChange(inputArray: uvdRawHeading, requiredSize: 7)
                         if (headingLeastChangeSection.isEmpty) {
                             hasMajorDirection = false
                         } else {
@@ -545,7 +545,7 @@ public class OlympusTrajectoryController {
                         let ppHeadings = OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: userBuilding, level: userLevel, x: userX, y: userY, PADDING_VALUE: PADDING_VALUE, mode: mode)
                         var searchHeadings: [Double] = []
                         var headHeadings: [Double] = []
-                        let headingLeastChangeSection = extractSectionWithLeastChange(inputArray: uvdRawHeading)
+                        let headingLeastChangeSection = extractSectionWithLeastChange(inputArray: uvdRawHeading, requiredSize: 7)
                         if (headingLeastChangeSection.isEmpty) {
                             hasMajorDirection = false
                         } else {
@@ -736,7 +736,7 @@ public class OlympusTrajectoryController {
                     if (trajLength <= 30) {
                         searchHeadings = ppHeadings
                     } else {
-                        let headingLeastChangeSection = extractSectionWithLeastChange(inputArray: uvdRawHeading)
+                        let headingLeastChangeSection = extractSectionWithLeastChange(inputArray: uvdRawHeading, requiredSize: 7)
                         if (headingLeastChangeSection.isEmpty) {
                             let diffHeadingHeadTail = abs(uvdRawHeading[uvdRawHeading.count-1] - uvdRawHeading[0])
                             if (diffHeadingHeadTail < 5) {
@@ -862,7 +862,7 @@ public class OlympusTrajectoryController {
             var searchHeadings: [Double] = []
             let ppHeadings = phase2Direction.map { Double($0) }
             if (trajLength >= 40) {
-                let headingLeastChangeSection = extractSectionWithLeastChange(inputArray: uvdRawHeading)
+                let headingLeastChangeSection = extractSectionWithLeastChange(inputArray: uvdRawHeading, requiredSize: 7)
                 if (headingLeastChangeSection.isEmpty) {
                     let diffHeadingHeadTail = abs(uvdRawHeading[uvdRawHeading.count-1] - uvdRawHeading[0])
                     for ppHeading in ppHeadings {
@@ -901,9 +901,9 @@ public class OlympusTrajectoryController {
 //        return result
 //    }
     
-    public func extractSectionWithLeastChange(inputArray: [Double]) -> [Double] {
+    public func extractSectionWithLeastChange(inputArray: [Double], requiredSize: Int) -> [Double] {
         var resultArray = [Double]()
-        guard inputArray.count > 7 else {
+        guard inputArray.count > requiredSize else {
             return []
         }
         
@@ -915,8 +915,8 @@ public class OlympusTrajectoryController {
         var bestSliceStartIndex = 0
         var bestSliceEndIndex = 0
 
-        for startIndex in 0..<(inputArray.count-6) {
-            for endIndex in (startIndex+7)..<inputArray.count {
+        for startIndex in 0..<(inputArray.count-(requiredSize-1)) {
+            for endIndex in (startIndex+requiredSize)..<inputArray.count {
                 let slice = Array(compensatedArray[startIndex...endIndex])
                 let circularStd = circularStandardDeviation(for: slice)
                 if circularStd < 5 && slice.count > bestSliceEndIndex - bestSliceStartIndex {
@@ -927,7 +927,7 @@ public class OlympusTrajectoryController {
         }
         
         resultArray = Array(inputArray[bestSliceStartIndex...bestSliceEndIndex])
-        if resultArray.count > 7 {
+        if resultArray.count > requiredSize {
             return resultArray
         } else {
             return []
