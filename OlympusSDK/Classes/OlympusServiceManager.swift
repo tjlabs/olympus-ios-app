@@ -3,7 +3,7 @@ import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
     public static let sdkVersion: String = "0.0.6"
-    var isSimulationMode: Bool = true
+    var isSimulationMode: Bool = false
     var simulationBleData = [[String: Double]]()
     var simulationSensorData = [OlympusSensorData]()
     var bleLineCount: Int = 0
