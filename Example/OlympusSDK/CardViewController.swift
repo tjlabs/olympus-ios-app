@@ -98,6 +98,9 @@ class CardViewController: UIViewController, Observer {
     
     @IBAction func tapStopButton(_ sender: UIButton) {
         self.isSaved = serviceManager.saveSimulationFile()
+        if (self.isSaved) {
+            saveButton.isHidden = true
+        }
         serviceManager.stopService()
         self.stopTimer()
     }

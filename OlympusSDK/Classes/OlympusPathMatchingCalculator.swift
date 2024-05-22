@@ -18,8 +18,16 @@ public class OlympusPathMatchingCalculator {
     
     var passedNode: Int = -1
     var passedNodeMatchedIndex: Int = -1
+    var matchedIndexNodeBuffer = [Int]()
+    var matchedIndexBuffer = [Int]()
+    var clearIndex: Int = -1
+    var isNeedClearBuffer: Bool = false
     var passedNodeCoord: [Double] = [0, 0]
     var passedNodeHeadings = [Double]()
+    
+    
+    var currentSectionNumber: Int = -1
+    
     var distFromNode: Double = -1
     var linkCoord: [Double] = [0, 0]
     var linkDirections = [Double]()
@@ -753,6 +761,161 @@ public class OlympusPathMatchingCalculator {
                     }
                 }
                 
+                print(getLocalTimeString() + " , (Olympus) Path-Traj Matching : \(ppXydArray)")
+                if (!minDistanceCoord.isEmpty) {
+                    if (minDistanceCoord[2] <= 15 && minDistanceCoord[3] <= 5) {
+                        isSuccess = true
+                    } else {
+                        isSuccess = false
+                    }
+                    xyd = minDistanceCoord
+                }
+            }
+        }
+        
+        return (isSuccess, xyd, matchedTraj, inputTraj)
+    }
+    
+    public func extendedPathTrajectoryMatching(building: String, level: String, x: Double, y: Double, heading: Double, pastResult: FineLocationTrackingResult, unitDRInfoBuffer: [UnitDRInfo], userMaskBuffer: [UserMask], pathType: Int, mode: String, PADDING_VALUE: Double) -> (isSuccess: Bool, xyd: [Double], matchedTraj: [[Double]], inputTraj: [[Double]]) {
+        let pastX = pastResult.x
+        let pastY = pastResult.y
+        
+        var isSuccess: Bool = false
+        var xyd: [Double] = [x, y, 50]
+        var matchedTraj = [[Double]]()
+        var inputTraj = [[Double]]()
+        
+        let levelCopy: String = removeLevelDirectionString(levelName: level)
+        let key: String = "\(building)_\(levelCopy)"
+        
+        if (!(building.isEmpty) && !(level.isEmpty)) {
+            guard let mainType: [Int] = self.PpType[key] else {
+                return (isSuccess, xyd, matchedTraj, inputTraj)
+            }
+            guard let mainRoad: [[Double]] = self.PpCoord[key] else {
+                return (isSuccess, xyd, matchedTraj, inputTraj)
+            }
+            
+            if (!mainRoad.isEmpty) {
+                let roadX = mainRoad[0]
+                let roadY = mainRoad[1]
+                
+                let xMin = x - PADDING_VALUE
+                let xMax = x + PADDING_VALUE
+                let yMin = y - PADDING_VALUE
+                let yMax = y + PADDING_VALUE
+                
+                var ppXydArray = [[Double]]()
+                var minDistanceCoord = [Double]()
+                
+                for i in 0..<roadX.count {
+                    let xPath = roadX[i]
+                    let yPath = roadY[i]
+                    
+                    let pathTypeLoaded = mainType[i]
+                    if (pathType == 1) {
+                        if (pathType != pathTypeLoaded) {
+                            continue
+                        }
+                    }
+                    
+                    // XY 범위 안에 있는 값 중에 검사
+                    if (xPath >= xMin && xPath <= xMax) {
+                        if (yPath >= yMin && yPath <= yMax) {
+                            var passedPp = [[Double]]()
+                            var distanceSum: Double = 0
+                            
+                            let headingCompensation: Double = heading - unitDRInfoBuffer[unitDRInfoBuffer.count-1].heading
+                            var headingBuffer: [Double] = []
+                            for i in 0..<unitDRInfoBuffer.count {
+                                let compensatedHeading = compensateHeading(heading: unitDRInfoBuffer[i].heading + headingCompensation - 180)
+                                headingBuffer.append(compensatedHeading)
+                            }
+                            
+                            var xyFromHead: [Double] = [xPath, yPath]
+                            var xyOriginal: [Double] = [xPath, yPath]
+                            let firstXyd = calDistacneFromNearestPp(coord: xyFromHead, passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUE: PADDING_VALUE)
+                            passedPp.append(xyFromHead)
+                            
+                            var xydArray: [[Double]] = [firstXyd]
+                            distanceSum += firstXyd[2]
+                            
+                            var trajectoryFromHead = [[Double]]()
+                            var trajectoryOriginal = [[Double]]()
+                            trajectoryFromHead.append(xyFromHead)
+                            trajectoryOriginal.append(xyOriginal)
+                            for i in (1..<unitDRInfoBuffer.count).reversed() {
+                                let headAngle = headingBuffer[i]
+                                xyOriginal[0] = xyOriginal[0] + unitDRInfoBuffer[i].length*cos(headAngle*OlympusConstants.D2R)
+                                xyOriginal[1] = xyOriginal[1] + unitDRInfoBuffer[i].length*sin(headAngle*OlympusConstants.D2R)
+                                trajectoryOriginal.append(xyOriginal)
+                                if (mode == OlympusConstants.MODE_PDR) {
+                                    if (i%2 == 0) {
+                                        let propagatedX = xyFromHead[0] + unitDRInfoBuffer[i].length*cos(headAngle*OlympusConstants.D2R)
+                                        let propagatedY = xyFromHead[1] + unitDRInfoBuffer[i].length*sin(headAngle*OlympusConstants.D2R)
+                                        let calculatedXyd = calDistacneFromNearestPp(coord: [propagatedX, propagatedY], passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUE: PADDING_VALUE)
+                                        
+                                        xyFromHead[0] = calculatedXyd[0]
+                                        xyFromHead[1] = calculatedXyd[1]
+                                        xydArray.append(calculatedXyd)
+                                        distanceSum += calculatedXyd[2]
+                                        trajectoryFromHead.append(xyFromHead)
+                                        passedPp.append(xyFromHead)
+                                    } else {
+                                        let propagatedX = xyFromHead[0] + unitDRInfoBuffer[i].length*cos(headAngle*OlympusConstants.D2R)
+                                        let propagatedY = xyFromHead[1] + unitDRInfoBuffer[i].length*sin(headAngle*OlympusConstants.D2R)
+                                        let calculatedXyd = calDistacneFromNearestPp(coord: [propagatedX, propagatedY], passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUE: PADDING_VALUE)
+                                        
+                                        xyFromHead[0] = propagatedX
+                                        xyFromHead[1] = propagatedY
+                                        xydArray.append(calculatedXyd)
+                                        distanceSum += calculatedXyd[2]
+                                        trajectoryFromHead.append(xyFromHead)
+                                        passedPp.append(xyFromHead)
+                                    }
+                                } else {
+                                    let propagatedX = xyFromHead[0] + unitDRInfoBuffer[i].length*cos(headAngle*OlympusConstants.D2R)
+                                    let propagatedY = xyFromHead[1] + unitDRInfoBuffer[i].length*sin(headAngle*OlympusConstants.D2R)
+                                    let calculatedXyd = calDistacneFromNearestPp(coord: [propagatedX, propagatedY], passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUE: PADDING_VALUE)
+                                    
+                                    xyFromHead[0] = calculatedXyd[0]
+                                    xyFromHead[1] = calculatedXyd[1]
+                                    xydArray.append(calculatedXyd)
+                                    distanceSum += calculatedXyd[2]
+                                    trajectoryFromHead.append(xyFromHead)
+                                    passedPp.append(xyFromHead)
+                                }
+                            }
+                            
+                            let distWithPast = sqrt((pastX - xPath)*(pastX - xPath) + (pastY - yPath)*(pastY - yPath))
+                            let distWithMask = sqrt((xyFromHead[0] - Double(userMaskBuffer[0].x))*(xyFromHead[0] - Double(userMaskBuffer[0].x)) + (xyFromHead[1] - Double(userMaskBuffer[0].y))*(xyFromHead[1] - Double(userMaskBuffer[0].y)))
+                            ppXydArray.append([xPath, yPath, distanceSum, distWithPast, distWithMask])
+                            
+                            if (minDistanceCoord.isEmpty) {
+                                minDistanceCoord = [xPath, yPath, distanceSum, distWithPast, distWithMask]
+                                matchedTraj = trajectoryFromHead
+                                inputTraj = trajectoryOriginal
+                            } else {
+//                                let distanceCurrent = distanceSum
+//                                let distancePast = minDistanceCoord[2]
+//                                if (distanceCurrent < distancePast && distWithPast <= 3) {
+//                                    minDistanceCoord = [xPath, yPath, distanceSum, distWithPast, distWithMask]
+//                                    matchedTraj = trajectoryFromHead
+//                                    inputTraj = trajectoryOriginal
+//                                }
+                                let distanceCurrent = sqrt(distWithMask*distWithMask + distanceSum*distanceSum)
+                                let distancePast = sqrt(minDistanceCoord[4]*minDistanceCoord[4] + minDistanceCoord[2]*minDistanceCoord[2])
+                                if (distanceCurrent < distancePast && distWithPast <= 3) {
+                                    minDistanceCoord = [xPath, yPath, distanceSum, distWithPast, distWithMask]
+                                    matchedTraj = trajectoryFromHead
+                                    inputTraj = trajectoryOriginal
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                print(getLocalTimeString() + " , (Olympus) Path-Traj Matching : \(ppXydArray)")
                 if (!minDistanceCoord.isEmpty) {
                     if (minDistanceCoord[2] <= 15 && minDistanceCoord[3] <= 5) {
                         isSuccess = true
@@ -843,7 +1006,9 @@ public class OlympusPathMatchingCalculator {
                                         self.passedNodeCoord = [xPath, yPath]
                                         self.passedNodeHeadings = ppHeadingValues
                                         self.distFromNode = sqrt((xPath-x)*(xPath-x) + (yPath-y)*(yPath-y))
-                                        print("(Node Find) : passedNode (Normal) = \(self.passedNode) // dist = \(self.distFromNode) // index = \(passedNodeMatchedIndex)")
+                                        print(getLocalTimeString() + " , (Olympus) Node Find : passedNode (Normal) = \(self.passedNode) // dist = \(self.distFromNode) // index = \(passedNodeMatchedIndex)")
+                                        
+                                        self.controlMatchedIndexBuffer(isNeedClear: isNeedClearBuffer, clearIndex: clearIndex, matchedIndex: uvdIndex, matchedIndexNode: node)
                                     }
                                 }
                             }
@@ -885,7 +1050,9 @@ public class OlympusPathMatchingCalculator {
                                         }
                                         self.passedNodeHeadings = ppHeadingValues
                                         self.distFromNode = sqrt((xCandidates[idxMin]-x)*(xCandidates[idxMin]-x) + (yCandidates[idxMin]-y)*(yCandidates[idxMin]-y))
-                                        print("(Node Find) : passedNode (Jump) = \(self.passedNode) // dist = \(self.distFromNode) // index = \(passedNodeMatchedIndex)")
+                                        print(getLocalTimeString() + " , (Olympus) Node Find : passedNode (Jump) = \(self.passedNode) // dist = \(self.distFromNode) // index = \(passedNodeMatchedIndex)")
+                                        
+                                        self.controlMatchedIndexBuffer(isNeedClear: isNeedClearBuffer, clearIndex: clearIndex, matchedIndex: uvdIndex, matchedIndexNode: nodeCandidates[idxMin])
                                     }
                                 }
                             }
@@ -894,6 +1061,24 @@ public class OlympusPathMatchingCalculator {
                 }
             }
         }
+    }
+    
+    private func controlMatchedIndexBuffer(isNeedClear: Bool, clearIndex: Int, matchedIndex: Int, matchedIndexNode: Int) {
+        if (isNeedClear) {
+            var newIndexBuffer = [Int]()
+            var newIndexNodeBuffer = [Int]()
+            for i in 0..<matchedIndexBuffer.count {
+                if (matchedIndexBuffer[i] > clearIndex) {
+                    newIndexBuffer.append(matchedIndexBuffer[i])
+                    newIndexNodeBuffer.append(matchedIndexNodeBuffer[i])
+                }
+            }
+            self.matchedIndexBuffer = newIndexBuffer
+            self.matchedIndexNodeBuffer = newIndexNodeBuffer
+            self.isNeedClearBuffer = false
+        }
+        self.matchedIndexBuffer.append(matchedIndex)
+        self.matchedIndexNodeBuffer.append(matchedIndexNode)
     }
     
     public func getPaddingValues(mode: String, isPhaseBreak: Bool) -> [Double] {
@@ -1001,8 +1186,24 @@ public class OlympusPathMatchingCalculator {
         } else {
             if (!isBadCaseInStableMode) {
                 if (nodeNumber != -1) {
-                    nodeCandidates.append(nodeNumber)
-                    nodeCandidatesDirections.append(nodeHeadings)
+                    print(getLocalTimeString() + " , (Olympus) Node Find : findStartNode (Before) nodeNumber = \(nodeNumber) // nodeCoord = \(nodeCoord) // nodeIndex = \(nodeIndex)")
+                    // Check End Node
+                    let findNodeResult = findStartNode(fltResult: fltResult, pathType: pathType, nodeNumber: nodeNumber, nodeCoord: nodeCoord, nodeHeadings: nodeHeadings)
+                    nodeCandidates.append(findNodeResult.0)
+                    nodeCoord = findNodeResult.1
+                    nodeCandidatesDirections.append(findNodeResult.2)
+                    for i in 0..<matchedIndexBuffer.count {
+                        if (findNodeResult.0 == matchedIndexNodeBuffer[i]) {
+                            nodeIndex = matchedIndexBuffer[i]
+                            clearIndex = nodeIndex
+                            isNeedClearBuffer = true
+                            break
+                        }
+                    }
+                    
+                    print(getLocalTimeString() + " , (Olympus) Node Find : findStartNode (After) nodeNumber = \(findNodeResult.0) // nodeCoord = \(findNodeResult.1) // nodeIndex = \(nodeIndex)")
+//                    nodeCandidates.append(nodeNumber)
+//                    nodeCandidatesDirections.append(nodeHeadings)
                 }
                 
                 updateNodeInfoWhenRequest(nodeCandidates: nodeCandidates, nodeCoord: nodeCoord, nodeHeadings: nodeHeadings, nodeMatchedIndex: nodeIndex, userResult: fltResult)
@@ -1023,30 +1224,30 @@ public class OlympusPathMatchingCalculator {
                     nodeCandidatesDirections.append(nodeHeadings)
                 }
                 
-                print("(Node Check) User Heading = \(fltResult.x) , \(fltResult.y) , \(heading)")
-                print("(Node Check) Passed Node (Num) = \(nodeNumber)")
-                print("(Node Check) Passed Node (Heading) = \(nodeHeadings)")
+                print(getLocalTimeString() + " , (Olympus) Node Check : User Heading = \(fltResult.x) , \(fltResult.y) , \(heading)")
+                print(getLocalTimeString() + " , (Olympus) Node Check : Passed Node (Num) = \(nodeNumber)")
+                print(getLocalTimeString() + " , (Olympus) Node Check : Passed Node (Heading) = \(nodeHeadings)")
                 
-                var diffHeading = [Double]()
-                var candidateDirections = [Double]()
-                for mapHeading in nodeHeadings {
-                    var diffValue: Double = 0
-                    if (heading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
-                        diffValue = abs(heading - (mapHeading+360))
-                    } else if (mapHeading > 270 && (heading >= 0 && heading < 90)) {
-                        diffValue = abs(mapHeading - (heading+360))
-                    } else {
-                        diffValue = abs(heading - mapHeading)
-                    }
-                    diffHeading.append(diffValue)
-                    
-                    let MARGIN: Double = 30
-                    
-                    if !(diffValue <= MARGIN || (diffValue >= 180-MARGIN && diffValue <= 180+MARGIN)) {
-                        candidateDirections.append(mapHeading)
-                    }
-                }
-                print("(Node Check) Passed Node : candidateDirections = \(candidateDirections)")
+//                var diffHeading = [Double]()
+//                var candidateDirections = [Double]()
+//                for mapHeading in nodeHeadings {
+//                    var diffValue: Double = 0
+//                    if (heading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
+//                        diffValue = abs(heading - (mapHeading+360))
+//                    } else if (mapHeading > 270 && (heading >= 0 && heading < 90)) {
+//                        diffValue = abs(mapHeading - (heading+360))
+//                    } else {
+//                        diffValue = abs(heading - mapHeading)
+//                    }
+//                    diffHeading.append(diffValue)
+//                    
+//                    let MARGIN: Double = 30
+//                    
+//                    if !(diffValue <= MARGIN || (diffValue >= 180-MARGIN && diffValue <= 180+MARGIN)) {
+//                        candidateDirections.append(mapHeading)
+//                    }
+//                }
+//                print(getLocalTimeString() + " , (Olympus) Node Check : Passed Node : candidateDirections = \(candidateDirections)")
                 
 //                let PIXEL_LENGTH: Double = 1.0
 //                var PIXELS_TO_CHECK: Int = 10
@@ -1076,8 +1277,8 @@ public class OlympusPathMatchingCalculator {
 //                }
                 
                 updateNodeInfoWhenRequest(nodeCandidates: nodeCandidates, nodeCoord: nodeCoord, nodeHeadings: nodeHeadings, nodeMatchedIndex: nodeIndex, userResult: fltResult)
-                print("(Node Check) Passed Node : Node Candidates = \(nodeCandidates)")
-                print("(Node Check) -----------------------------------------------")
+                print(getLocalTimeString() + " , (Olympus) Node Check : Passed Node : Node Candidates = \(nodeCandidates)")
+                print(getLocalTimeString() + " , (Olympus) Node Check : -----------------------------------------------")
             }
             
 //            print("(Node Check) User Heading = \(fltResult.x) , \(fltResult.y) , \(heading)")
@@ -1103,7 +1304,7 @@ public class OlympusPathMatchingCalculator {
 //                    candidateDirections.append(mapHeading)
 //                }
 //            }
-//            print("(Node Check) Passed Node : candidateDirections = \(candidateDirections)")
+////            print("(Node Check) Passed Node : candidateDirections = \(candidateDirections)")
 //            
 //            let PIXEL_LENGTH: Double = 1.0
 //            var PIXELS_TO_CHECK: Int = 10
@@ -1166,7 +1367,7 @@ public class OlympusPathMatchingCalculator {
                 candidateDirections.append(mapHeading)
             }
         }
-        print("(Node Check) Recovery // Passed Node : candidateDirections = \(candidateDirections)")
+        print(getLocalTimeString() + " , (Olympus) Node Check : Recovery // Passed Node : candidateDirections = \(candidateDirections)")
         
         let PIXEL_LENGTH: Double = 1.0
         var PIXELS_TO_CHECK: Int = 10
@@ -1193,8 +1394,8 @@ public class OlympusPathMatchingCalculator {
             }
         }
         
-        print("(Node Check) Recovery // Passed Node : Node Candidates = \(nodeCandidates)")
-        print("(Node Check) Recovery // -----------------------------------------------")
+        print(getLocalTimeString() + " , (Olympus) Node Check : Recovery // Passed Node : Node Candidates = \(nodeCandidates)")
+        print(getLocalTimeString() + " , (Olympus) Node Check : Recovery // -----------------------------------------------")
         
         return nodeCandidates
     }
@@ -1225,7 +1426,7 @@ public class OlympusPathMatchingCalculator {
                 let yMin = originCoord[1] - PADDING_VALUES[1]
                 let yMax = originCoord[1] + PADDING_VALUES[3]
                 
-                print("(Node Check) xy range = \(xMin) , \(xMax) , \(yMin) , \(yMax)")
+//                print("(Node Check) xy range = \(xMin) , \(xMax) , \(yMin) , \(yMax)")
                 
                 for i in 0..<roadX.count {
                     let xPath = roadX[i]
@@ -1253,9 +1454,10 @@ public class OlympusPathMatchingCalculator {
                                     }
                                 }
                                 if (node == 0) {
-                                    matchedNodeHeadings = ppHeadingValues
                                     return (false, matchedNode, matchedNodeHeadings)
                                 } else {
+                                    matchedNodeHeadings = ppHeadingValues
+                                    print(getLocalTimeString() + " , (Olympus) Node Find : findStartNode (Process) headingArray = \(headingArray) // headingData = \(headingData) // ppHeadingValues = \(ppHeadingValues)")
                                     return (false, node, matchedNodeHeadings)
                                 }
                             }
@@ -1265,6 +1467,78 @@ public class OlympusPathMatchingCalculator {
             }
         }
         return (isPpEndPoint, matchedNode, matchedNodeHeadings)
+    }
+    
+    private func findStartNode(fltResult: FineLocationTrackingFromServer, pathType: Int, nodeNumber: Int, nodeCoord: [Double], nodeHeadings: [Double]) -> (Int, [Double], [Double]) {
+        var resultNode: Int = nodeNumber
+        var resultNodeCoord: [Double] = nodeCoord
+        var resultNodeHeadings: [Double] = nodeHeadings
+        
+        let heading = compensateHeading(heading: fltResult.absolute_heading)
+        
+        var diffHeading = [Double]()
+        var candidateDirections = [Double]()
+        for mapHeading in nodeHeadings {
+            var diffValue: Double = 0
+            if (heading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
+                diffValue = abs(heading - (mapHeading+360))
+            } else if (mapHeading > 270 && (heading >= 0 && heading < 90)) {
+                diffValue = abs(mapHeading - (heading+360))
+            } else {
+                diffValue = abs(heading - mapHeading)
+            }
+            diffHeading.append(diffValue)
+            
+            let MARGIN: Double = 30
+            
+            if (diffValue >= 180-MARGIN && diffValue <= 180+MARGIN) {
+                candidateDirections.append(mapHeading)
+            }
+        }
+        print(getLocalTimeString() + " , (Olympus) Node Find : findStartNode (Process) heading = \(heading) // nodeHeadings = \(nodeHeadings)")
+        print(getLocalTimeString() + " , (Olympus) Node Find : findStartNode (Process) diffHeading = \(diffHeading)")
+        
+        var PIXEL_LENGTH: Double = 1.0
+        let sectionRqIdx: Double = Double(OlympusConstants.REQUIRED_SECTION_RQ_IDX)
+        if (pathType == 0) {
+            PIXEL_LENGTH = 0.65
+        }
+        
+        let PIXELS_TO_CHECK = Int(round((sectionRqIdx + 2)*PIXEL_LENGTH))
+        
+        print(getLocalTimeString() + " , (Olympus) Node Find : findStartNode (Process) PIXELS_TO_CHECK = \(PIXELS_TO_CHECK) // candidateDirections = \(candidateDirections)")
+        if (candidateDirections.count == 1) {
+            var matchedNodeNumber: Int = -1
+            var matchedNodeCoord: [Double] = [0, 0]
+            var matchedNodeHeadings = [Double]()
+            let direction = candidateDirections[0]
+            let paddingValues = [Double] (repeating: Double(PIXELS_TO_CHECK), count: 4)
+            var x: Double = nodeCoord[0]
+            var y: Double = nodeCoord[1]
+            for _ in 0..<PIXELS_TO_CHECK {
+                x += cos(direction*OlympusConstants.D2R)
+                y += sin(direction*OlympusConstants.D2R)
+                let matchedNodeResult = getMatchedNodeWithCoord(fltResult: fltResult, originCoord: nodeCoord, coordToCheck: [x, y], pathType: pathType, PADDING_VALUES: paddingValues)
+                print(getLocalTimeString() + " (Olympus) Node Find : findStartNode (Process) xy = \(x),\(y) // matchedNodeResult = \(matchedNodeResult)")
+                if (matchedNodeResult.0) {
+                    break
+                } else {
+                    if (matchedNodeResult.1 != -1) {
+                        matchedNodeNumber = matchedNodeResult.1
+                        matchedNodeCoord = [x, y]
+                        matchedNodeHeadings = matchedNodeResult.2
+                    }
+                }
+            }
+            
+            if (matchedNodeNumber != -1) {
+                resultNode = matchedNodeNumber
+                resultNodeCoord = matchedNodeCoord
+                resultNodeHeadings = matchedNodeHeadings
+            }
+        }
+        
+        return (resultNode, resultNodeCoord, resultNodeHeadings)
     }
     
     public func getPassedNodeMatchedIndex() -> Int {

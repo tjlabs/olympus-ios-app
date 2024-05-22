@@ -3,7 +3,7 @@ import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
     public static let sdkVersion: String = "0.0.6"
-    var isSimulationMode: Bool = false
+    var isSimulationMode: Bool = true
     var simulationBleData = [[String: Double]]()
     var simulationSensorData = [OlympusSensorData]()
     var bleLineCount: Int = 0
@@ -107,6 +107,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     var unitDRInfoBuffer: [UnitDRInfo] = []
     var unitDRInfoBufferForPhase4: [UnitDRInfo] = []
     var isNeedClearBuffer: Bool = false
+    var userMaskBufferPathTrajMatching: [UserMask] = []
     var userMaskBuffer: [UserMask] = []
     var userMaskBufferDisplay: [UserMask] = []
     var userMaskSendCount: Int = 0
@@ -630,6 +631,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 }
             }
             
+//            self.bleAvg = ["TJ-00CB-0000033B-0000":-62.0] // DS 3F
+            
             if (!self.bleAvg.isEmpty) {
                 stateManager.setVariblesWhenBleIsNotEmpty()
                 let data = ReceivedForce(user_id: self.user_id, mobile_time: currentTime, ble: self.bleAvg, pressure: self.sensorManager.pressure)
@@ -735,7 +738,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             let diffHeading = unitDRInfo.heading - pastUvdHeading
             pastUvdHeading = unitDRInfo.heading
             if (KF.isRunning && KF.tuFlag) {
-                var tuResult = KF.timeUpdate(recentResult: olympusResult, length: unitUvdLength, diffHeading: diffHeading, isPossibleHeadingCorrection: isPossibleHeadingCorrection, unitDRInfoBuffer: unitDRInfoBuffer, mode: runMode)
+                var tuResult = KF.timeUpdate(recentResult: olympusResult, length: unitUvdLength, diffHeading: diffHeading, isPossibleHeadingCorrection: isPossibleHeadingCorrection, unitDRInfoBuffer: unitDRInfoBuffer, userMaskBuffer: userMaskBufferPathTrajMatching, mode: runMode)
                 tuResult.mobile_time = currentTime
                 currentTuResult = tuResult
                 
@@ -761,7 +764,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     
                     if (nodeCandidatesResult.0) {
                         let ppHeadings: [Double] = flattenAndUniquify(nodeCandidatesDirections)
-//                        let passedNodeMatchedIndex: Int = OlympusPathMatchingCalculator.shared.getPassedNodeMatchedIndex()
                         let passedNodeMatchedIndex: Int = nodeCandidatesResult.3
                         let uvdBuffer: [UnitDRInfo] = getUnitDRInfoFromUvdIndex(from: unitDRInfoBufferForPhase4, uvdIndex: passedNodeMatchedIndex)
                         self.isNeedClearBuffer = true
@@ -1668,13 +1670,14 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 self.paddingValues = OlympusPathMatchingCalculator.shared.getPaddingValues(mode: runMode, isPhaseBreak: isPhaseBreak)
             }
             
+            let data = UserMask(user_id: self.user_id, mobile_time: result.mobile_time, section_number: sectionController.sectionNumber, index: resultIndex, x: Int(result.x), y: Int(result.y), absolute_heading: result.absolute_heading)
+            stackUserMaskPathTrajMatching(data: data)
             if (isStableMode) {
                 if (stableModeInitFlag) {
                     sectionController.setInitialAnchorTailIndex(value: result.index)
                     stableModeInitFlag = false
                 }
                 
-                let data = UserMask(user_id: self.user_id, mobile_time: result.mobile_time, section_number: sectionController.sectionNumber, index: resultIndex, x: Int(result.x), y: Int(result.y), absolute_heading: result.absolute_heading)
                 self.inputUserMask.append(data)
                 if ((self.inputUserMask.count) >= OlympusConstants.USER_MASK_INPUT_NUM) {
                     OlympusNetworkManager.shared.postUserMask(url: REC_UMD_URL, input: self.inputUserMask, completion: { [self] statusCode, returnedString, inputUserMask in
@@ -1742,6 +1745,13 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         self.userMaskBuffer.append(data)
         if (self.userMaskBuffer.count > OlympusConstants.DR_INFO_BUFFER_SIZE) {
             self.userMaskBuffer.remove(at: 0)
+        }
+    }
+    
+    private func stackUserMaskPathTrajMatching(data: UserMask) {
+        self.userMaskBufferPathTrajMatching.append(data)
+        if (self.userMaskBufferPathTrajMatching.count > OlympusConstants.DR_INFO_BUFFER_SIZE) {
+            self.userMaskBufferPathTrajMatching.remove(at: 0)
         }
     }
     

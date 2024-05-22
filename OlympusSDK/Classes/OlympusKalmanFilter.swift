@@ -121,7 +121,7 @@ public class OlympusKalmanFilter: NSObject {
     }
     
     
-    public func timeUpdate(recentResult: FineLocationTrackingResult, length: Double, diffHeading: Double, isPossibleHeadingCorrection: Bool, unitDRInfoBuffer: [UnitDRInfo], mode: String) -> FineLocationTrackingFromServer {
+    public func timeUpdate(recentResult: FineLocationTrackingResult, length: Double, diffHeading: Double, isPossibleHeadingCorrection: Bool, unitDRInfoBuffer: [UnitDRInfo], userMaskBuffer: [UserMask], mode: String) -> FineLocationTrackingFromServer {
         var outputResult: FineLocationTrackingFromServer = self.tuResult
         let levelName = removeLevelDirectionString(levelName: self.tuResult.level_name)
         
@@ -147,10 +147,27 @@ public class OlympusKalmanFilter: NSObject {
                 let isHeadStraight: Bool = isDrBufferStraight(unitDRInfoBuffer: drBufferForPathMatching, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT/2, condition: 10.0)
                 if (isHeadStraight) {
                     self.pathTrajMatchingIndex = unitDRInfoBuffer[unitDRInfoBuffer.count-1].index
-                    let pathTrajMatchingResult = OlympusPathMatchingCalculator.shared.pathTrajectoryMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, pastResult: recentResult, unitDRInfoBuffer: Array(unitDRInfoBuffer.suffix(OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT)), HEADING_RANGE: OlympusConstants.HEADING_RANGE, pathType: 0, mode: mode, PADDING_VALUE: 5)
+//                    let pathTrajMatchingResult = OlympusPathMatchingCalculator.shared.pathTrajectoryMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, pastResult: recentResult, unitDRInfoBuffer: Array(unitDRInfoBuffer.suffix(OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT)), HEADING_RANGE: OlympusConstants.HEADING_RANGE, pathType: 0, mode: mode, PADDING_VALUE: 5)
+                    
+                    let inputUnitDrInfoBuffer = Array(unitDRInfoBuffer.suffix(OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT))
+                    var inputUserMaskBuffer = [UserMask]()
+                    for userMask in userMaskBuffer {
+                        if (userMask.index >= inputUnitDrInfoBuffer[0].index) {
+                            inputUserMaskBuffer.append(userMask)
+                        }
+                    }
+                    let pathTrajMatchingResult = OlympusPathMatchingCalculator.shared.extendedPathTrajectoryMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, pastResult: recentResult, unitDRInfoBuffer: inputUnitDrInfoBuffer, userMaskBuffer: inputUserMaskBuffer, pathType: 0, mode: mode, PADDING_VALUE: 5)
+                    
                     if (pathTrajMatchingResult.isSuccess) {
-                        outputResult.x = pathTrajMatchingResult.xyd[0]*0.5 + updatedX*0.5
-                        outputResult.y = pathTrajMatchingResult.xyd[1]*0.5 + updatedY*0.5
+                        let diffNorm = sqrt((pathTrajMatchingResult.xyd[0]-updatedX)*(pathTrajMatchingResult.xyd[0]-updatedX) + (pathTrajMatchingResult.xyd[1]-updatedY)*(pathTrajMatchingResult.xyd[1]-updatedY))
+                        if (diffNorm < 1) {
+                            outputResult.x = pathTrajMatchingResult.xyd[0]*0.5 + updatedX*0.5
+                            outputResult.y = pathTrajMatchingResult.xyd[1]*0.5 + updatedY*0.5
+                        } else {
+                            outputResult.x = pathTrajMatchingResult.xyd[0]
+                            outputResult.y = pathTrajMatchingResult.xyd[1]
+                        }
+                        
                         self.matchedTraj = pathTrajMatchingResult.matchedTraj
                         self.inputTraj = pathTrajMatchingResult.inputTraj
                     } else {
