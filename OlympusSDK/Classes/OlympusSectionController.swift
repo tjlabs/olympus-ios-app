@@ -4,6 +4,7 @@ public class OlympusSectionController {
     
     var uvdForSection: [UserVelocity] = []
     var uvdSectionHeadings: [Double] = []
+    var uvdSectionLength: Double = 0
     var sectionNumber: Int = 0
     var rqSectionNumber: Int = 0
     var rqSectionUvdIndex: Int = 0
@@ -15,6 +16,7 @@ public class OlympusSectionController {
     public func initialize() {
         self.uvdForSection = []
         self.uvdSectionHeadings = []
+        self.uvdSectionLength = 0
         self.sectionNumber = 0
         self.rqSectionNumber = 0
         self.rqSectionUvdIndex = 0
@@ -24,11 +26,13 @@ public class OlympusSectionController {
         self.anchorTailIndexCandidates = []
     }
     
-    public func controlSection(userVelocity: UserVelocity) -> (Bool, Int) {
+    public func controlSection(userVelocity: UserVelocity) -> (Bool, Int, Double) {
         var isNeedRequest: Bool = false
         var requestType: Int = -1
+        var requestSectionLength: Double = -1
         
         uvdForSection.append(userVelocity)
+        uvdSectionLength += userVelocity.length
         uvdSectionHeadings.append(compensateHeading(heading: userVelocity.heading))
         
         let straightAngle: Double = OlympusConstants.SECTION_STRAIGHT_ANGLE
@@ -38,6 +42,7 @@ public class OlympusSectionController {
                 if (rqSectionNumber != sectionNumber) {
                     isNeedRequest = true
                     requestType = 0
+                    requestSectionLength = uvdSectionLength
                 } else if (userVelocity.index - rqSectionUvdIndex > OlympusConstants.REQUIRED_SECTION_RQ_IDX) {
                     isNeedRequest = true
                     requestType = 1
@@ -45,6 +50,7 @@ public class OlympusSectionController {
                 if (isNeedRequest) {
                     rqSectionNumber = sectionNumber
                     rqSectionUvdIndex = userVelocity.index
+                    requestSectionLength = uvdSectionLength
                 }
             }
             userStraightIndexes.append(userVelocity.index)
@@ -59,11 +65,12 @@ public class OlympusSectionController {
             }
             sectionNumber += 1
             uvdForSection = []
+            uvdSectionLength = 0
             uvdSectionHeadings = []
             userStraightIndexes = []
         }
         
-        return (isNeedRequest, requestType)
+        return (isNeedRequest, requestType, requestSectionLength)
     }
     
     public func getAnchorTailIndex() -> Int {

@@ -750,7 +750,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     var pathType: Int = 1
                     if (runMode == OlympusConstants.MODE_PDR) { pathType = 0 }
 //                    print(getLocalTimeString() + " , (Olympus) Request Phase 5 : isBadCaseInStableMode = \(self.isBadCaseInStableMode)")
-                    let nodeCandidatesResult = OlympusPathMatchingCalculator.shared.getNodeCandidates(fltResult: tuResult, pathType: pathType, requestType: sectionResult.1, isBadCaseInStableMode: self.isBadCaseInStableMode, isPhaseBreak: isPhaseBreak)
+                    let nodeCandidatesResult = OlympusPathMatchingCalculator.shared.getNodeCandidates(fltResult: tuResult, pathType: pathType, requestType: sectionResult.1, sectionLength: sectionResult.2, isBadCaseInStableMode: self.isBadCaseInStableMode, isPhaseBreak: isPhaseBreak)
                     nodeCandidates = nodeCandidatesResult.1
                     nodeCandidatesDirections = nodeCandidatesResult.2
                     

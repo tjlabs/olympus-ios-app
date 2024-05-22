@@ -1095,17 +1095,26 @@ public class OlympusPathMatchingCalculator {
 //        print(getLocalTimeString() + " , (Olympus) linkDirections = \(linkDirections)")
         var isDefault: Bool = true
         if directions.count == 2 {
+            var xyLimitValue: Double = 30
+            if (mode == OlympusConstants.MODE_PDR) {
+                xyLimitValue = xyLimitValue/2
+            }
             if (directions.contains(0) && directions.contains(180)) {
-                paddingValues = [30, 2, 30, 2]
+                paddingValues = [xyLimitValue, 2, xyLimitValue, 2]
                 isDefault = false
             } else if (directions.contains(90) && directions.contains(270)) {
-                paddingValues = [2, 30, 2, 30]
+                paddingValues = [2, xyLimitValue, 2, xyLimitValue]
                 isDefault = false
             }
         }
         
+        var defaultPaddingValue = OlympusConstants.PADDING_VALUE
+        if (mode == OlympusConstants.MODE_PDR) {
+            defaultPaddingValue = defaultPaddingValue/2
+        }
+        
         if (isDefault) {
-            paddingValues = [Double] (repeating: OlympusConstants.PADDING_VALUE, count: 4)
+            paddingValues = [Double] (repeating: defaultPaddingValue, count: 4)
 //            print(getLocalTimeString() + " , (Olympus) Default // paddingValues = \(paddingValues)")
         } else {
 //            print(getLocalTimeString() + " , (Olympus) XYLimit // paddingValues = \(paddingValues)")
@@ -1162,7 +1171,7 @@ public class OlympusPathMatchingCalculator {
         }
     }
     
-    public func getNodeCandidates(fltResult: FineLocationTrackingFromServer, pathType: Int, requestType: Int, isBadCaseInStableMode: Bool, isPhaseBreak: Bool) -> (Bool, [Int], [[Double]], Int) {
+    public func getNodeCandidates(fltResult: FineLocationTrackingFromServer, pathType: Int, requestType: Int, sectionLength: Double, isBadCaseInStableMode: Bool, isPhaseBreak: Bool) -> (Bool, [Int], [[Double]], Int) {
         var isNeedPhase4: Bool = false
         var nodeCandidates = [Int]()
         var nodeCandidatesDirections = [[Double]]()
@@ -1188,7 +1197,7 @@ public class OlympusPathMatchingCalculator {
                 if (nodeNumber != -1) {
                     print(getLocalTimeString() + " , (Olympus) Node Find : findStartNode (Before) nodeNumber = \(nodeNumber) // nodeCoord = \(nodeCoord) // nodeIndex = \(nodeIndex)")
                     // Check End Node
-                    let findNodeResult = findStartNode(fltResult: fltResult, pathType: pathType, nodeNumber: nodeNumber, nodeCoord: nodeCoord, nodeHeadings: nodeHeadings)
+                    let findNodeResult = findStartNode(fltResult: fltResult, pathType: pathType, nodeNumber: nodeNumber, nodeCoord: nodeCoord, nodeHeadings: nodeHeadings, sectionLength: sectionLength)
                     nodeCandidates.append(findNodeResult.0)
                     nodeCoord = findNodeResult.1
                     nodeCandidatesDirections.append(findNodeResult.2)
@@ -1469,11 +1478,14 @@ public class OlympusPathMatchingCalculator {
         return (isPpEndPoint, matchedNode, matchedNodeHeadings)
     }
     
-    private func findStartNode(fltResult: FineLocationTrackingFromServer, pathType: Int, nodeNumber: Int, nodeCoord: [Double], nodeHeadings: [Double]) -> (Int, [Double], [Double]) {
+    private func findStartNode(fltResult: FineLocationTrackingFromServer, pathType: Int, nodeNumber: Int, nodeCoord: [Double], nodeHeadings: [Double], sectionLength: Double) -> (Int, [Double], [Double]) {
         var resultNode: Int = nodeNumber
         var resultNodeCoord: [Double] = nodeCoord
         var resultNodeHeadings: [Double] = nodeHeadings
         
+        let pathMatchingResult = pathMatching(building: fltResult.building_name, level: fltResult.level_name, x: fltResult.x, y: fltResult.y, heading: fltResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: pathType, PADDING_VALUES: [5, 5, 5, 5])
+        
+//        let heading = compensateHeading(heading: fltResult.absolute_heading)
         let heading = compensateHeading(heading: fltResult.absolute_heading)
         
         var diffHeading = [Double]()
@@ -1502,9 +1514,9 @@ public class OlympusPathMatchingCalculator {
         let sectionRqIdx: Double = Double(OlympusConstants.REQUIRED_SECTION_RQ_IDX)
         if (pathType == 0) {
             PIXEL_LENGTH = 0.65
-        }
-        
+        }        
         let PIXELS_TO_CHECK = Int(round((sectionRqIdx + 2)*PIXEL_LENGTH))
+//        let PIXELS_TO_CHECK = Int(round(sectionLength + sectionLength*0.2))
         
         print(getLocalTimeString() + " , (Olympus) Node Find : findStartNode (Process) PIXELS_TO_CHECK = \(PIXELS_TO_CHECK) // candidateDirections = \(candidateDirections)")
         if (candidateDirections.count == 1) {
@@ -1515,6 +1527,9 @@ public class OlympusPathMatchingCalculator {
             let paddingValues = [Double] (repeating: Double(PIXELS_TO_CHECK), count: 4)
             var x: Double = nodeCoord[0]
             var y: Double = nodeCoord[1]
+            
+//            var x: Double = pathMatchingResult.xyhs[0]
+//            var y: Double = pathMatchingResult.xyhs[1]
             for _ in 0..<PIXELS_TO_CHECK {
                 x += cos(direction*OlympusConstants.D2R)
                 y += sin(direction*OlympusConstants.D2R)
