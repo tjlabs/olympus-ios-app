@@ -201,6 +201,117 @@ class CardViewController: UIViewController, Observer {
         })
     }
     
+    private func drawResult(XY: [Double], RP_X: [Double], RP_Y: [Double], heading: Double, limits: [Double], isBleOnlyMode: Bool, isPmSuccess: Bool, isIndoor: Bool) {
+        let xAxisValue: [Double] = RP_X
+        let yAxisValue: [Double] = RP_Y
+        
+        var valueColor = UIColor.systemRed
+        
+        if (!isIndoor) {
+            valueColor = UIColor.systemGray
+        } else if (isBleOnlyMode) {
+            valueColor = UIColor.systemBlue
+        } else if (!isPmSuccess) {
+            valueColor = .systemOrange
+        } else {
+            valueColor = UIColor.systemRed
+        }
+
+        let values0 = (0..<xAxisValue.count).map { (i) -> ChartDataEntry in
+            return ChartDataEntry(x: xAxisValue[i], y: yAxisValue[i])
+        }
+        
+        let set0 = ScatterChartDataSet(entries: values0, label: "RP")
+        set0.drawValuesEnabled = false
+        set0.setScatterShape(.square)
+        set0.setColor(UIColor.yellow)
+        set0.scatterShapeSize = 4
+        
+        let values1 = (0..<1).map { (i) -> ChartDataEntry in
+            return ChartDataEntry(x: XY[0], y: XY[1])
+        }
+        let set1 = ScatterChartDataSet(entries: values1, label: "USER")
+        set1.drawValuesEnabled = false
+        set1.setScatterShape(.circle)
+        set1.setColor(valueColor)
+        set1.scatterShapeSize = 16
+        
+        let chartData = ScatterChartData(dataSet: set0)
+        chartData.append(set1)
+        chartData.setDrawValues(false)
+        
+        // Heading
+        let point = scatterChart.getPosition(entry: ChartDataEntry(x: XY[0], y: XY[1]), axis: .left)
+        let imageView = UIImageView(image: headingImage!.rotate(degrees: -heading+90))
+        imageView.frame = CGRect(x: point.x - 15, y: point.y - 15, width: 30, height: 30)
+        imageView.contentMode = .center
+        imageView.tag = 100
+        if let viewWithTag = scatterChart.viewWithTag(100) {
+            viewWithTag.removeFromSuperview()
+        }
+        scatterChart.addSubview(imageView)
+        
+        let chartFlag: Bool = false
+        scatterChart.isHidden = false
+        
+        let xMin = xAxisValue.min()!
+        let xMax = xAxisValue.max()!
+        let yMin = yAxisValue.min()!
+        let yMax = yAxisValue.max()!
+        
+//        print("\(currentBuilding) \(currentLevel) MinMax : \(xMin) , \(xMax), \(yMin), \(yMax)")
+//        print("\(currentBuilding) \(currentLevel) Limits : \(limits[0]) , \(limits[1]), \(limits[2]), \(limits[3])")
+        
+//        scatterChart.xAxis.axisMinimum = -5.8
+//        scatterChart.xAxis.axisMaximum = 56.8
+//        scatterChart.leftAxis.axisMinimum = -2.8
+//        scatterChart.leftAxis.axisMaximum = 66.6
+        
+//        scatterChart.xAxis.axisMinimum = -4
+//        scatterChart.xAxis.axisMaximum = 36
+//        scatterChart.leftAxis.axisMinimum = -4
+//        scatterChart.leftAxis.axisMaximum = 78
+        
+//        scatterChart.xAxis.axisMinimum = -4
+//        scatterChart.xAxis.axisMaximum = 36
+//        scatterChart.leftAxis.axisMinimum = -4.65
+//        scatterChart.leftAxis.axisMaximum = 79
+        
+        // Configure Chart
+        if ( limits[0] == 0 && limits[1] == 0 && limits[2] == 0 && limits[3] == 0 ) {
+            scatterChart.xAxis.axisMinimum = xMin - 10
+            scatterChart.xAxis.axisMaximum = xMax + 10
+            scatterChart.leftAxis.axisMinimum = yMin - 10
+            scatterChart.leftAxis.axisMaximum = yMax + 10
+        } else {
+            scatterChart.xAxis.axisMinimum = limits[0]
+            scatterChart.xAxis.axisMaximum = limits[1]
+            scatterChart.leftAxis.axisMinimum = limits[2]
+            scatterChart.leftAxis.axisMaximum = limits[3]
+        }
+        
+        scatterChart.xAxis.drawGridLinesEnabled = chartFlag
+        scatterChart.leftAxis.drawGridLinesEnabled = chartFlag
+        scatterChart.rightAxis.drawGridLinesEnabled = chartFlag
+        
+        scatterChart.xAxis.drawAxisLineEnabled = chartFlag
+        scatterChart.leftAxis.drawAxisLineEnabled = chartFlag
+        scatterChart.rightAxis.drawAxisLineEnabled = chartFlag
+        
+        scatterChart.xAxis.centerAxisLabelsEnabled = chartFlag
+        scatterChart.leftAxis.centerAxisLabelsEnabled = chartFlag
+        scatterChart.rightAxis.centerAxisLabelsEnabled = chartFlag
+        
+        scatterChart.xAxis.drawLabelsEnabled = chartFlag
+        scatterChart.leftAxis.drawLabelsEnabled = chartFlag
+        scatterChart.rightAxis.drawLabelsEnabled = chartFlag
+        
+        scatterChart.legend.enabled = chartFlag
+        
+        scatterChart.backgroundColor = .clear
+        
+        scatterChart.data = chartData
+    }
     
     private func drawDebug(XY: [Double], RP_X: [Double], RP_Y: [Double],  serverXY: [Double], tuXY: [Double], heading: Double, limits: [Double], isBleOnlyMode: Bool, isPmSuccess: Bool, trajectoryStartCoord: [Double], userTrajectory: [[Double]], searchArea: [[Double]], searchType: Int, isIndoor: Bool, trajPm: [[Double]], trajOg: [[Double]]) {
         let xAxisValue: [Double] = RP_X
@@ -491,6 +602,7 @@ class CardViewController: UIViewController, Observer {
                 let serverXY: [Double] = serviceManager.displayOutput.serverResult
                 let tuXY: [Double] = serviceManager.timeUpdateResult
                 drawDebug(XY: XY, RP_X: pathPixel[0], RP_Y: pathPixel[1], serverXY: serverXY, tuXY: tuXY, heading: heading, limits: limits, isBleOnlyMode: self.isBleOnlyMode, isPmSuccess: true, trajectoryStartCoord: serviceManager.displayOutput.trajectoryStartCoord, userTrajectory: serviceManager.displayOutput.userTrajectory, searchArea: serviceManager.displayOutput.searchArea, searchType: serviceManager.displayOutput.searchType, isIndoor: isIndoor, trajPm: serviceManager.displayOutput.trajectoryPm, trajOg: serviceManager.displayOutput.trajectoryOg)
+//                drawResult(XY: XY, RP_X: pathPixel[0], RP_Y: pathPixel[1], heading: heading, limits: limits, isBleOnlyMode: self.isBleOnlyMode, isPmSuccess: true, isIndoor: isIndoor)
             }
         } else {
             PathPixel[key] = loadPp(fileName: key)

@@ -223,7 +223,6 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 //        }
 //    }
     
-    
     func isConnected() -> Bool {
         return connected
     }

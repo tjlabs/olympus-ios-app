@@ -26,10 +26,12 @@ public class OlympusSectionController {
         self.anchorTailIndexCandidates = []
     }
     
-    public func controlSection(userVelocity: UserVelocity) -> (Bool, Int, Double) {
+    public func controlSection(userVelocity: UserVelocity) -> SectionInfo {
         var isNeedRequest: Bool = false
         var requestType: Int = -1
         var requestSectionLength: Double = -1
+        var requestSectionIndex: Int = -1
+        var sectionInfo: SectionInfo = SectionInfo(isNeedRequest: isNeedRequest, requestType: requestType, requestSectionLength: requestSectionLength, requestSectionIndex: requestSectionIndex)
         
         uvdForSection.append(userVelocity)
         uvdSectionLength += userVelocity.length
@@ -42,7 +44,6 @@ public class OlympusSectionController {
                 if (rqSectionNumber != sectionNumber) {
                     isNeedRequest = true
                     requestType = 0
-                    requestSectionLength = uvdSectionLength
                 } else if (userVelocity.index - rqSectionUvdIndex > OlympusConstants.REQUIRED_SECTION_RQ_IDX) {
                     isNeedRequest = true
                     requestType = 1
@@ -51,6 +52,7 @@ public class OlympusSectionController {
                     rqSectionNumber = sectionNumber
                     rqSectionUvdIndex = userVelocity.index
                     requestSectionLength = uvdSectionLength
+                    requestSectionIndex = uvdForSection[0].index
                 }
             }
             userStraightIndexes.append(userVelocity.index)
@@ -70,7 +72,7 @@ public class OlympusSectionController {
             userStraightIndexes = []
         }
         
-        return (isNeedRequest, requestType, requestSectionLength)
+        return sectionInfo
     }
     
     public func getAnchorTailIndex() -> Int {

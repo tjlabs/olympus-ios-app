@@ -1171,18 +1171,23 @@ public class OlympusPathMatchingCalculator {
         }
     }
     
-    public func getNodeCandidates(fltResult: FineLocationTrackingFromServer, pathType: Int, requestType: Int, sectionLength: Double, isBadCaseInStableMode: Bool, isPhaseBreak: Bool) -> (Bool, [Int], [[Double]], Int) {
+    public func getNodeCandidates(fltResult: FineLocationTrackingFromServer, pathType: Int, sectionInfo: SectionInfo, isBadCaseInStableMode: Bool, isPhaseBreak: Bool) -> NodeCandidateInfo {
+        var requestType = sectionInfo.requestType
+        var sectionLength = sectionInfo.requestSectionLength
+        
         var isNeedPhase4: Bool = false
         var nodeCandidates = [Int]()
         var nodeCandidatesDirections = [[Double]]()
         var nodeIndex: Int = passedNodeMatchedIndex
+        var nodeCandidateInfo: NodeCandidateInfo = NodeCandidateInfo(isNeedPhase4: isNeedPhase4, nodeCandidates: nodeCandidates, nodeCandidatesDirections: nodeCandidatesDirections, nodeIndex: nodeIndex)
         
         var nodeNumber = passedNode
         var nodeCoord = passedNodeCoord
         var nodeHeadings = passedNodeHeadings
         
         if (isPhaseBreak) {
-            return (isNeedPhase4, nodeCandidates, nodeCandidatesDirections, nodeIndex)
+            nodeCandidateInfo = NodeCandidateInfo(isNeedPhase4: isNeedPhase4, nodeCandidates: nodeCandidates, nodeCandidatesDirections: nodeCandidatesDirections, nodeIndex: nodeIndex)
+            return nodeCandidateInfo
         }
         
         if (requestType == 1) {
@@ -1191,6 +1196,7 @@ public class OlympusPathMatchingCalculator {
             nodeHeadings = nodeInfo.nodeHeadings
             nodeCandidates = nodeInfo.nodeCandidates
             
+            nodeCandidateInfo = NodeCandidateInfo(isNeedPhase4: isNeedPhase4, nodeCandidates: nodeCandidates, nodeCandidatesDirections: nodeCandidatesDirections, nodeIndex: nodeIndex)
             updateNodeInfoWhenRequest(nodeCandidates: nodeCandidates, nodeCoord: nodeCoord, nodeHeadings: nodeHeadings, nodeMatchedIndex: nodeIndex, userResult: fltResult)
         } else {
             if (!isBadCaseInStableMode) {
@@ -1215,8 +1221,9 @@ public class OlympusPathMatchingCalculator {
 //                    nodeCandidatesDirections.append(nodeHeadings)
                 }
                 
+                nodeCandidateInfo = NodeCandidateInfo(isNeedPhase4: isNeedPhase4, nodeCandidates: nodeCandidates, nodeCandidatesDirections: nodeCandidatesDirections, nodeIndex: nodeIndex)
                 updateNodeInfoWhenRequest(nodeCandidates: nodeCandidates, nodeCoord: nodeCoord, nodeHeadings: nodeHeadings, nodeMatchedIndex: nodeIndex, userResult: fltResult)
-                return (isNeedPhase4, nodeCandidates, nodeCandidatesDirections, nodeIndex)
+                return nodeCandidateInfo
             } else {
                 isNeedPhase4 = true
                 
@@ -1285,6 +1292,7 @@ public class OlympusPathMatchingCalculator {
 //                    }
 //                }
                 
+                nodeCandidateInfo = NodeCandidateInfo(isNeedPhase4: isNeedPhase4, nodeCandidates: nodeCandidates, nodeCandidatesDirections: nodeCandidatesDirections, nodeIndex: nodeIndex)
                 updateNodeInfoWhenRequest(nodeCandidates: nodeCandidates, nodeCoord: nodeCoord, nodeHeadings: nodeHeadings, nodeMatchedIndex: nodeIndex, userResult: fltResult)
                 print(getLocalTimeString() + " , (Olympus) Node Check : Passed Node : Node Candidates = \(nodeCandidates)")
                 print(getLocalTimeString() + " , (Olympus) Node Check : -----------------------------------------------")
@@ -1346,7 +1354,7 @@ public class OlympusPathMatchingCalculator {
         }
         
 //        updateNodeInfoWhenRequest(nodeCandidates: nodeCandidates, nodeCoord: nodeCoord, nodeHeadings: nodeHeadings, nodeMatchedIndex: nodeMatchedIndex, userResult: fltResult)
-        return (isNeedPhase4, nodeCandidates, nodeCandidatesDirections, nodeIndex)
+        return nodeCandidateInfo
     }
     
     public func getNodeCandidatesForRecovery(pathType: Int) -> [Int] {
@@ -1514,7 +1522,7 @@ public class OlympusPathMatchingCalculator {
         let sectionRqIdx: Double = Double(OlympusConstants.REQUIRED_SECTION_RQ_IDX)
         if (pathType == 0) {
             PIXEL_LENGTH = 0.65
-        }        
+        }
         let PIXELS_TO_CHECK = Int(round((sectionRqIdx + 2)*PIXEL_LENGTH))
 //        let PIXELS_TO_CHECK = Int(round(sectionLength + sectionLength*0.2))
         

@@ -580,6 +580,19 @@ struct NodeInfo {
     var userResult: FineLocationTrackingFromServer
 }
 
+public struct SectionInfo {
+    public var isNeedRequest: Bool
+    public var requestType: Int
+    public var requestSectionLength: Double
+    public var requestSectionIndex: Int
+}
+
+public struct NodeCandidateInfo {
+    public var isNeedPhase4: Bool
+    public var nodeCandidates: [Int]
+    public var nodeCandidatesDirections: [[Double]]
+    public var nodeIndex: Int
+}
 
 // 임시
 public struct ServiceResult {

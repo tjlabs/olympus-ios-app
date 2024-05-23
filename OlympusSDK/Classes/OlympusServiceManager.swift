@@ -743,16 +743,16 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 currentTuResult = tuResult
                 
                 let sectionResult = sectionController.controlSection(userVelocity: data)
-                if (sectionResult.0) {
+                if (sectionResult.isNeedRequest) {
                     displayOutput.indexTx = data.index
                     var nodeCandidates = [Int]()
                     var nodeCandidatesDirections = [[Double]]()
                     var pathType: Int = 1
                     if (runMode == OlympusConstants.MODE_PDR) { pathType = 0 }
 //                    print(getLocalTimeString() + " , (Olympus) Request Phase 5 : isBadCaseInStableMode = \(self.isBadCaseInStableMode)")
-                    let nodeCandidatesResult = OlympusPathMatchingCalculator.shared.getNodeCandidates(fltResult: tuResult, pathType: pathType, requestType: sectionResult.1, sectionLength: sectionResult.2, isBadCaseInStableMode: self.isBadCaseInStableMode, isPhaseBreak: isPhaseBreak)
-                    nodeCandidates = nodeCandidatesResult.1
-                    nodeCandidatesDirections = nodeCandidatesResult.2
+                    let nodeCandidatesResult = OlympusPathMatchingCalculator.shared.getNodeCandidates(fltResult: tuResult, pathType: pathType, sectionInfo: sectionResult, isBadCaseInStableMode: self.isBadCaseInStableMode, isPhaseBreak: isPhaseBreak)
+                    nodeCandidates = nodeCandidatesResult.nodeCandidates
+                    nodeCandidatesDirections = nodeCandidatesResult.nodeCandidatesDirections
                     
                     let anchorTailIndex = sectionController.getAnchorTailIndex()
                     let stableInfo = StableInfo(tail_index: anchorTailIndex, head_section_number: sectionController.rqSectionNumber, node_number_list: nodeCandidates)
@@ -762,9 +762,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     displayOutput.trajectoryStartCoord = userTrajToDsiplay[0]
                     displayOutput.userTrajectory = userTrajToDsiplay
                     
-                    if (nodeCandidatesResult.0) {
+                    if (nodeCandidatesResult.isNeedPhase4) {
                         let ppHeadings: [Double] = flattenAndUniquify(nodeCandidatesDirections)
-                        let passedNodeMatchedIndex: Int = nodeCandidatesResult.3
+                        let passedNodeMatchedIndex: Int = nodeCandidatesResult.nodeIndex
                         let uvdBuffer: [UnitDRInfo] = getUnitDRInfoFromUvdIndex(from: unitDRInfoBufferForPhase4, uvdIndex: passedNodeMatchedIndex)
                         self.isNeedClearBuffer = true
                         if (uvdBuffer.isEmpty) {
@@ -798,12 +798,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             }
                             print(getLocalTimeString() + " , (Olympus) Request Phase 4 : searchHeadings = \(searchHeadings)")
                             let searchDirections = searchHeadings.map { Int($0) }
-                            print(getLocalTimeString() + " , (Olympus) Request Phase 4 : \(data.index) // anchor = \(anchorTailIndex) // requestType = \(sectionResult.1) // nodeCandidates = \(nodeCandidates)")
+                            print(getLocalTimeString() + " , (Olympus) Request Phase 4 : \(data.index) // anchor = \(anchorTailIndex) // requestType = \(sectionResult.requestType) // nodeCandidates = \(nodeCandidates)")
                             processPhase4(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, node_index: passedNodeMatchedIndex, search_direction_list: searchDirections)
                         }
                     } else {
                         if (!self.isInRecoveryProcess && userMaskSendCount >= 2) {
-                            print(getLocalTimeString() + " , (Olympus) Request Phase 5 : \(data.index) // anchor = \(anchorTailIndex) // requestType = \(sectionResult.1) // nodeCandidates = \(nodeCandidates)")
+                            print(getLocalTimeString() + " , (Olympus) Request Phase 5 : \(data.index) // anchor = \(anchorTailIndex) // requestType = \(sectionResult.requestType) // nodeCandidates = \(nodeCandidates)")
                             processPhase5(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo)
                         }
                     }
