@@ -151,12 +151,12 @@ public class OlympusPhaseController {
         case 1:
             phase = self.phase1control(serverResult: currentResult, mode: mode)
         case 2:
-            phase = self.checkScResultConnectionForPhase4(inputPhase: inputPhase, serverResultArray: serverResultArray, drBuffer: drBuffer, UVD_INTERVAL: UVD_INTERVAL, TRAJ_LENGTH: TRAJ_LENGTH, mode: mode)
+            phase = self.checkScResultConnectionForStable(inputPhase: inputPhase, serverResultArray: serverResultArray, drBuffer: drBuffer, UVD_INTERVAL: UVD_INTERVAL, TRAJ_LENGTH: TRAJ_LENGTH, mode: mode)
         case 3:
             if (currentResult.scc < OlympusConstants.PHASE_BREAK_SCC) {
                 phase = 1
             } else {
-                phase = self.checkScResultConnectionForPhase4(inputPhase: inputPhase, serverResultArray: serverResultArray, drBuffer: drBuffer, UVD_INTERVAL: UVD_INTERVAL, TRAJ_LENGTH: TRAJ_LENGTH, mode: mode)
+                phase = self.checkScResultConnectionForStable(inputPhase: inputPhase, serverResultArray: serverResultArray, drBuffer: drBuffer, UVD_INTERVAL: UVD_INTERVAL, TRAJ_LENGTH: TRAJ_LENGTH, mode: mode)
             }
         case 4:
             phase = self.phase4control(serverResult: currentResult, mode: mode)
@@ -174,7 +174,7 @@ public class OlympusPhaseController {
         return (phase, isPhaseBreak)
     }
     
-    public func checkScResultConnectionForPhase4(inputPhase: Int, serverResultArray: [FineLocationTrackingFromServer], drBuffer: [UnitDRInfo], UVD_INTERVAL: Int, TRAJ_LENGTH: Double, mode: String) -> Int {
+    public func checkScResultConnectionForStable(inputPhase: Int, serverResultArray: [FineLocationTrackingFromServer], drBuffer: [UnitDRInfo], UVD_INTERVAL: Int, TRAJ_LENGTH: Double, mode: String) -> Int {
         var phase: Int = inputPhase
         
         // Conditions //
@@ -216,10 +216,10 @@ public class OlympusPhaseController {
                     return phase
                 } else {
                     if (currentResult.index - previousResult.index) > indexCondition {
-                        print(getLocalTimeString() + " , (Olympus) Check Phase3->4 : preIndex = \(previousResult.index) // curIndex = \(currentResult.index) // indexCondition = \(indexCondition)")
+                        print(getLocalTimeString() + " , (Olympus) Check Phase3->5 : preIndex = \(previousResult.index) // curIndex = \(currentResult.index) // indexCondition = \(indexCondition)")
                         return phase
                     } else if (currentResult.index <= previousResult.index) {
-                        print(getLocalTimeString() + " , (Olympus) Check Phase3->4 : cur <= pre // preIndex = \(previousResult.index) // curIndex = \(currentResult.index)")
+                        print(getLocalTimeString() + " , (Olympus) Check Phase3->5 : cur <= pre // preIndex = \(previousResult.index) // curIndex = \(currentResult.index)")
                         return phase
                     } else {
                         var drBufferStartIndex: Int = 0
@@ -264,7 +264,7 @@ public class OlympusPhaseController {
                         
                         let rendezvousDistance = sqrt(diffX*diffX + diffY*diffY)
                         if (rendezvousDistance <= distanceCondition) && diffH <= headingCondition {
-                            phase = 4
+                            phase = 5
                         }
                         return phase
                     }

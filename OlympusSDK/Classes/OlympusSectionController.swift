@@ -48,6 +48,7 @@ public class OlympusSectionController {
                     isNeedRequest = true
                     requestType = 1
                 }
+                
                 if (isNeedRequest) {
                     rqSectionNumber = sectionNumber
                     rqSectionUvdIndex = userVelocity.index
@@ -56,9 +57,12 @@ public class OlympusSectionController {
                         requestSectionIndex = self.anchorTailIndex
                         initSectionUvdIndex = false
                     } else {
-                        requestSectionIndex = uvdForSection[0].index
+                        if (self.anchorTailIndex > uvdForSection[0].index) {
+                            requestSectionIndex = self.anchorTailIndex
+                        } else {
+                            requestSectionIndex = uvdForSection[0].index
+                        }
                     }
-//                    requestSectionIndex = uvdForSection[0].index
                 }
             }
             userStraightIndexes.append(userVelocity.index)
@@ -71,6 +75,7 @@ public class OlympusSectionController {
                 anchorTailIndexCandidates.append(newAnchorTailIndex)
                 updateAnchorTailIndex(userIndex: userVelocity.index, anchorTailIndex: self.anchorTailIndex, indexCandidates: self.anchorTailIndexCandidates)
             }
+            
             sectionNumber += 1
             uvdForSection = []
             uvdSectionLength = 0

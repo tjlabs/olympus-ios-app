@@ -81,7 +81,7 @@ class OlympusConstants {
     static var INDEX_THRESHOLD: Int = 11
     static let UVD_BUFFER_SIZE: Int = 10
     static let DR_INFO_BUFFER_SIZE: Int = 60 // 30
-    static let DR_BUFFER_SIZE_FOR_STRAIGHT: Int = 6 // COEX 12 // DS 6
+    static let DR_BUFFER_SIZE_FOR_STRAIGHT: Int = 12 // COEX 12 // DS 6
     static let DR_HEADING_CORR_NUM_IDX: Int = 5
     
     // SLEEP
@@ -157,10 +157,10 @@ class OlympusConstants {
     static let HEADING_BUFFER_SIZE: Int = 5
     static let REQUIRED_PATH_TRAJ_MATCHING_INDEX: Int = 5
     static let SECTION_STRAIGHT_ANGLE: Double = 5 // degree
-    static let REQUIRED_SECTION_STRAIGHT_IDX: Int = 8
-    static let REQUIRED_SECTION_RQ_IDX: Int = 8
-//    static let REQUIRED_SECTION_STRAIGHT_IDX: Int = 20 // COEX DR
-//    static let REQUIRED_SECTION_RQ_IDX: Int = 20 // COEX DR
+//    static let REQUIRED_SECTION_STRAIGHT_IDX: Int = 8
+//    static let REQUIRED_SECTION_RQ_IDX: Int = 8
+    static let REQUIRED_SECTION_STRAIGHT_IDX: Int = 20 // COEX DR
+    static let REQUIRED_SECTION_RQ_IDX: Int = 20 // COEX DR
     static let REQUIRED_BAD_CASE_CHECK_IDX: Int = 15
     
     // Path-Matching

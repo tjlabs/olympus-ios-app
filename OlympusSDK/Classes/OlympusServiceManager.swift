@@ -18,7 +18,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 let data = MobileResult(user_id: self.user_id, mobile_time: result.mobile_time, sector_id: self.sector_id, building_name: result.building_name, level_name: result.level_name, scc: result.scc, x: result.x, y: result.y, absolute_heading: result.absolute_heading, phase: result.phase, calculated_time: result.calculated_time, index: result.index, velocity: result.velocity, ble_only_position: result.ble_only_position, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation: self.scCompensation, is_indoor: result.isIndoor)
                 inputMobileResult.append(data)
                 if (inputMobileResult.count >= OlympusConstants.MR_INPUT_NUM) {
-                    inputMobileResult.remove(at: 0)
                     OlympusNetworkManager.shared.postMobileResult(url: REC_RESULT_URL, input: inputMobileResult, completion: { statusCode, returnedStrig in
                         if (statusCode != 200) {
                             let localTime = getLocalTimeString()
@@ -802,7 +801,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 currentTuResult = tuResult
                 
                 let sectionResult = sectionController.controlSection(userVelocity: data)
-                if (sectionResult.isNeedRequest) {
+                if (sectionResult.isNeedRequest && phaseController.PHASE >= 4) {
                     displayOutput.indexTx = data.index
                     var nodeCandidates = [Int]()
                     var nodeCandidatesDirections = [[Double]]()
@@ -919,7 +918,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         
         // Phase 4
         let diffIdx = unitDRInfoIndex - phase3RqIndex
-        if (isPostUvdAnswered && phaseController.PHASE == OlympusConstants.PHASE_4 && diffIdx > OlympusConstants.INIT_INPUT_NUM) {
+        if (isPostUvdAnswered && phaseController.PHASE >= OlympusConstants.PHASE_4 && diffIdx > OlympusConstants.INIT_INPUT_NUM) {
             isPostUvdAnswered = false
             let phase4Trajectory = trajectoryInfo
             if (!stateManager.isBackground) {
@@ -1032,7 +1031,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             if (phaseController.phase2BadCount > OlympusConstants.COUNT_FOR_PHASE_BREAK_IN_PHASE2) {
                                 phaseBreakInPhase2()
                             }
-                        } else if (resultPhase.0 == OlympusConstants.PHASE_4) {
+                        } else if (resultPhase.0 == OlympusConstants.PHASE_5) {
                             var isUpdateResult: Bool = false
                             
                             let inputTrajLength = trajController.calculateTrajectoryLength(trajectoryInfo: inputTraj)
@@ -1220,14 +1219,15 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             let propagatedResult: [Double] = [pmResult.x+propagationValues[0] , pmResult.y+propagationValues[1], pmResult.absolute_heading+propagationValues[2]]
                             let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: fltResult.building_name, level: fltResult.level_name, x: propagatedResult[0], y: propagatedResult[1], heading: propagatedResult[2], HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, PADDING_VALUES: paddingValues)
                             let inputTrajLength = trajController.calculateTrajectoryLength(trajectoryInfo: inputTraj)
-                            if (resultPhase.0 == OlympusConstants.PHASE_3 || resultPhase.0 == OlympusConstants.PHASE_4) {
-                                if (resultPhase.0 == OlympusConstants.PHASE_4 && isPhaseBreak) {
+                            if (resultPhase.0 == OlympusConstants.PHASE_3 || resultPhase.0 == OlympusConstants.PHASE_5) {
+                                if (resultPhase.0 == OlympusConstants.PHASE_5 && isPhaseBreak) {
                                     KF.resetKalmanR()
                                     OlympusConstants.PADDING_VALUE = OlympusConstants.PADDING_VALUE_SMALL
                                     userMaskSendCount = 0
                                     isPhaseBreak = false
                                 }
-                                // Phase 3 --> 3 or 4 && KF is Running
+                                // Phase 3 --> 3 or 5 && KF is Running
+                                sectionController.setInitialAnchorTailIndex(value: fltResult.index)
                                 if (pathMatchingResult.isSuccess) {
                                     copiedResult.x = pathMatchingResult.xyhs[0]
                                     copiedResult.y = pathMatchingResult.xyhs[1]
@@ -1240,13 +1240,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                     makeTemporalResult(input: updatedResult, isStableMode: false)
                                     
 //                                    print("Anchor : setAnchorTainIndex Phase3->4 // index = \(fltResult.index)")
-                                    sectionController.setInitialAnchorTailIndex(value: fltResult.index)
                                     KF.refreshTuResult(xyh: [copiedResult.x, copiedResult.y, copiedResult.absolute_heading], inputPhase: fltInput.phase, inputTrajLength: inputTrajLength, mode: runMode)
                                 }
                             }
                         } else {
-                            if (resultPhase.0 == OlympusConstants.PHASE_4 && !stateManager.isVenusMode) {
-                                // Phase 3 --> 4 && KF start
+                            if (resultPhase.0 == OlympusConstants.PHASE_5 && !stateManager.isVenusMode) {
+                                // Phase 3 --> 5 && KF start
                                 var copiedResult: FineLocationTrackingFromServer = fltResult
                                 let propagationResult = propagateUsingUvd(unitDRInfoBuffer: unitDRInfoBuffer, fltResult: fltResult)
                                 let propagationValues: [Double] = propagationResult.1
@@ -1535,8 +1534,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 }
                 preServerResultMobileTime = fltResult.mobile_time
                 self.isInRecoveryProcess = false
-            } else{
-                let msg: String = getLocalTimeString() + " , (Olympus) Error : \(statusCode) Fail to request indoor position in Phase 5"
+            } else {
+                let msg: String = getLocalTimeString() + " , (Olympus) Error : \(statusCode) Fail to request indoor position in Phase 5 // tail_index = \(fltInput.tail_index)"
                 print(msg)
             }
         })
@@ -1952,6 +1951,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 phaseBreakResult = fltResult
             }
         }
+        OlympusPathMatchingCalculator.shared.initPassedNodeInfo()
         trajController.setIsNeedTrajCheck(flag: true)
         NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_1])
         isPhaseBreak = true
