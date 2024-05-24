@@ -19,7 +19,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 inputMobileResult.append(data)
                 if (inputMobileResult.count >= OlympusConstants.MR_INPUT_NUM) {
                     inputMobileResult.remove(at: 0)
-                    OlympusNetworkManager.shared.postMobileResult(url: REC_RESULT_URL, input: inputMobileResult, completion: { [self] statusCode, returnedStrig in
+                    OlympusNetworkManager.shared.postMobileResult(url: REC_RESULT_URL, input: inputMobileResult, completion: { statusCode, returnedStrig in
                         if (statusCode != 200) {
                             let localTime = getLocalTimeString()
                             let log: String = localTime + " , (Olympus) Error \(statusCode) : Fail to send mobile result"
@@ -34,7 +34,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     
     func reporting(input: Int) {
         for observer in observers {
-            if (input != -2) {
+            if (input != -2 || input != -1) {
                 self.pastReportTime = getCurrentTimeInMillisecondsDouble()
                 self.pastReportFlag = input
             }
@@ -45,17 +45,18 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     func postReport(report: Int) {
         if (self.isSaveMobileResult) {
             let reportInput = MobileReport(user_id: self.user_id, mobile_time: getCurrentTimeInMilliseconds(), report: report)
-            OlympusNetworkManager.shared.postMobileReport(url: REC_REPORT_URL, input: reportInput, completion: { [self] statusCode, returnedStrig in
-                if (statusCode == 200) {
+            OlympusNetworkManager.shared.postMobileReport(url: REC_REPORT_URL, input: reportInput, completion: { statusCode, returnedStrig in
+                if (statusCode != 200) {
                     let localTime = getLocalTimeString()
-                    let log: String = localTime + " , (Jupiter) Success : Record Mobile Report \(report)"
-//                    print(log)
+                    let log: String = localTime + " , (Olympus) Error : Record Mobile Report \(report)"
+                    print(log)
                 }
             })
         }
     }
     
     var deviceModel: String
+    var deviceIdentifier: String
     var deviceOsVersion: Int
     
     var sensorManager = OlympusSensorManager()
@@ -162,6 +163,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     public var timeUpdateResult: [Double] = [0, 0, 0]
     
     public override init() {
+        self.deviceIdentifier = UIDevice.modelIdentifier
         self.deviceModel = UIDevice.modelName
         let deviceOs = UIDevice.current.systemVersion
         let arr = deviceOs.components(separatedBy: ".")
@@ -394,6 +396,30 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //            print("(OlympusFileManager) : sensor = \(result.0)")
 //            print("(OlympusFileManager) : ble = \(result.1)" )
         }
+    }
+    
+    public func isServiceAvailableDevice(completion: @escaping (Int, Bool) -> Void) {
+        OlympusNetworkManager.shared.getBlackList(url: BLACK_LIST_URL, completion: { statusCode, returnedString in
+            if (statusCode == 200) {
+                if let blackListDevices = jsonToBlackListDevices(from: returnedString) {
+                    print(getLocalTimeString() + " , (Olympus) BlackList : iOS Devices = \(blackListDevices.iOS.apple)")
+                    print(getLocalTimeString() + " , (Olympus) BlackList : Updated Time = \(blackListDevices.updatedTime)")
+                    
+                    let iosBlackList: [String] = blackListDevices.iOS.apple
+                    for device in iosBlackList {
+                        if (device.contains(self.deviceIdentifier)) {
+                            self.reporting(input: BLACK_LIST_FLAG)
+                            completion(500, false)
+                        }
+                    }
+                    completion(statusCode, true)
+                } else {
+                    completion(500, false)
+                }
+            } else {
+                completion(statusCode, false)
+            }
+        })
     }
     
     public func stopService() -> (Bool, String) {

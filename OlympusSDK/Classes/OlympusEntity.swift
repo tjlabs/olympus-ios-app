@@ -112,6 +112,25 @@ public struct UnitDRInfo {
     }
 }
 
+public struct BlackListDevices: Codable {
+    let android: [String: [String]]
+    let iOS: IOSSupport
+    let updatedTime: String
+    
+    enum CodingKeys: String, CodingKey {
+        case android = "Android"
+        case iOS = "iOS"
+        case updatedTime = "updated_time"
+    }
+}
+
+public struct IOSSupport: Codable {
+    let apple: [String]
+    enum CodingKeys: String, CodingKey {
+        case apple = "Apple"
+    }
+}
+
 // ---------------- Login ---------------- //
 public struct LoginInput: Codable {
     public var user_id: String = ""

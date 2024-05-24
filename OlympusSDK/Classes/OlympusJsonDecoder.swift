@@ -72,3 +72,18 @@ public func jsonToOnSpotRecognitionResult(jsonString: String) -> (Bool, OnSpotRe
     }
     
 }
+
+public func jsonToBlackListDevices(from jsonString: String) -> BlackListDevices? {
+    let jsonData = jsonString.data(using: .utf8)!
+    
+    let decoder = JSONDecoder()
+    decoder.dateDecodingStrategy = .iso8601
+    
+    do {
+        let blackListDevices = try decoder.decode(BlackListDevices.self, from: jsonData)
+        return blackListDevices
+    } catch {
+        print("Error decoding JSON: \(error)")
+        return nil
+    }
+}
