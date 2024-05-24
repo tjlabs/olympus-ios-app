@@ -8,6 +8,7 @@ public class OlympusSectionController {
     var sectionNumber: Int = 0
     var rqSectionNumber: Int = 0
     var rqSectionUvdIndex: Int = 0
+    var initSectionUvdIndex: Bool = false
     
     var userStraightIndexes: [Int] = []
     var anchorTailIndex: Int = 0
@@ -31,7 +32,6 @@ public class OlympusSectionController {
         var requestType: Int = -1
         var requestSectionLength: Double = -1
         var requestSectionIndex: Int = -1
-        var sectionInfo: SectionInfo = SectionInfo(isNeedRequest: isNeedRequest, requestType: requestType, requestSectionLength: requestSectionLength, requestSectionIndex: requestSectionIndex)
         
         uvdForSection.append(userVelocity)
         uvdSectionLength += userVelocity.length
@@ -52,7 +52,13 @@ public class OlympusSectionController {
                     rqSectionNumber = sectionNumber
                     rqSectionUvdIndex = userVelocity.index
                     requestSectionLength = uvdSectionLength
-                    requestSectionIndex = uvdForSection[0].index
+                    if (initSectionUvdIndex) {
+                        requestSectionIndex = self.anchorTailIndex
+                        initSectionUvdIndex = false
+                    } else {
+                        requestSectionIndex = uvdForSection[0].index
+                    }
+//                    requestSectionIndex = uvdForSection[0].index
                 }
             }
             userStraightIndexes.append(userVelocity.index)
@@ -72,7 +78,7 @@ public class OlympusSectionController {
             userStraightIndexes = []
         }
         
-        return sectionInfo
+        return SectionInfo(isNeedRequest: isNeedRequest, requestType: requestType, requestSectionLength: requestSectionLength, requestSectionIndex: requestSectionIndex)
     }
     
     public func getAnchorTailIndex() -> Int {
@@ -80,6 +86,7 @@ public class OlympusSectionController {
     }
     
     public func setInitialAnchorTailIndex(value: Int) {
+        self.initSectionUvdIndex = true
         self.anchorTailIndex = value
     }
     

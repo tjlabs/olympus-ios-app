@@ -18,12 +18,19 @@ public class OlympusNetworkManager {
     let umSession3: URLSession
     var umSessionCount: Int = 0
     
+    let mrSession1: URLSession
+    let mrSession2: URLSession
+    let mrSession3: URLSession
+    var mrSessionCount: Int = 0
+    
     var rfdSessions = [URLSession]()
     var uvdSessions = [URLSession]()
     var umSessions  = [URLSession]()
+    var mrSessions  = [URLSession]()
     
     let fltSession: URLSession
     let osrSession: URLSession
+    let reportSession: URLSession
     
     init() {
         let rfdConfig = URLSessionConfiguration.default
@@ -49,12 +56,22 @@ public class OlympusNetworkManager {
         let umConfig = URLSessionConfiguration.default
         umConfig.timeoutIntervalForResource = TIMEOUT_VALUE_POST
         umConfig.timeoutIntervalForRequest = TIMEOUT_VALUE_POST
-        self.umSession1 = URLSession(configuration: uvdConfig)
-        self.umSession2 = URLSession(configuration: uvdConfig)
-        self.umSession3 = URLSession(configuration: uvdConfig)
+        self.umSession1 = URLSession(configuration: umConfig)
+        self.umSession2 = URLSession(configuration: umConfig)
+        self.umSession3 = URLSession(configuration: umConfig)
         self.umSessions.append(self.umSession1)
         self.umSessions.append(self.umSession2)
         self.umSessions.append(self.umSession3)
+        
+        let mrConfig = URLSessionConfiguration.default
+        mrConfig.timeoutIntervalForResource = TIMEOUT_VALUE_POST
+        mrConfig.timeoutIntervalForRequest = TIMEOUT_VALUE_POST
+        self.mrSession1 = URLSession(configuration: mrConfig)
+        self.mrSession2 = URLSession(configuration: mrConfig)
+        self.mrSession3 = URLSession(configuration: mrConfig)
+        self.mrSessions.append(self.mrSession1)
+        self.mrSessions.append(self.mrSession2)
+        self.mrSessions.append(self.mrSession3)
         
         let fltConfig = URLSessionConfiguration.default
         fltConfig.timeoutIntervalForResource = TIMEOUT_VALUE_POST
@@ -65,16 +82,23 @@ public class OlympusNetworkManager {
         osrConfig.timeoutIntervalForResource = TIMEOUT_VALUE_POST
         osrConfig.timeoutIntervalForRequest = TIMEOUT_VALUE_POST
         self.osrSession = URLSession(configuration: osrConfig)
+        
+        let reportConfig = URLSessionConfiguration.default
+        reportConfig.timeoutIntervalForResource = TIMEOUT_VALUE_POST
+        reportConfig.timeoutIntervalForRequest = TIMEOUT_VALUE_POST
+        self.reportSession = URLSession(configuration: reportConfig)
     }
     
     func initailze() {
         self.rfdSessionCount = 0
         self.uvdSessionCount = 0
         self.umSessionCount = 0
+        self.mrSessionCount = 0
         
         self.rfdSessions = [URLSession]()
         self.uvdSessions = [URLSession]()
         self.umSessions  = [URLSession]()
+        self.mrSessions  = [URLSession]()
     }
     
     func postUserLogin(url: String, input: LoginInput, completion: @escaping (Int, String) -> Void) {
@@ -560,6 +584,139 @@ public class OlympusNetworkManager {
 //                    print("====================================")
 //                    print("RESPONSE OSR 데이터 :: ", resultCode)
 //                    print("                 :: ", resultData)
+//                    print("====================================")
+//                    print("")
+                    completion(resultCode, resultData)
+                }
+            })
+            
+            // [network 통신 실행]
+            dataTask.resume()
+        } else {
+            completion(500, "Fail to encode")
+        }
+    }
+    
+    func postMobileResult(url: String, input: [MobileResult], completion: @escaping (Int, String) -> Void) {
+        // [http 비동기 방식을 사용해서 http 요청 수행 실시]
+        let urlComponents = URLComponents(string: url)
+        var requestURL = URLRequest(url: (urlComponents?.url)!)
+        
+        requestURL.httpMethod = "POST"
+        let encodingData = JSONConverter.encodeJson(param: input)
+        if (encodingData != nil) {
+            requestURL.httpBody = encodingData
+            requestURL.addValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
+            
+//            print("")
+//            print("====================================")
+//            print("POST Mobile Result URL :: ", url)
+//            print("POST Mobile Result 데이터 :: ", input)
+//            print("====================================")
+//            print("")
+            
+            let mrSession = self.mrSessions[self.mrSessionCount%3]
+            self.mrSessionCount+=1
+            let dataTask = mrSession.dataTask(with: requestURL, completionHandler: { (data, response, error) in
+                
+                // [error가 존재하면 종료]
+                guard error == nil else {
+                    if let timeoutError = error as? URLError, timeoutError.code == .timedOut {
+                        DispatchQueue.main.async {
+                            completion(timeoutError.code.rawValue, error?.localizedDescription ?? "timed out")
+                        }
+                    } else {
+                        DispatchQueue.main.async {
+                            completion(500, error?.localizedDescription ?? "Fail")
+                        }
+                    }
+                    return
+                }
+                
+                // [status 코드 체크 실시]
+                let successsRange = 200..<300
+                guard let statusCode = (response as? HTTPURLResponse)?.statusCode, successsRange.contains(statusCode)
+                else {
+                    DispatchQueue.main.async {
+                        completion(500, (response as? HTTPURLResponse)?.description ?? "Fail")
+                    }
+                    return
+                }
+                
+                // [response 데이터 획득]
+                let resultCode = (response as? HTTPURLResponse)?.statusCode ?? 500 // [상태 코드]
+                guard let resultLen = data else {
+                    DispatchQueue.main.async {
+                        completion(500, (response as? HTTPURLResponse)?.description ?? "Fail")
+                    }
+                    return
+                }
+                let resultData = String(data: resultLen, encoding: .utf8) ?? "" // [데이터 확인]
+                
+                // [콜백 반환]
+                DispatchQueue.main.async {
+                    completion(resultCode, resultData)
+                }
+            })
+            
+            // [network 통신 실행]
+            dataTask.resume()
+        } else {
+            DispatchQueue.main.async {
+                completion(500, "Fail to encode")
+            }
+        }
+    }
+    
+    func postMobileReport(url: String, input: MobileReport, completion: @escaping (Int, String) -> Void) {
+        // [http 비동기 방식을 사용해서 http 요청 수행 실시]
+        let urlComponents = URLComponents(string: url)
+        var requestURL = URLRequest(url: (urlComponents?.url)!)
+        
+        requestURL.httpMethod = "POST"
+        let encodingData = JSONConverter.encodeJson(param: input)
+        if (encodingData != nil) {
+            requestURL.httpBody = encodingData
+            requestURL.addValue("application/json", forHTTPHeaderField: "Content-Type")
+            requestURL.setValue("\(encodingData)", forHTTPHeaderField: "Content-Length")
+            
+//            print("")
+//            print("====================================")
+//            print("POST Mobile Report URL :: ", url)
+//            print("POST Mobile Report 데이터 :: ", input)
+//            print("====================================")
+//            print("")
+            
+            let dataTask = self.reportSession.dataTask(with: requestURL, completionHandler: { (data, response, error) in
+                // [error가 존재하면 종료]
+                guard error == nil else {
+                    // [콜백 반환]
+                    completion(500, error?.localizedDescription ?? "Fail")
+                    return
+                }
+                
+                // [status 코드 체크 실시]
+                let successsRange = 200..<300
+                guard let statusCode = (response as? HTTPURLResponse)?.statusCode, successsRange.contains(statusCode)
+                else {
+                    // [콜백 반환]
+                    completion(500, (response as? HTTPURLResponse)?.description ?? "Fail")
+                    return
+                }
+                
+                // [response 데이터 획득]
+                let resultCode = (response as? HTTPURLResponse)?.statusCode ?? 500 // [상태 코드]
+                guard let resultLen = data else {
+                    completion(500, (response as? HTTPURLResponse)?.description ?? "Fail")
+                    return
+                }
+                let resultData = String(data: resultLen, encoding: .utf8) ?? "" // [데이터 확인]
+                
+                // [콜백 반환]
+                DispatchQueue.main.async {
+//                    print("")
+//                    print("====================================")
+//                    print("RESPONSE Mobile Report 데이터 :: ", resultCode)
 //                    print("====================================")
 //                    print("")
                     completion(resultCode, resultData)

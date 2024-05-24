@@ -1523,8 +1523,8 @@ public class OlympusPathMatchingCalculator {
         if (pathType == 0) {
             PIXEL_LENGTH = 0.65
         }
-        let PIXELS_TO_CHECK = Int(round((sectionRqIdx + 2)*PIXEL_LENGTH))
-//        let PIXELS_TO_CHECK = Int(round(sectionLength + sectionLength*0.2))
+//        let PIXELS_TO_CHECK = Int(round((sectionRqIdx + 2)*PIXEL_LENGTH))
+        let PIXELS_TO_CHECK = Int(round(sectionLength + sectionLength*0.2))
         
         print(getLocalTimeString() + " , (Olympus) Node Find : findStartNode (Process) PIXELS_TO_CHECK = \(PIXELS_TO_CHECK) // candidateDirections = \(candidateDirections)")
         if (candidateDirections.count == 1) {
@@ -1533,11 +1533,11 @@ public class OlympusPathMatchingCalculator {
             var matchedNodeHeadings = [Double]()
             let direction = candidateDirections[0]
             let paddingValues = [Double] (repeating: Double(PIXELS_TO_CHECK), count: 4)
-            var x: Double = nodeCoord[0]
-            var y: Double = nodeCoord[1]
+//            var x: Double = nodeCoord[0]
+//            var y: Double = nodeCoord[1]
             
-//            var x: Double = pathMatchingResult.xyhs[0]
-//            var y: Double = pathMatchingResult.xyhs[1]
+            var x: Double = pathMatchingResult.xyhs[0]
+            var y: Double = pathMatchingResult.xyhs[1]
             for _ in 0..<PIXELS_TO_CHECK {
                 x += cos(direction*OlympusConstants.D2R)
                 y += sin(direction*OlympusConstants.D2R)

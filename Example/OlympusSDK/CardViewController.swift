@@ -601,8 +601,8 @@ class CardViewController: UIViewController, Observer {
                 scatterChart.isHidden = false
                 let serverXY: [Double] = serviceManager.displayOutput.serverResult
                 let tuXY: [Double] = serviceManager.timeUpdateResult
-                drawDebug(XY: XY, RP_X: pathPixel[0], RP_Y: pathPixel[1], serverXY: serverXY, tuXY: tuXY, heading: heading, limits: limits, isBleOnlyMode: self.isBleOnlyMode, isPmSuccess: true, trajectoryStartCoord: serviceManager.displayOutput.trajectoryStartCoord, userTrajectory: serviceManager.displayOutput.userTrajectory, searchArea: serviceManager.displayOutput.searchArea, searchType: serviceManager.displayOutput.searchType, isIndoor: isIndoor, trajPm: serviceManager.displayOutput.trajectoryPm, trajOg: serviceManager.displayOutput.trajectoryOg)
-//                drawResult(XY: XY, RP_X: pathPixel[0], RP_Y: pathPixel[1], heading: heading, limits: limits, isBleOnlyMode: self.isBleOnlyMode, isPmSuccess: true, isIndoor: isIndoor)
+//                drawDebug(XY: XY, RP_X: pathPixel[0], RP_Y: pathPixel[1], serverXY: serverXY, tuXY: tuXY, heading: heading, limits: limits, isBleOnlyMode: self.isBleOnlyMode, isPmSuccess: true, trajectoryStartCoord: serviceManager.displayOutput.trajectoryStartCoord, userTrajectory: serviceManager.displayOutput.userTrajectory, searchArea: serviceManager.displayOutput.searchArea, searchType: serviceManager.displayOutput.searchType, isIndoor: isIndoor, trajPm: serviceManager.displayOutput.trajectoryPm, trajOg: serviceManager.displayOutput.trajectoryOg)
+                drawResult(XY: XY, RP_X: pathPixel[0], RP_Y: pathPixel[1], heading: heading, limits: limits, isBleOnlyMode: self.isBleOnlyMode, isPmSuccess: true, isIndoor: isIndoor)
             }
         } else {
             PathPixel[key] = loadPp(fileName: key)

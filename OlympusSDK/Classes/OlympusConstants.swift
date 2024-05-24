@@ -37,6 +37,8 @@ class OlympusConstants {
     static let PHASE_BECOME3_SCC: Double = 0.62
     static let PHASE_BREAK_SCC: Double = 0.45
     static let PHASE5_RECOVERY_SCC: Double = 0.55
+    static let PHASE_BREAK_IN_PHASE2_SCC: Double = 0.26
+    static let PHASE2_RESULT_USE_SCC: Double = 0.6
     
     
     // Sector Info //
@@ -143,6 +145,7 @@ class OlympusConstants {
     
     // Output Update
     static let OUTPUT_INTERVAL: TimeInterval = 1/5 // seconds
+    static let MR_INPUT_NUM = 20
     
     // Threshold //
     static let BLE_OFF_THRESHOLD: Double = 4 // seconds
@@ -150,9 +153,6 @@ class OlympusConstants {
     static var UNKNOWN_TRAJ_CUT_IDX: Int = 25
     static let OUTERWARD_SCAN_THRESHOLD: Double = -85.0
     static var REQUIRED_LENGTH_FOR_MAJOR_HEADING: Double = 10
-    static let SCC_FOR_PHASE_BREAK: Double = 0.45
-    static let SCC_FOR_PHASE_BREAK_IN_PHASE2: Double = 0.26
-    static let SCC_FOR_PHASE2_RESULT_USE: Double = 0.6
     static let COUNT_FOR_PHASE_BREAK_IN_PHASE2: Int = 7
     static let HEADING_BUFFER_SIZE: Int = 5
     static let REQUIRED_PATH_TRAJ_MATCHING_INDEX: Int = 5

@@ -150,8 +150,11 @@ public class OlympusRssCompensator {
                     }
                 }
             }
+            OlympusConstants().setNormalizationScale(cur: self.normalizationScale, pre: self.preNormalizationScale)
         }
     }
+    
+    
     
     public func getMaxRssi() -> Double {
         if (self.wardMaxRssi.isEmpty) {

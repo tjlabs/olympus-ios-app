@@ -5,7 +5,9 @@ public class OlympusFileManager {
     
     var sensorFileUrl: URL? = nil
     var bleFileUrl: URL? = nil
-
+    
+    private let dataQueue = DispatchQueue(label: "tjlabs.olmypus.dataQueue", attributes: .concurrent)
+    
     var sensorData = [OlympusSensorData]()
     var bleTime = [Int]()
     var bleData = [[String: Double]]()
@@ -45,15 +47,16 @@ public class OlympusFileManager {
     }
     
     public func writeSensorData(data: OlympusSensorData) {
-        let newData = data
-        sensorData.append(newData)
+        dataQueue.async(flags: .barrier) {
+            self.sensorData.append(data)
+        }
     }
     
     public func writeBleData(time: Int, data: [String: Double]) {
-        bleTime.append(time)
-        
-        let newData = data
-        bleData.append(newData)
+        dataQueue.async(flags: .barrier) {
+            self.bleTime.append(time)
+            self.bleData.append(data)
+        }
     }
     
     private func saveSensorData() {

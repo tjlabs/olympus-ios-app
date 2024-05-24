@@ -153,7 +153,7 @@ public class OlympusPhaseController {
         case 2:
             phase = self.checkScResultConnectionForPhase4(inputPhase: inputPhase, serverResultArray: serverResultArray, drBuffer: drBuffer, UVD_INTERVAL: UVD_INTERVAL, TRAJ_LENGTH: TRAJ_LENGTH, mode: mode)
         case 3:
-            if (currentResult.scc < OlympusConstants.SCC_FOR_PHASE_BREAK) {
+            if (currentResult.scc < OlympusConstants.PHASE_BREAK_SCC) {
                 phase = 1
             } else {
                 phase = self.checkScResultConnectionForPhase4(inputPhase: inputPhase, serverResultArray: serverResultArray, drBuffer: drBuffer, UVD_INTERVAL: UVD_INTERVAL, TRAJ_LENGTH: TRAJ_LENGTH, mode: mode)
