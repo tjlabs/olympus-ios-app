@@ -135,20 +135,21 @@ public class OlympusKalmanFilter: NSObject {
         outputResult.x = updatedX
         outputResult.y = updatedY
         outputResult.absolute_heading = updatedHeading
- 
+        
         if (mode == OlympusConstants.MODE_PDR) {
             // PDR
             var isDidPathTrajMatching: Bool = false
-            
+            let currentUvdIndex = unitDRInfoBuffer[unitDRInfoBuffer.count-1].index
             let isDrStraight: Bool = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT, condition: 80.0)
-            let diffPathTrajMatchingIndex = unitDRInfoBuffer[unitDRInfoBuffer.count-1].index - self.pathTrajMatchingIndex
+            
+            // 이전 Path-Traj Matching 수행한 Index와 현재 Index 수의 차이
+            let diffPathTrajMatchingIndex = currentUvdIndex - self.pathTrajMatchingIndex
+            
             if (!isDrStraight && diffPathTrajMatchingIndex >= OlympusConstants.REQUIRED_PATH_TRAJ_MATCHING_INDEX) {
                 let drBufferForPathMatching = Array(unitDRInfoBuffer.suffix(OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT/2))
                 let isHeadStraight: Bool = isDrBufferStraight(unitDRInfoBuffer: drBufferForPathMatching, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT/2, condition: 10.0)
                 if (isHeadStraight) {
                     self.pathTrajMatchingIndex = unitDRInfoBuffer[unitDRInfoBuffer.count-1].index
-//                    let pathTrajMatchingResult = OlympusPathMatchingCalculator.shared.pathTrajectoryMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, pastResult: recentResult, unitDRInfoBuffer: Array(unitDRInfoBuffer.suffix(OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT)), HEADING_RANGE: OlympusConstants.HEADING_RANGE, pathType: 0, mode: mode, PADDING_VALUE: 5)
-                    
                     let inputUnitDrInfoBuffer = Array(unitDRInfoBuffer.suffix(OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT))
                     var inputUserMaskBuffer = [UserMask]()
                     for userMask in userMaskBuffer {

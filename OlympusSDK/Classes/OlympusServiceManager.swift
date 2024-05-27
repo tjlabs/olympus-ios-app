@@ -638,7 +638,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             
             let validTime = OlympusConstants.BLE_VALID_TIME
             let currentTime = getCurrentTimeInMilliseconds() - (Int(validTime)/2)
-//            let currentTime = getCurrentTimeInMilliseconds() - (Int(validTime)/2)
             let bleDictionary: [String: [[Double]]]? = bleManager.bleDictionary
             if let bleData = bleDictionary {
                 let trimmedResult = OlympusRFDFunctions.shared.trimBleData(bleInput: bleData, nowTime: getCurrentTimeInMillisecondsDouble(), validTime: validTime)
@@ -690,6 +689,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             }
             
 //            self.bleAvg = ["TJ-00CB-0000033B-0000":-62.0] // DS 3F
+//            self.bleAvg = ["TJ-00CB-00000389-0000":-62.0] // G2 2F
             
             if (!self.bleAvg.isEmpty) {
                 stateManager.setVariblesWhenBleIsNotEmpty()
@@ -899,8 +899,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     self.routeTrackResult = routeTrackResult.1
                 }
             }
-            
-            requestOlympusResult(trajectoryInfo: trajectoryInfo, mode: self.runMode)
+           
+            if (abs(getCurrentTimeInMillisecondsDouble() - bleManager.bleDiscoveredTime) < 1000*10) || isSimulationMode {
+                requestOlympusResult(trajectoryInfo: trajectoryInfo, mode: self.runMode)
+            }
         } else {
             if (!unitDRInfo.isIndexChanged) {
                 let isStop = stateManager.checkStopWhenIsIndexNotChanage()
@@ -909,7 +911,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 }
                 stateManager.checkEnterSleepMode(service: self.service, type: 1)
             }
-            requestOlympusResultInStop(trajectoryInfo: trajController.pastTrajectoryInfo, mode: self.runMode)
+            if (abs(getCurrentTimeInMillisecondsDouble() - bleManager.bleDiscoveredTime) < 1000*10) || isSimulationMode {
+                requestOlympusResultInStop(trajectoryInfo: trajController.pastTrajectoryInfo, mode: self.runMode)
+            }
         }
     }
     
@@ -1755,7 +1759,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 }
                 stackUserMask(data: data)
                 stackUserMaskForDisplay(data: data)
-                self.isBadCaseInStableMode = checkBadCase(unitDRInfoBuffer: self.unitDRInfoBuffer, userMaskBuffer: self.userMaskBuffer, mode: self.runMode)
+                self.isBadCaseInStableMode = checkBadCase(unitDRInfoBuffer: self.unitDRInfoBuffer, userMaskBuffer: self.userMaskBuffer, requiredIndex: OlympusConstants.REQUIRED_BAD_CASE_CHECK_IDX,mode: self.runMode, DISTANCE_THRESHOLD: 3)
             }
             
             self.temporalResult = result
@@ -1824,12 +1828,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
     }
     
-    private func checkBadCase(unitDRInfoBuffer: [UnitDRInfo], userMaskBuffer: [UserMask], mode: String) -> Bool {
+    private func checkBadCase(unitDRInfoBuffer: [UnitDRInfo], userMaskBuffer: [UserMask], requiredIndex: Int, mode: String, DISTANCE_THRESHOLD: Double) -> Bool {
         var isBadCase = false
         
-        if (unitDRInfoBuffer.count >= OlympusConstants.REQUIRED_BAD_CASE_CHECK_IDX && userMaskBuffer.count >= OlympusConstants.REQUIRED_BAD_CASE_CHECK_IDX) {
-            let recentUnitDRInfoBuffer = getUnitDRInfoFromLast(from: unitDRInfoBuffer, N: OlympusConstants.REQUIRED_BAD_CASE_CHECK_IDX)
-            let recentUserMaskBuffer = getUserMaskFromLast(from: userMaskBuffer, N: OlympusConstants.REQUIRED_BAD_CASE_CHECK_IDX)
+        if (unitDRInfoBuffer.count >= requiredIndex && userMaskBuffer.count >= requiredIndex) {
+            let recentUnitDRInfoBuffer = getUnitDRInfoFromLast(from: unitDRInfoBuffer, N: requiredIndex)
+            let recentUserMaskBuffer = getUserMaskFromLast(from: userMaskBuffer, N: requiredIndex)
             
             let lastUserMask = recentUserMaskBuffer[recentUserMaskBuffer.count-1]
             let headInfo = lastUserMask
@@ -1862,13 +1866,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             }
 
             let avgDistanceError = sum / Double(recentUserMaskBuffer.count)
-
-            var DISTANCE_THRESHOLD: Double = 3
-            if (mode == OlympusConstants.MODE_PDR) {
-                DISTANCE_THRESHOLD = 3
-            } else {
-                DISTANCE_THRESHOLD = 3
-            }
+//            var DISTANCE_THRESHOLD: Double = 3
+//            if (mode == OlympusConstants.MODE_PDR) {
+//                DISTANCE_THRESHOLD = 3
+//            } else {
+//                DISTANCE_THRESHOLD = 3
+//            }
             if (avgDistanceError >= DISTANCE_THRESHOLD){isBadCase = true}
 //            print("Check Bad Case : sum = \(sum) // count = \(recentUserMaskBuffer.count) // avgDistanceError = \(avgDistanceError) // isBadCase = \(isBadCase)")
         }
