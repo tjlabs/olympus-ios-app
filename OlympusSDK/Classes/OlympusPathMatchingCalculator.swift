@@ -788,12 +788,12 @@ public class OlympusPathMatchingCalculator {
         return (isSuccess, xyd, matchedTraj, inputTraj)
     }
     
-    public func extendedPathTrajectoryMatching(building: String, level: String, x: Double, y: Double, heading: Double, pastResult: FineLocationTrackingResult, unitDRInfoBuffer: [UnitDRInfo], userMaskBuffer: [UserMask], pathType: Int, mode: String, PADDING_VALUE: Double) -> (isSuccess: Bool, xyd: [Double], matchedTraj: [[Double]], inputTraj: [[Double]]) {
+    public func extendedPathTrajectoryMatching(building: String, level: String, x: Double, y: Double, heading: Double, pastResult: FineLocationTrackingResult, unitDRInfoBuffer: [UnitDRInfo], userMaskBuffer: [UserMask], turnAngle: Double, pathType: Int, mode: String, PADDING_VALUE: Double) -> (isSuccess: Bool, xyd: [Double], matchedTraj: [[Double]], inputTraj: [[Double]]) {
         let pastX = pastResult.x
         let pastY = pastResult.y
         
         var isSuccess: Bool = false
-        var xyd: [Double] = [x, y, 50]
+        var xyd: [Double] = [x, y, 50, 50, 50, 50]
         var matchedTraj = [[Double]]()
         var inputTraj = [[Double]]()
         
@@ -917,6 +917,11 @@ public class OlympusPathMatchingCalculator {
 //                            if (distLost >= 1.5) {
 //                                distLost = 1.5
 //                            }
+                            
+                            if (turnAngle > 135) {
+                                distLost = 0
+                            }
+                            
                             if (minDistanceCoord.isEmpty) {
                                 minDistanceCoord = [xPath, yPath, distanceSum, distWithPast, distWithMask, distLost]
                                 matchedTraj = trajectoryFromHead

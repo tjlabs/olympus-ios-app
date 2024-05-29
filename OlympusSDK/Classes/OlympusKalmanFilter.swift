@@ -144,7 +144,7 @@ public class OlympusKalmanFilter: NSObject {
 //            let isDrStraight: Bool = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT, condition: 80.0)
             let drBufferStraightResult = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT, condition: 60.0)
             let isDrStraight: Bool = drBufferStraightResult.0
-            let drBufferDiffHeadingValue = drBufferStraightResult.1
+            let turnAngle = drBufferStraightResult.1
             
             // 이전 Path-Traj Matching 수행한 Index와 현재 Index 수의 차이
             let diffPathTrajMatchingIndex = currentUvdIndex - self.pathTrajMatchingIndex
@@ -173,7 +173,7 @@ public class OlympusKalmanFilter: NSObject {
                             inputUserMaskBuffer.append(userMask)
                         }
                     }
-                    let pathTrajMatchingResult = OlympusPathMatchingCalculator.shared.extendedPathTrajectoryMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, pastResult: recentResult, unitDRInfoBuffer: inputUnitDrInfoBuffer, userMaskBuffer: inputUserMaskBuffer, pathType: 0, mode: mode, PADDING_VALUE: 5)
+                    let pathTrajMatchingResult = OlympusPathMatchingCalculator.shared.extendedPathTrajectoryMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, pastResult: recentResult, unitDRInfoBuffer: inputUnitDrInfoBuffer, userMaskBuffer: inputUserMaskBuffer, turnAngle: turnAngle, pathType: 0, mode: mode, PADDING_VALUE: 5)
                     
                     if (pathTrajMatchingResult.isSuccess) {
                         let diffNorm = sqrt((pathTrajMatchingResult.xyd[0]-updatedX)*(pathTrajMatchingResult.xyd[0]-updatedX) + (pathTrajMatchingResult.xyd[1]-updatedY)*(pathTrajMatchingResult.xyd[1]-updatedY))
@@ -187,11 +187,7 @@ public class OlympusKalmanFilter: NSObject {
                         
                         self.matchedTraj = pathTrajMatchingResult.matchedTraj
                         self.inputTraj = pathTrajMatchingResult.inputTraj
-                        if (drBufferDiffHeadingValue > 135) {
-                            self.distanceLost = 0
-                        } else {
-                            self.distanceLost = pathTrajMatchingResult.xyd[5]
-                        }
+                        self.distanceLost = pathTrajMatchingResult.xyd[5]
                     } else {
                         self.distanceLost = -100
                         initPathTrajMatchingInfo()
