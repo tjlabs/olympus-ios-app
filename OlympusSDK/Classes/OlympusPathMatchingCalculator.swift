@@ -686,6 +686,8 @@ public class OlympusPathMatchingCalculator {
                     // XY 범위 안에 있는 값 중에 검사
                     if (xPath >= xMin && xPath <= xMax) {
                         if (yPath >= yMin && yPath <= yMax) {
+                            
+                            
                             var passedPp = [[Double]]()
                             var distanceSum: Double = 0
                             
@@ -802,6 +804,11 @@ public class OlympusPathMatchingCalculator {
             guard let mainType: [Int] = self.PpType[key] else {
                 return (isSuccess, xyd, matchedTraj, inputTraj)
             }
+            
+            guard let mainHeading: [String] = self.PpHeading[key] else {
+                return (isSuccess, xyd, matchedTraj, inputTraj)
+            }
+            
             guard let mainRoad: [[Double]] = self.PpCoord[key] else {
                 return (isSuccess, xyd, matchedTraj, inputTraj)
             }
@@ -821,6 +828,8 @@ public class OlympusPathMatchingCalculator {
                 for i in 0..<roadX.count {
                     let xPath = roadX[i]
                     let yPath = roadY[i]
+                    
+                    let headingArray = mainHeading[i]
                     
                     let pathTypeLoaded = mainType[i]
                     if (pathType == 1) {
@@ -854,6 +863,9 @@ public class OlympusPathMatchingCalculator {
                             var trajectoryOriginal = [[Double]]()
                             trajectoryFromHead.append(xyFromHead)
                             trajectoryOriginal.append(xyOriginal)
+                            
+                            // Add
+                            var distLost: Double = 0
                             for i in (1..<unitDRInfoBuffer.count).reversed() {
                                 let headAngle = headingBuffer[i]
                                 xyOriginal[0] = xyOriginal[0] + unitDRInfoBuffer[i].length*cos(headAngle*OlympusConstants.D2R)
@@ -869,6 +881,7 @@ public class OlympusPathMatchingCalculator {
                                         xyFromHead[1] = calculatedXyd[1]
                                         xydArray.append(calculatedXyd)
                                         distanceSum += calculatedXyd[2]
+                                        distLost += calculatedXyd[2]
                                         trajectoryFromHead.append(xyFromHead)
                                         passedPp.append(xyFromHead)
                                     } else {
@@ -899,10 +912,13 @@ public class OlympusPathMatchingCalculator {
                             
                             let distWithPast = sqrt((pastX - xPath)*(pastX - xPath) + (pastY - yPath)*(pastY - yPath))
                             let distWithMask = sqrt((xyFromHead[0] - Double(userMaskBuffer[0].x))*(xyFromHead[0] - Double(userMaskBuffer[0].x)) + (xyFromHead[1] - Double(userMaskBuffer[0].y))*(xyFromHead[1] - Double(userMaskBuffer[0].y)))
-                            ppXydArray.append([xPath, yPath, distanceSum, distWithPast, distWithMask])
+//                            ppXydArray.append([xPath, yPath, distanceSum, distWithPast, distWithMask, distLost])
                             
+                            if (distLost >= 1.5) {
+                                distLost = 1.5
+                            }
                             if (minDistanceCoord.isEmpty) {
-                                minDistanceCoord = [xPath, yPath, distanceSum, distWithPast, distWithMask]
+                                minDistanceCoord = [xPath, yPath, distanceSum, distWithPast, distWithMask, distLost]
                                 matchedTraj = trajectoryFromHead
                                 inputTraj = trajectoryOriginal
                             } else {
@@ -916,7 +932,7 @@ public class OlympusPathMatchingCalculator {
                                 let distanceCurrent = sqrt(distWithMask*distWithMask + distanceSum*distanceSum)
                                 let distancePast = sqrt(minDistanceCoord[4]*minDistanceCoord[4] + minDistanceCoord[2]*minDistanceCoord[2])
                                 if (distanceCurrent < distancePast && distWithPast <= 3) {
-                                    minDistanceCoord = [xPath, yPath, distanceSum, distWithPast, distWithMask]
+                                    minDistanceCoord = [xPath, yPath, distanceSum, distWithPast, distWithMask, distLost]
                                     matchedTraj = trajectoryFromHead
                                     inputTraj = trajectoryOriginal
                                 }
@@ -927,12 +943,14 @@ public class OlympusPathMatchingCalculator {
                 
                 print(getLocalTimeString() + " , (Olympus) Path-Traj Matching : \(ppXydArray)")
                 if (!minDistanceCoord.isEmpty) {
-                    if (minDistanceCoord[2] <= 15 && minDistanceCoord[3] <= 5) {
+                    if (minDistanceCoord[2] <= 15 && minDistanceCoord[3] <= 10) {
                         isSuccess = true
                     } else {
                         isSuccess = false
                     }
                     xyd = minDistanceCoord
+                    xyd[0] = minDistanceCoord[0] + minDistanceCoord[5]*cos(heading*OlympusConstants.D2R)
+                    xyd[1] = minDistanceCoord[1] + minDistanceCoord[5]*sin(heading*OlympusConstants.D2R)
                 }
             }
         }

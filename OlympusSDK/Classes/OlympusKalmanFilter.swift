@@ -29,6 +29,7 @@ public class OlympusKalmanFilter: NSObject {
     var pathTrajMatchingIndex: Int = 0
     var matchedTraj = [[Double]]()
     var inputTraj = [[Double]]()
+    var distanceLost: Double = 0
     
     var uvdIndexBuffer = [Int]()
     var uvdHeadingBuffer = [Double]()
@@ -140,17 +141,29 @@ public class OlympusKalmanFilter: NSObject {
             // PDR
             var isDidPathTrajMatching: Bool = false
             let currentUvdIndex = unitDRInfoBuffer[unitDRInfoBuffer.count-1].index
-            let isDrStraight: Bool = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT, condition: 80.0)
+//            let isDrStraight: Bool = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT, condition: 80.0)
+            let isDrStraight: Bool = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT, condition: 60.0)
             
             // 이전 Path-Traj Matching 수행한 Index와 현재 Index 수의 차이
             let diffPathTrajMatchingIndex = currentUvdIndex - self.pathTrajMatchingIndex
-            
             if (!isDrStraight && diffPathTrajMatchingIndex >= OlympusConstants.REQUIRED_PATH_TRAJ_MATCHING_INDEX) {
-                let drBufferForPathMatching = Array(unitDRInfoBuffer.suffix(OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT/2))
-                let isHeadStraight: Bool = isDrBufferStraight(unitDRInfoBuffer: drBufferForPathMatching, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT/2, condition: 10.0)
-                if (isHeadStraight) {
+                var isPossiblePathTrajMatching: Bool = true
+                
+//                let drBufferForPathMatching = Array(unitDRInfoBuffer.suffix(OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT/2))
+                let drBufferForPathMatching = Array(unitDRInfoBuffer.suffix(OlympusConstants.DR_BUFFER_SIZE_FOR_HEAD_STRAIGHT))
+                let inputUnitDrInfoBuffer = Array(unitDRInfoBuffer.suffix(OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT))
+                
+                for unitUvd in inputUnitDrInfoBuffer {
+                    if (unitUvd.index == self.pathTrajMatchingIndex) {
+                        isPossiblePathTrajMatching = false
+                        break
+                    }
+                }
+                
+                let isHeadStraight: Bool = isDrBufferStraight(unitDRInfoBuffer: drBufferForPathMatching, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_HEAD_STRAIGHT, condition: 10.0)
+                if (isHeadStraight && isPossiblePathTrajMatching) {
                     self.pathTrajMatchingIndex = unitDRInfoBuffer[unitDRInfoBuffer.count-1].index
-                    let inputUnitDrInfoBuffer = Array(unitDRInfoBuffer.suffix(OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT))
+                    
                     var inputUserMaskBuffer = [UserMask]()
                     for userMask in userMaskBuffer {
                         if (userMask.index >= inputUnitDrInfoBuffer[0].index) {
@@ -171,7 +184,9 @@ public class OlympusKalmanFilter: NSObject {
                         
                         self.matchedTraj = pathTrajMatchingResult.matchedTraj
                         self.inputTraj = pathTrajMatchingResult.inputTraj
+                        self.distanceLost = pathTrajMatchingResult.xyd[5]
                     } else {
+                        self.distanceLost = -100
                         initPathTrajMatchingInfo()
                     }
                     isDidPathTrajMatching = true
@@ -220,6 +235,10 @@ public class OlympusKalmanFilter: NSObject {
 //                    print("(Link Info) : X Limit // after = \(outputResult.x) , \(outputResult.y)")
 //                    print("(Link Info) -------------------------------------- ")
                 }
+            } else {
+                let pathMatching = OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: outputResult.x, y: outputResult.y, heading: outputResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 0, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
+                outputResult.x = pathMatching.xyhs[0]
+                outputResult.y = pathMatching.xyhs[1]
             }
         } else {
             let isDrStraight: Bool = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_HEADING_CORR_NUM_IDX, condition: 10.0)

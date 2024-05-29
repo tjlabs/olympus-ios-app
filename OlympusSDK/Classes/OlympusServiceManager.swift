@@ -863,7 +863,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     } else {
                         if (!self.isInRecoveryProcess && userMaskSendCount >= 2) {
                             print(getLocalTimeString() + " , (Olympus) Request Phase 5 : \(data.index) // anchor = \(anchorTailIndex) // requestType = \(sectionResult.requestType) // nodeCandidates = \(nodeCandidates)")
-                            processPhase5(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo)
+//                            processPhase5(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo)
                         }
                     }
 //                    processPhase5(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo)
@@ -876,6 +876,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 timeUpdateResult[2] = tuResult.absolute_heading
                 displayOutput.trajectoryOg = KF.inputTraj
                 displayOutput.trajectoryPm = KF.matchedTraj
+                displayOutput.scc = KF.distanceLost
                 // 임시
                 
                 KF.updateTuResultNow(result: currentTuResult)
@@ -982,12 +983,14 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             self.timeRequest = 0
             let phase3Trajectory = trajectoryInfo
             let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase3Trajectory, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, isKF: KF.isRunning, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult)
+            print(getLocalTimeString() + " , (Olympus) Request Phase 3 in Stop State")
             processPhase3(currentTime: currentTime, mode: mode, trajectoryInfo: phase3Trajectory, searchInfo: searchInfo)
         } else {
             if (!stateManager.isGetFirstResponse && self.timeRequest >= OlympusConstants.MINIMUM_RQ_TIME) {
                 self.timeRequest = 0
                 let phase3Trajectory = trajectoryInfo
                 let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase3Trajectory, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, isKF: KF.isRunning, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult)
+                print(getLocalTimeString() + " , (Olympus) Request Phase 3 in Stop State")
                 processPhase3(currentTime: currentTime, mode: mode, trajectoryInfo: phase3Trajectory, searchInfo: searchInfo)
             }
         }

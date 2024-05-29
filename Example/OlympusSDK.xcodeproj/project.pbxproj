@@ -27,7 +27,6 @@
 		B31439872BAD5B76002C072F /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B31439862BAD5B76002C072F /* Colors.xcassets */; };
 		B3787E4A2BD209C400D5EEBC /* ImageCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3787E492BD209C400D5EEBC /* ImageCacheManager.swift */; };
 		B3787E4C2BD20C4D00D5EEBC /* UIImageExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3787E4B2BD20C4D00D5EEBC /* UIImageExtension.swift */; };
-		B3787E562BD6336900D5EEBC /* S3_7F.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3787E552BD6336900D5EEBC /* S3_7F.csv */; };
 		B3787E592BDA47BE00D5EEBC /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B3787E582BDA47BE00D5EEBC /* GoogleService-Info.plist */; };
 		B39464A42BE3315400A929CC /* COEX_B2.csv in Resources */ = {isa = PBXBuildFile; fileRef = B39464A32BE3315400A929CC /* COEX_B2.csv */; };
 		B3A7A5542BBBCAE200561897 /* CardViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A7A5532BBBCAE200561897 /* CardViewController.swift */; };
@@ -37,6 +36,7 @@
 		B3A7A5632BBBE2AE00561897 /* JSONConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A7A5622BBBE2AE00561897 /* JSONConverter.swift */; };
 		B3BA95E82BFB2B3A002625FA /* DS_3F.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3BA95E72BFB2B3A002625FA /* DS_3F.csv */; };
 		B3FE03582C0043D200039EAC /* G2_2F.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3FE03572C0043D200039EAC /* G2_2F.csv */; };
+		B3FE035D2C04754400039EAC /* S3_7F.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3FE035C2C04754400039EAC /* S3_7F.csv */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -77,7 +77,6 @@
 		B31439862BAD5B76002C072F /* Colors.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Colors.xcassets; sourceTree = "<group>"; };
 		B3787E492BD209C400D5EEBC /* ImageCacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCacheManager.swift; sourceTree = "<group>"; };
 		B3787E4B2BD20C4D00D5EEBC /* UIImageExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageExtension.swift; sourceTree = "<group>"; };
-		B3787E552BD6336900D5EEBC /* S3_7F.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = S3_7F.csv; sourceTree = "<group>"; };
 		B3787E582BDA47BE00D5EEBC /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B39464A32BE3315400A929CC /* COEX_B2.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = COEX_B2.csv; sourceTree = "<group>"; };
 		B3A7A5532BBBCAE200561897 /* CardViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardViewController.swift; sourceTree = "<group>"; };
@@ -87,6 +86,7 @@
 		B3A7A5622BBBE2AE00561897 /* JSONConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONConverter.swift; sourceTree = "<group>"; };
 		B3BA95E72BFB2B3A002625FA /* DS_3F.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = DS_3F.csv; sourceTree = "<group>"; };
 		B3FE03572C0043D200039EAC /* G2_2F.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = G2_2F.csv; sourceTree = "<group>"; };
+		B3FE035C2C04754400039EAC /* S3_7F.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = S3_7F.csv; sourceTree = "<group>"; };
 		D6BEA357836562D67D800EA2 /* Pods-OlympusSDK_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OlympusSDK_Tests.debug.xcconfig"; path = "Target Support Files/Pods-OlympusSDK_Tests/Pods-OlympusSDK_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		D7EBA58F92CBD7B18638C505 /* Pods_OlympusSDK_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OlympusSDK_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		EDA8292140E0F10C97BF2877 /* Pods-OlympusSDK_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OlympusSDK_Example.debug.xcconfig"; path = "Target Support Files/Pods-OlympusSDK_Example/Pods-OlympusSDK_Example.debug.xcconfig"; sourceTree = "<group>"; };
@@ -144,7 +144,7 @@
 				607FACD51AFB9204008FA782 /* AppDelegate.swift */,
 				B3A7A5602BBBE1D400561897 /* Entity.swift */,
 				B3A7A5622BBBE2AE00561897 /* JSONConverter.swift */,
-				B3787E552BD6336900D5EEBC /* S3_7F.csv */,
+				B3FE035C2C04754400039EAC /* S3_7F.csv */,
 				B3BA95E72BFB2B3A002625FA /* DS_3F.csv */,
 				B3FE03572C0043D200039EAC /* G2_2F.csv */,
 				B39464A32BE3315400A929CC /* COEX_B2.csv */,
@@ -350,8 +350,8 @@
 				607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */,
 				B31439872BAD5B76002C072F /* Colors.xcassets in Resources */,
 				B3BA95E82BFB2B3A002625FA /* DS_3F.csv in Resources */,
-				B3787E562BD6336900D5EEBC /* S3_7F.csv in Resources */,
 				607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */,
+				B3FE035D2C04754400039EAC /* S3_7F.csv in Resources */,
 				B39464A42BE3315400A929CC /* COEX_B2.csv in Resources */,
 				B3FE03582C0043D200039EAC /* G2_2F.csv in Resources */,
 				607FACDD1AFB9204008FA782 /* Images.xcassets in Resources */,
