@@ -21,6 +21,7 @@ class CardViewController: UIViewController, Observer {
     
     
     override func viewDidDisappear(_ animated: Bool) {
+//        serviceManager.stopService()
         serviceManager.removeObserver(self)
     }
     

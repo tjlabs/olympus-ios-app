@@ -132,7 +132,7 @@ public func propagateUsingUvd(unitDRInfoBuffer: [UnitDRInfo], fltResult: FineLoc
     return (isSuccess, propagationValues)
 }
 
-public func isDrBufferStraight(unitDRInfoBuffer: [UnitDRInfo], numIndex: Int, condition: Double) -> Bool {
+public func isDrBufferStraight(unitDRInfoBuffer: [UnitDRInfo], numIndex: Int, condition: Double) -> (Bool, Double) {
     if (unitDRInfoBuffer.count >= numIndex) {
         let firstIndex = unitDRInfoBuffer.count-numIndex
         let firstHeading: Double = unitDRInfoBuffer[firstIndex].heading
@@ -143,12 +143,12 @@ public func isDrBufferStraight(unitDRInfoBuffer: [UnitDRInfo], numIndex: Int, co
         }
         
         if (diffHeading < condition) {
-            return true
+            return (true, diffHeading)
         } else {
-            return false
+            return (false, diffHeading)
         }
     } else {
-        return true
+        return (true, 360)
     }
 }
 

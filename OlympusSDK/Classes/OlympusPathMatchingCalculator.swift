@@ -914,9 +914,9 @@ public class OlympusPathMatchingCalculator {
                             let distWithMask = sqrt((xyFromHead[0] - Double(userMaskBuffer[0].x))*(xyFromHead[0] - Double(userMaskBuffer[0].x)) + (xyFromHead[1] - Double(userMaskBuffer[0].y))*(xyFromHead[1] - Double(userMaskBuffer[0].y)))
 //                            ppXydArray.append([xPath, yPath, distanceSum, distWithPast, distWithMask, distLost])
                             
-                            if (distLost >= 1.5) {
-                                distLost = 1.5
-                            }
+//                            if (distLost >= 1.5) {
+//                                distLost = 1.5
+//                            }
                             if (minDistanceCoord.isEmpty) {
                                 minDistanceCoord = [xPath, yPath, distanceSum, distWithPast, distWithMask, distLost]
                                 matchedTraj = trajectoryFromHead
@@ -1575,7 +1575,6 @@ public class OlympusPathMatchingCalculator {
             } else if (directions[0] == 90 && directions[1] == 270) {
                 limitType = .X_LIMIT
                 limitValues = [coordX - LIMIT, coordX + LIMIT]
-//                print("(Link Info) : X Limit // values = \(limitValues)")
             }
         }
         

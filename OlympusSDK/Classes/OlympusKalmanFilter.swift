@@ -142,7 +142,9 @@ public class OlympusKalmanFilter: NSObject {
             var isDidPathTrajMatching: Bool = false
             let currentUvdIndex = unitDRInfoBuffer[unitDRInfoBuffer.count-1].index
 //            let isDrStraight: Bool = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT, condition: 80.0)
-            let isDrStraight: Bool = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT, condition: 60.0)
+            let drBufferStraightResult = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT, condition: 60.0)
+            let isDrStraight: Bool = drBufferStraightResult.0
+            let drBufferDiffHeadingValue = drBufferStraightResult.1
             
             // 이전 Path-Traj Matching 수행한 Index와 현재 Index 수의 차이
             let diffPathTrajMatchingIndex = currentUvdIndex - self.pathTrajMatchingIndex
@@ -160,7 +162,8 @@ public class OlympusKalmanFilter: NSObject {
                     }
                 }
                 
-                let isHeadStraight: Bool = isDrBufferStraight(unitDRInfoBuffer: drBufferForPathMatching, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_HEAD_STRAIGHT, condition: 10.0)
+                let headStraightResult = isDrBufferStraight(unitDRInfoBuffer: drBufferForPathMatching, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_HEAD_STRAIGHT, condition: 10.0)
+                let isHeadStraight: Bool = headStraightResult.0
                 if (isHeadStraight && isPossiblePathTrajMatching) {
                     self.pathTrajMatchingIndex = unitDRInfoBuffer[unitDRInfoBuffer.count-1].index
                     
@@ -184,7 +187,11 @@ public class OlympusKalmanFilter: NSObject {
                         
                         self.matchedTraj = pathTrajMatchingResult.matchedTraj
                         self.inputTraj = pathTrajMatchingResult.inputTraj
-                        self.distanceLost = pathTrajMatchingResult.xyd[5]
+                        if (drBufferDiffHeadingValue > 135) {
+                            self.distanceLost = 0
+                        } else {
+                            self.distanceLost = pathTrajMatchingResult.xyd[5]
+                        }
                     } else {
                         self.distanceLost = -100
                         initPathTrajMatchingInfo()
@@ -204,7 +211,8 @@ public class OlympusKalmanFilter: NSObject {
 //                }
 //                isDidPathTrajMatching = true
             } else {
-                let isDrVeryStraight: Bool = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT, condition: 10.0)
+                let drBufferVeryStraightResult = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT, condition: 10.0)
+                let isDrVeryStraight: Bool = drBufferVeryStraightResult.0
                 if (isDrVeryStraight) {
                     let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 0, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
                     outputResult.x = pathMatchingResult.xyhs[0]*0.5 + updatedX*0.5
@@ -241,7 +249,8 @@ public class OlympusKalmanFilter: NSObject {
                 outputResult.y = pathMatching.xyhs[1]
             }
         } else {
-            let isDrStraight: Bool = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_HEADING_CORR_NUM_IDX, condition: 10.0)
+            let drBufferStraightResult = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_HEADING_CORR_NUM_IDX, condition: 10.0)
+            let isDrStraight: Bool = drBufferStraightResult.0
             let pathMatchingResult =  OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
             
             if (pathMatchingResult.isSuccess) {
