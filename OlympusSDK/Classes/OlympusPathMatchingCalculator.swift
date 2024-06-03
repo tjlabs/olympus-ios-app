@@ -36,6 +36,8 @@ public class OlympusPathMatchingCalculator {
     var isFirstNode: Bool = true
     var nodeInfoForFirst = NodeInfo(nodeCandidates: [], nodeCoord: [], nodeHeadings: [], nodeMatchedIndex: -1, userResult: FineLocationTrackingFromServer())
     
+    var pathTrajMatchingArea: [[Double]] = [[0, 0]]
+    
     init() {
         
     }
@@ -640,155 +642,7 @@ public class OlympusPathMatchingCalculator {
         return headings
     }
     
-    public func pathTrajectoryMatching(building: String, level: String, x: Double, y: Double, heading: Double, pastResult: FineLocationTrackingResult, unitDRInfoBuffer: [UnitDRInfo], HEADING_RANGE: Double, pathType: Int, mode: String, PADDING_VALUE: Double) -> (isSuccess: Bool, xyd: [Double], matchedTraj: [[Double]], inputTraj: [[Double]]) {
-        let pastX = pastResult.x
-        let pastY = pastResult.y
-        
-        var isSuccess: Bool = false
-        var xyd: [Double] = [x, y, 50]
-        var matchedTraj = [[Double]]()
-        var inputTraj = [[Double]]()
-        
-        let levelCopy: String = removeLevelDirectionString(levelName: level)
-        let key: String = "\(building)_\(levelCopy)"
-        
-        if (!(building.isEmpty) && !(level.isEmpty)) {
-            guard let mainType: [Int] = self.PpType[key] else {
-                return (isSuccess, xyd, matchedTraj, inputTraj)
-            }
-            guard let mainRoad: [[Double]] = self.PpCoord[key] else {
-                return (isSuccess, xyd, matchedTraj, inputTraj)
-            }
-            
-            if (!mainRoad.isEmpty) {
-                let roadX = mainRoad[0]
-                let roadY = mainRoad[1]
-                
-                let xMin = x - PADDING_VALUE
-                let xMax = x + PADDING_VALUE
-                let yMin = y - PADDING_VALUE
-                let yMax = y + PADDING_VALUE
-                
-                var ppXydArray = [[Double]]()
-                var minDistanceCoord = [Double]()
-                
-                for i in 0..<roadX.count {
-                    let xPath = roadX[i]
-                    let yPath = roadY[i]
-                    
-                    let pathTypeLoaded = mainType[i]
-                    if (pathType == 1) {
-                        if (pathType != pathTypeLoaded) {
-                            continue
-                        }
-                    }
-                    
-                    // XY 범위 안에 있는 값 중에 검사
-                    if (xPath >= xMin && xPath <= xMax) {
-                        if (yPath >= yMin && yPath <= yMax) {
-                            
-                            
-                            var passedPp = [[Double]]()
-                            var distanceSum: Double = 0
-                            
-                            let headingCompensation: Double = heading - unitDRInfoBuffer[unitDRInfoBuffer.count-1].heading
-                            var headingBuffer: [Double] = []
-                            for i in 0..<unitDRInfoBuffer.count {
-                                let compensatedHeading = compensateHeading(heading: unitDRInfoBuffer[i].heading + headingCompensation - 180)
-                                headingBuffer.append(compensatedHeading)
-                            }
-                            
-                            var xyFromHead: [Double] = [xPath, yPath]
-                            var xyOriginal: [Double] = [xPath, yPath]
-                            let firstXyd = calDistacneFromNearestPp(coord: xyFromHead, passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUE: PADDING_VALUE)
-                            passedPp.append(xyFromHead)
-                            
-                            var xydArray: [[Double]] = [firstXyd]
-                            distanceSum += firstXyd[2]
-                            
-                            var trajectoryFromHead = [[Double]]()
-                            var trajectoryOriginal = [[Double]]()
-                            trajectoryFromHead.append(xyFromHead)
-                            trajectoryOriginal.append(xyOriginal)
-                            for i in (1..<unitDRInfoBuffer.count).reversed() {
-                                let headAngle = headingBuffer[i]
-                                xyOriginal[0] = xyOriginal[0] + unitDRInfoBuffer[i].length*cos(headAngle*OlympusConstants.D2R)
-                                xyOriginal[1] = xyOriginal[1] + unitDRInfoBuffer[i].length*sin(headAngle*OlympusConstants.D2R)
-                                trajectoryOriginal.append(xyOriginal)
-                                if (mode == OlympusConstants.MODE_PDR) {
-                                    if (i%2 == 0) {
-                                        let propagatedX = xyFromHead[0] + unitDRInfoBuffer[i].length*cos(headAngle*OlympusConstants.D2R)
-                                        let propagatedY = xyFromHead[1] + unitDRInfoBuffer[i].length*sin(headAngle*OlympusConstants.D2R)
-                                        let calculatedXyd = calDistacneFromNearestPp(coord: [propagatedX, propagatedY], passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUE: PADDING_VALUE)
-                                        
-                                        xyFromHead[0] = calculatedXyd[0]
-                                        xyFromHead[1] = calculatedXyd[1]
-                                        xydArray.append(calculatedXyd)
-                                        distanceSum += calculatedXyd[2]
-                                        trajectoryFromHead.append(xyFromHead)
-                                        passedPp.append(xyFromHead)
-                                    } else {
-                                        let propagatedX = xyFromHead[0] + unitDRInfoBuffer[i].length*cos(headAngle*OlympusConstants.D2R)
-                                        let propagatedY = xyFromHead[1] + unitDRInfoBuffer[i].length*sin(headAngle*OlympusConstants.D2R)
-                                        let calculatedXyd = calDistacneFromNearestPp(coord: [propagatedX, propagatedY], passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUE: PADDING_VALUE)
-                                        
-                                        xyFromHead[0] = propagatedX
-                                        xyFromHead[1] = propagatedY
-                                        xydArray.append(calculatedXyd)
-                                        distanceSum += calculatedXyd[2]
-                                        trajectoryFromHead.append(xyFromHead)
-                                        passedPp.append(xyFromHead)
-                                    }
-                                } else {
-                                    let propagatedX = xyFromHead[0] + unitDRInfoBuffer[i].length*cos(headAngle*OlympusConstants.D2R)
-                                    let propagatedY = xyFromHead[1] + unitDRInfoBuffer[i].length*sin(headAngle*OlympusConstants.D2R)
-                                    let calculatedXyd = calDistacneFromNearestPp(coord: [propagatedX, propagatedY], passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUE: PADDING_VALUE)
-                                    
-                                    xyFromHead[0] = calculatedXyd[0]
-                                    xyFromHead[1] = calculatedXyd[1]
-                                    xydArray.append(calculatedXyd)
-                                    distanceSum += calculatedXyd[2]
-                                    trajectoryFromHead.append(xyFromHead)
-                                    passedPp.append(xyFromHead)
-                                }
-                            }
-                            
-                            let distWithPast = sqrt((pastX - xPath)*(pastX - xPath) + (pastY - yPath)*(pastY - yPath))
-                            ppXydArray.append([xPath, yPath, distanceSum, distWithPast])
-                            
-                            if (minDistanceCoord.isEmpty) {
-                                minDistanceCoord = [xPath, yPath, distanceSum, distWithPast]
-                                matchedTraj = trajectoryFromHead
-                                inputTraj = trajectoryOriginal
-                            } else {
-                                let distanceCurrent = distanceSum
-                                let distancePast = minDistanceCoord[2]
-                                if (distanceCurrent < distancePast && distWithPast <= 3) {
-                                    minDistanceCoord = [xPath, yPath, distanceSum, distWithPast]
-                                    matchedTraj = trajectoryFromHead
-                                    inputTraj = trajectoryOriginal
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                print(getLocalTimeString() + " , (Olympus) Path-Traj Matching : \(ppXydArray)")
-                if (!minDistanceCoord.isEmpty) {
-                    if (minDistanceCoord[2] <= 15 && minDistanceCoord[3] <= 5) {
-                        isSuccess = true
-                    } else {
-                        isSuccess = false
-                    }
-                    xyd = minDistanceCoord
-                }
-            }
-        }
-        
-        return (isSuccess, xyd, matchedTraj, inputTraj)
-    }
-    
-    public func extendedPathTrajectoryMatching(building: String, level: String, x: Double, y: Double, heading: Double, pastResult: FineLocationTrackingResult, unitDRInfoBuffer: [UnitDRInfo], userMaskBuffer: [UserMask], turnAngle: Double, pathType: Int, mode: String, PADDING_VALUE: Double) -> (isSuccess: Bool, xyd: [Double], matchedTraj: [[Double]], inputTraj: [[Double]]) {
+    public func pathTrajectoryMatching(building: String, level: String, x: Double, y: Double, heading: Double, pastResult: FineLocationTrackingResult, unitDRInfoBuffer: [UnitDRInfo], userMaskBuffer: [UserMask], turnAngle: Double, pathType: Int, mode: String, PADDING_VALUES: [Double]) -> (isSuccess: Bool, xyd: [Double], matchedTraj: [[Double]], inputTraj: [[Double]]) {
         let pastX = pastResult.x
         let pastY = pastResult.y
         
@@ -817,19 +671,28 @@ public class OlympusPathMatchingCalculator {
                 let roadX = mainRoad[0]
                 let roadY = mainRoad[1]
                 
-                let xMin = x - PADDING_VALUE
-                let xMax = x + PADDING_VALUE
-                let yMin = y - PADDING_VALUE
-                let yMax = y + PADDING_VALUE
+                let xMin = x - PADDING_VALUES[0]
+                let xMax = x + PADDING_VALUES[1]
+                let yMin = y - PADDING_VALUES[2]
+                let yMax = y + PADDING_VALUES[3]
+                print(getLocalTimeString() + " , (Olympus) Path-Matching : \(xMin) , \(xMax) , \(yMin) , \(yMax)")
+                self.pathTrajMatchingArea = getPathTrajMatcingArea(areaMinMax: [xMin, yMin, xMax, yMax], interval: 1.0)
                 
-                var ppXydArray = [[Double]]()
                 var minDistanceCoord = [Double]()
+                
+                let headingCompensation: Double = userMaskBuffer[0].absolute_heading - unitDRInfoBuffer[0].heading
+                var headingBuffer: [Double] = []
+                for uvd in unitDRInfoBuffer {
+//                        let compensatedHeading = compensateHeading(heading: unitDRInfoBuffer[i].heading + headingCompensation - 180)
+                    let compensatedHeading = compensateHeading(heading: headingCompensation + uvd.heading)
+                    headingBuffer.append(compensatedHeading)
+                }
+                print(getLocalTimeString() + " , (Olympus) Path-Matching : headingBuffer = \(headingBuffer)")
+                
                 
                 for i in 0..<roadX.count {
                     let xPath = roadX[i]
                     let yPath = roadY[i]
-                    
-                    let headingArray = mainHeading[i]
                     
                     let pathTypeLoaded = mainType[i]
                     if (pathType == 1) {
@@ -844,16 +707,238 @@ public class OlympusPathMatchingCalculator {
                             var passedPp = [[Double]]()
                             var distanceSum: Double = 0
                             
-                            let headingCompensation: Double = heading - unitDRInfoBuffer[unitDRInfoBuffer.count-1].heading
-                            var headingBuffer: [Double] = []
-                            for i in 0..<unitDRInfoBuffer.count {
-                                let compensatedHeading = compensateHeading(heading: unitDRInfoBuffer[i].heading + headingCompensation - 180)
-                                headingBuffer.append(compensatedHeading)
+//                            let headingCompensation: Double = heading - unitDRInfoBuffer[unitDRInfoBuffer.count-1].heading
+                            
+                            var xyFromTail: [Double] = [xPath, yPath]
+                            var xyOriginal: [Double] = [xPath, yPath]
+                            let firstXyd = calDistacneFromNearestPp(coord: xyFromTail, passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUES: PADDING_VALUES)
+                            print(getLocalTimeString() + " , (Olympus) Path-Matching : start PP = \(xyFromTail)")
+                            passedPp.append(xyFromTail)
+                            
+                            var xydArray: [[Double]] = [firstXyd]
+                            distanceSum += firstXyd[2]
+                            
+                            var trajectoryFromTail = [[Double]]()
+                            var trajectoryOriginal = [[Double]]()
+                            trajectoryFromTail.append(xyFromTail)
+                            trajectoryOriginal.append(xyOriginal)
+                            
+                            // Add
+                            var distLost: Double = 0
+//                            for i in (1..<unitDRInfoBuffer.count).reversed() {
+//                                let headAngle = headingBuffer[i]
+//                                xyOriginal[0] = xyOriginal[0] + unitDRInfoBuffer[i].length*cos(headAngle*OlympusConstants.D2R)
+//                                xyOriginal[1] = xyOriginal[1] + unitDRInfoBuffer[i].length*sin(headAngle*OlympusConstants.D2R)
+//                                trajectoryOriginal.append(xyOriginal)
+//                                if (mode == OlympusConstants.MODE_PDR) {
+//                                    if (i%2 == 0) {
+//                                        let propagatedX = xyFromHead[0] + unitDRInfoBuffer[i].length*cos(headAngle*OlympusConstants.D2R)
+//                                        let propagatedY = xyFromHead[1] + unitDRInfoBuffer[i].length*sin(headAngle*OlympusConstants.D2R)
+//                                        let calculatedXyd = calDistacneFromNearestPp(coord: [propagatedX, propagatedY], passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUES: PADDING_VALUES)
+//
+//                                        xyFromHead[0] = calculatedXyd[0]
+//                                        xyFromHead[1] = calculatedXyd[1]
+//                                        xydArray.append(calculatedXyd)
+//                                        distanceSum += calculatedXyd[2]
+//                                        distLost += calculatedXyd[2]
+//                                        trajectoryFromHead.append(xyFromHead)
+//                                        passedPp.append(xyFromHead)
+//                                    } else {
+//                                        let propagatedX = xyFromHead[0] + unitDRInfoBuffer[i].length*cos(headAngle*OlympusConstants.D2R)
+//                                        let propagatedY = xyFromHead[1] + unitDRInfoBuffer[i].length*sin(headAngle*OlympusConstants.D2R)
+//                                        let calculatedXyd = calDistacneFromNearestPp(coord: [propagatedX, propagatedY], passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUES: PADDING_VALUES)
+//
+//                                        xyFromHead[0] = propagatedX
+//                                        xyFromHead[1] = propagatedY
+//                                        xydArray.append(calculatedXyd)
+//                                        distanceSum += calculatedXyd[2]
+//                                        trajectoryFromHead.append(xyFromHead)
+//                                        passedPp.append(xyFromHead)
+//                                    }
+//                                } else {
+//                                    let propagatedX = xyFromHead[0] + unitDRInfoBuffer[i].length*cos(headAngle*OlympusConstants.D2R)
+//                                    let propagatedY = xyFromHead[1] + unitDRInfoBuffer[i].length*sin(headAngle*OlympusConstants.D2R)
+//                                    let calculatedXyd = calDistacneFromNearestPp(coord: [propagatedX, propagatedY], passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUES: PADDING_VALUES)
+//
+//                                    xyFromHead[0] = calculatedXyd[0]
+//                                    xyFromHead[1] = calculatedXyd[1]
+//                                    xydArray.append(calculatedXyd)
+//                                    distanceSum += calculatedXyd[2]
+//                                    trajectoryFromHead.append(xyFromHead)
+//                                    passedPp.append(xyFromHead)
+//                                }
+//                            }
+                            for j in (1..<unitDRInfoBuffer.count) {
+                                let headAngle = headingBuffer[j]
+                                xyOriginal[0] = xyOriginal[0] + unitDRInfoBuffer[j].length*cos(headAngle*OlympusConstants.D2R)
+                                xyOriginal[1] = xyOriginal[1] + unitDRInfoBuffer[j].length*sin(headAngle*OlympusConstants.D2R)
+                                trajectoryOriginal.append(xyOriginal)
+                                if (mode == OlympusConstants.MODE_PDR) {
+                                    if (j%2 == 0) {
+                                        let propagatedX = xyFromTail[0] + unitDRInfoBuffer[j].length*cos(headAngle*OlympusConstants.D2R)
+                                        let propagatedY = xyFromTail[1] + unitDRInfoBuffer[j].length*sin(headAngle*OlympusConstants.D2R)
+                                        let calculatedXyd = calDistacneFromNearestPp(coord: [propagatedX, propagatedY], passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUES: PADDING_VALUES)
+                                        
+                                        xyFromTail[0] = calculatedXyd[0]
+                                        xyFromTail[1] = calculatedXyd[1]
+                                        xydArray.append(calculatedXyd)
+                                        distanceSum += calculatedXyd[2]
+                                        distLost += calculatedXyd[2]
+                                        trajectoryFromTail.append(xyFromTail)
+                                        passedPp.append(xyFromTail)
+                                    } else {
+                                        let propagatedX = xyFromTail[0] + unitDRInfoBuffer[j].length*cos(headAngle*OlympusConstants.D2R)
+                                        let propagatedY = xyFromTail[1] + unitDRInfoBuffer[j].length*sin(headAngle*OlympusConstants.D2R)
+                                        let calculatedXyd = calDistacneFromNearestPp(coord: [propagatedX, propagatedY], passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUES: PADDING_VALUES)
+                                        
+                                        xyFromTail[0] = propagatedX
+                                        xyFromTail[1] = propagatedY
+                                        xydArray.append(calculatedXyd)
+                                        distanceSum += calculatedXyd[2]
+                                        trajectoryFromTail.append(xyFromTail)
+                                        passedPp.append(xyFromTail)
+                                    }
+                                } else {
+                                    let propagatedX = xyFromTail[0] + unitDRInfoBuffer[j].length*cos(headAngle*OlympusConstants.D2R)
+                                    let propagatedY = xyFromTail[1] + unitDRInfoBuffer[j].length*sin(headAngle*OlympusConstants.D2R)
+                                    let calculatedXyd = calDistacneFromNearestPp(coord: [propagatedX, propagatedY], passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUES: PADDING_VALUES)
+                                    
+                                    xyFromTail[0] = calculatedXyd[0]
+                                    xyFromTail[1] = calculatedXyd[1]
+                                    xydArray.append(calculatedXyd)
+                                    distanceSum += calculatedXyd[2]
+                                    trajectoryFromTail.append(xyFromTail)
+                                    passedPp.append(xyFromTail)
+                                }
                             }
+                            print(getLocalTimeString() + " , (Olympus) Path-Matching : Trajectory PP = \(trajectoryFromTail)")
+                            
+                            let distWithPast = sqrt((pastX - xyFromTail[0])*(pastX - xyFromTail[0]) + (pastY - xyFromTail[1])*(pastY - xyFromTail[1]))
+//                            let distWithPast = sqrt((pastX - xPath)*(pastX - xPath) + (pastY - yPath)*(pastY - yPath))
+                            let distWithMask = sqrt((xPath - Double(userMaskBuffer[0].x))*(xPath - Double(userMaskBuffer[0].x)) + (yPath - Double(userMaskBuffer[0].y))*(yPath - Double(userMaskBuffer[0].y)))
+//                            let distWithMask = sqrt((xyFromHead[0] - Double(userMaskBuffer[0].x))*(xyFromHead[0] - Double(userMaskBuffer[0].x)) + (xyFromHead[1] - Double(userMaskBuffer[0].y))*(xyFromHead[1] - Double(userMaskBuffer[0].y)))
+//                            ppXydArray.append([xPath, yPath, distanceSum, distWithPast, distWithMask, distLost])
+                            
+//                            if (distLost >= 1.5) {
+//                                distLost = 1.5
+//                            }
+                            
+                            if (turnAngle > 135) {
+                                distLost = 0
+                            }
+                            
+                            if (minDistanceCoord.isEmpty) {
+                                minDistanceCoord = [xyFromTail[0], xyFromTail[1], distanceSum, distWithPast, distWithMask, distLost]
+//                                minDistanceCoord = [xPath, yPath, distanceSum, distWithPast, distWithMask, distLost]
+                                matchedTraj = trajectoryFromTail
+                                inputTraj = trajectoryOriginal
+                            } else {
+//                                let distanceCurrent = distanceSum
+//                                let distancePast = minDistanceCoord[2]
+//                                if (distanceCurrent < distancePast && distWithPast <= 3) {
+//                                    minDistanceCoord = [xPath, yPath, distanceSum, distWithPast, distWithMask]
+//                                    matchedTraj = trajectoryFromHead
+//                                    inputTraj = trajectoryOriginal
+//                                }
+                                let distanceCurrent = sqrt(distWithMask*distWithMask + distanceSum*distanceSum)
+                                let distancePast = sqrt(minDistanceCoord[4]*minDistanceCoord[4] + minDistanceCoord[2]*minDistanceCoord[2])
+                                if (distanceCurrent < distancePast && distWithPast <= 3) {
+                                    minDistanceCoord = [xyFromTail[0], xyFromTail[1], distanceSum, distWithPast, distWithMask, distLost]
+//                                    minDistanceCoord = [xPath, yPath, distanceSum, distWithPast, distWithMask, distLost]
+                                    matchedTraj = trajectoryFromTail
+                                    inputTraj = trajectoryOriginal
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (!minDistanceCoord.isEmpty) {
+                    if (minDistanceCoord[2] <= 15 && minDistanceCoord[3] <= 10) {
+                        isSuccess = true
+                    } else {
+                        isSuccess = false
+                    }
+                    xyd = minDistanceCoord
+                    xyd[0] = minDistanceCoord[0] + minDistanceCoord[5]*cos(heading*OlympusConstants.D2R)
+                    xyd[1] = minDistanceCoord[1] + minDistanceCoord[5]*sin(heading*OlympusConstants.D2R)
+                }
+            }
+        }
+        
+        return (isSuccess, xyd, matchedTraj, inputTraj)
+    }
+    
+    public func extendedPathTrajectoryMatching(building: String, level: String, x: Double, y: Double, heading: Double, pastResult: FineLocationTrackingResult, unitDRInfoBuffer: [UnitDRInfo], userMaskBuffer: [UserMask], turnAngle: Double, pathType: Int, mode: String, PADDING_VALUES: [Double]) -> (isSuccess: Bool, xyd: [Double], matchedTraj: [[Double]], inputTraj: [[Double]]) {
+        let pastX = pastResult.x
+        let pastY = pastResult.y
+        
+        var isSuccess: Bool = false
+        var xyd: [Double] = [x, y, 50, 50, 50, 50]
+        var matchedTraj = [[Double]]()
+        var inputTraj = [[Double]]()
+        
+        let levelCopy: String = removeLevelDirectionString(levelName: level)
+        let key: String = "\(building)_\(levelCopy)"
+        
+        if (!(building.isEmpty) && !(level.isEmpty)) {
+            guard let mainType: [Int] = self.PpType[key] else {
+                return (isSuccess, xyd, matchedTraj, inputTraj)
+            }
+            
+            guard let mainHeading: [String] = self.PpHeading[key] else {
+                return (isSuccess, xyd, matchedTraj, inputTraj)
+            }
+            
+            guard let mainRoad: [[Double]] = self.PpCoord[key] else {
+                return (isSuccess, xyd, matchedTraj, inputTraj)
+            }
+            
+            if (!mainRoad.isEmpty) {
+                let roadX = mainRoad[0]
+                let roadY = mainRoad[1]
+                
+                let xMin = x - PADDING_VALUES[0]
+                let xMax = x + PADDING_VALUES[1]
+                let yMin = y - PADDING_VALUES[2]
+                let yMax = y + PADDING_VALUES[3]
+                print(getLocalTimeString() + " , (Olympus) Path-Matching : \(xMin) , \(xMax) , \(yMin) , \(yMax)")
+                self.pathTrajMatchingArea = getPathTrajMatcingArea(areaMinMax: [xMin, yMin, xMax, yMax], interval: 1.0)
+                
+                var minDistanceCoord = [Double]()
+                
+                let headingCompensation: Double = heading - unitDRInfoBuffer[unitDRInfoBuffer.count-1].heading
+//                let headingCompensation: Double = userMaskBuffer[0].absolute_heading - unitDRInfoBuffer[0].heading
+                var headingBuffer: [Double] = []
+                for uvd in unitDRInfoBuffer {
+                        let compensatedHeading = compensateHeading(heading: uvd.heading + headingCompensation - 180)
+//                    let compensatedHeading = compensateHeading(heading: headingCompensation + uvd.heading)
+                    headingBuffer.append(compensatedHeading)
+                }
+                print(getLocalTimeString() + " , (Olympus) Path-Matching : headingBuffer = \(headingBuffer)")
+                
+                
+                for i in 0..<roadX.count {
+                    let xPath = roadX[i]
+                    let yPath = roadY[i]
+                    
+                    let pathTypeLoaded = mainType[i]
+                    if (pathType == 1) {
+                        if (pathType != pathTypeLoaded) {
+                            continue
+                        }
+                    }
+                    
+                    // XY 범위 안에 있는 값 중에 검사
+                    if (xPath >= xMin && xPath <= xMax) {
+                        if (yPath >= yMin && yPath <= yMax) {
+                            var passedPp = [[Double]]()
+                            var distanceSum: Double = 0
                             
                             var xyFromHead: [Double] = [xPath, yPath]
                             var xyOriginal: [Double] = [xPath, yPath]
-                            let firstXyd = calDistacneFromNearestPp(coord: xyFromHead, passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUE: PADDING_VALUE)
+                            let firstXyd = calDistacneFromNearestPp(coord: xyFromHead, passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUES: PADDING_VALUES)
+                            print(getLocalTimeString() + " , (Olympus) Path-Matching : start PP = \(xyFromHead)")
                             passedPp.append(xyFromHead)
                             
                             var xydArray: [[Double]] = [firstXyd]
@@ -875,7 +960,7 @@ public class OlympusPathMatchingCalculator {
                                     if (i%2 == 0) {
                                         let propagatedX = xyFromHead[0] + unitDRInfoBuffer[i].length*cos(headAngle*OlympusConstants.D2R)
                                         let propagatedY = xyFromHead[1] + unitDRInfoBuffer[i].length*sin(headAngle*OlympusConstants.D2R)
-                                        let calculatedXyd = calDistacneFromNearestPp(coord: [propagatedX, propagatedY], passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUE: PADDING_VALUE)
+                                        let calculatedXyd = calDistacneFromNearestPp(coord: [propagatedX, propagatedY], passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUES: PADDING_VALUES)
                                         
                                         xyFromHead[0] = calculatedXyd[0]
                                         xyFromHead[1] = calculatedXyd[1]
@@ -887,7 +972,7 @@ public class OlympusPathMatchingCalculator {
                                     } else {
                                         let propagatedX = xyFromHead[0] + unitDRInfoBuffer[i].length*cos(headAngle*OlympusConstants.D2R)
                                         let propagatedY = xyFromHead[1] + unitDRInfoBuffer[i].length*sin(headAngle*OlympusConstants.D2R)
-                                        let calculatedXyd = calDistacneFromNearestPp(coord: [propagatedX, propagatedY], passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUE: PADDING_VALUE)
+                                        let calculatedXyd = calDistacneFromNearestPp(coord: [propagatedX, propagatedY], passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUES: PADDING_VALUES)
                                         
                                         xyFromHead[0] = propagatedX
                                         xyFromHead[1] = propagatedY
@@ -899,7 +984,7 @@ public class OlympusPathMatchingCalculator {
                                 } else {
                                     let propagatedX = xyFromHead[0] + unitDRInfoBuffer[i].length*cos(headAngle*OlympusConstants.D2R)
                                     let propagatedY = xyFromHead[1] + unitDRInfoBuffer[i].length*sin(headAngle*OlympusConstants.D2R)
-                                    let calculatedXyd = calDistacneFromNearestPp(coord: [propagatedX, propagatedY], passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUE: PADDING_VALUE)
+                                    let calculatedXyd = calDistacneFromNearestPp(coord: [propagatedX, propagatedY], passedPp: passedPp, mainRoad: mainRoad, mainType: mainType, pathType: pathType, PADDING_VALUES: PADDING_VALUES)
                                     
                                     xyFromHead[0] = calculatedXyd[0]
                                     xyFromHead[1] = calculatedXyd[1]
@@ -909,6 +994,8 @@ public class OlympusPathMatchingCalculator {
                                     passedPp.append(xyFromHead)
                                 }
                             }
+                           
+                            print(getLocalTimeString() + " , (Olympus) Path-Matching : Trajectory PP = \(trajectoryFromHead)")
                             
                             let distWithPast = sqrt((pastX - xPath)*(pastX - xPath) + (pastY - yPath)*(pastY - yPath))
                             let distWithMask = sqrt((xyFromHead[0] - Double(userMaskBuffer[0].x))*(xyFromHead[0] - Double(userMaskBuffer[0].x)) + (xyFromHead[1] - Double(userMaskBuffer[0].y))*(xyFromHead[1] - Double(userMaskBuffer[0].y)))
@@ -945,8 +1032,7 @@ public class OlympusPathMatchingCalculator {
                         }
                     }
                 }
-                
-                print(getLocalTimeString() + " , (Olympus) Path-Traj Matching : \(ppXydArray)")
+
                 if (!minDistanceCoord.isEmpty) {
                     if (minDistanceCoord[2] <= 15 && minDistanceCoord[3] <= 10) {
                         isSuccess = true
@@ -1154,6 +1240,31 @@ public class OlympusPathMatchingCalculator {
         }
         
         return paddingValues
+    }
+    
+    private func getPathTrajMatcingArea(areaMinMax: [Double], interval: Double) -> [[Double]] {
+        var coordinates: [[Double]] = []
+        
+        let xMin = areaMinMax[0]
+        let yMin = areaMinMax[1]
+        let xMax = areaMinMax[2]
+        let yMax = areaMinMax[3]
+        
+        var x = xMin
+            while x <= xMax {
+                coordinates.append([x, yMin])
+                coordinates.append([x, yMax])
+                x += interval
+            }
+            
+            var y = yMin
+            while y <= yMax {
+                coordinates.append([xMin, y])
+                coordinates.append([xMax, y])
+                y += interval
+            }
+        
+        return coordinates
     }
     
     private func getPaddingValuesForPhase4(directions: [Double], PIXELS_TO_CHECK: Int) -> [Double] {
@@ -1543,6 +1654,86 @@ public class OlympusPathMatchingCalculator {
         return (resultNode, resultNodeCoord, resultNodeHeadings)
     }
     
+    public func findPathTrajMatchingNode(fltResult: FineLocationTrackingFromServer, x: Double, y: Double, heading: Double, uvdBuffer: [UnitDRInfo], pathType: Int, linkDirections: [Double]) -> (Int, [Double], [Double]) {
+        var resultNode: Int = -1
+        var resultNodeCoord = [Double]()
+        var resultNodeHeadings = [Double]()
+        
+        let MARGIN: Double = 30
+        let startHeading = compensateHeading(heading: heading)
+        var diffHeadings = [Double]()
+        var candidateDirections = [Double]()
+        for mapHeading in linkDirections {
+            var diffValue: Double = 0
+            if (startHeading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
+                diffValue = abs(startHeading - (mapHeading+360))
+            } else if (mapHeading > 270 && (startHeading >= 0 && startHeading < 90)) {
+                diffValue = abs(mapHeading - (startHeading+360))
+            } else {
+                diffValue = abs(startHeading - mapHeading)
+            }
+            diffHeadings.append(diffValue)
+            
+            
+            
+            if diffValue <= MARGIN || (diffValue >= 180-MARGIN && diffValue < 180+MARGIN) {
+                candidateDirections.append(mapHeading)
+            }
+        }
+        
+        print(getLocalTimeString() + " , (Olympus) Path-Matching : userXY = \(x) , \(y)")
+        print(getLocalTimeString() + " , (Olympus) Path-Matching : diffHeadings = \(diffHeadings)")
+        print(getLocalTimeString() + " , (Olympus) Path-Matching : candidateDirections = \(candidateDirections)")
+        var uvdLength: Double = 0
+        for uvd in uvdBuffer {
+            uvdLength += uvd.length
+        }
+        
+        let PIXELS_TO_CHECK = Int(round(uvdLength + uvdLength*0.2))
+        print(getLocalTimeString() + " , (Olympus) Path-Matching : PIXELS_TO_CHECK = \(PIXELS_TO_CHECK)")
+        if (!candidateDirections.isEmpty) {
+            var minDistWithUser: Double = 100
+            
+            for direction in candidateDirections {
+                var matchedNodeNumber: Int = -1
+                var matchedNodeCoord: [Double] = [0, 0]
+                var matchedNodeHeadings = [Double]()
+                let paddingValues = [Double] (repeating: Double(PIXELS_TO_CHECK), count: 4)
+                
+                var xToCheck: Double = x
+                var yToCheck: Double = y
+                for _ in 0..<PIXELS_TO_CHECK {
+                    xToCheck += cos(direction*OlympusConstants.D2R)
+                    yToCheck += sin(direction*OlympusConstants.D2R)
+                    let matchedNodeResult = getMatchedNodeWithCoord(fltResult: fltResult, originCoord: [x, y], coordToCheck: [xToCheck, yToCheck], pathType: pathType, PADDING_VALUES: paddingValues)
+                    if (matchedNodeResult.0) {
+                        break
+                    } else {
+                        if (matchedNodeResult.1 != -1) {
+                            matchedNodeNumber = matchedNodeResult.1
+                            matchedNodeCoord = [xToCheck, yToCheck]
+                            matchedNodeHeadings = matchedNodeResult.2
+                            break
+                        }
+                    }
+                }
+                
+                if (matchedNodeNumber != -1) {
+                    print(getLocalTimeString() + " , (Olympus) Path-Matching : matchedNodeNumber = \(matchedNodeNumber) // matchedNodeCoord = \(matchedNodeCoord)")
+                    let distWithUser = sqrt((x-matchedNodeCoord[0])*(x-matchedNodeCoord[0]) + (y-matchedNodeCoord[1])*(y-matchedNodeCoord[1]))
+                    if (distWithUser < minDistWithUser) {
+                        minDistWithUser = distWithUser
+                        resultNode = matchedNodeNumber
+                        resultNodeCoord = matchedNodeCoord
+                        resultNodeHeadings = matchedNodeHeadings
+                    }
+                }
+            }
+        }
+        
+        return (resultNode, resultNodeCoord, resultNodeHeadings)
+    }
+    
     public func getPassedNodeMatchedIndex() -> Int {
         return self.passedNodeMatchedIndex
     }
@@ -1586,7 +1777,7 @@ public class OlympusPathMatchingCalculator {
         return (limitType, limitValues)
     }
     
-    private func calDistacneFromNearestPp(coord: [Double], passedPp: [[Double]], mainRoad: [[Double]], mainType: [Int], pathType: Int, PADDING_VALUE: Double) -> [Double] {
+    private func calDistacneFromNearestPp(coord: [Double], passedPp: [[Double]], mainRoad: [[Double]], mainType: [Int], pathType: Int, PADDING_VALUES: [Double]) -> [Double] {
         let x = coord[0]
         let y = coord[1]
         
@@ -1597,10 +1788,10 @@ public class OlympusPathMatchingCalculator {
         let roadX = mainRoad[0]
         let roadY = mainRoad[1]
         
-        let xMin = x - PADDING_VALUE
-        let xMax = x + PADDING_VALUE
-        let yMin = y - PADDING_VALUE
-        let yMax = y + PADDING_VALUE
+        let xMin = x - PADDING_VALUES[0]
+        let xMax = x + PADDING_VALUES[1]
+        let yMin = y - PADDING_VALUES[2]
+        let yMax = y + PADDING_VALUES[3]
         
         for i in 0..<roadX.count {
             let xPath = roadX[i]
@@ -1638,6 +1829,7 @@ public class OlympusPathMatchingCalculator {
                 xyd = minData
             }
         }
+        
         return xyd
     }
 }

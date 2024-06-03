@@ -156,7 +156,7 @@ class OlympusConstants {
     static var REQUIRED_LENGTH_FOR_MAJOR_HEADING: Double = 10
     static let COUNT_FOR_PHASE_BREAK_IN_PHASE2: Int = 7
     static let HEADING_BUFFER_SIZE: Int = 5
-    static let REQUIRED_PATH_TRAJ_MATCHING_INDEX: Int = 5
+    static let REQUIRED_PATH_TRAJ_MATCHING_INDEX: Int = 3 // 5
     static let SECTION_STRAIGHT_ANGLE: Double = 5 // degree
 //    static let REQUIRED_SECTION_STRAIGHT_IDX: Int = 8
 //    static let REQUIRED_SECTION_RQ_IDX: Int = 8
@@ -166,7 +166,7 @@ class OlympusConstants {
     
 //    static let REQUIRED_SECTION_STRAIGHT_IDX: Int = 20 // COEX DR
 //    static let REQUIRED_SECTION_RQ_IDX: Int = 20 // COEX DR
-    static let REQUIRED_BAD_CASE_CHECK_IDX: Int = 15
+    static let REQUIRED_BAD_CASE_CHECK_IDX: Int = 10
     
     // Path-Matching
     static let HEADING_RANGE: Double = 46

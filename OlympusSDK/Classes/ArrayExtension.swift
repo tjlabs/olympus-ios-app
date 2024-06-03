@@ -163,3 +163,17 @@ public func containsArray(_ array2D: [[Double]], _ targetArray: [Double]) -> Boo
     }
     return false
 }
+
+public func indexOfMaxRateOfChange(in array: [Double]) -> Int {
+    var maxRateOfChange: Double = 0.0
+    var indexOfMaxChange: Int = 0
+
+    for i in 1..<array.count {
+        let rateOfChange = abs(array[i] - array[i - 1])
+        if rateOfChange > maxRateOfChange {
+            maxRateOfChange = rateOfChange
+            indexOfMaxChange = i
+        }
+    }
+    return indexOfMaxChange
+}

@@ -126,6 +126,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     var stableModeInitFlag: Bool = true
     var goodCaseCount: Int = 0
     var isBadCaseInStableMode: Bool = false
+    var isNeedPathTrajMatching: Bool = false
     var isInRecoveryProcess: Bool = false
     
     var pastReportTime: Double = 0
@@ -398,29 +399,82 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //            print("(OlympusFileManager) : ble = \(result.1)" )
         }
     }
-    
-    public func isServiceAvailableDevice(completion: @escaping (Int, Bool) -> Void) {
-        OlympusNetworkManager.shared.getBlackList(url: BLACK_LIST_URL, completion: { statusCode, returnedString in
-            if (statusCode == 200) {
-                if let blackListDevices = jsonToBlackListDevices(from: returnedString) {
-                    print(getLocalTimeString() + " , (Olympus) BlackList : iOS Devices = \(blackListDevices.iOS.apple)")
-                    print(getLocalTimeString() + " , (Olympus) BlackList : Updated Time = \(blackListDevices.updatedTime)")
-                    
-                    let iosBlackList: [String] = blackListDevices.iOS.apple
-                    for device in iosBlackList {
-                        if (device.contains(self.deviceIdentifier)) {
-                            self.reporting(input: BLACK_LIST_FLAG)
-                            completion(500, false)
-                        }
-                    }
-                    completion(statusCode, true)
+
+    public func checkServiceAvailableDevice(completion: @escaping (Int, Bool, Bool) -> Void) {
+        OlympusNetworkManager.shared.getBlackList(url: BLACK_LIST_URL) { [self] statusCode, returnedString in
+            var isBlacklistUpdated = false
+            var isServiceAvailable = false
+            var blacklistUpdatedTime = ""
+            var requestFailed = false
+
+            let loadedBlacklistInfo = loadBlacklistInfo()
+            if statusCode == 200, let blackListDevices = jsonToBlackListDevices(from: returnedString) {
+                // Successful communication
+                let updatedTime = blackListDevices.updatedTime
+                blacklistUpdatedTime = updatedTime
+
+                isBlacklistUpdated = loadedBlacklistInfo.1.isEmpty || loadedBlacklistInfo.1 != updatedTime
+
+                if isBlacklistUpdated {
+                    print(getLocalTimeString() + " , (Olympus) BlackList: iOS Devices = \(blackListDevices.iOS.apple)")
+                    print(getLocalTimeString() + ", (Olympus) BlackList: Updated Time = \(blackListDevices.updatedTime)")
+
+                    isServiceAvailable = !blackListDevices.iOS.apple.contains { $0.contains(deviceIdentifier) }
                 } else {
-                    completion(500, false)
+                    isServiceAvailable = loadedBlacklistInfo.0
                 }
             } else {
-                completion(statusCode, false)
+                // Communication failed
+                requestFailed = true
             }
-        })
+
+            if requestFailed {
+                // Check cache if available
+                if !loadedBlacklistInfo.1.isEmpty {
+                    isServiceAvailable = loadedBlacklistInfo.0
+                    blacklistUpdatedTime = loadedBlacklistInfo.1
+                }
+            }
+
+            if !isServiceAvailable {
+                self.reporting(input: BLACK_LIST_FLAG)
+            }
+
+            saveBlacklistInfo(isServiceAvailable: isServiceAvailable, updatedTime: blacklistUpdatedTime)
+            completion(statusCode, isBlacklistUpdated, isServiceAvailable)
+        }
+    }
+
+    
+    private func loadBlacklistInfo() -> (Bool, String) {
+        var isServiceAvailable: Bool = false
+        var updatedTime: String = ""
+        
+        let keyIsServiceAvailable: String = "OlympusIsServiceAvailable"
+        if let loadedIsServiceAvailable: Bool = UserDefaults.standard.object(forKey: keyIsServiceAvailable) as? Bool {
+            isServiceAvailable = loadedIsServiceAvailable
+        }
+        
+        let keyUpdatedTime: String = "OlympusBlacklistUpdatedTime"
+        if let loadedUpdatedTime: String = UserDefaults.standard.object(forKey: keyUpdatedTime) as? String {
+            updatedTime = loadedUpdatedTime
+        }
+        
+        return (isServiceAvailable, updatedTime)
+    }
+    
+    private func saveBlacklistInfo(isServiceAvailable: Bool, updatedTime: String) {
+        print(getLocalTimeString() + " , (Olympus) Save Blacklist Info : \(isServiceAvailable) , \(updatedTime)")
+        
+        do {
+            let key: String = "OlympusIsServiceAvailable"
+            UserDefaults.standard.set(isServiceAvailable, forKey: key)
+        }
+        
+        do {
+            let key: String = "OlympusBlacklistUpdatedTime"
+            UserDefaults.standard.set(updatedTime, forKey: key)
+        }
     }
     
     public func stopService() -> (Bool, String) {
@@ -749,6 +803,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             displayOutput.isIndexChanged = unitDRInfo.isIndexChanged
             displayOutput.length = unitDRInfo.length
             displayOutput.velocity = unitDRInfo.velocity * 3.6
+            displayOutput.indexTx = unitDRInfo.index
             // 임시
             
             stateManager.setVariblesWhenIsIndexChanged()
@@ -763,6 +818,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             } else {
                 unitUvdLength = unitDRInfo.length
             }
+
             unitUvdLength = round(unitUvdLength*10000)/10000
             self.unitDRInfoIndex = unitDRInfo.index
             
@@ -799,9 +855,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             let diffHeading = unitDRInfo.heading - pastUvdHeading
             pastUvdHeading = unitDRInfo.heading
             if (KF.isRunning && KF.tuFlag) {
-                var tuResult = KF.timeUpdate(recentResult: olympusResult, length: unitUvdLength, diffHeading: diffHeading, isPossibleHeadingCorrection: isPossibleHeadingCorrection, unitDRInfoBuffer: unitDRInfoBuffer, userMaskBuffer: userMaskBufferPathTrajMatching, mode: runMode)
+                print(getLocalTimeString() + " , (Olympus) Path-Matching : Check Bad Case : isNeedPathTrajMatching = \(self.isNeedPathTrajMatching) // index = \(unitDRInfoIndex)")
+                var tuResult = KF.timeUpdate(recentResult: olympusResult, length: unitUvdLength, diffHeading: diffHeading, isPossibleHeadingCorrection: isPossibleHeadingCorrection, unitDRInfoBuffer: unitDRInfoBuffer, userMaskBuffer: userMaskBufferPathTrajMatching, isNeedPathTrajMatching: isNeedPathTrajMatching, mode: runMode)
                 tuResult.mobile_time = currentTime
                 currentTuResult = tuResult
+                // 임시
+                displayOutput.searchArea = OlympusPathMatchingCalculator.shared.pathTrajMatchingArea
                 
                 let sectionResult = sectionController.controlSection(userVelocity: data)
                 if (sectionResult.isNeedRequest && phaseController.PHASE >= 4) {
@@ -861,15 +920,14 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             print(getLocalTimeString() + " , (Olympus) Request Phase 4 : searchHeadings = \(searchHeadings)")
                             let searchDirections = searchHeadings.map { Int($0) }
                             print(getLocalTimeString() + " , (Olympus) Request Phase 4 : \(data.index) // anchor = \(anchorTailIndex) // requestType = \(sectionResult.requestType) // nodeCandidates = \(nodeCandidates)")
-                            processPhase4(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, node_index: passedNodeMatchedIndex, search_direction_list: searchDirections)
+//                            processPhase4(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, node_index: passedNodeMatchedIndex, search_direction_list: searchDirections)
                         }
                     } else {
                         if (!self.isInRecoveryProcess && userMaskSendCount >= 2) {
                             print(getLocalTimeString() + " , (Olympus) Request Phase 5 : \(data.index) // anchor = \(anchorTailIndex) // requestType = \(sectionResult.requestType) // nodeCandidates = \(nodeCandidates)")
-//                            processPhase5(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo)
+                            processPhase5(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo)
                         }
                     }
-//                    processPhase5(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo)
                 }
                 
                 
@@ -934,10 +992,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 
                 // 임시
                 let displaySearchType: Int = trajTypeConverter(trajType: searchInfo.trajType)
-                displayOutput.searchArea = searchInfo.searchArea
-                displayOutput.searchType = displaySearchType
-                displayOutput.userTrajectory = searchInfo.trajShape
-                displayOutput.trajectoryStartCoord = searchInfo.trajStartCoord
+//                displayOutput.searchArea = searchInfo.searchArea
+//                displayOutput.searchType = displaySearchType
+//                displayOutput.userTrajectory = searchInfo.trajShape
+//                displayOutput.trajectoryStartCoord = searchInfo.trajStartCoord
                 // 임시
                 
                 if (searchInfo.trajType != TrajType.DR_UNKNOWN) {
@@ -1772,6 +1830,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             
             if (KF.isRunning) {
                 OlympusPathMatchingCalculator.shared.updateNodeAndLinkInfo(uvdIndex: resultIndex, currentResult: result, currentResultHeading: self.curTemporalResultHeading, pastResult: preTemporalResult, pastResultHeading: preTemporalResultHeading, pathType: pathTypeForNodeAndLink)
+                KF.setLinkInfo(coord: OlympusPathMatchingCalculator.shared.linkCoord, directions: OlympusPathMatchingCalculator.shared.linkDirections)
                 self.paddingValues = OlympusPathMatchingCalculator.shared.getPaddingValues(mode: runMode, isPhaseBreak: isPhaseBreak)
             }
             
@@ -1798,7 +1857,11 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 }
                 stackUserMask(data: data)
                 stackUserMaskForDisplay(data: data)
-                self.isBadCaseInStableMode = checkBadCase(unitDRInfoBuffer: self.unitDRInfoBuffer, userMaskBuffer: self.userMaskBuffer, requiredIndex: OlympusConstants.REQUIRED_BAD_CASE_CHECK_IDX,mode: self.runMode, DISTANCE_THRESHOLD: 3)
+//                self.isBadCaseInStableMode = checkBadCase(unitDRInfoBuffer: self.unitDRInfoBuffer, userMaskBuffer: self.userMaskBuffer, requiredIndex: OlympusConstants.REQUIRED_BAD_CASE_CHECK_IDX, mode: self.runMode, DISTANCE_THRESHOLD: 3)
+                if (runMode == OlympusConstants.MODE_PDR) {
+//                    self.isNeedPathTrajMatching = checkBadCase(unitDRInfoBuffer: self.unitDRInfoBuffer, userMaskBuffer: self.userMaskBuffer, requiredIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_HEAD_STRAIGHT, mode: OlympusConstants.MODE_PDR, DISTANCE_THRESHOLD: 0.5)
+                    self.isNeedPathTrajMatching = checkIsNeedPathTrajMatching(userMaskBuffer: self.userMaskBuffer)
+                }
             }
             
             self.temporalResult = result
@@ -1912,10 +1975,28 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //                DISTANCE_THRESHOLD = 3
 //            }
             if (avgDistanceError >= DISTANCE_THRESHOLD){isBadCase = true}
-//            print("Check Bad Case : sum = \(sum) // count = \(recentUserMaskBuffer.count) // avgDistanceError = \(avgDistanceError) // isBadCase = \(isBadCase)")
+            print(getLocalTimeString() + " , (Olympus) Path-Matching : Check Bad Case // sum = \(sum) // count = \(recentUserMaskBuffer.count) // avgDistanceError = \(avgDistanceError) // isBadCase = \(isBadCase)")
         }
         
         return isBadCase
+    }
+    
+    private func checkIsNeedPathTrajMatching(userMaskBuffer: [UserMask]) -> Bool {
+        if userMaskBuffer.count >= 3 {
+            var diffX: Int = 0
+            var diffY: Int = 0
+            for i in userMaskBuffer.count-2..<userMaskBuffer.count {
+                diffX += abs(userMaskBuffer[i-1].x - userMaskBuffer[i].x)
+                diffY += abs(userMaskBuffer[i-1].y - userMaskBuffer[i].y)
+            }
+            if diffX == 0 && diffY == 0 {
+                return true
+            } else {
+                return false
+            }
+        } else {
+            return false
+        }
     }
     
     private func getUnitDRInfoFromLast(from unitDRInfoBuffer: [UnitDRInfo], N: Int) -> [UnitDRInfo] {

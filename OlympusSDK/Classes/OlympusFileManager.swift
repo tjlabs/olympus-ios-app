@@ -119,8 +119,10 @@ public class OlympusFileManager {
 //            let sensorFileName = "sensor_check2.csv"
 //            let bleFileName = "ble_ds04.csv"
 //            let sensorFileName = "sensor_ds04.csv"
-            let bleFileName = "ble_lg03.csv"
-            let sensorFileName = "sensor_lg03.csv"
+            let bleFileName = "ble_lg01.csv"
+            let sensorFileName = "sensor_lg01.csv"
+//            let bleFileName = "ble_coex02.csv"
+//            let sensorFileName = "sensor_coex02.csv"
             
             let bleSimulationUrl = exportDir.appendingPathComponent(bleFileName)
             do {
