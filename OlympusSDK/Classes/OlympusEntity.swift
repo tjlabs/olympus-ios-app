@@ -619,6 +619,24 @@ public struct PathMatchingNodeCandidateInfo {
     var nodeHeadings: [Double]
 }
 
+public struct PassedNodeInfo {
+    var nodeNumber: Int
+    var nodeCoord: [Double]
+    var nodeHeadings: [Double]
+    var matchedIndex: Int
+    var userHeading: Double
+}
+
+public struct BadCaseNodeInfo {
+    var isPhaseBreak: Bool
+    var nodeCandidatesInfo: [PassedNodeInfo]
+    
+//    var nodeCandidates: [Int]
+//    var nodeHeadings: [Double]
+//    var matchedIndex: Int
+//    var userHeading: Double
+}
+
 // 임시
 public struct ServiceResult {
     public var isIndexChanged: Bool = false

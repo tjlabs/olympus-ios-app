@@ -161,12 +161,13 @@ class OlympusConstants {
 //    static let REQUIRED_SECTION_STRAIGHT_IDX: Int = 8
 //    static let REQUIRED_SECTION_RQ_IDX: Int = 8
     
-    static let REQUIRED_SECTION_STRAIGHT_IDX: Int = 30 // LG
-    static let REQUIRED_SECTION_RQ_IDX: Int = 30 // LG
+//    static let REQUIRED_SECTION_STRAIGHT_IDX: Int = 30 // LG
+//    static let REQUIRED_SECTION_RQ_IDX: Int = 30 // LG
     
 //    static let REQUIRED_SECTION_STRAIGHT_IDX: Int = 20 // COEX DR
 //    static let REQUIRED_SECTION_RQ_IDX: Int = 20 // COEX DR
-    static let REQUIRED_BAD_CASE_CHECK_IDX: Int = 10
+    
+    static let REQUIRED_SECTION_STRAIGHT_LENGTH: Double = 8
     
     // Path-Matching
     static let HEADING_RANGE: Double = 46
