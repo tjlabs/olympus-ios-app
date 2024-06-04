@@ -613,6 +613,12 @@ public struct NodeCandidateInfo {
     public var nodeIndex: Int
 }
 
+public struct PathMatchingNodeCandidateInfo {
+    var nodeNumber: Int
+    var nodeCoord: [Double]
+    var nodeHeadings: [Double]
+}
+
 // 임시
 public struct ServiceResult {
     public var isIndexChanged: Bool = false

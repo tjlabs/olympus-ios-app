@@ -132,7 +132,220 @@ public class OlympusKalmanFilter: NSObject {
         self.tuResultWhenUvdPosted = result
     }
     
-    public func timeUpdate(recentResult: FineLocationTrackingResult, length: Double, diffHeading: Double, isPossibleHeadingCorrection: Bool, unitDRInfoBuffer: [UnitDRInfo], userMaskBuffer: [UserMask], isNeedPathTrajMatching: Bool, mode: String) -> FineLocationTrackingFromServer {
+//    public func timeUpdate(recentResult: FineLocationTrackingResult, length: Double, diffHeading: Double, isPossibleHeadingCorrection: Bool, unitDRInfoBuffer: [UnitDRInfo], userMaskBuffer: [UserMask], isNeedPathTrajMatching: Bool, mode: String) -> FineLocationTrackingFromServer {
+//            var outputResult: FineLocationTrackingFromServer = self.tuResult
+//            let levelName = removeLevelDirectionString(levelName: self.tuResult.level_name)
+//            
+//            let updatedHeading = compensateHeading(heading: self.tuResult.absolute_heading + diffHeading)
+//            let dx = length*cos(updatedHeading*OlympusConstants.D2R)
+//            let dy = length*sin(updatedHeading*OlympusConstants.D2R)
+//            
+//            let updatedX = self.tuResult.x + dx
+//            let updatedY = self.tuResult.y + dy
+//            
+//            outputResult.x = updatedX
+//            outputResult.y = updatedY
+//            outputResult.absolute_heading = updatedHeading
+//            
+//            if (mode == OlympusConstants.MODE_PDR) {
+//                // PDR
+//                var isDidPathTrajMatching: Bool = false
+//                let currentUvdIndex = unitDRInfoBuffer[unitDRInfoBuffer.count-1].index
+//
+//                let inputUnitDrInfoBuffer = Array(unitDRInfoBuffer.suffix(OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT))
+//                var isPossiblePathTrajMatching: Bool = true
+//                for unitUvd in inputUnitDrInfoBuffer {
+//                    if (unitUvd.index == self.pathTrajMatchingIndex) {
+//                        isPossiblePathTrajMatching = false
+//                        break
+//                    }
+//                }
+//                
+//                print(getLocalTimeString() + " , (Olympus) Path-Matching : isPossiblePathTrajMatching = \(isPossiblePathTrajMatching)")
+//                let drBufferStraightResult = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT, condition: 60.0)
+//                
+//                let isDrStraight: Bool = drBufferStraightResult.0
+//                let turnAngle = drBufferStraightResult.1
+//                
+//                if (!isDrStraight && isPossiblePathTrajMatching) {
+//                    // 사용자는 Turn 하는 궤적이다
+//                    if (isNeedPathTrajMatching && turnAngle <= 135) {
+//                        // Node를 옮기자
+//                        
+//                        if (!linkDirections.isEmpty) {
+//                            let inputUserMaskBuffer = Array(userMaskBuffer.suffix(OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT))
+//                            let userX = inputUserMaskBuffer[inputUserMaskBuffer.count-1].x
+//                            let userY = inputUserMaskBuffer[inputUserMaskBuffer.count-1].y
+//                            let userHeading = inputUserMaskBuffer[inputUserMaskBuffer.count-1].absolute_heading
+//                            let startHeading = inputUserMaskBuffer[0].absolute_heading
+//                            let findPathMatchingNodeResult = OlympusPathMatchingCalculator.shared.findPathTrajMatchingNode(fltResult: outputResult, x: Double(userX), y: Double(userY), heading: startHeading, uvdBuffer: inputUnitDrInfoBuffer, pathType: 0, linkDirections: linkDirections)
+//                            print(getLocalTimeString() + " , (Olympus) Path-Matching : findPathMatchingNodeResult = \(findPathMatchingNodeResult)")
+//                            if findPathMatchingNodeResult.0 != -1 {
+//                                let MARGIN: Double = 30
+//                                let endHeading = compensateHeading(heading: userHeading)
+//                                var diffHeadings = [Double]()
+//                                var candidateDirections = [Double]()
+//                                for mapHeading in findPathMatchingNodeResult.2 {
+//                                    var diffValue: Double = 0
+//                                    if (endHeading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
+//                                        diffValue = abs(endHeading - (mapHeading+360))
+//                                    } else if (mapHeading > 270 && (endHeading >= 0 && endHeading < 90)) {
+//                                        diffValue = abs(mapHeading - (endHeading+360))
+//                                    } else {
+//                                        diffValue = abs(endHeading - mapHeading)
+//                                    }
+//                                    diffHeadings.append(diffValue)
+//                                    
+//                                    if (diffValue <= MARGIN) {
+//                                        candidateDirections.append(mapHeading)
+//                                    }
+//                                }
+//                                
+//                                print(getLocalTimeString() + " , (Olympus) Path-Matching : endHeading = \(endHeading)")
+//                                print(getLocalTimeString() + " , (Olympus) Path-Matching : diffHeadings = \(diffHeadings)")
+//                                print(getLocalTimeString() + " , (Olympus) Path-Matching : candidateDirections = \(candidateDirections)")
+//                                if (candidateDirections.count == 1) {
+//                                    self.pathTrajMatchingIndex = currentUvdIndex
+//                                    var uvdHeadings = [Double]()
+//                                    for unitUvd in inputUnitDrInfoBuffer {
+//                                        uvdHeadings.append(unitUvd.heading)
+//                                    }
+//                                    print(getLocalTimeString() + " , (Olympus) Path-Matching : UVD Headings = \(uvdHeadings)")
+//                                    let turnIndex = indexOfMaxRateOfChange(in: uvdHeadings)
+//                                    let compensationDirection = candidateDirections[0]
+//                                    let nodeCoord = findPathMatchingNodeResult.1
+//                                    var startX = nodeCoord[0]
+//                                    var startY = nodeCoord[1]
+//                                    
+//                                    var endX = nodeCoord[0]
+//                                    var endY = nodeCoord[1]
+//                                    for i in turnIndex..<inputUnitDrInfoBuffer.count {
+//                                        endX += inputUnitDrInfoBuffer[i].length*cos(compensationDirection*OlympusConstants.D2R)
+//                                        endY += inputUnitDrInfoBuffer[i].length*sin(compensationDirection*OlympusConstants.D2R)
+//                                    }
+//                                    for i in (0..<turnIndex).reversed() {
+//                                        startX += inputUnitDrInfoBuffer[i].length*cos((startHeading-180)*OlympusConstants.D2R)
+//                                        startY += inputUnitDrInfoBuffer[i].length*sin((startHeading-180)*OlympusConstants.D2R)
+//                                    }
+//                                    outputResult.x = endX
+//                                    outputResult.y = endY
+//                                    
+//                                    let headingCompensation: Double = userHeading - inputUnitDrInfoBuffer[inputUnitDrInfoBuffer.count-1].heading
+//                                    var headingBuffer: [Double] = []
+//                                    for uvd in inputUnitDrInfoBuffer {
+//                                        let compensatedHeading = compensateHeading(heading: uvd.heading + headingCompensation - 180)
+//                                        headingBuffer.append(compensatedHeading)
+//                                    }
+//                                    
+//                                    var xyFromHead :[Double] = [endX, endY]
+//                                    var trajectoryFromHead = [[Double]]()
+//                                    trajectoryFromHead.append([endX, endY])
+//                                    for i in (0..<inputUnitDrInfoBuffer.count).reversed() {
+//                                        let headAngle = headingBuffer[i]
+//                                        xyFromHead[0] = xyFromHead[0] + inputUnitDrInfoBuffer[i].length*cos(headAngle*OlympusConstants.D2R)
+//                                        xyFromHead[1] = xyFromHead[1] + inputUnitDrInfoBuffer[i].length*sin(headAngle*OlympusConstants.D2R)
+//                                        trajectoryFromHead.append(xyFromHead)
+//                                    }
+//                                    self.inputTraj = trajectoryFromHead
+//                                }
+//                            }
+//                        }
+//                        isDidPathTrajMatching = true
+//                    }
+//                } else {
+//                    let drBufferVeryStraightResult = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT, condition: 10.0)
+//                    let isDrVeryStraight: Bool = drBufferVeryStraightResult.0
+//                    if (isDrVeryStraight) {
+//                        let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 0, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
+//                        outputResult.x = pathMatchingResult.xyhs[0]*0.5 + updatedX*0.5
+//                        outputResult.y = pathMatchingResult.xyhs[1]*0.5 + updatedY*0.5
+//                        if (pathMatchingResult.0) { outputResult.absolute_heading = compensateHeading(heading: pathMatchingResult.xyhs[2]) }
+//                    }
+//                    initPathTrajMatchingInfo()
+//                }
+//                
+//                if (!isDidPathTrajMatching) {
+//                    let limitationResult = OlympusPathMatchingCalculator.shared.getTimeUpdateLimitation(mode: mode)
+//                    if (limitationResult.limitType == .Y_LIMIT) {
+//    //                    print("(Link Info) : Y Limit // before = \(outputResult.x) , \(outputResult.y)")
+//                        if (outputResult.y < limitationResult.limitValues[0]) {
+//                            outputResult.y = limitationResult.limitValues[0]
+//                        } else if (outputResult.y > limitationResult.limitValues[1]) {
+//                            outputResult.y = limitationResult.limitValues[1]
+//                        }
+//    //                    print("(Link Info) : Y Limit // after = \(outputResult.x) , \(outputResult.y)")
+//    //                    print("(Link Info) -------------------------------------- ")
+//                    } else if (limitationResult.limitType == .X_LIMIT) {
+//    //                    print("(Link Info) : X Limit // before = \(outputResult.x) , \(outputResult.y)")
+//                        if (outputResult.x < limitationResult.limitValues[0]) {
+//                            outputResult.x = limitationResult.limitValues[0]
+//                        } else if (outputResult.x > limitationResult.limitValues[1]) {
+//                            outputResult.x = limitationResult.limitValues[1]
+//                        }
+//    //                    print("(Link Info) : X Limit // after = \(outputResult.x) , \(outputResult.y)")
+//    //                    print("(Link Info) -------------------------------------- ")
+//                    }
+//                } else {
+//                    let pathMatching = OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: outputResult.x, y: outputResult.y, heading: outputResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 0, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
+//                    outputResult.x = pathMatching.xyhs[0]
+//                    outputResult.y = pathMatching.xyhs[1]
+//                }
+//            } else {
+//                let drBufferStraightResult = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_HEADING_CORR_NUM_IDX, condition: 10.0)
+//                let isDrStraight: Bool = drBufferStraightResult.0
+//                let pathMatchingResult =  OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
+//                
+//                if (pathMatchingResult.isSuccess) {
+//                    outputResult.x = (pathMatchingResult.1[0]*0.5 + updatedX*0.5)
+//                    outputResult.y = (pathMatchingResult.1[1]*0.5 + updatedY*0.5)
+//                    outputResult.absolute_heading = compensateHeading(heading: updatedHeading)
+//
+//                    if (pathMatchingResult.0 && isDrStraight){
+//                        outputResult.absolute_heading = compensateHeading(heading: pathMatchingResult.1[2])
+//                    }
+//                } else {
+//                    let pathMatchingResult =  OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 1, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
+//                    outputResult.x = (pathMatchingResult.1[0]*0.5 + updatedX*0.5)
+//                    outputResult.y = (pathMatchingResult.1[1]*0.5 + updatedY*0.5)
+//                    outputResult.absolute_heading = compensateHeading(heading: updatedHeading)
+//                }
+//                
+//                // DR
+//                let limitationResult = OlympusPathMatchingCalculator.shared.getTimeUpdateLimitation(mode: mode)
+//                if (limitationResult.limitType == .Y_LIMIT) {
+//    //                    print("(Link Info) : Y Limit // before = \(outputResult.x) , \(outputResult.y)")
+//                    if (outputResult.y < limitationResult.limitValues[0]) {
+//                        outputResult.y = limitationResult.limitValues[0]
+//                    } else if (outputResult.y > limitationResult.limitValues[1]) {
+//                        outputResult.y = limitationResult.limitValues[1]
+//                    }
+//    //                    print("(Link Info) : Y Limit // after = \(outputResult.x) , \(outputResult.y)")
+//    //                    print("(Link Info) -------------------------------------- ")
+//                } else if (limitationResult.limitType == .X_LIMIT) {
+//    //                    print("(Link Info) : X Limit // before = \(outputResult.x) , \(outputResult.y)")
+//                    if (outputResult.x < limitationResult.limitValues[0]) {
+//                        outputResult.x = limitationResult.limitValues[0]
+//                    } else if (outputResult.x > limitationResult.limitValues[1]) {
+//                        outputResult.x = limitationResult.limitValues[1]
+//                    }
+//    //                    print("(Link Info) : X Limit // after = \(outputResult.x) , \(outputResult.y)")
+//    //                    print("(Link Info) -------------------------------------- ")
+//                }
+//            }
+//            
+//            
+//            tuResult = outputResult
+//            
+//            kalmanP += kalmanQ
+//            headingKalmanP += headingKalmanQ
+//            muFlag = true
+//            
+//            return outputResult
+//        }
+    
+    public func timeUpdate(recentResult: FineLocationTrackingResult, length: Double, diffHeading: Double, isPossibleHeadingCorrection: Bool, unitDRInfoBuffer: [UnitDRInfo], userMaskBuffer: [UserMask], isNeedPathTrajMatching: Bool, mode: String) -> (FineLocationTrackingFromServer, Bool) {
+        var isNeedRequestPhase4: Bool = false
+        
         var outputResult: FineLocationTrackingFromServer = self.tuResult
         let levelName = removeLevelDirectionString(levelName: self.tuResult.level_name)
         
@@ -161,101 +374,158 @@ public class OlympusKalmanFilter: NSObject {
                 }
             }
             
-            print(getLocalTimeString() + " , (Olympus) Path-Matching : isPossiblePathTrajMatching = \(isPossiblePathTrajMatching)")
+           
             let drBufferStraightResult = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT, condition: 60.0)
             
             let isDrStraight: Bool = drBufferStraightResult.0
             let turnAngle = drBufferStraightResult.1
+            print(getLocalTimeString() + " , (Olympus) Path-Matching : isPossiblePathTrajMatching = \(isPossiblePathTrajMatching) // turnAngle = \(turnAngle)")
             
             if (!isDrStraight && isPossiblePathTrajMatching) {
                 // 사용자는 Turn 하는 궤적이다
                 if (isNeedPathTrajMatching && turnAngle <= 135) {
                     // Node를 옮기자
-                    
+                    isNeedRequestPhase4 = true
+                    print(getLocalTimeString() + " , (Olympus) Path-Matching : isNeedRequestPhase4 (1) = \(isNeedRequestPhase4)")
                     if (!linkDirections.isEmpty) {
                         let inputUserMaskBuffer = Array(userMaskBuffer.suffix(OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT))
                         let userX = inputUserMaskBuffer[inputUserMaskBuffer.count-1].x
                         let userY = inputUserMaskBuffer[inputUserMaskBuffer.count-1].y
                         let userHeading = inputUserMaskBuffer[inputUserMaskBuffer.count-1].absolute_heading
                         let startHeading = inputUserMaskBuffer[0].absolute_heading
+                        let endHeading = compensateHeading(heading: userHeading)
+                        
                         let findPathMatchingNodeResult = OlympusPathMatchingCalculator.shared.findPathTrajMatchingNode(fltResult: outputResult, x: Double(userX), y: Double(userY), heading: startHeading, uvdBuffer: inputUnitDrInfoBuffer, pathType: 0, linkDirections: linkDirections)
                         print(getLocalTimeString() + " , (Olympus) Path-Matching : findPathMatchingNodeResult = \(findPathMatchingNodeResult)")
-                        if findPathMatchingNodeResult.0 != -1 {
+                        
+                        if !findPathMatchingNodeResult.isEmpty {
+                            var resultCoordX = [Double]()
+                            var resultCoordY = [Double]()
+                            
                             let MARGIN: Double = 30
-                            let endHeading = compensateHeading(heading: userHeading)
-                            var diffHeadings = [Double]()
-                            var candidateDirections = [Double]()
-                            for mapHeading in findPathMatchingNodeResult.2 {
-                                var diffValue: Double = 0
-                                if (endHeading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
-                                    diffValue = abs(endHeading - (mapHeading+360))
-                                } else if (mapHeading > 270 && (endHeading >= 0 && endHeading < 90)) {
-                                    diffValue = abs(mapHeading - (endHeading+360))
-                                } else {
-                                    diffValue = abs(endHeading - mapHeading)
+                            
+                            for pathMatchingNode in findPathMatchingNodeResult {
+                                var diffHeadings = [Double]()
+                                var candidateDirections = [Double]()
+                                for mapHeading in pathMatchingNode.nodeHeadings {
+                                    var diffValue: Double = 0
+                                    if (endHeading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
+                                        diffValue = abs(endHeading - (mapHeading+360))
+                                    } else if (mapHeading > 270 && (endHeading >= 0 && endHeading < 90)) {
+                                        diffValue = abs(mapHeading - (endHeading+360))
+                                    } else {
+                                        diffValue = abs(endHeading - mapHeading)
+                                    }
+                                    diffHeadings.append(diffValue)
+                                    
+                                    if (diffValue <= MARGIN) {
+                                        candidateDirections.append(mapHeading)
+                                    }
                                 }
-                                diffHeadings.append(diffValue)
                                 
-                                if (diffValue <= MARGIN) {
-                                    candidateDirections.append(mapHeading)
+                                if (candidateDirections.count == 1) {
+                                    let nodeCoord = pathMatchingNode.nodeCoord
+                                    
+                                    var uvdHeadings = [Double]()
+                                    for unitUvd in inputUnitDrInfoBuffer {
+                                        uvdHeadings.append(unitUvd.heading)
+                                    }
+                                    let turnIndex = indexOfMaxRateOfChange(in: uvdHeadings)
+                                    
+                                    var startX = nodeCoord[0]
+                                    var startY = nodeCoord[1]
+                                    for i in (0..<turnIndex).reversed() {
+                                        startX += inputUnitDrInfoBuffer[i].length*cos((startHeading-180)*OlympusConstants.D2R)
+                                        startY += inputUnitDrInfoBuffer[i].length*sin((startHeading-180)*OlympusConstants.D2R)
+                                    }
+                                    
+                                    var startPaddingValues: [Double] = [1, 1, 1, 1]
+                                    let headingRange: Double = 10
+                                    if (startHeading >= -headingRange && startHeading < headingRange) || (startHeading >= 180-headingRange && startHeading < 180+headingRange) {
+                                        startPaddingValues = [1, 1, 0.45, 0.45]
+                                    } else if (startHeading >= 90-headingRange && startHeading < 90+headingRange) || (startHeading >= 270-headingRange && startHeading < 270+headingRange) {
+                                        startPaddingValues = [0.45, 0.45, 1, 1]
+                                    }
+                                    
+                                    let startXy = OlympusPathMatchingCalculator.shared.pathMatching(building: outputResult.building_name, level: outputResult.level_name, x: startX, y: startY, heading: startHeading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 0, PADDING_VALUES: startPaddingValues)
+                                    print(getLocalTimeString() + " , (Olympus) Path-Matching : startXY = \(startX) , \(startY) // pm = \(startXy)")
+                                    if (startXy.isSuccess) {
+                                        let compensationDirection = candidateDirections[0]
+                                        
+                                        var endX = nodeCoord[0]
+                                        var endY = nodeCoord[1]
+                                        for i in turnIndex..<inputUnitDrInfoBuffer.count {
+                                            endX += inputUnitDrInfoBuffer[i].length*cos(compensationDirection*OlympusConstants.D2R)
+                                            endY += inputUnitDrInfoBuffer[i].length*sin(compensationDirection*OlympusConstants.D2R)
+                                        }
+                                        
+                                        var endPaddingValues: [Double] = [1, 1, 1, 1]
+                                        let headingRange: Double = 10
+                                        if (compensationDirection >= -headingRange && compensationDirection < headingRange) || (compensationDirection >= 180-headingRange && compensationDirection < 180+headingRange) {
+                                            startPaddingValues = [1, 1, 0.45, 0.45]
+                                        } else if (compensationDirection >= 90-headingRange && compensationDirection < 90+headingRange) || (compensationDirection >= 270-headingRange && compensationDirection < 270+headingRange) {
+                                            endPaddingValues = [0.45, 0.45, 1, 1]
+                                        }
+                                        let endXy = OlympusPathMatchingCalculator.shared.pathMatching(building: outputResult.building_name, level: outputResult.level_name, x: endX, y: endY, heading: compensationDirection, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 0, PADDING_VALUES: endPaddingValues)
+                                        print(getLocalTimeString() + " , (Olympus) Path-Matching : endXy = \(endX) , \(endY) // pm = \(endXy)")
+                                        if (endXy.isSuccess) {
+                                            // 후보군 중에 하나로 포함
+                                            resultCoordX.append(endX)
+                                            resultCoordY.append(endY)
+                                        }
+                                    }
                                 }
                             }
                             
-                            print(getLocalTimeString() + " , (Olympus) Path-Matching : endHeading = \(endHeading)")
-                            print(getLocalTimeString() + " , (Olympus) Path-Matching : diffHeadings = \(diffHeadings)")
-                            print(getLocalTimeString() + " , (Olympus) Path-Matching : candidateDirections = \(candidateDirections)")
-                            if (candidateDirections.count == 1) {
-                                self.pathTrajMatchingIndex = currentUvdIndex
-                                var uvdHeadings = [Double]()
-                                for unitUvd in inputUnitDrInfoBuffer {
-                                    uvdHeadings.append(unitUvd.heading)
+                            if (!resultCoordX.isEmpty) {
+                                var minDist: Double = 100
+                                var bestCoord = [Double]()
+                                for c in 0..<resultCoordX.count {
+                                    let diffX = Double(userX) - resultCoordX[c]
+                                    let diffY = Double(userY) - resultCoordY[c]
+                                    let distWithUser = sqrt(diffX*diffX + diffY*diffY)
+                                    if (distWithUser < minDist) {
+                                        minDist = distWithUser
+                                        bestCoord = [resultCoordX[c], resultCoordY[c]]
+                                    }
                                 }
-                                print(getLocalTimeString() + " , (Olympus) Path-Matching : UVD Headings = \(uvdHeadings)")
-                                let turnIndex = indexOfMaxRateOfChange(in: uvdHeadings)
-                                let compensationDirection = candidateDirections[0]
-                                let nodeCoord = findPathMatchingNodeResult.1
-                                var startX = nodeCoord[0]
-                                var startY = nodeCoord[1]
-                                
-                                var endX = nodeCoord[0]
-                                var endY = nodeCoord[1]
-                                for i in turnIndex..<inputUnitDrInfoBuffer.count {
-                                    endX += inputUnitDrInfoBuffer[i].length*cos(compensationDirection*OlympusConstants.D2R)
-                                    endY += inputUnitDrInfoBuffer[i].length*sin(compensationDirection*OlympusConstants.D2R)
+                                if (!bestCoord.isEmpty) {
+                                    self.pathTrajMatchingIndex = currentUvdIndex
+                                    outputResult.x = bestCoord[0]
+                                    outputResult.y = bestCoord[1]
+                                    
+                                    let headingCompensation: Double = userHeading - inputUnitDrInfoBuffer[inputUnitDrInfoBuffer.count-1].heading
+                                    var headingBuffer: [Double] = []
+                                    for uvd in inputUnitDrInfoBuffer {
+                                        let compensatedHeading = compensateHeading(heading: uvd.heading + headingCompensation - 180)
+                                        headingBuffer.append(compensatedHeading)
+                                    }
+                                    
+                                    var xyFromHead :[Double] = [bestCoord[0], bestCoord[1]]
+                                    var trajectoryFromHead = [[Double]]()
+                                    trajectoryFromHead.append([bestCoord[0], bestCoord[1]])
+                                    for i in (0..<inputUnitDrInfoBuffer.count).reversed() {
+                                        let headAngle = headingBuffer[i]
+                                        xyFromHead[0] = xyFromHead[0] + inputUnitDrInfoBuffer[i].length*cos(headAngle*OlympusConstants.D2R)
+                                        xyFromHead[1] = xyFromHead[1] + inputUnitDrInfoBuffer[i].length*sin(headAngle*OlympusConstants.D2R)
+                                        trajectoryFromHead.append(xyFromHead)
+                                    }
+                                    self.inputTraj = trajectoryFromHead
+                                    isDidPathTrajMatching = true
+                                    isNeedRequestPhase4 = false
+                                    print(getLocalTimeString() + " , (Olympus) Path-Matching : isNeedRequestPhase4 (2) = \(isNeedRequestPhase4)")
                                 }
-                                for i in (0..<turnIndex).reversed() {
-                                    startX += inputUnitDrInfoBuffer[i].length*cos((startHeading-180)*OlympusConstants.D2R)
-                                    startY += inputUnitDrInfoBuffer[i].length*sin((startHeading-180)*OlympusConstants.D2R)
-                                }
-                                outputResult.x = endX
-                                outputResult.y = endY
-                                
-                                let headingCompensation: Double = userHeading - inputUnitDrInfoBuffer[inputUnitDrInfoBuffer.count-1].heading
-                                var headingBuffer: [Double] = []
-                                for uvd in inputUnitDrInfoBuffer {
-                                    let compensatedHeading = compensateHeading(heading: uvd.heading + headingCompensation - 180)
-                                    headingBuffer.append(compensatedHeading)
-                                }
-                                
-                                var xyFromHead :[Double] = [endX, endY]
-                                var trajectoryFromHead = [[Double]]()
-                                trajectoryFromHead.append([endX, endY])
-                                for i in (0..<inputUnitDrInfoBuffer.count).reversed() {
-                                    let headAngle = headingBuffer[i]
-                                    xyFromHead[0] = xyFromHead[0] + inputUnitDrInfoBuffer[i].length*cos(headAngle*OlympusConstants.D2R)
-                                    xyFromHead[1] = xyFromHead[1] + inputUnitDrInfoBuffer[i].length*sin(headAngle*OlympusConstants.D2R)
-                                    trajectoryFromHead.append(xyFromHead)
-                                }
-                                self.inputTraj = trajectoryFromHead
                             }
                         }
                     }
-                    isDidPathTrajMatching = true
                 }
             } else {
                 let drBufferVeryStraightResult = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT, condition: 10.0)
                 let isDrVeryStraight: Bool = drBufferVeryStraightResult.0
                 if (isDrVeryStraight) {
+                    if (isNeedPathTrajMatching) {
+                        isNeedRequestPhase4 = true
+                    }
                     let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 0, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
                     outputResult.x = pathMatchingResult.xyhs[0]*0.5 + updatedX*0.5
                     outputResult.y = pathMatchingResult.xyhs[1]*0.5 + updatedY*0.5
@@ -267,23 +537,17 @@ public class OlympusKalmanFilter: NSObject {
             if (!isDidPathTrajMatching) {
                 let limitationResult = OlympusPathMatchingCalculator.shared.getTimeUpdateLimitation(mode: mode)
                 if (limitationResult.limitType == .Y_LIMIT) {
-//                    print("(Link Info) : Y Limit // before = \(outputResult.x) , \(outputResult.y)")
                     if (outputResult.y < limitationResult.limitValues[0]) {
                         outputResult.y = limitationResult.limitValues[0]
                     } else if (outputResult.y > limitationResult.limitValues[1]) {
                         outputResult.y = limitationResult.limitValues[1]
                     }
-//                    print("(Link Info) : Y Limit // after = \(outputResult.x) , \(outputResult.y)")
-//                    print("(Link Info) -------------------------------------- ")
                 } else if (limitationResult.limitType == .X_LIMIT) {
-//                    print("(Link Info) : X Limit // before = \(outputResult.x) , \(outputResult.y)")
                     if (outputResult.x < limitationResult.limitValues[0]) {
                         outputResult.x = limitationResult.limitValues[0]
                     } else if (outputResult.x > limitationResult.limitValues[1]) {
                         outputResult.x = limitationResult.limitValues[1]
                     }
-//                    print("(Link Info) : X Limit // after = \(outputResult.x) , \(outputResult.y)")
-//                    print("(Link Info) -------------------------------------- ")
                 }
             } else {
                 let pathMatching = OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: outputResult.x, y: outputResult.y, heading: outputResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 0, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
@@ -340,7 +604,7 @@ public class OlympusKalmanFilter: NSObject {
         headingKalmanP += headingKalmanQ
         muFlag = true
         
-        return outputResult
+        return (outputResult, isNeedRequestPhase4)
     }
     
     
