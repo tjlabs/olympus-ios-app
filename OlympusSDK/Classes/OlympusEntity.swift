@@ -444,6 +444,7 @@ public struct FineLocationTrackingFromServer: Codable {
     public var calculated_time: Double
     public var index: Int
     public var sc_compensation: Double
+    public var node_number: Int
     public var search_direction: Int
     public var cumulative_length: Double
     public var channel_condition: Bool
@@ -459,6 +460,7 @@ public struct FineLocationTrackingFromServer: Codable {
         self.calculated_time = 0
         self.index = 0
         self.sc_compensation = 0
+        self.node_number = 0
         self.search_direction = 0
         self.cumulative_length = 0
         self.channel_condition = false
@@ -607,10 +609,8 @@ public struct SectionInfo {
 }
 
 public struct NodeCandidateInfo {
-    public var isNeedPhase4: Bool
-    public var nodeCandidates: [Int]
-    public var nodeCandidatesDirections: [[Double]]
-    public var nodeIndex: Int
+    var isPhaseBreak: Bool
+    var nodeCandidatesInfo: [PassedNodeInfo]
 }
 
 public struct PathMatchingNodeCandidateInfo {
@@ -625,16 +625,6 @@ public struct PassedNodeInfo {
     var nodeHeadings: [Double]
     var matchedIndex: Int
     var userHeading: Double
-}
-
-public struct BadCaseNodeInfo {
-    var isPhaseBreak: Bool
-    var nodeCandidatesInfo: [PassedNodeInfo]
-    
-//    var nodeCandidates: [Int]
-//    var nodeHeadings: [Double]
-//    var matchedIndex: Int
-//    var userHeading: Double
 }
 
 // 임시

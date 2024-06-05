@@ -13,6 +13,8 @@ public class OlympusSectionController {
     
     // new
     var anchorSectionNumber: Int = 0
+    var requestSectionNumber: Int = 0
+    var sameSectionCount: Int = 2
     
     public func initialize() {
         self.uvdForSection = []
@@ -25,6 +27,8 @@ public class OlympusSectionController {
         self.anchorTailIndexCandidates = []
         
         self.anchorSectionNumber = 0
+        self.requestSectionNumber = 0
+        self.sameSectionCount = 2
     }
     
     public func checkIsNeedAnchorNodeUpdate(userVelocity: UserVelocity) -> Bool {
@@ -54,6 +58,28 @@ public class OlympusSectionController {
         }
         
         return isNeedUpdate
+    }
+    
+    public func checkIsNeedRequestFlt() -> Bool {
+        var isNeedRequest: Bool = false
+//        print(getLocalTimeString() + " , (Olympus) Request : (0) Section Length = \(uvdSectionLength)")
+        if (uvdSectionLength >= OlympusConstants.REQUIRED_SECTION_REQUEST_LENGTH) {
+            if (requestSectionNumber != sectionNumber) {
+//                print(getLocalTimeString() + " , (Olympus) Request : (1) Section Length = \(uvdSectionLength)")
+                requestSectionNumber = sectionNumber
+                
+                sameSectionCount = 2
+                isNeedRequest = true
+            } else {
+                if (uvdSectionLength >= (OlympusConstants.REQUIRED_SECTION_REQUEST_LENGTH*Double(sameSectionCount))) {
+//                    print(getLocalTimeString() + " , (Olympus) Request : (2) Section Length = \(uvdSectionLength)")
+                    sameSectionCount += 1
+                    isNeedRequest = true
+                }
+            }
+        }
+        
+        return isNeedRequest
     }
     
     public func getSectionNumber() -> Int {

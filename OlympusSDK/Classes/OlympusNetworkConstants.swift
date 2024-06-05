@@ -3,7 +3,7 @@ let TIMEOUT_VALUE_POST: Double = 5.0
 
 let USER_SERVER_VERSION = "2024-03-19"
 //let CALC_SERVER_VERSION = "2024-05-13"
-let CALC_SERVER_VERSION = "2024-06-03"
+let CALC_SERVER_VERSION = "2024-06-05"
 let REC_SERVER_VERSION = "2024-04-19"
 let BLACK_LIST_URL = "https://ap-northeast-2.client.olympus.tjlabs.dev/black"
 

@@ -132,10 +132,12 @@ public class OlympusKalmanFilter: NSObject {
         self.tuResultWhenUvdPosted = result
     }
     
-    public func timeUpdate(recentResult: FineLocationTrackingResult, length: Double, diffHeading: Double, isPossibleHeadingCorrection: Bool, unitDRInfoBuffer: [UnitDRInfo], userMaskBuffer: [UserMask], isNeedPathTrajMatching: Bool, mode: String) -> (FineLocationTrackingFromServer, Bool) {
+    public func timeUpdate(currentTime: Int, recentResult: FineLocationTrackingResult, length: Double, diffHeading: Double, isPossibleHeadingCorrection: Bool, unitDRInfoBuffer: [UnitDRInfo], userMaskBuffer: [UserMask], isNeedPathTrajMatching: Bool, mode: String) -> (FineLocationTrackingFromServer, Bool) {
         var isNeedRequestPhase4: Bool = false
         
         var outputResult: FineLocationTrackingFromServer = self.tuResult
+        outputResult.mobile_time = currentTime
+        
         let levelName = removeLevelDirectionString(levelName: self.tuResult.level_name)
         
         let updatedHeading = compensateHeading(heading: self.tuResult.absolute_heading + diffHeading)
