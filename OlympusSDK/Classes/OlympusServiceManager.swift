@@ -127,6 +127,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     var goodCaseCount: Int = 0
     var isNeedPathTrajMatching: Bool = false
     var isInRecoveryProcess: Bool = false
+    var recoveryIndex: Int = 0
     
     var pastReportTime: Double = 0
     var pastReportFlag: Int = 0
@@ -237,6 +238,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         isInEntranceLevel = false
         stableModeInitFlag = true
         goodCaseCount = 0
+        isNeedPathTrajMatching = false
+        isInRecoveryProcess = false
+        recoveryIndex = 0
         
         pastReportTime = 0
         pastReportFlag = 0
@@ -414,7 +418,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 isBlacklistUpdated = loadedBlacklistInfo.1.isEmpty || loadedBlacklistInfo.1 != updatedTime
 
                 if isBlacklistUpdated {
-                    print(getLocalTimeString() + " , (Olympus) BlackList: iOS Devices = \(blackListDevices.iOS.apple)")
+                    print(getLocalTimeString() + " , (Olympus) BlackList : iOS Devices = \(blackListDevices.iOS.apple)")
                     print(getLocalTimeString() + ", (Olympus) BlackList: Updated Time = \(blackListDevices.updatedTime)")
 
                     isServiceAvailable = !blackListDevices.iOS.apple.contains { $0.contains(deviceIdentifier) }
@@ -816,6 +820,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             } else {
                 unitUvdLength = unitDRInfo.length
             }
+//            if (unitDRInfo.index >= 45 && unitDRInfo.index <= 50) {
+//                unitUvdLength += 0.2
+//            }
 
             unitUvdLength = round(unitUvdLength*10000)/10000
             self.unitDRInfoIndex = unitDRInfo.index
@@ -854,8 +861,13 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 print(getLocalTimeString() + " , (Olympus) Path-Matching : Check Bad Case : isNeedPathTrajMatching = \(isNeedPathTrajMatching) // index = \(unitDRInfoIndex)")
                 let kfTimeUpdate = KF.timeUpdate(currentTime: currentTime, recentResult: olympusResult, length: unitUvdLength, diffHeading: diffHeading, isPossibleHeadingCorrection: isPossibleHeadingCorrection, unitDRInfoBuffer: unitDRInfoBuffer, userMaskBuffer: userMaskBufferPathTrajMatching, isNeedPathTrajMatching: isNeedPathTrajMatching, mode: runMode)
                 let tuResult = kfTimeUpdate.0
-                let isNeedRqPhase4: Bool = kfTimeUpdate.1
-                // Path-Traj 매칭 했으면 passedNode 업데이트하는 과정 필요
+                let isDidPathTrajMatching: Bool = kfTimeUpdate.1
+                let isNeedRqPhase4: Bool = kfTimeUpdate.2
+                // Path-Traj 매칭 했으면 anchor node 업데이트하는 과정 필요
+                if (isDidPathTrajMatching) {
+                    let pathTrajMatchingNode: PassedNodeInfo = KF.getPathTrajMatchingNode()
+                    OlympusPathMatchingCalculator.shared.updateAnchorNodeAfterPathTrajMatching(nodeInfo: pathTrajMatchingNode, sectionNumber: sectionController.getSectionNumber())
+                }
                 
                 currentTuResult = tuResult
                 // 임시
@@ -875,6 +887,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 displayOutput.searchArea = OlympusPathMatchingCalculator.shared.pathTrajMatchingArea
                 var pathType: Int = 1
                 if (runMode == OlympusConstants.MODE_PDR) { pathType = 0 }
+                
+                let isNeedAnchorNodeUpdate = sectionController.checkIsNeedAnchorNodeUpdate(userVelocity: data)
+                // Anchor Node 업데이트 하기
+                if (isNeedAnchorNodeUpdate) {
+                    OlympusPathMatchingCalculator.shared.updateAnchorNode(fltResult: tuResult, pathType: pathType, sectionNumber: sectionController.getSectionNumber())
+                }
                 
                 if (isNeedRqPhase4) {
                     // Anchor를 바꿔서 Phase4 요청 보내기
@@ -947,9 +965,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 if (!hasMajorDirection) {
                                     searchHeadings = [0, 90, 180, 270]
                                 }
-
+                                
+                                // 각도 전달 쪽 이슈 있음 (각도 하나만 주고 싶은데 방법이 약간 모호함)
                                 let searchDirections = searchHeadings.map { Int($0) }
-                                let stableInfo = StableInfo(tail_index: passedNodeMatchedIndex, head_section_number: 0, node_number_list: nodeNumberCandidates)
+                                let stableInfo = StableInfo(tail_index: passedNodeMatchedIndex, head_section_number: sectionController.getSectionNumber(), node_number_list: nodeNumberCandidates)
                                 
                                 print(getLocalTimeString() + " , (Olympus) Request Phase 4 : stableInfo = \(stableInfo) // node_index = \(passedNodeMatchedIndex) // searchDirections = \(searchDirections)")
                                 self.isInRecoveryProcess = true
@@ -959,12 +978,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 
                     }
                 } else {
-                    let isNeedAnchorNodeUpdate = sectionController.checkIsNeedAnchorNodeUpdate(userVelocity: data)
-                    // Anchor Node 업데이트 하기
-                    if (isNeedAnchorNodeUpdate) {
-                        OlympusPathMatchingCalculator.shared.updateAnchorNode(fltResult: tuResult, pathType: pathType, sectionNumber: sectionController.getSectionNumber())
-                    }
-                    
                     // Phase 5 요청 보내야하는 상황이면 요쳥 보내기
                     let isNeedRq = sectionController.checkIsNeedRequestFlt()
                     if (isNeedRq) {
@@ -1503,6 +1516,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 // 서버에서 전달해주는 파라미터 하나 추가 필요! 결정한 노드 관련
                 OlympusPathMatchingCalculator.shared.updateAnchorNodeAfterRecovery(badCaseNodeInfo: inputNodeCandidateInfo, nodeNumber: fltResult.node_number)
                 self.isInRecoveryProcess = false
+                self.recoveryIndex = unitDRInfoIndex
             } else{
                 let msg: String = getLocalTimeString() + " , (Olympus) Error : \(statusCode) Fail to request indoor position in Phase 4"
                 print(msg)
@@ -1950,14 +1964,22 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     
     private func checkIsNeedPathTrajMatching(userMaskBuffer: [UserMask]) -> Bool {
         let th = OlympusConstants.SAME_COORD_THRESHOLD
+        if (isInRecoveryProcess) {
+            return false
+        }
+        
         if userMaskBuffer.count >= th {
             var diffX: Int = 0
             var diffY: Int = 0
+            var checkFlag: Bool = false
             for i in userMaskBuffer.count-(th-1)..<userMaskBuffer.count {
-                diffX += abs(userMaskBuffer[i-1].x - userMaskBuffer[i].x)
-                diffY += abs(userMaskBuffer[i-1].y - userMaskBuffer[i].y)
+                if (userMaskBuffer[i].index) > recoveryIndex {
+                    checkFlag = true
+                    diffX += abs(userMaskBuffer[i-1].x - userMaskBuffer[i].x)
+                    diffY += abs(userMaskBuffer[i-1].y - userMaskBuffer[i].y)
+                }
             }
-            if diffX == 0 && diffY == 0 {
+            if diffX == 0 && diffY == 0 && checkFlag {
                 return true
             } else {
                 return false
