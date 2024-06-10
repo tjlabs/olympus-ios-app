@@ -601,6 +601,11 @@ struct NodeInfo {
     var userResult: FineLocationTrackingFromServer
 }
 
+public struct IsNeedPathTrajMatching {
+    var turn: Bool
+    var straight: Bool
+}
+
 public struct SectionInfo {
     public var isNeedRequest: Bool
     public var requestType: Int

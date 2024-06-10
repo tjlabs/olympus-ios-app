@@ -159,6 +159,7 @@ class OlympusConstants {
     static let REQUIRED_PATH_TRAJ_MATCHING_INDEX: Int = 3 // 5
     static let SECTION_STRAIGHT_ANGLE: Double = 10 // degree
     static let SAME_COORD_THRESHOLD: Int = 3
+    static let STRAIGHT_SAME_COORD_THRESHOLD: Int = 5
 //    static let REQUIRED_SECTION_STRAIGHT_IDX: Int = 8
 //    static let REQUIRED_SECTION_RQ_IDX: Int = 8
     

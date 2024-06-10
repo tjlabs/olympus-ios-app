@@ -136,7 +136,8 @@ public class OlympusKalmanFilter: NSObject {
         self.tuResultWhenUvdPosted = result
     }
     
-    public func timeUpdate(currentTime: Int, recentResult: FineLocationTrackingResult, length: Double, diffHeading: Double, isPossibleHeadingCorrection: Bool, unitDRInfoBuffer: [UnitDRInfo], userMaskBuffer: [UserMask], isNeedPathTrajMatching: Bool, mode: String) -> (FineLocationTrackingFromServer, Bool, Bool) {
+    public func timeUpdate(currentTime: Int, recentResult: FineLocationTrackingResult, length: Double, diffHeading: Double, isPossibleHeadingCorrection: Bool, unitDRInfoBuffer: [UnitDRInfo], userMaskBuffer: [UserMask], isNeedPathTrajMatching: IsNeedPathTrajMatching, mode: String) -> (FineLocationTrackingFromServer, Bool, Bool) {
+//    public func timeUpdate(currentTime: Int, recentResult: FineLocationTrackingResult, length: Double, diffHeading: Double, isPossibleHeadingCorrection: Bool, unitDRInfoBuffer: [UnitDRInfo], userMaskBuffer: [UserMask], isNeedPathTrajMatching: Bool, mode: String) -> (FineLocationTrackingFromServer, Bool, Bool) {
         var isNeedRequestPhase4: Bool = false
         var isDidPathTrajMatching: Bool = false
         
@@ -178,7 +179,7 @@ public class OlympusKalmanFilter: NSObject {
             
             if (!isDrStraight && isPossiblePathTrajMatching) {
                 // 사용자는 Turn 하는 궤적이다
-                if (isNeedPathTrajMatching && turnAngle <= 135) {
+                if (isNeedPathTrajMatching.turn && turnAngle <= 135) {
                     // Node를 옮기자
                     isNeedRequestPhase4 = true
                     print(getLocalTimeString() + " , (Olympus) Path-Matching : isNeedRequestPhase4 (1) = \(isNeedRequestPhase4)")
@@ -375,7 +376,7 @@ public class OlympusKalmanFilter: NSObject {
                 let drBufferVeryStraightResult = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT, condition: 10.0)
                 let isDrVeryStraight: Bool = drBufferVeryStraightResult.0
                 if (isDrVeryStraight) {
-                    if (isNeedPathTrajMatching) {
+                    if (isNeedPathTrajMatching.straight) {
                         isNeedRequestPhase4 = true
                     }
                     let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 0, PADDING_VALUES: OlympusConstants.PADDING_VALUES)

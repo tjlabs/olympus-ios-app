@@ -125,7 +125,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     var isInEntranceLevel: Bool = false
     var stableModeInitFlag: Bool = true
     var goodCaseCount: Int = 0
-    var isNeedPathTrajMatching: Bool = false
+//    var isNeedPathTrajMatching: Bool = false
+    var isNeedPathTrajMatching = IsNeedPathTrajMatching(turn: false, straight: false)
     var isInRecoveryProcess: Bool = false
     var recoveryIndex: Int = 0
     
@@ -238,7 +239,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         isInEntranceLevel = false
         stableModeInitFlag = true
         goodCaseCount = 0
-        isNeedPathTrajMatching = false
+        isNeedPathTrajMatching = IsNeedPathTrajMatching(turn: false, straight: false)
         isInRecoveryProcess = false
         recoveryIndex = 0
         
@@ -934,33 +935,28 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 if (headingLeastChangeSection.isEmpty) {
                                     hasMajorDirection = false
                                 } else {
-                                    let headingForCompensation = headingLeastChangeSection.average - uvRawHeading[0]
-                                    for ppHeading in ppHeadings {
-                                        let tailHeading = ppHeading - headingForCompensation
-                                        searchHeadings.append(compensateHeading(heading: tailHeading))
-                                    }
-                                    
                                     var diffHeading = [Double]()
-                                    var bestTailHeading: Double = 0
+                                    var bestPpHeading: Double = 0
                                     let heading = nodeCandidatesInfo[0].userHeading
-                                    print(getLocalTimeString() + " , (Olympus) Request Phase 4 : userHeading = \(heading)")
-                                    for mapHeading in searchHeadings {
+                                    for ppHeading in ppHeadings {
                                         var diffValue: Double = 0
-                                        if (heading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
-                                            diffValue = abs(heading - (mapHeading+360))
-                                        } else if (mapHeading > 270 && (heading >= 0 && heading < 90)) {
-                                            diffValue = abs(mapHeading - (heading+360))
+                                        if (heading > 270 && (ppHeading >= 0 && ppHeading < 90)) {
+                                            diffValue = abs(heading - (ppHeading+360))
+                                        } else if (ppHeading > 270 && (heading >= 0 && heading < 90)) {
+                                            diffValue = abs(ppHeading - (heading+360))
                                         } else {
-                                            diffValue = abs(heading - mapHeading)
+                                            diffValue = abs(heading - ppHeading)
                                         }
                                         diffHeading.append(diffValue)
                                     }
-                                    
                                     if let minIndex = diffHeading.firstIndex(of: diffHeading.min()!) {
-                                        bestTailHeading = searchHeadings[minIndex]
-                                        searchHeadings = [bestTailHeading]
+                                        bestPpHeading = ppHeadings[minIndex]
+                                        
+                                        let headingForCompensation = headingLeastChangeSection.average - uvRawHeading[0]
+                                        let tailHeading = bestPpHeading - headingForCompensation
+                                        searchHeadings.append(compensateHeading(heading: tailHeading))
+                                        hasMajorDirection = true
                                     }
-                                    hasMajorDirection = true
                                 }
                                 
                                 if (!hasMajorDirection) {
@@ -1898,7 +1894,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 stackUserMask(data: data)
                 stackUserMaskForDisplay(data: data)
                 if (runMode == OlympusConstants.MODE_PDR) {
-                    self.isNeedPathTrajMatching = checkIsNeedPathTrajMatching(userMaskBuffer: self.userMaskBuffer)
+//                    self.isNeedPathTrajMatching = checkIsNeedPathTrajMatching(userMaskBuffer: self.userMaskBuffer)
+                    self.isNeedPathTrajMatching = extendedCheckIsNeedPathTrajMatching(userMaskBuffer: self.userMaskBuffer)
                 }
             }
             
@@ -1997,6 +1994,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     
     private func checkIsNeedPathTrajMatching(userMaskBuffer: [UserMask]) -> Bool {
         let th = OlympusConstants.SAME_COORD_THRESHOLD
+        let straightTh = OlympusConstants.STRAIGHT_SAME_COORD_THRESHOLD
+        var isNeedPathTrajMatching: Bool = false
+        var isNeedPathTrajMatchingInStragiht: Bool = false
+        
 //        print(getLocalTimeString() + " , (Olympus) After Phase 4 : recoveryIndex = \(recoveryIndex)")
         if (isInRecoveryProcess) {
             isInRecoveryProcess = false
@@ -2025,6 +2026,54 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         } else {
             return false
         }
+    }
+    
+    private func extendedCheckIsNeedPathTrajMatching(userMaskBuffer: [UserMask]) -> IsNeedPathTrajMatching {
+        let th = OlympusConstants.SAME_COORD_THRESHOLD
+        let straightTh = OlympusConstants.STRAIGHT_SAME_COORD_THRESHOLD
+        
+        var isNeedPathTrajMatching: Bool = false
+        var isNeedPathTrajMatchingInStragiht: Bool = false
+
+        if (isInRecoveryProcess) {
+            isInRecoveryProcess = false
+            recoveryIndex = unitDRInfoIndex
+            return IsNeedPathTrajMatching(turn: false, straight: false)
+        }
+        
+        if userMaskBuffer.count >= th {
+            var diffX: Int = 0
+            var diffY: Int = 0
+            var checkCount: Int = 0
+            for i in userMaskBuffer.count-(th-1)..<userMaskBuffer.count {
+                if (userMaskBuffer[i].index) > recoveryIndex {
+                    diffX += abs(userMaskBuffer[i-1].x - userMaskBuffer[i].x)
+                    diffY += abs(userMaskBuffer[i-1].y - userMaskBuffer[i].y)
+                    checkCount += 1
+                }
+            }
+            if diffX == 0 && diffY == 0 && checkCount >= (th-1) {
+                isNeedPathTrajMatching = true
+            }
+        }
+        
+        if userMaskBuffer.count >= straightTh {
+            var diffX: Int = 0
+            var diffY: Int = 0
+            var checkCount: Int = 0
+            for i in userMaskBuffer.count-(straightTh-1)..<userMaskBuffer.count {
+                if (userMaskBuffer[i].index) > recoveryIndex {
+                    diffX += abs(userMaskBuffer[i-1].x - userMaskBuffer[i].x)
+                    diffY += abs(userMaskBuffer[i-1].y - userMaskBuffer[i].y)
+                    checkCount += 1
+                }
+            }
+            if diffX == 0 && diffY == 0 && checkCount >= (th-1) {
+                isNeedPathTrajMatchingInStragiht = true
+            }
+        }
+        
+        return IsNeedPathTrajMatching(turn: isNeedPathTrajMatching, straight: isNeedPathTrajMatchingInStragiht)
     }
     
     private func getUnitDRInfoFromLast(from unitDRInfoBuffer: [UnitDRInfo], N: Int) -> [UnitDRInfo] {
