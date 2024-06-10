@@ -1133,6 +1133,7 @@ public class OlympusPathMatchingCalculator {
             let PIXELS_TO_CHECK = Int(sectionLength)
             
             var nodeCandidatesInfo = [PassedNodeInfo]()
+//            nodeCandidatesInfo.append(anchorNodeInfo)
             
             for direction in candidateDirections {
                 var paddingValues = [Double] (repeating: Double(PIXELS_TO_CHECK), count: 4)
