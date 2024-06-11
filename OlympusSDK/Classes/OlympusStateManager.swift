@@ -326,7 +326,7 @@ public class OlympusStateManager: NSObject {
         self.networkCount = value
     }
     
-    public func checkStopWhenIsIndexNotChanage() -> Bool {
+    public func checkStopWhenIsIndexNotChanaged() -> Bool {
         var isStop: Bool = false
         self.timeIndexNotChanged += OlympusConstants.UVD_INTERVAL
         if (self.timeIndexNotChanged >= OlympusConstants.STOP_THRESHOLD) {

@@ -28,7 +28,8 @@ public class OlympusPathMatchingCalculator {
     var distFromNode: Double = -1
     var linkCoord: [Double] = [0, 0]
     var linkDirections = [Double]()
-
+    var isInNode: Bool = false
+    
     var pathTrajMatchingArea: [[Double]] = [[0, 0]]
     
     init() {
@@ -54,7 +55,7 @@ public class OlympusPathMatchingCalculator {
         
         self.linkCoord = [0, 0]
         self.linkDirections = [Double]()
-
+        self.isInNode = false
     }
     
     public func initPassedNodeInfo() {
@@ -70,6 +71,7 @@ public class OlympusPathMatchingCalculator {
         
         self.linkCoord = [0, 0]
         self.linkDirections = [Double]()
+        self.isInNode = false
     }
     
     public func parseRoad(data: String) -> ([Int], [Int], [[Double]], [Double], [String] ) {
@@ -365,67 +367,6 @@ public class OlympusPathMatchingCalculator {
                                 }
                                 
                                 if (!idshArray.isEmpty) {
-//                                    var limitType: LimitationType = .NO_LIMIT
-//                                    var limitValues: [Double] = [0, 0]
-//                                    if (linkDirections.count == 2) {
-//                                        if (linkDirections[0] == 0 && linkDirections[1] == 180) {
-//                                            limitType = .Y_LIMIT
-//                                            limitValues = [y - 2, y + 2]
-//                                        } else if (linkDirections[0] == 90 && linkDirections[1] == 270) {
-//                                            limitType = .X_LIMIT
-//                                            limitValues = [x - 2, x + 2]
-//                                        }
-//                                    }
-//                                    
-//                                    var idshArrayNew = [[Double]]()
-//                                    for v in 0..<idshArray.count {
-//                                        let idx = Int(idshArray[v][0])
-//                                        let xCandidate = roadX[idx]
-//                                        let yCandidate = roadY[idx]
-//                                        
-//                                        if (limitType == .Y_LIMIT) {
-//                                            if (yCandidate >= limitValues[0] && yCandidate <= limitValues[1]) {
-//                                                idshArrayNew.append(idshArray[v])
-//                                            }
-//                                        } else if (limitType == .X_LIMIT) {
-//                                            if (xCandidate >= limitValues[0] && xCandidate <= limitValues[1]) {
-//                                                idshArrayNew.append(idshArray[v])
-//                                            }
-//                                        } else {
-//                                            idshArrayNew.append(idshArray[v])
-//                                        }
-//                                    }
-//                                    
-//                                    if (!idshArrayNew.isEmpty) {
-//                                        print(getLocalTimeString() + " , (Olympus) : Success PathMatching using current link")
-//                                        let sortedIdsh = idshArrayNew.sorted(by: {$0[1] < $1[1] })
-//                                        var index: Int = 0
-//                                        var correctedHeading: Double = heading
-//                                        var correctedScale = 1.0
-//
-//                                        if (!sortedIdsh.isEmpty) {
-//                                            let minData: [Double] = sortedIdsh[0]
-//                                            index = Int(minData[0])
-//                                            if (isUseHeading) {
-//                                                correctedScale = minData[2]
-//                                                correctedHeading = minData[3]
-//                                            } else {
-//                                                correctedHeading = heading
-//                                            }
-//                                        }
-//                                        
-//                                        isSuccess = true
-//                                        
-//                                        if (correctedScale < 0.7) {
-//                                            correctedScale = 0.7
-//                                        }
-//                                        
-//                                        xyhs = [roadX[index], roadY[index], correctedHeading, correctedScale]
-//                                        bestHeading = correctedHeading
-//                                    } else {
-//                                        print(getLocalTimeString() + " , (Olympus) : Fail PathMatching using current link")
-//                                    }
-                                    
                                     let sortedIdsh = idshArray.sorted(by: {$0[1] < $1[1] })
                                     var index: Int = 0
                                     var correctedHeading: Double = heading
@@ -710,9 +651,9 @@ public class OlympusPathMatchingCalculator {
                                             ppHeadingValues.append(mapHeading)
                                         }
                                     }
-                                    self.linkCoord = [xPath, yPath]
-                                    self.linkDirections = ppHeadingValues
+                                    
                                     if (node != 0) {
+                                        self.isInNode = true
                                         isNodePassed = true
                                         self.passedNode = node
                                         self.passedNodeMatchedIndex = uvdIndex
@@ -722,6 +663,10 @@ public class OlympusPathMatchingCalculator {
                                         print(getLocalTimeString() + " , (Olympus) Node Find : passedNode (Normal) = \(self.passedNode) // dist = \(self.distFromNode) // index = \(passedNodeMatchedIndex) // heading = \(currentResultHeading)")
 //                                        stackPassedNodeInfo(passedNodeInfo: PassedNodeInfo(nodeNumber: self.passedNode, nodeCoord: self.passedNodeCoord, nodeHeadings: self.passedNodeHeadings, matchedIndex: self.passedNodeMatchedIndex, userHeading: currentResultHeading))
                                         controlPassedNodeInfo(passedNodeInfo: PassedNodeInfo(nodeNumber: self.passedNode, nodeCoord: self.passedNodeCoord, nodeHeadings: self.passedNodeHeadings, matchedIndex: self.passedNodeMatchedIndex, userHeading: currentResultHeading))
+                                    } else {
+                                        self.isInNode = false
+                                        self.linkCoord = [xPath, yPath]
+                                        self.linkDirections = ppHeadingValues
                                     }
                                 }
                             }
@@ -957,15 +902,6 @@ public class OlympusPathMatchingCalculator {
         print(getLocalTimeString() + " , (Olympus) Node Find : Anchor Node After PathTrajMatching = \(self.anchorNode)")
     }
     
-//    public func updateAnchorNode(fltResult: FineLocationTrackingFromServer, pathType: Int, sectionNumber: Int) {
-//        let anchorNode = findAnchorNode(fltResult: fltResult, pathType: pathType)
-//        if anchorNode.nodeNumber != -1 {
-//            self.anchorNode = anchorNode
-//            self.anchorSection = sectionNumber
-//            self.isNeedClearBuffer = true
-//        }
-//        print(getLocalTimeString() + " , (Olympus) Node Find : Anchor Node = \(self.anchorNode)")
-//    }
     
     public func updateAnchorNode(fltResult: FineLocationTrackingFromServer, pathType: Int, sectionNumber: Int) {
         let anchorNode = findAnchorNode(fltResult: fltResult, pathType: pathType)
@@ -1088,12 +1024,16 @@ public class OlympusPathMatchingCalculator {
         var recoveryCaseNodeInfo = NodeCandidateInfo(isPhaseBreak: false, nodeCandidatesInfo: [])
         let nodeCandidatesInfo = inputNodeCandidateInfo.nodeCandidatesInfo
         
+        print(getLocalTimeString() + " , (Olympus) Node Find : fltResult node_number = \(fltResult.node_number)")
+        print(getLocalTimeString() + " , (Olympus) Node Find : inputNodeCandidateInfo = \(inputNodeCandidateInfo)")
         var anchorNodeInfo = PassedNodeInfo(nodeNumber: -1, nodeCoord: [], nodeHeadings: [], matchedIndex: -1, userHeading: 0)
         for item in nodeCandidatesInfo {
             if item.nodeNumber == fltResult.node_number {
                 anchorNodeInfo = item
             }
         }
+        
+        print(getLocalTimeString() + " , (Olympus) Node Find : getAnchorNodeCandidatesForRecovery // anchorNodeInfo = \(anchorNodeInfo)")
         
         if anchorNodeInfo.matchedIndex == -1 {
             return recoveryCaseNodeInfo
@@ -1174,7 +1114,7 @@ public class OlympusPathMatchingCalculator {
     private func findAnchorNode(fltResult: FineLocationTrackingFromServer, pathType: Int) -> PassedNodeInfo {
         let startNodeHeading = passedNodeHeadings
         let nodeInfoBuffer = passedNodeInfoBuffer
-        print(getLocalTimeString() + " (Olympus) Node Find : nodeInfoBuffer = \(nodeInfoBuffer)")
+        print(getLocalTimeString() + " , (Olympus) Node Find : nodeInfoBuffer = \(nodeInfoBuffer)")
         
         var resultPassedNodeInfo = PassedNodeInfo(nodeNumber: -1, nodeCoord: [], nodeHeadings: [], matchedIndex: -1, userHeading: 0)
         
@@ -1358,6 +1298,12 @@ public class OlympusPathMatchingCalculator {
         let PIXELS_TO_CHECK = Int(round(uvdLength + uvdLength*0.2))
         print(getLocalTimeString() + " , (Olympus) Path-Matching : PIXELS_TO_CHECK = \(PIXELS_TO_CHECK)")
         if (!candidateDirections.isEmpty) {
+            let matchedNodeResult = getMatchedNodeWithCoord(fltResult: fltResult, originCoord: [x, y], coordToCheck: [x, y], pathType: pathType, PADDING_VALUES: [1, 1, 1, 1])
+            if (matchedNodeResult.1 != -1) {
+                let nodeInfo = PathMatchingNodeCandidateInfo(nodeNumber: matchedNodeResult.1, nodeCoord: [x, y], nodeHeadings: matchedNodeResult.2)
+                pathMatchingNodeCandidates.append(nodeInfo)
+            }
+            
             for direction in candidateDirections {
                 var matchedNodeNumber: Int = -1
                 var matchedNodeCoord: [Double] = [0, 0]
@@ -1396,10 +1342,12 @@ public class OlympusPathMatchingCalculator {
     public func getTimeUpdateLimitation(mode: String) -> (limitType: LimitationType, limitValues: [Double]) {
         var limitType: LimitationType = .NO_LIMIT
         var limitValues: [Double] = [0, 0]
-        var LIMIT: Double = 0.9
+        var LIMIT: Double = 0.8
         if (mode == OlympusConstants.MODE_PDR) {
-            LIMIT = 0.45
+            LIMIT = 0.4
         }
+        
+        let isInNode = self.isInNode
         
         let coordX = linkCoord[0]
         let coordY = linkCoord[1]
@@ -1408,12 +1356,11 @@ public class OlympusPathMatchingCalculator {
         
 //        print("(Link Info) : coord = \(coordX) , \(coordY) // directions = \(directions)")
         
-        if directions.count == 2 {
-            if (directions[0] == 0 && directions[1] == 180) {
+        if (!isInNode) {
+            if (directions.contains(0) && directions.contains(180)) {
                 limitType = .Y_LIMIT
                 limitValues = [coordY - LIMIT, coordY + LIMIT]
-//                print("(Link Info) : Y Limit // values = \(limitValues)")
-            } else if (directions[0] == 90 && directions[1] == 270) {
+            } else if (directions.contains(90) && directions.contains(270)) {
                 limitType = .X_LIMIT
                 limitValues = [coordX - LIMIT, coordX + LIMIT]
             }

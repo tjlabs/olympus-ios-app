@@ -16,20 +16,20 @@ public class OlympusFileManager {
     
     private func createExportDirectory() -> URL? {
         guard let documentDirectoryUrl = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
-            print(getLocalTimeString() + " , (OlympusFileManager) : Unable to access document directory.")
+            print(getLocalTimeString() + " , (Olympus) FileManager : Unable to access document directory.")
             return nil
         }
         let exportDirectoryUrl = documentDirectoryUrl.appendingPathComponent("Export")
         if !FileManager.default.fileExists(atPath: exportDirectoryUrl.path) {
             do {
                 try FileManager.default.createDirectory(at: exportDirectoryUrl, withIntermediateDirectories: true, attributes: nil)
-                print(getLocalTimeString() + " , (OlympusFileManager) : Export directory created at: \(exportDirectoryUrl)")
+                print(getLocalTimeString() + " , (Olympus) FileManager : Export directory created at: \(exportDirectoryUrl)")
             } catch {
-                print(getLocalTimeString() + " , (OlympusFileManager) : Error creating export directory: \(error)")
+                print(getLocalTimeString() + " , (Olympus) FileManager : Error creating export directory: \(error)")
                 return nil
             }
         } else {
-            print(getLocalTimeString() + " , (OlympusFileManager) : Export directory already exists at: \(exportDirectoryUrl)")
+            print(getLocalTimeString() + " , (Olympus) FileManager : Export directory already exists at: \(exportDirectoryUrl)")
         }
         
         return exportDirectoryUrl
@@ -42,7 +42,7 @@ public class OlympusFileManager {
             sensorFileUrl = exportDir.appendingPathComponent(sensorFileName)
             bleFileUrl = exportDir.appendingPathComponent(bleFileName)
         } else {
-            print(getLocalTimeString() + " , (OlympusFileManager) : Error creating export directory")
+            print(getLocalTimeString() + " , (Olympus) FileManager : Error creating export directory")
         }
     }
     
@@ -68,12 +68,12 @@ public class OlympusFileManager {
         do {
             if let fileUrl = sensorFileUrl {
                 try csvText.write(to: fileUrl, atomically: true, encoding: .utf8)
-                print(getLocalTimeString() + " , (OlympusFileManager) : Data saved to \(fileUrl)")
+                print(getLocalTimeString() + " , (Olympus) FileManager : Data saved to \(fileUrl)")
             } else {
-                print(getLocalTimeString() + " , (OlympusFileManager) : Error: sensorFileUrl is nil")
+                print(getLocalTimeString() + " , (Olympus) FileManager : Error: sensorFileUrl is nil")
             }
         } catch {
-            print(getLocalTimeString() + " , (OlympusFileManager) : Error: \(error)")
+            print(getLocalTimeString() + " , (Olympus) FileManager : Error: \(error)")
         }
         
         sensorData = [OlympusSensorData]()
@@ -93,12 +93,12 @@ public class OlympusFileManager {
         do {
             if let fileUrl = bleFileUrl {
                 try csvText.write(to: fileUrl, atomically: true, encoding: .utf8)
-                print(getLocalTimeString() + " , (OlympusFileManager) : Data saved to \(fileUrl)")
+                print(getLocalTimeString() + " , (Olympus) FileManager : Data saved to \(fileUrl)")
             } else {
-                print(getLocalTimeString() + " , (OlympusFileManager) : Error: bleFileUrl is nil")
+                print(getLocalTimeString() + " , (Olympus) FileManager : Error: bleFileUrl is nil")
             }
         } catch {
-            print(getLocalTimeString() + " , (OlympusFileManager) : Error: \(error)")
+            print(getLocalTimeString() + " , (Olympus) FileManager : Error: \(error)")
         }
         
         bleTime = [Int]()
@@ -119,8 +119,8 @@ public class OlympusFileManager {
 //            let sensorFileName = "sensor_check2.csv"
 //            let bleFileName = "ble_ds04.csv"
 //            let sensorFileName = "sensor_ds04.csv"
-            let bleFileName = "ble_lg02.csv"
-            let sensorFileName = "sensor_lg02.csv"
+            let bleFileName = "ble_lg01.csv"
+            let sensorFileName = "sensor_lg01.csv"
 //            let bleFileName = "ble_coex02.csv"
 //            let sensorFileName = "sensor_coex02.csv"
             
@@ -152,7 +152,7 @@ public class OlympusFileManager {
                     }
                 }
             } catch {
-                print(getLocalTimeString() + " , (OlympusFileManager) : Error loading sensor file: \(error)")
+                print(getLocalTimeString() + " , (Olympus) FileManager : Error loading sensor file: \(error)")
             }
             
 
@@ -181,11 +181,11 @@ public class OlympusFileManager {
                     }
                 }
             } catch {
-                print(getLocalTimeString() + " , (OlympusFileManager) : Error loading sensor file: \(error)")
+                print(getLocalTimeString() + " , (Olympus) FileManager : Error loading sensor file: \(error)")
             }
             
         } else {
-            print(getLocalTimeString() + " , (OlympusFileManager) : Error creating export directory")
+            print(getLocalTimeString() + " , (Olympus) FileManager : Error creating export directory")
         }
         
         return (loadedBleData, loadedSenorData)
