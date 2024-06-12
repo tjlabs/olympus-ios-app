@@ -60,9 +60,9 @@ public class OlympusFileManager {
     }
     
     private func saveSensorData() {
-        var csvText = "time,acc_x,acc_y,acc_z,u_acc_x,u_acc_y,u_acc_z,gyro_x,gyro_y,gyro_z,mag_x,mag_y,mag_z,grav_x,grav_y,grav_z,att0,att1,att2,q0,q1,q2,q3,rm00,rm01,rm02,rm10,rm11,rm12,rm20,rm21,rm22,gv0,gv1,gv2,gv3,rv0,rv1,rv2,rv3,rv4,pressure\n"
+        var csvText = "time,acc_x,acc_y,acc_z,u_acc_x,u_acc_y,u_acc_z,gyro_x,gyro_y,gyro_z,mag_x,mag_y,mag_z,grav_x,grav_y,grav_z,att0,att1,att2,q0,q1,q2,q3,rm00,rm01,rm02,rm10,rm11,rm12,rm20,rm21,rm22,gv0,gv1,gv2,gv3,rv0,rv1,rv2,rv3,rv4,pressure,true_heading,mag_heading\n"
         for record in sensorData {
-            csvText += "\(record.time),\(record.acc[0]),\(record.acc[1]),\(record.acc[2]),\(record.userAcc[0]),\(record.userAcc[1]),\(record.userAcc[2]),\(record.gyro[0]),\(record.gyro[1]),\(record.gyro[2]),\(record.mag[0]),\(record.mag[1]),\(record.mag[2]),\(record.grav[0]),\(record.grav[1]),\(record.grav[2]),\(record.att[0]),\(record.att[1]),\(record.att[2]),\(record.quaternion[0]),\(record.quaternion[1]),\(record.quaternion[2]),\(record.quaternion[3]),\(record.rotationMatrix[0][0]),\(record.rotationMatrix[0][1]),\(record.rotationMatrix[0][2]),\(record.rotationMatrix[1][0]),\(record.rotationMatrix[1][1]),\(record.rotationMatrix[1][2]),\(record.rotationMatrix[2][0]),\(record.rotationMatrix[2][1]),\(record.rotationMatrix[2][2]),\(record.gameVector[0]),\(record.gameVector[1]),\(record.gameVector[2]),\(record.gameVector[3]),\(record.rotVector[0]),\(record.rotVector[1]),\(record.rotVector[2]),\(record.rotVector[3]),\(record.rotVector[4]),\(record.pressure[0])\n"
+            csvText += "\(record.time),\(record.acc[0]),\(record.acc[1]),\(record.acc[2]),\(record.userAcc[0]),\(record.userAcc[1]),\(record.userAcc[2]),\(record.gyro[0]),\(record.gyro[1]),\(record.gyro[2]),\(record.mag[0]),\(record.mag[1]),\(record.mag[2]),\(record.grav[0]),\(record.grav[1]),\(record.grav[2]),\(record.att[0]),\(record.att[1]),\(record.att[2]),\(record.quaternion[0]),\(record.quaternion[1]),\(record.quaternion[2]),\(record.quaternion[3]),\(record.rotationMatrix[0][0]),\(record.rotationMatrix[0][1]),\(record.rotationMatrix[0][2]),\(record.rotationMatrix[1][0]),\(record.rotationMatrix[1][1]),\(record.rotationMatrix[1][2]),\(record.rotationMatrix[2][0]),\(record.rotationMatrix[2][1]),\(record.rotationMatrix[2][2]),\(record.gameVector[0]),\(record.gameVector[1]),\(record.gameVector[2]),\(record.gameVector[3]),\(record.rotVector[0]),\(record.rotVector[1]),\(record.rotVector[2]),\(record.rotVector[3]),\(record.rotVector[4]),\(record.pressure[0]),\(record.trueHeading),\(record.magneticHeading)\n"
         }
 
         do {
@@ -177,6 +177,8 @@ public class OlympusFileManager {
                         olympusSensorData.gameVector = [Float(columns[32])!, Float(columns[33])!, Float(columns[34])!, Float(columns[35])!]
                         olympusSensorData.rotVector = [Float(columns[36])!, Float(columns[37])!, Float(columns[38])!, Float(columns[39])!, Float(columns[40])!]
                         olympusSensorData.pressure = [Double(columns[41])!]
+                        olympusSensorData.trueHeading = Double(columns[42])!
+                        olympusSensorData.magneticHeading = Double(columns[43])!
                         loadedSenorData.append(olympusSensorData)
                     }
                 }

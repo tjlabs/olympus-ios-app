@@ -230,7 +230,7 @@ public class OlympusKalmanFilter: NSObject {
                         let maxIndex = directionCount.firstIndex(of: directionCount.max()!)
                         let startHeading = linkDirArray[maxIndex!]
 //                        let startHeading = inputUserMaskBuffer[0].absolute_heading
-                        let endHeading = compensateHeading(heading: userHeading)
+                        var endHeading = compensateHeading(heading: userHeading)
                         
                         let findPathMatchingNodeResult = OlympusPathMatchingCalculator.shared.findPathTrajMatchingNode(fltResult: outputResult, x: Double(userX), y: Double(userY), heading: startHeading, uvdBuffer: inputUnitDrInfoBuffer, pathType: 0, linkDirections: linkDirArray)
                         print(getLocalTimeString() + " , (Olympus) Path-Matching : findPathMatchingNodeResult = \(findPathMatchingNodeResult)")
@@ -241,23 +241,29 @@ public class OlympusKalmanFilter: NSObject {
                             let MARGIN: Double = 44
                             
                             for pathMatchingNode in findPathMatchingNodeResult {
-                                var diffHeadings = [Double]()
+//                                var diffHeadings = [Double]()
                                 var candidateDirections = [Double]()
+                                var bestMapHeading: Double = endHeading
+                                var minDiffValue: Double = 360
                                 for mapHeading in pathMatchingNode.nodeHeadings {
-                                    var diffValue: Double = 0
-                                    if (endHeading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
-                                        diffValue = abs(endHeading - (mapHeading+360))
-                                    } else if (mapHeading > 270 && (endHeading >= 0 && endHeading < 90)) {
-                                        diffValue = abs(mapHeading - (endHeading+360))
-                                    } else {
-                                        diffValue = abs(endHeading - mapHeading)
-                                    }
-                                    diffHeadings.append(diffValue)
-                                    
-                                    if (diffValue <= MARGIN) {
-                                        candidateDirections.append(mapHeading)
+                                    if !(linkDirArray.contains(mapHeading)) {
+                                        var diffValue: Double = 0
+                                        
+                                        if (endHeading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
+                                            diffValue = abs(endHeading - (mapHeading+360))
+                                        } else if (mapHeading > 270 && (endHeading >= 0 && endHeading < 90)) {
+                                            diffValue = abs(mapHeading - (endHeading+360))
+                                        } else {
+                                            diffValue = abs(endHeading - mapHeading)
+                                        }
+                                        
+                                        if diffValue < minDiffValue {
+                                            minDiffValue = diffValue
+                                            bestMapHeading = mapHeading
+                                        }
                                     }
                                 }
+                                candidateDirections.append(bestMapHeading)
                                 
                                 print(getLocalTimeString() + " , (Olympus) Path-Matching : after findPathMatchingNodeResult // endHeading = \(endHeading)")
                                 print(getLocalTimeString() + " , (Olympus) Path-Matching : after findPathMatchingNodeResult // candidateDirections = \(candidateDirections)")
@@ -475,7 +481,7 @@ public class OlympusKalmanFilter: NSObject {
     
     private func determineTurnType(headings: [Double]) -> Int {
         var angleChanges: [Double] = []
-        var deltaBefor: Double = 0
+        var deltaBefore: Double = 0
         var largeTurnCount: Int = 0
         var turnCount: Int = 0
         
@@ -483,7 +489,7 @@ public class OlympusKalmanFilter: NSObject {
             let delta = abs(headings[i] - headings[i - 1])
             
             angleChanges.append(delta)
-            if (deltaBefor >= 30 && delta >= 30) {
+            if (deltaBefore >= 30 && delta >= 30) {
                 largeTurnCount += 1
                 
                 if (largeTurnCount > turnCount) {
@@ -493,7 +499,7 @@ public class OlympusKalmanFilter: NSObject {
                 largeTurnCount = 0
             }
             
-            deltaBefor = delta
+            deltaBefore = delta
         }
         
         let absoluteChanges = angleChanges.map { abs($0) }

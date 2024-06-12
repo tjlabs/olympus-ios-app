@@ -522,7 +522,7 @@ public class OlympusNetworkManager {
         }
     }
     
-    func postFLT(url: String, input: FineLocationTracking, userTraj: [TrajectoryInfo], nodeCandidateInfo: NodeCandidateInfo, completion: @escaping (Int, String, FineLocationTracking, [TrajectoryInfo], NodeCandidateInfo) -> Void) {
+    func postStableFLT(url: String, input: FineLocationTracking, userTraj: [TrajectoryInfo], nodeCandidateInfo: NodeCandidateInfo, completion: @escaping (Int, String, FineLocationTracking, [TrajectoryInfo], NodeCandidateInfo) -> Void) {
         // [http 비동기 방식을 사용해서 http 요청 수행 실시]
         let urlComponents = URLComponents(string: url)
         var requestURL = URLRequest(url: (urlComponents?.url)!)

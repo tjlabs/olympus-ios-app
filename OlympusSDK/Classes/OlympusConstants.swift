@@ -16,6 +16,8 @@ class OlympusConstants {
     static let ABNORMAL_MAG_THRESHOLD: Double = 2000
     static let ABNORMAL_MAG_COUNT = 500
     
+    // Mag Heading Compensation
+    static var MAG_HEADING_COMPENSATION: Double = 158.75
     
     // Validity
     static let VALID_SOLUTION: Int = 1

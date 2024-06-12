@@ -58,6 +58,7 @@ class CardViewController: UIViewController, Observer {
     
     var region: String = ""
     var userId: String = ""
+    
 //    var sector_id: Int = 2
 //    var mode: String = "pdr"
     

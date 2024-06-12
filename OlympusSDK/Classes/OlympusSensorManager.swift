@@ -1,10 +1,13 @@
 import CoreMotion
+import CoreLocation
+import simd
 
-public class OlympusSensorManager {
+public class OlympusSensorManager: NSObject, CLLocationManagerDelegate {
     public var sensorData = OlympusSensorData()
     public var collectData = OlympusCollectData()
     
-    let magField = CMMagneticField()
+//    let magField = CMMagneticField()
+    let locationManager = CLLocationManager()
     let motionManager = CMMotionManager()
     let motionAltimeter = CMAltimeter()
     
@@ -22,8 +25,17 @@ public class OlympusSensorManager {
     var isVenusMode: Bool = false
     var runMode: String = ""
     
-    init() {
-        
+    var heading: Double?
+    var magneticDeclination: Double = 0
+    var headingQueue = [Double]()
+    var curMagneticHeading: Double = 0
+    var preMagneticHeading: Double = 0
+    
+    override init() {
+        super.init()
+        locationManager.delegate = self
+        locationManager.requestWhenInUseAuthorization()
+        locationManager.startUpdatingHeading()
     }
     
     public func initSensors() -> (Bool, String) {
@@ -149,6 +161,10 @@ public class OlympusSensorManager {
                     collectData.att[1] = m.attitude.pitch
                     collectData.att[2] = m.attitude.yaw
                     
+                    sensorData.grav[0] = m.gravity.x
+                    sensorData.grav[1] = m.gravity.y
+                    sensorData.grav[2] = m.gravity.z
+                    
                     sensorData.rotationMatrix[0][0] = m.attitude.rotationMatrix.m11
                     sensorData.rotationMatrix[0][1] = m.attitude.rotationMatrix.m12
                     sensorData.rotationMatrix[0][2] = m.attitude.rotationMatrix.m13
@@ -204,5 +220,88 @@ public class OlympusSensorManager {
     
     public func setRunMode(mode: String) {
         self.runMode = mode
+    }
+    
+    public func getTrueHeading() -> Double? {
+        return self.heading
+    }
+    
+    public func getAzimuthHeading() -> Double? {
+        return calculateAzimuthHeading()
+    }
+    
+    public func getMagneticHeading() -> Double {
+        return self.curMagneticHeading
+    }
+    
+    public func getSmoothedMagneticHeading() -> Double {
+        return self.preMagneticHeading
+    }
+    
+    func updateHeadingQueue(data: Double) {
+        if (self.headingQueue.count >= 10) {
+            self.headingQueue.remove(at: 0)
+        }
+        self.headingQueue.append(data)
+    }
+    
+    func smoothMagneticHeading(heading: Double) -> Double {
+        var smoothedHeading: Double = 1.0
+        if (self.headingQueue.count == 1) {
+            smoothedHeading = heading
+        } else {
+            smoothedHeading = movingAverage(preMvalue: preMagneticHeading, curValue: heading, windowSize: headingQueue.count)
+        }
+        return smoothedHeading
+    }
+    
+    func calculateAzimuthHeading() -> Double? {
+        let mx = sensorData.mag[0]
+        let my = sensorData.mag[1]
+        let mz = sensorData.mag[2]
+        
+        let ax = sensorData.acc[0]
+        let ay = sensorData.acc[1]
+        let az = sensorData.acc[2]
+        
+//        let gravity = simd_double3(ax, ay, az)
+//        let gravity = simd_double3(sensorData.grav[0], sensorData.grav[1], sensorData.grav[2])
+        let gravity = simd_double3(ax, ay, az)
+        let magnetic = simd_double3(mx, my, mz)
+        
+        // Calculate east and north vectors
+        let east = simd_cross(magnetic, gravity)
+        let north = simd_cross(gravity, east)
+        
+        // Normalize vectors
+        let normalizedEast = simd_normalize(east)
+        let normalizedNorth = simd_normalize(north)
+        
+        // Compute azimuth (in radians)
+        let azimuth = atan2(normalizedEast.y, normalizedNorth.y)
+        
+        // Convert azimuth to degrees
+        var azimuthDegrees = azimuth * (180 / .pi)
+        azimuthDegrees = (azimuthDegrees + 360).truncatingRemainder(dividingBy: 360)
+        
+        return azimuthDegrees
+    }
+    
+    public func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
+//        self.heading = newHeading.magneticHeading
+        self.heading = newHeading.trueHeading
+        
+        sensorData.trueHeading = newHeading.trueHeading
+        sensorData.magneticHeading = newHeading.magneticHeading
+        
+//        print(getLocalTimeString() + " , (Heading Info) : True = \(self.heading) // Mag = \(newHeading.magneticHeading) // Azimuth = \(getAzimuthHeading())")
+        
+//        let magneticHeading = newHeading.magneticHeading
+//        curMagneticHeading = magneticHeading
+//        updateHeadingQueue(data: magneticHeading)
+//        let smoothedHeading = smoothMagneticHeading(heading: magneticHeading)
+//        preMagneticHeading = smoothedHeading
+//        
+//        print(getLocalTimeString() + " , (Olympus) SensorData : Smoothed = \(preMagneticHeading) // Raw = \(magneticHeading)")
     }
 }
