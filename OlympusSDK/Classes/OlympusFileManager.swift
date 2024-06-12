@@ -177,8 +177,10 @@ public class OlympusFileManager {
                         olympusSensorData.gameVector = [Float(columns[32])!, Float(columns[33])!, Float(columns[34])!, Float(columns[35])!]
                         olympusSensorData.rotVector = [Float(columns[36])!, Float(columns[37])!, Float(columns[38])!, Float(columns[39])!, Float(columns[40])!]
                         olympusSensorData.pressure = [Double(columns[41])!]
-                        olympusSensorData.trueHeading = Double(columns[42])!
-                        olympusSensorData.magneticHeading = Double(columns[43])!
+                        if (columns.count > 42) {
+                            olympusSensorData.trueHeading = Double(columns[42])!
+                            olympusSensorData.magneticHeading = Double(columns[43])!
+                        }
                         loadedSenorData.append(olympusSensorData)
                     }
                 }

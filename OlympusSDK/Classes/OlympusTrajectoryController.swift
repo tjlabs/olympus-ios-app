@@ -430,17 +430,12 @@ public class OlympusTrajectoryController {
         return trajectoryInfo
     }
     
-    public func extendedMakeSearchInfo(trajectoryInfo: [TrajectoryInfo], serverResultBuffer: [FineLocationTrackingFromServer], unitDRInfoBuffer: [UnitDRInfo], trueHeading: Double?, isKF: Bool, mode: String, PHASE: Int, isPhaseBreak: Bool, phaseBreakResult: FineLocationTrackingFromServer) -> SearchInfo {
+    public func extendedMakeSearchInfo(trajectoryInfo: [TrajectoryInfo], serverResultBuffer: [FineLocationTrackingFromServer], unitDRInfoBuffer: [UnitDRInfo], trueHeading: Double, isKF: Bool, mode: String, PHASE: Int, isPhaseBreak: Bool, phaseBreakResult: FineLocationTrackingFromServer) -> SearchInfo {
         var searchInfo = SearchInfo()
         var searchDirection: [Int] = [0, 90, 180, 270]
         
         let trajLength = calculateTrajectoryLength(trajectoryInfo: trajectoryInfo)
         searchInfo.trajLength = trajLength
-        
-        var reqLengthForMajorHeading: Double = OlympusConstants.REQUIRED_LENGTH_FOR_MAJOR_HEADING
-        if (OlympusConstants.USER_TRAJECTORY_LENGTH <= 20) {
-            reqLengthForMajorHeading = (OlympusConstants.USER_TRAJECTORY_LENGTH-5)/2
-        }
         
         if (!trajectoryInfo.isEmpty) {
             var uvdRawHeading = [Double]()
@@ -460,154 +455,93 @@ public class OlympusTrajectoryController {
                 let PADDING_VALUE = OlympusConstants.USER_TRAJECTORY_LENGTH_PDR*0.8
                 let HEADING_UNCERTANTIY: Double = 2
                 if (PHASE < 4) {
-                    if let trueHeading = trueHeading {
-                        searchInfo.tailIndex = trajectoryInfo[0].index
-                        
-                        // PDR Phase 1 ~ 3
-                        if (isPhaseBreak && (phaseBreakResult.building_name != "" && phaseBreakResult.level_name != "")) {
-                            userX = phaseBreakResult.x
-                            userY = phaseBreakResult.y
-                        }
-                        let searchRange: [Double] = [userX - PADDING_VALUE, userY - PADDING_VALUE, userX + PADDING_VALUE, userY + PADDING_VALUE]
-                        searchInfo.searchRange = searchRange.map { Int($0) }
-                        
-                        var searchHeadings: [Double] = []
-                        var hasMajorDirection: Bool = false
-                        let ppHeadings = OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: userBuilding, level: userLevel, x: userX, y: userY, PADDING_VALUE: PADDING_VALUE, mode: mode)
-                        let headingLeastChangeSection = extractSectionWithLeastChange(inputArray: uvdRawHeading, requiredSize: 7)
-                        if (headingLeastChangeSection.isEmpty) {
-                            hasMajorDirection = false
-                        } else {
-                            var headHeadings = [Double]()
-                            var tailHeadings = [Double]()
-                            let headCompensation = headingLeastChangeSection.average - uvdRawHeading[uvdRawHeading.count-1]
-                            let tailCompensation = headingLeastChangeSection.average - uvdRawHeading[0]
-                            for ppHeading in ppHeadings {
-                                let headHeading = compensateHeading(heading: ppHeading - headCompensation)
-                                headHeadings.append(headHeading)
-                                let tailHeading = ppHeading - tailCompensation
-                                tailHeadings.append(tailHeading)
-                            }
-                            
-                            let currentUserHeading = compensateHeading(heading: OlympusConstants.MAG_HEADING_COMPENSATION - trueHeading)
-                            var diffHeadings = [Double]()
-                            for value in headHeadings {
-                                if (currentUserHeading > 270 && (value >= 0 && value < 90)) {
-                                    diffHeadings.append(abs(currentUserHeading - (value+360)))
-                                } else if (value > 270 && (currentUserHeading >= 0 && currentUserHeading < 90)) {
-                                    diffHeadings.append(abs(value - (currentUserHeading+360)))
-                                } else {
-                                    diffHeadings.append(abs(currentUserHeading - value))
-                                }
-                            }
-                            print(getLocalTimeString() + " , (Olympus) Traj Controller : currentUserHeading = \(currentUserHeading)")
-                            print(getLocalTimeString() + " , (Olympus) Traj Controller : trueHeading = \(trueHeading)")
-                            print(getLocalTimeString() + " , (Olympus) Traj Controller : headHeadings = \(headHeadings)")
-                            
-                            if let minValue = diffHeadings.min() {
-                                if let minIndex = diffHeadings.firstIndex(of: minValue) {
-                                    let bestTailHeading = tailHeadings[minIndex]
-                                    searchHeadings.append(compensateHeading(heading: bestTailHeading-5))
-                                    searchHeadings.append(compensateHeading(heading: bestTailHeading))
-                                    searchHeadings.append(compensateHeading(heading: bestTailHeading+5))
-                                    print(getLocalTimeString() + " , (Olympus) Traj Controller : searchHeadings = \(searchHeadings)")
-                                    print(getLocalTimeString() + " , (Olympus) Traj Controller : --------------------------------------------")
-                                    hasMajorDirection = true
-                                }
-                            }
-                        }
-                        
-                        if (!hasMajorDirection) {
-                            searchHeadings = [0, 90, 180, 270]
-                            searchInfo.trajType = TrajType.PDR_IN_PHASE3_NO_MAJOR_DIR
-                        } else {
-                            searchInfo.trajType = TrajType.PDR_IN_PHASE3_HAS_MAJOR_DIR
-                        }
-                        searchInfo.searchDirection = searchHeadings.map { Int($0) }
-                        
-                        let headInfo = trajectoryInfo[trajectoryInfo.count-1]
-                        var xyFromHead: [Double] = [headInfo.userX, headInfo.userY]
-                        
-                        let headingCorrectionFromServer: Double = headInfo.userHeading - uvdHeading[uvdHeading.count-1]
-                        var headingFromHead = [Double] (repeating: 0, count: uvdHeading.count)
-                        
-                        for i in 0..<uvdHeading.count {
-                            headingFromHead[i] = compensateHeading(heading: uvdHeading[i] - 180 + headingCorrectionFromServer)
-                        }
-                        
-                        var trajectoryFromHead = [[Double]]()
-                        trajectoryFromHead.append(xyFromHead)
-                        for i in (1..<trajectoryInfo.count).reversed() {
-                            let headAngle = headingFromHead[i]
-                            xyFromHead[0] = xyFromHead[0] + trajectoryInfo[i].length*cos(headAngle*OlympusConstants.D2R)
-                            xyFromHead[1] = xyFromHead[1] + trajectoryInfo[i].length*sin(headAngle*OlympusConstants.D2R)
-                            trajectoryFromHead.append(xyFromHead)
-                        }
-
-                        // 임시
-                        searchInfo.searchArea = getSearchCoordinates(areaMinMax: searchRange, interval: 1.0)
-                        searchInfo.trajShape = trajectoryFromHead
-                        searchInfo.trajStartCoord = [headInfo.userX, headInfo.userY]
+                    searchInfo.tailIndex = trajectoryInfo[0].index
+                    
+                    // PDR Phase 1 ~ 3
+                    if (isPhaseBreak && (phaseBreakResult.building_name != "" && phaseBreakResult.level_name != "")) {
+                        userX = phaseBreakResult.x
+                        userY = phaseBreakResult.y
+                    }
+                    let searchRange: [Double] = [userX - PADDING_VALUE, userY - PADDING_VALUE, userX + PADDING_VALUE, userY + PADDING_VALUE]
+                    searchInfo.searchRange = searchRange.map { Int($0) }
+                    
+                    var searchHeadings: [Double] = []
+                    var hasMajorDirection: Bool = false
+                    let ppHeadings = OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: userBuilding, level: userLevel, x: userX, y: userY, PADDING_VALUE: PADDING_VALUE, mode: mode)
+                    let headingLeastChangeSection = extractSectionWithLeastChange(inputArray: uvdRawHeading, requiredSize: 7)
+                    if (headingLeastChangeSection.isEmpty) {
+                        hasMajorDirection = false
                     } else {
-                        searchInfo.tailIndex = trajectoryInfo[0].index
-                        
-                        // PDR Phase 1 ~ 3
-                        if (isPhaseBreak && (phaseBreakResult.building_name != "" && phaseBreakResult.level_name != "")) {
-                            userX = phaseBreakResult.x
-                            userY = phaseBreakResult.y
+                        var headHeadings = [Double]()
+                        var tailHeadings = [Double]()
+                        let headCompensation = headingLeastChangeSection.average - uvdRawHeading[uvdRawHeading.count-1]
+                        let tailCompensation = headingLeastChangeSection.average - uvdRawHeading[0]
+                        for ppHeading in ppHeadings {
+                            let headHeading = compensateHeading(heading: ppHeading - headCompensation)
+                            headHeadings.append(headHeading)
+                            let tailHeading = ppHeading - tailCompensation
+                            tailHeadings.append(tailHeading)
                         }
-                        let searchRange: [Double] = [userX - PADDING_VALUE, userY - PADDING_VALUE, userX + PADDING_VALUE, userY + PADDING_VALUE]
-                        searchInfo.searchRange = searchRange.map { Int($0) }
                         
-                        var searchHeadings: [Double] = []
-                        var hasMajorDirection: Bool = false
-                        if (trajLength > reqLengthForMajorHeading) {
-                            let ppHeadings = OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: userBuilding, level: userLevel, x: userX, y: userY, PADDING_VALUE: PADDING_VALUE, mode: mode)
-                            let headingLeastChangeSection = extractSectionWithLeastChange(inputArray: uvdRawHeading, requiredSize: 7)
-                            if (headingLeastChangeSection.isEmpty) {
-                                hasMajorDirection = false
+                        let currentUserHeading = compensateHeading(heading: OlympusConstants.MAG_HEADING_COMPENSATION - trueHeading)
+                        var diffHeadings = [Double]()
+                        for value in headHeadings {
+                            if (currentUserHeading > 270 && (value >= 0 && value < 90)) {
+                                diffHeadings.append(abs(currentUserHeading - (value+360)))
+                            } else if (value > 270 && (currentUserHeading >= 0 && currentUserHeading < 90)) {
+                                diffHeadings.append(abs(value - (currentUserHeading+360)))
                             } else {
-                                let headingForCompensation = headingLeastChangeSection.average - uvdRawHeading[0]
-                                for ppHeading in ppHeadings {
-                                    let tailHeading = ppHeading - headingForCompensation
-                                    searchHeadings.append(compensateHeading(heading: tailHeading))
-                                }
+                                diffHeadings.append(abs(currentUserHeading - value))
+                            }
+                        }
+                        print(getLocalTimeString() + " , (Olympus) Traj Controller : currentUserHeading = \(currentUserHeading)")
+                        print(getLocalTimeString() + " , (Olympus) Traj Controller : trueHeading = \(trueHeading)")
+                        print(getLocalTimeString() + " , (Olympus) Traj Controller : headHeadings = \(headHeadings)")
+                        
+                        if let minValue = diffHeadings.min() {
+                            if let minIndex = diffHeadings.firstIndex(of: minValue) {
+                                let bestTailHeading = tailHeadings[minIndex]
+                                searchHeadings.append(compensateHeading(heading: bestTailHeading-5))
+                                searchHeadings.append(compensateHeading(heading: bestTailHeading))
+                                searchHeadings.append(compensateHeading(heading: bestTailHeading+5))
+                                print(getLocalTimeString() + " , (Olympus) Traj Controller : searchHeadings = \(searchHeadings)")
+                                print(getLocalTimeString() + " , (Olympus) Traj Controller : --------------------------------------------")
                                 hasMajorDirection = true
                             }
                         }
-                        
-                        if (!hasMajorDirection) {
-                            searchHeadings = [0, 90, 180, 270]
-                            searchInfo.trajType = TrajType.PDR_IN_PHASE3_NO_MAJOR_DIR
-                        } else {
-                            searchInfo.trajType = TrajType.PDR_IN_PHASE3_HAS_MAJOR_DIR
-                        }
-                        searchInfo.searchDirection = searchHeadings.map { Int($0) }
-                        
-                        let headInfo = trajectoryInfo[trajectoryInfo.count-1]
-                        var xyFromHead: [Double] = [headInfo.userX, headInfo.userY]
-                        
-                        let headingCorrectionFromServer: Double = headInfo.userHeading - uvdHeading[uvdHeading.count-1]
-                        var headingFromHead = [Double] (repeating: 0, count: uvdHeading.count)
-                        
-                        for i in 0..<uvdHeading.count {
-                            headingFromHead[i] = compensateHeading(heading: uvdHeading[i] - 180 + headingCorrectionFromServer)
-                        }
-                        
-                        var trajectoryFromHead = [[Double]]()
-                        trajectoryFromHead.append(xyFromHead)
-                        for i in (1..<trajectoryInfo.count).reversed() {
-                            let headAngle = headingFromHead[i]
-                            xyFromHead[0] = xyFromHead[0] + trajectoryInfo[i].length*cos(headAngle*OlympusConstants.D2R)
-                            xyFromHead[1] = xyFromHead[1] + trajectoryInfo[i].length*sin(headAngle*OlympusConstants.D2R)
-                            trajectoryFromHead.append(xyFromHead)
-                        }
-
-                        // 임시
-                        searchInfo.searchArea = getSearchCoordinates(areaMinMax: searchRange, interval: 1.0)
-                        searchInfo.trajShape = trajectoryFromHead
-                        searchInfo.trajStartCoord = [headInfo.userX, headInfo.userY]
                     }
+                    
+                    if (!hasMajorDirection) {
+                        searchHeadings = [0, 90, 180, 270]
+                        searchInfo.trajType = TrajType.PDR_IN_PHASE3_NO_MAJOR_DIR
+                    } else {
+                        searchInfo.trajType = TrajType.PDR_IN_PHASE3_HAS_MAJOR_DIR
+                    }
+                    searchInfo.searchDirection = searchHeadings.map { Int($0) }
+                    
+                    let headInfo = trajectoryInfo[trajectoryInfo.count-1]
+                    var xyFromHead: [Double] = [headInfo.userX, headInfo.userY]
+                    
+                    let headingCorrectionFromServer: Double = headInfo.userHeading - uvdHeading[uvdHeading.count-1]
+                    var headingFromHead = [Double] (repeating: 0, count: uvdHeading.count)
+                    
+                    for i in 0..<uvdHeading.count {
+                        headingFromHead[i] = compensateHeading(heading: uvdHeading[i] - 180 + headingCorrectionFromServer)
+                    }
+                    
+                    var trajectoryFromHead = [[Double]]()
+                    trajectoryFromHead.append(xyFromHead)
+                    for i in (1..<trajectoryInfo.count).reversed() {
+                        let headAngle = headingFromHead[i]
+                        xyFromHead[0] = xyFromHead[0] + trajectoryInfo[i].length*cos(headAngle*OlympusConstants.D2R)
+                        xyFromHead[1] = xyFromHead[1] + trajectoryInfo[i].length*sin(headAngle*OlympusConstants.D2R)
+                        trajectoryFromHead.append(xyFromHead)
+                    }
+
+                    // 임시
+                    searchInfo.searchArea = getSearchCoordinates(areaMinMax: searchRange, interval: 1.0)
+                    searchInfo.trajShape = trajectoryFromHead
+                    searchInfo.trajStartCoord = [headInfo.userX, headInfo.userY]
                 } else {
                     // PDR Phase 4
                     searchInfo.tailIndex = trajectoryInfo[0].index
