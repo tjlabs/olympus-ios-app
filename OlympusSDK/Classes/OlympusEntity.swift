@@ -586,6 +586,12 @@ public enum LimitationType {
     case X_LIMIT, Y_LIMIT, NO_LIMIT
 }
 
+public enum UpateNodeLinkType {
+    case PHASE_5,
+         PATH_TRAJ_MATCHING,
+         NONE
+}
+
 public struct SearchInfo {
     public var searchRange: [Int] = []
     public var searchArea: [[Double]] = [[0, 0]]

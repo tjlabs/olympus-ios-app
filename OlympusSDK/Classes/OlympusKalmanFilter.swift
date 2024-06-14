@@ -230,7 +230,7 @@ public class OlympusKalmanFilter: NSObject {
                         let maxIndex = directionCount.firstIndex(of: directionCount.max()!)
                         let startHeading = linkDirArray[maxIndex!]
 //                        let startHeading = inputUserMaskBuffer[0].absolute_heading
-                        var endHeading = compensateHeading(heading: userHeading)
+                        let endHeading = compensateHeading(heading: userHeading)
                         
                         let findPathMatchingNodeResult = OlympusPathMatchingCalculator.shared.findPathTrajMatchingNode(fltResult: outputResult, x: Double(userX), y: Double(userY), heading: startHeading, uvdBuffer: inputUnitDrInfoBuffer, pathType: 0, linkDirections: linkDirArray)
                         print(getLocalTimeString() + " , (Olympus) Path-Matching : findPathMatchingNodeResult = \(findPathMatchingNodeResult)")

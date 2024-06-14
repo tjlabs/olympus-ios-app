@@ -1,6 +1,6 @@
 import Foundation
 
-let SERVER_VERSION = "2024-03-19"
+let SERVER_VERSION = "2024-06-12"
 
 let HTTP_PREFIX = "https://"
 var REGION_PREFIX = "ap-northeast-2."
