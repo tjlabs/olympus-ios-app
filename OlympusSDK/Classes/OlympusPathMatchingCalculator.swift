@@ -1105,11 +1105,11 @@ public class OlympusPathMatchingCalculator {
         }
     }
     
-    public func getPaddingValues(mode: String, isPhaseBreak: Bool) -> [Double] {
+    public func getPaddingValues(mode: String, isPhaseBreak: Bool, PADDING_VALUE: Double) -> [Double] {
         var paddingValues: [Double] = [0, 0, 0, 0]
         
         if (isPhaseBreak) {
-            paddingValues = [Double] (repeating: OlympusConstants.PADDING_VALUE, count: 4)
+            paddingValues = [Double] (repeating: PADDING_VALUE, count: 4)
 //            print(getLocalTimeString() + " , (Olympus) isPhaseBreak // paddingValues = \(paddingValues)")
             return paddingValues
         }
@@ -1132,7 +1132,7 @@ public class OlympusPathMatchingCalculator {
             }
         }
         
-        var defaultPaddingValue = OlympusConstants.PADDING_VALUE
+        var defaultPaddingValue = PADDING_VALUE
         if (mode == OlympusConstants.MODE_PDR) {
             defaultPaddingValue = defaultPaddingValue/2
         }

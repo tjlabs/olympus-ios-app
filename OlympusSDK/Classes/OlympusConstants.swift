@@ -172,7 +172,7 @@ class OlympusConstants {
 //    static let REQUIRED_SECTION_RQ_IDX: Int = 20 // COEX DR
     
     static let REQUIRED_SECTION_STRAIGHT_LENGTH: Double = 8
-    static let REQUIRED_SECTION_REQUEST_LENGTH: Double = 20
+    static let REQUIRED_SECTION_REQUEST_LENGTH: Double = 25
     
     // Path-Matching
     static let HEADING_RANGE: Double = 46
@@ -180,7 +180,6 @@ class OlympusConstants {
     static var PADDING_VALUE_SMALL: Double = 10
     static var PADDING_VALUE_LARGE: Double = 10
     static var PADDING_VALUES: [Double] = [10, 10, 10, 10]
-    
     
     public func setSectorInfoConstants(sector_info: SectorInfo) {
         OlympusConstants.STANDARD_MIN_RSS = sector_info.standard_min_rss
@@ -201,41 +200,40 @@ class OlympusConstants {
         OlympusConstants.PRE_NORMALIZATION_SCALE = pre
     }
     
-    
-    public func setModeParam(mode: String, phase: Int) {
-        if (mode == OlympusConstants.MODE_PDR) {
-            OlympusConstants.RQ_IDX = OlympusConstants.RQ_IDX_PDR
-            OlympusConstants.USER_TRAJECTORY_LENGTH = OlympusConstants.USER_TRAJECTORY_LENGTH_PDR
-
-            OlympusConstants.INIT_INPUT_NUM = 4 //
-            OlympusConstants.VALUE_INPUT_NUM = 6 // 6
-            OlympusConstants.PADDING_VALUE = OlympusConstants.PADDING_VALUE_SMALL
-            OlympusConstants.PADDING_VALUES = [Double] (repeating: OlympusConstants.PADDING_VALUE, count: 4)
-            
-            if (phase == OlympusConstants.PHASE_4) {
-                OlympusConstants.UVD_INPUT_NUM = OlympusConstants.VALUE_INPUT_NUM
-                OlympusConstants.INDEX_THRESHOLD = 21
-            } else {
-                OlympusConstants.UVD_INPUT_NUM = OlympusConstants.INIT_INPUT_NUM
-                OlympusConstants.INDEX_THRESHOLD = 11
-            }
-        } else if (mode == OlympusConstants.MODE_DR) {
-            OlympusConstants.RQ_IDX = OlympusConstants.RQ_IDX_DR
-            OlympusConstants.USER_TRAJECTORY_LENGTH = OlympusConstants.USER_TRAJECTORY_LENGTH_DR
-
-            OlympusConstants.INIT_INPUT_NUM = 5
-            OlympusConstants.VALUE_INPUT_NUM = OlympusConstants.UVD_BUFFER_SIZE
-            OlympusConstants.PADDING_VALUE = OlympusConstants.PADDING_VALUE_LARGE
-            OlympusConstants.PADDING_VALUES = [Double] (repeating: OlympusConstants.PADDING_VALUE, count: 4)
-            
-            if (phase == OlympusConstants.PHASE_4) {
-                OlympusConstants.UVD_INPUT_NUM = OlympusConstants.VALUE_INPUT_NUM
-                OlympusConstants.INDEX_THRESHOLD = (OlympusConstants.UVD_INPUT_NUM*2)+1
-            } else {
-                OlympusConstants.UVD_INPUT_NUM = OlympusConstants.INIT_INPUT_NUM
-                OlympusConstants.INDEX_THRESHOLD = OlympusConstants.UVD_INPUT_NUM+1
-            }
-        }
-        OlympusConstants.RQ_IDX = OlympusConstants.UVD_INPUT_NUM
-    }
+//    public func setModeParam(mode: String, phase: Int) {
+//        if (mode == OlympusConstants.MODE_PDR) {
+//            OlympusConstants.RQ_IDX = OlympusConstants.RQ_IDX_PDR
+//            OlympusConstants.USER_TRAJECTORY_LENGTH = OlympusConstants.USER_TRAJECTORY_LENGTH_PDR
+//
+//            OlympusConstants.INIT_INPUT_NUM = 4 //
+//            OlympusConstants.VALUE_INPUT_NUM = 6 // 6
+//            OlympusConstants.PADDING_VALUE = OlympusConstants.PADDING_VALUE_SMALL
+//            OlympusConstants.PADDING_VALUES = [Double] (repeating: OlympusConstants.PADDING_VALUE, count: 4)
+//            
+//            if (phase == OlympusConstants.PHASE_4) {
+//                OlympusConstants.UVD_INPUT_NUM = OlympusConstants.VALUE_INPUT_NUM
+//                OlympusConstants.INDEX_THRESHOLD = 21
+//            } else {
+//                OlympusConstants.UVD_INPUT_NUM = OlympusConstants.INIT_INPUT_NUM
+//                OlympusConstants.INDEX_THRESHOLD = 11
+//            }
+//        } else if (mode == OlympusConstants.MODE_DR) {
+//            OlympusConstants.RQ_IDX = OlympusConstants.RQ_IDX_DR
+//            OlympusConstants.USER_TRAJECTORY_LENGTH = OlympusConstants.USER_TRAJECTORY_LENGTH_DR
+//
+//            OlympusConstants.INIT_INPUT_NUM = 5
+//            OlympusConstants.VALUE_INPUT_NUM = OlympusConstants.UVD_BUFFER_SIZE
+//            OlympusConstants.PADDING_VALUE = OlympusConstants.PADDING_VALUE_LARGE
+//            OlympusConstants.PADDING_VALUES = [Double] (repeating: OlympusConstants.PADDING_VALUE, count: 4)
+//            
+//            if (phase == OlympusConstants.PHASE_4) {
+//                OlympusConstants.UVD_INPUT_NUM = OlympusConstants.VALUE_INPUT_NUM
+//                OlympusConstants.INDEX_THRESHOLD = (OlympusConstants.UVD_INPUT_NUM*2)+1
+//            } else {
+//                OlympusConstants.UVD_INPUT_NUM = OlympusConstants.INIT_INPUT_NUM
+//                OlympusConstants.INDEX_THRESHOLD = OlympusConstants.UVD_INPUT_NUM+1
+//            }
+//        }
+//        OlympusConstants.RQ_IDX = OlympusConstants.UVD_INPUT_NUM
+//    }
 }

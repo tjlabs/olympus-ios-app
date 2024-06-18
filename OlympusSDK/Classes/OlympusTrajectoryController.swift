@@ -131,10 +131,10 @@ public class OlympusTrajectoryController {
         return result
     }
     
-    public func checkPhase2To4(unitLength: Double) {
+    public func checkPhase2To4(unitLength: Double, LENGTH_THRESHOLD: Double) {
         if (self.isMovePhase2To4) {
             self.distanceAfterPhase2To4 += unitLength
-            if (self.distanceAfterPhase2To4 >= OlympusConstants.USER_TRAJECTORY_LENGTH*0.8) {
+            if (self.distanceAfterPhase2To4 >= LENGTH_THRESHOLD*0.8) {
                 self.distanceAfterPhase2To4 = 0
                 self.isMovePhase2To4 = false
             }
@@ -199,11 +199,11 @@ public class OlympusTrajectoryController {
         self.isNeedTrajCheck = flag
     }
     
-    public func checkTrajectoryInfo(isPhaseBreak: Bool, isBecomeForeground: Bool, isGetFirstResponse: Bool, timeForInit: Double) {
+    public func checkTrajectoryInfo(isPhaseBreak: Bool, isBecomeForeground: Bool, isGetFirstResponse: Bool, timeForInit: Double, LENGTH_THRESHOLD: Double) {
         var isNeedAllClear: Bool = false
         if (self.isNeedTrajCheck) {
             if (isPhaseBreak) {
-                let cutIdx = Int(ceil(OlympusConstants.USER_TRAJECTORY_LENGTH*0.5))
+                let cutIdx = Int(ceil(LENGTH_THRESHOLD*0.5))
                 let newTraj = getTrajectoryFromLast(from: self.userTrajectoryInfo, N: cutIdx)
                 if (newTraj.count > 1) {
                     for i in 1..<newTraj.count {
@@ -231,7 +231,7 @@ public class OlympusTrajectoryController {
     }
     
     
-    public func getTrajectoryInfo(unitDRInfo: UnitDRInfo, unitLength: Double, olympusResult: FineLocationTrackingResult, isKF: Bool, tuResult: [Double], isPmSuccess: Bool, numBleChannels: Int, mode: String, isDetermineSpot: Bool, spotCutIndex: Int) -> [TrajectoryInfo] {
+    public func getTrajectoryInfo(unitDRInfo: UnitDRInfo, unitLength: Double, olympusResult: FineLocationTrackingResult, isKF: Bool, tuResult: [Double], isPmSuccess: Bool, numBleChannels: Int, mode: String, isDetermineSpot: Bool, spotCutIndex: Int, LENGTH_THRESHOLD: Double) -> [TrajectoryInfo] {
         if (olympusResult.x != 0 && olympusResult.y != 0) {
             var unitTrajectoryInfo = TrajectoryInfo()
             unitTrajectoryInfo.index = unitDRInfo.index
@@ -265,19 +265,19 @@ public class OlympusTrajectoryController {
             
             if (mode == OlympusConstants.MODE_PDR) {
                 // PDR
-                controlPdrTrajectoryInfo(LENGTH_CONDITION: OlympusConstants.USER_TRAJECTORY_LENGTH)
+                controlPdrTrajectoryInfo(LENGTH_THRESHOLD: LENGTH_THRESHOLD)
             } else {
                 // DR
-                controlDrTrajectoryInfo(isDetermineSpot: isDetermineSpot, spotCutIndex: spotCutIndex, isUnknownTraj: self.isUnknownTraj, LENGTH_CONDITION: OlympusConstants.USER_TRAJECTORY_LENGTH)
+                controlDrTrajectoryInfo(isDetermineSpot: isDetermineSpot, spotCutIndex: spotCutIndex, isUnknownTraj: self.isUnknownTraj, LENGTH_THRESHOLD: LENGTH_THRESHOLD)
             }
         }
         
         return self.userTrajectoryInfo
     }
     
-    private func controlPdrTrajectoryInfo(LENGTH_CONDITION: Double) {
+    private func controlPdrTrajectoryInfo(LENGTH_THRESHOLD: Double) {
         var isNeedAllClear: Bool = false
-        let updatedTrajectoryInfoWithLength = updateTrajectoryInfoWithLength(trajectoryInfo: self.userTrajectoryInfo, LENGTH_CONDITION: LENGTH_CONDITION)
+        let updatedTrajectoryInfoWithLength = updateTrajectoryInfoWithLength(trajectoryInfo: self.userTrajectoryInfo, LENGTH_THRESHOLD: LENGTH_THRESHOLD)
         let isTailIndexSendFail = checkIsTailIndexSendFail(trajectoryInfo: updatedTrajectoryInfoWithLength, sendFailUvdIndexes: self.sendFailUvdIndexes)
         if (isTailIndexSendFail) {
             let validTrajectoryInfoResult = getValidTrajectory(trajectoryInfo: updatedTrajectoryInfoWithLength, sendFailUvdIndexes: self.sendFailUvdIndexes, mode: OlympusConstants.MODE_PDR)
@@ -319,7 +319,7 @@ public class OlympusTrajectoryController {
         }
     }
     
-    private func controlDrTrajectoryInfo(isDetermineSpot: Bool, spotCutIndex: Int, isUnknownTraj: Bool, LENGTH_CONDITION: Double) {
+    private func controlDrTrajectoryInfo(isDetermineSpot: Bool, spotCutIndex: Int, isUnknownTraj: Bool, LENGTH_THRESHOLD: Double) {
         if (isDetermineSpot) {
             let newTraj = getTrajectoryFromLast(from: self.userTrajectoryInfo, N: spotCutIndex)
             self.userTrajectoryInfo = newTraj
@@ -341,7 +341,7 @@ public class OlympusTrajectoryController {
             
         } else {
             let trajLength = calculateTrajectoryLength(trajectoryInfo: self.userTrajectoryInfo)
-            if trajLength > LENGTH_CONDITION {
+            if trajLength > LENGTH_THRESHOLD {
                 self.userTrajectoryInfo.removeFirst()
             }
         }
@@ -374,7 +374,7 @@ public class OlympusTrajectoryController {
         }
     }
     
-    private func updateTrajectoryInfoWithLength(trajectoryInfo: [TrajectoryInfo], LENGTH_CONDITION: Double) -> [TrajectoryInfo] {
+    private func updateTrajectoryInfoWithLength(trajectoryInfo: [TrajectoryInfo], LENGTH_THRESHOLD: Double) -> [TrajectoryInfo] {
         var accumulatedLength = 0.0
 
         var longTrajIndex: Int = 0
@@ -399,12 +399,12 @@ public class OlympusTrajectoryController {
                 let uvdLength = trajectoryInfo[i].length
                 accumulatedLength += uvdLength
 
-                if ((accumulatedLength >= LENGTH_CONDITION*2) && !isFindLong) {
+                if ((accumulatedLength >= LENGTH_THRESHOLD*2) && !isFindLong) {
                     isFindLong = true
                     longTrajIndex = i
                 }
 
-                if ((accumulatedLength >= LENGTH_CONDITION) && !isFindShort) {
+                if ((accumulatedLength >= LENGTH_THRESHOLD) && !isFindShort) {
                     isFindShort = true
                     shortTrajIndex = i
                 }
@@ -501,9 +501,11 @@ public class OlympusTrajectoryController {
                         if let minValue = diffHeadings.min() {
                             if let minIndex = diffHeadings.firstIndex(of: minValue) {
                                 let bestTailHeading = tailHeadings[minIndex]
+                                searchHeadings.append(compensateHeading(heading: bestTailHeading-10))
                                 searchHeadings.append(compensateHeading(heading: bestTailHeading-5))
                                 searchHeadings.append(compensateHeading(heading: bestTailHeading))
                                 searchHeadings.append(compensateHeading(heading: bestTailHeading+5))
+                                searchHeadings.append(compensateHeading(heading: bestTailHeading+10))
                                 print(getLocalTimeString() + " , (Olympus) Traj Controller : searchHeadings = \(searchHeadings)")
                                 print(getLocalTimeString() + " , (Olympus) Traj Controller : --------------------------------------------")
                                 hasMajorDirection = true
@@ -819,7 +821,7 @@ public class OlympusTrajectoryController {
         return searchInfo
     }
     
-    public func makeSearchInfo(trajectoryInfo: [TrajectoryInfo], serverResultBuffer: [FineLocationTrackingFromServer], unitDRInfoBuffer: [UnitDRInfo], isKF: Bool, mode: String, PHASE: Int, isPhaseBreak: Bool, phaseBreakResult: FineLocationTrackingFromServer) -> SearchInfo {
+    public func makeSearchInfo(trajectoryInfo: [TrajectoryInfo], serverResultBuffer: [FineLocationTrackingFromServer], unitDRInfoBuffer: [UnitDRInfo], isKF: Bool, mode: String, PHASE: Int, isPhaseBreak: Bool, phaseBreakResult: FineLocationTrackingFromServer, LENGTH_THRESHOLD: Double) -> SearchInfo {
         var searchInfo = SearchInfo()
         var searchDirection: [Int] = [0, 90, 180, 270]
         
@@ -827,8 +829,8 @@ public class OlympusTrajectoryController {
         searchInfo.trajLength = trajLength
         
         var reqLengthForMajorHeading: Double = OlympusConstants.REQUIRED_LENGTH_FOR_MAJOR_HEADING
-        if (OlympusConstants.USER_TRAJECTORY_LENGTH <= 20) {
-            reqLengthForMajorHeading = (OlympusConstants.USER_TRAJECTORY_LENGTH-5)/2
+        if (LENGTH_THRESHOLD <= 20) {
+            reqLengthForMajorHeading = (LENGTH_THRESHOLD-5)/2
         }
         
         if (!trajectoryInfo.isEmpty) {
@@ -1758,9 +1760,9 @@ public class OlympusTrajectoryController {
     }
     
     // Trajectory Compensation
-    public func getTrajCompensationArray(currentTime: Int, trajLength: Double) -> [Double] {
+    public func getTrajCompensationArray(currentTime: Int, trajLength: Double, LENGTH_THRESHOLD: Double) -> [Double] {
         var trajCompensationArray: [Double] = [self.trajCompensation]
-        if (trajLength < OlympusConstants.USER_TRAJECTORY_LENGTH) {
+        if (trajLength < LENGTH_THRESHOLD) {
             trajCompensationArray = [1.01]
         } else {
             if (self.isFltRequested) {

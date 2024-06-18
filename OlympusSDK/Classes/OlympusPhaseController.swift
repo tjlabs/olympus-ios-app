@@ -3,11 +3,11 @@ import Foundation
 public class OlympusPhaseController {
     let LOOKING_RECOGNITION_LENGTH: Int = 5
     
-    var PHASE3_LENGTH_CONDITION_PDR: Double = 30
-    var PHASE2_LENGTH_CONDITION_PDR: Double = 20
+    var PHASE3_LENGTH_THRESHOLD_PDR: Double = 30
+    var PHASE2_LENGTH_THRESHOLD_PDR: Double = 20
     
-    var PHASE3_LENGTH_CONDITION_DR: Double = 60
-    var PHASE2_LENGTH_CONDITION_DR: Double = 50
+    var PHASE3_LENGTH_THRESHOLD_DR: Double = 60
+    var PHASE2_LENGTH_THRESHOLD_DR: Double = 50
     
     public var phase2BadCount: Int = 0
     var phase2count: Int = 0
@@ -18,8 +18,8 @@ public class OlympusPhaseController {
     
     init() {
         self.notificationCenterAddObserver()
-        self.PHASE2_LENGTH_CONDITION_PDR = self.PHASE3_LENGTH_CONDITION_PDR - Double(OlympusConstants.PDR_LENGTH_MARGIN)
-        self.PHASE2_LENGTH_CONDITION_DR = self.PHASE3_LENGTH_CONDITION_DR - Double(OlympusConstants.DR_LENGTH_MARGIN)
+        self.PHASE2_LENGTH_THRESHOLD_PDR = self.PHASE3_LENGTH_THRESHOLD_PDR - Double(OlympusConstants.PDR_LENGTH_MARGIN)
+        self.PHASE2_LENGTH_THRESHOLD_DR = self.PHASE3_LENGTH_THRESHOLD_DR - Double(OlympusConstants.DR_LENGTH_MARGIN)
     }
     
     deinit {
@@ -34,11 +34,11 @@ public class OlympusPhaseController {
     }
     
     public func setPhaseLengthParam(lengthConditionPdr: Double, lengthConditionDr: Double) {
-        self.PHASE3_LENGTH_CONDITION_PDR = lengthConditionPdr
-        self.PHASE3_LENGTH_CONDITION_DR = lengthConditionDr
+        self.PHASE3_LENGTH_THRESHOLD_PDR = lengthConditionPdr
+        self.PHASE3_LENGTH_THRESHOLD_DR = lengthConditionDr
         
-        self.PHASE2_LENGTH_CONDITION_PDR = self.PHASE3_LENGTH_CONDITION_PDR - Double(OlympusConstants.PDR_LENGTH_MARGIN)
-        self.PHASE2_LENGTH_CONDITION_DR = self.PHASE3_LENGTH_CONDITION_DR - Double(OlympusConstants.DR_LENGTH_MARGIN)
+        self.PHASE2_LENGTH_THRESHOLD_PDR = self.PHASE3_LENGTH_THRESHOLD_PDR - Double(OlympusConstants.PDR_LENGTH_MARGIN)
+        self.PHASE2_LENGTH_THRESHOLD_DR = self.PHASE3_LENGTH_THRESHOLD_DR - Double(OlympusConstants.DR_LENGTH_MARGIN)
     }
     
     public func setPhase2BadCount(value: Int) {
@@ -94,48 +94,7 @@ public class OlympusPhaseController {
     }
     
     
-//
-//    public func isNotLooking(inputUserTrajectory: [TrajectoryInfo]) -> Bool {
-//        var isNotLooking: Bool = false
-//        
-//        if (inputUserTrajectory.count >= LOOKING_RECOGNITION_LENGTH) {
-//            let recentDrInfo = getTrajectoryFromLast(from: inputUserTrajectory, N: LOOKING_RECOGNITION_LENGTH)
-//            
-//            var count: Int = 0
-//            for i in 0..<LOOKING_RECOGNITION_LENGTH {
-//                let lookingFlag = recentDrInfo[i].lookingFlag
-//                if (!lookingFlag) {
-//                    count += 1
-//                }
-//            }
-//            
-//            if (count >= LOOKING_RECOGNITION_LENGTH) {
-//                isNotLooking = true
-//            }
-//        }
-//        
-//        return isNotLooking
-//    }
-//    
-//    public func phaseInterrupt(inputPhase: Int, inputUserTrajectory: [TrajectoryInfo]) -> (Bool, Int) {
-//        var isInterrupt: Bool = false
-//        var phase: Int = inputPhase
-//        
-//        if (inputUserTrajectory.isEmpty) {
-//            isInterrupt = true
-//            phase = 0
-//        }
-//        
-//        if (self.isNotLooking(inputUserTrajectory: inputUserTrajectory)) {
-//            isInterrupt = true
-//            phase = 1
-//        }
-//        
-//        return (isInterrupt, phase)
-//    }
-//    
-    
-    public func controlPhase(serverResultArray: [FineLocationTrackingFromServer], drBuffer: [UnitDRInfo], UVD_INTERVAL: Int, TRAJ_LENGTH: Double, inputPhase: Int, mode: String, isVenusMode: Bool) -> (Int, Bool) {
+    public func controlPhase(serverResultArray: [FineLocationTrackingFromServer], drBuffer: [UnitDRInfo], UVD_INTERVAL: Int, TRAJ_LENGTH: Double, INDEX_THRESHOLD: Int, inputPhase: Int, mode: String, isVenusMode: Bool) -> (Int, Bool) {
         var phase: Int = 0
         var isPhaseBreak: Bool = false
         
@@ -151,12 +110,12 @@ public class OlympusPhaseController {
         case 1:
             phase = self.phase1control(serverResult: currentResult, mode: mode)
         case 2:
-            phase = self.checkScResultConnectionForStable(inputPhase: inputPhase, serverResultArray: serverResultArray, drBuffer: drBuffer, UVD_INTERVAL: UVD_INTERVAL, TRAJ_LENGTH: TRAJ_LENGTH, mode: mode)
+            phase = self.checkScResultConnectionForStable(inputPhase: inputPhase, serverResultArray: serverResultArray, drBuffer: drBuffer, UVD_INTERVAL: UVD_INTERVAL, TRAJ_LENGTH: TRAJ_LENGTH, INDEX_THRESHOLD: INDEX_THRESHOLD, mode: mode)
         case 3:
             if (currentResult.scc < OlympusConstants.PHASE_BREAK_SCC) {
                 phase = 1
             } else {
-                phase = self.checkScResultConnectionForStable(inputPhase: inputPhase, serverResultArray: serverResultArray, drBuffer: drBuffer, UVD_INTERVAL: UVD_INTERVAL, TRAJ_LENGTH: TRAJ_LENGTH, mode: mode)
+                phase = self.checkScResultConnectionForStable(inputPhase: inputPhase, serverResultArray: serverResultArray, drBuffer: drBuffer, UVD_INTERVAL: UVD_INTERVAL, TRAJ_LENGTH: TRAJ_LENGTH, INDEX_THRESHOLD: INDEX_THRESHOLD, mode: mode)
             }
         case 4:
             phase = self.phase4control(serverResult: currentResult, mode: mode)
@@ -174,14 +133,14 @@ public class OlympusPhaseController {
         return (phase, isPhaseBreak)
     }
     
-    public func checkScResultConnectionForStable(inputPhase: Int, serverResultArray: [FineLocationTrackingFromServer], drBuffer: [UnitDRInfo], UVD_INTERVAL: Int, TRAJ_LENGTH: Double, mode: String) -> Int {
+    public func checkScResultConnectionForStable(inputPhase: Int, serverResultArray: [FineLocationTrackingFromServer], drBuffer: [UnitDRInfo], UVD_INTERVAL: Int, TRAJ_LENGTH: Double, INDEX_THRESHOLD: Int, mode: String) -> Int {
         var phase: Int = inputPhase
         
         // Conditions //
         var sccCondition: Double = 0.5
         var isPoolChannel: Bool = false
 //        let indexCondition: Int = Int(Double(UVD_INTERVAL)*1.5)
-        let indexCondition: Int = Int(Double(OlympusConstants.RQ_IDX)*2)
+        let indexCondition: Int = Int(Double(INDEX_THRESHOLD)*2)
         if (inputPhase == OlympusConstants.PHASE_2) {
             sccCondition = 0.5
         }
