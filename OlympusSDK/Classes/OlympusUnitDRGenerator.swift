@@ -44,7 +44,7 @@ public class OlympusUnitDRGenerator: NSObject {
     
     public func generateDRInfo(sensorData: OlympusSensorData) -> UnitDRInfo {
         if (unitMode != OlympusConstants.MODE_PDR && unitMode != OlympusConstants.MODE_DR && unitMode != OlympusConstants.MODE_AUTO) {
-            print(getLocalTimeString() + " , (Jupiter) uniMode is forcibly set to auto (\(unitMode) - > MODR_AUTO)")
+            print(getLocalTimeString() + " , (Olympus) uniMode is forcibly set to auto (\(unitMode) - > MODR_AUTO)")
             unitMode = OlympusConstants.MODE_AUTO
         }
         

@@ -28,7 +28,7 @@ public class OlympusFileManager {
             print(getLocalTimeString() + " , (Olympus) FileManager : Unable to access document directory.")
             return nil
         }
-        let exportDirectoryUrl = documentDirectoryUrl.appendingPathComponent("Export")
+        let exportDirectoryUrl = documentDirectoryUrl.appendingPathComponent("Exports")
         if !FileManager.default.fileExists(atPath: exportDirectoryUrl.path) {
             do {
                 try FileManager.default.createDirectory(at: exportDirectoryUrl, withIntermediateDirectories: true, attributes: nil)
@@ -139,8 +139,8 @@ public class OlympusFileManager {
 //            let sensorFileName = "sensor_check2.csv"
 //            let bleFileName = "ble_ds04.csv"
 //            let sensorFileName = "sensor_ds04.csv"
-            let bleFileName = "ble_lg03.csv"
-            let sensorFileName = "sensor_lg03.csv"
+            let bleFileName = "ble_lg01.csv"
+            let sensorFileName = "sensor_lg01.csv"
 //            let bleFileName = "ble_coex02.csv"
 //            let sensorFileName = "sensor_coex02.csv"
             
