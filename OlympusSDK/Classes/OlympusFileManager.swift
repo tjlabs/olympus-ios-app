@@ -11,8 +11,13 @@ public class OlympusFileManager {
     var sensorData = [OlympusSensorData]()
     var bleTime = [Int]()
     var bleData = [[String: Double]]()
+    var region: String = ""
     
     init() {}
+    
+    public func setRegion(region: String) {
+        self.region = region
+    }
     
     private func createExportDirectory() -> URL? {
         guard let documentDirectoryUrl = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
@@ -35,10 +40,10 @@ public class OlympusFileManager {
         return exportDirectoryUrl
     }
     
-    public func createFiles(time: Int) {
+    public func createFiles(time: Int, region: String) {
         if let exportDir: URL = self.createExportDirectory() {
-            let sensorFileName = "sensor_\(time).csv"
-            let bleFileName = "ble_\(time).csv"
+            let sensorFileName = "sensor_\(region)_\(time).csv"
+            let bleFileName = "ble_\(region)_\(time).csv"
             sensorFileUrl = exportDir.appendingPathComponent(sensorFileName)
             bleFileUrl = exportDir.appendingPathComponent(bleFileName)
         } else {

@@ -3,7 +3,7 @@ import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
     public static let sdkVersion: String = "0.0.11"
-    var isSimulationMode: Bool = true
+    var isSimulationMode: Bool = false
     var simulationBleData = [[String: Double]]()
     var simulationSensorData = [OlympusSensorData]()
     var bleLineCount: Int = 0
@@ -316,7 +316,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                                     self.startTimer()
                                                     NotificationCenter.default.post(name: .serviceStarted, object: nil, userInfo: nil)
                                                     
-                                                    self.initSimulationMode()
+                                                    self.initSimulationMode(region: region)
                                                     completion(true, getLocalTimeString() + success_msg)
                                                 }
                                             } else {
@@ -398,8 +398,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         return (isSuccess, msg)
     }
     
-    private func initSimulationMode() {
-        OlympusFileManager.shared.createFiles(time: getCurrentTimeInMilliseconds())
+    private func initSimulationMode(region: String) {
+        OlympusFileManager.shared.setRegion(region: region)
+        OlympusFileManager.shared.createFiles(time: getCurrentTimeInMilliseconds(), region: region)
         
         if (isSimulationMode) {
             let result = OlympusFileManager.shared.loadFilesForSimulation()
