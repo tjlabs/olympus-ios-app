@@ -11,7 +11,11 @@ public class OlympusFileManager {
     var sensorData = [OlympusSensorData]()
     var bleTime = [Int]()
     var bleData = [[String: Double]]()
+    
     var region: String = ""
+    var sector_id: Int = 0
+    var deviceModel: String = "Unknown"
+    var osVersion: String = "Unknown"
     
     init() {}
     
@@ -40,10 +44,21 @@ public class OlympusFileManager {
         return exportDirectoryUrl
     }
     
-    public func createFiles(time: Int, region: String) {
+    public func createFiles(region: String, sector_id: Int, deviceModel: String, osVersion: String) {
         if let exportDir: URL = self.createExportDirectory() {
-            let sensorFileName = "sensor_\(region)_\(time).csv"
-            let bleFileName = "ble_\(region)_\(time).csv"
+            self.region = region
+            self.sector_id = sector_id
+            self.deviceModel = deviceModel
+            self.osVersion = osVersion
+            
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyyMMddHHmmss"
+            dateFormatter.locale = Locale(identifier:"ko_KR")
+            let nowDate = Date()
+            let convertNowStr = dateFormatter.string(from: nowDate)
+            
+            let sensorFileName = "ios_\(region)_\(sector_id)_\(convertNowStr)_\(deviceModel)_\(osVersion)_sensor.csv"
+            let bleFileName = "ios_\(region)_\(sector_id)_\(convertNowStr)_\(deviceModel)_\(osVersion)_ble.csv"
             sensorFileUrl = exportDir.appendingPathComponent(sensorFileName)
             bleFileUrl = exportDir.appendingPathComponent(bleFileName)
         } else {

@@ -141,7 +141,7 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
                     case .success(let trimmedData):
                         self.bleDictionary = trimmedData
                     case .failure(let error):
-                        print(getLocalTimeString() + " , (Jupiter) Error : BleManager \(error)")
+                        print(getLocalTimeString() + " , (Olympus) Error : BleManager \(error)")
                     }
                     
                     NotificationCenter.default.post(name: .scanInfo, object: nil, userInfo: userInfo)
@@ -214,14 +214,6 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
             
         }
     }
-    
-//    func setValidTime(mode: String) {
-//        if (mode == "dr") {
-//            self.BLE_VALID_TIME = 1000
-//        } else {
-//            self.BLE_VALID_TIME = 1500
-//        }
-//    }
     
     func isConnected() -> Bool {
         return connected
