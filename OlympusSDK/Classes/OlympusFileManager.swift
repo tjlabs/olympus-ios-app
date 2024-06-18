@@ -15,7 +15,7 @@ public class OlympusFileManager {
     var region: String = ""
     var sector_id: Int = 0
     var deviceModel: String = "Unknown"
-    var osVersion: String = "Unknown"
+    var osVersion: Int = 0
     
     init() {}
     
@@ -44,7 +44,7 @@ public class OlympusFileManager {
         return exportDirectoryUrl
     }
     
-    public func createFiles(region: String, sector_id: Int, deviceModel: String, osVersion: String) {
+    public func createFiles(region: String, sector_id: Int, deviceModel: String, osVersion: Int) {
         if let exportDir: URL = self.createExportDirectory() {
             self.region = region
             self.sector_id = sector_id
