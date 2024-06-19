@@ -59,8 +59,8 @@ class CardViewController: UIViewController, Observer {
     var region: String = ""
     var userId: String = ""
     
-    var sector_id: Int = 2
-    var mode: String = "pdr"
+//    var sector_id: Int = 2
+//    var mode: String = "pdr"
     
 //    var sector_id: Int = 14 // DS
 //    var mode: String = "pdr"
@@ -68,8 +68,8 @@ class CardViewController: UIViewController, Observer {
 //    var sector_id: Int = 6
 //    var mode: String = "auto"
     
-//    var sector_id: Int = 15 // LG G2
-//    var mode: String = "pdr"
+    var sector_id: Int = 15 // LG G2
+    var mode: String = "pdr"
     
     var currentBuilding: String = ""
     var currentLevel: String = ""
@@ -90,7 +90,7 @@ class CardViewController: UIViewController, Observer {
     override func viewDidLoad() {
         super.viewDidLoad()
         headingImage = headingImage?.resize(newWidth: 20)
-        serviceManager.setSimulationMode(flag: false, bleFileName: "ble_lg01.csv", sensorFileName: "sensor_lg01.csv")
+        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg01.csv", sensorFileName: "sensor_lg01.csv")
         
         // collect
 //        isCollect = true

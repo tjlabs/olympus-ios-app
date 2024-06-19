@@ -873,6 +873,7 @@ public class OlympusPathMatchingCalculator {
                                             }
                                         }
                                         
+                                        self.linkCoord = [xPath, yPath]
                                         if (node != 0) {
                                             self.isInNode = true
                                             isNodePassed = true
@@ -885,7 +886,6 @@ public class OlympusPathMatchingCalculator {
                                             controlPassedNodeInfo(passedNodeInfo: PassedNodeInfo(nodeNumber: self.passedNode, nodeCoord: self.passedNodeCoord, nodeHeadings: self.passedNodeHeadings, matchedIndex: self.passedNodeMatchedIndex, userHeading: currentResultHeading))
                                         } else {
                                             self.isInNode = false
-                                            self.linkCoord = [xPath, yPath]
                                             self.linkDirections = ppHeadingValues
                                         }
                                     }
