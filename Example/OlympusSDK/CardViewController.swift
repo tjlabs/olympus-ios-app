@@ -90,7 +90,7 @@ class CardViewController: UIViewController, Observer {
     override func viewDidLoad() {
         super.viewDidLoad()
         headingImage = headingImage?.resize(newWidth: 20)
-        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg01.csv", sensorFileName: "sensor_lg01.csv")
+        serviceManager.setSimulationMode(flag: false, bleFileName: "ble_lg01.csv", sensorFileName: "sensor_lg01.csv")
         
         // collect
 //        isCollect = true

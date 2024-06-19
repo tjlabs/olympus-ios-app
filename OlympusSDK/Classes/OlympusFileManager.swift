@@ -23,19 +23,19 @@ public class OlympusFileManager {
     init() {}
     
     public func initalize() {
-        sensorFileUrl = nil
-        bleFileUrl = nil
-        sensorData = [OlympusSensorData]()
-        bleTime = [Int]()
-        bleData = [[String: Double]]()
-        
         region = ""
         sector_id = 0
         deviceModel = "Unknown"
         osVersion = 0
         
-        collectFileUrl = nil
-        collectData = [OlympusCollectData]()
+//        sensorFileUrl = nil
+//        bleFileUrl = nil
+//        sensorData = [OlympusSensorData]()
+//        bleTime = [Int]()
+//        bleData = [[String: Double]]()
+
+//        collectFileUrl = nil
+//        collectData = [OlympusCollectData]()
     }
     
     public func setRegion(region: String) {
@@ -173,6 +173,7 @@ public class OlympusFileManager {
             let sensorFileName = sensorFile
             
             let bleSimulationUrl = exportDir.appendingPathComponent(bleFileName)
+            print(getLocalTimeString() + " , (Olympus) FileManager : bleSimulationUrl = \(bleSimulationUrl)")
             do {
                 let csvData = try String(contentsOf: bleSimulationUrl)
                 let bleRows = csvData.components(separatedBy: "\n")
@@ -205,6 +206,7 @@ public class OlympusFileManager {
             
 
             let sensorSimulationUrl = exportDir.appendingPathComponent(sensorFileName)
+            print(getLocalTimeString() + " , (Olympus) FileManager : sensorSimulationUrl = \(sensorSimulationUrl)")
             do {
                 let csvData = try String(contentsOf: sensorSimulationUrl)
                 let sensorRows = csvData.components(separatedBy: "\n")
