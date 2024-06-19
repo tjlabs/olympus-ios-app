@@ -82,6 +82,7 @@ class CardViewController: UIViewController, Observer {
     let OPERATING_SYSTEM: String = "iOS"
     
     var serviceManager = OlympusServiceManager()
+    var isCollect: Bool = false
     
     var timer: Timer?
     let TIMER_INTERVAL: TimeInterval = 1/10
@@ -89,7 +90,15 @@ class CardViewController: UIViewController, Observer {
     override func viewDidLoad() {
         super.viewDidLoad()
         headingImage = headingImage?.resize(newWidth: 20)
+        serviceManager.setSimulationMode(flag: false, bleFileName: "ble_lg01.csv", sensorFileName: "sensor_lg01.csv")
         
+        // collect
+//        isCollect = true
+//        serviceManager.initCollect(region: self.region)
+//        serviceManager.startCollect()
+//        self.startTimer()
+        
+        // service
         serviceManager.addObserver(self)
         serviceManager.startService(user_id: self.userId, region: self.region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
             if (isStart) {
@@ -108,6 +117,7 @@ class CardViewController: UIViewController, Observer {
         if (self.isSaved) {
             saveButton.isHidden = true
         }
+//        serviceManager.stopCollect()
         serviceManager.stopService()
         self.stopTimer()
     }
@@ -632,11 +642,17 @@ class CardViewController: UIViewController, Observer {
     }
     
     @objc func timerUpdate() {
-        DispatchQueue.main.async {
-            self.updateCoord(data: self.coordToDisplay, flag: true)
-        }
-        if (self.isSaved) {
-            saveButton.isHidden = true
+        if (isCollect) {
+            print(getLocalTimeString() + " , (Collect) : gyroX = \(serviceManager.collectData.gyro[0])")
+            print(getLocalTimeString() + " , (Collect) : trueHeading = \(serviceManager.collectData.trueHeading)")
+            print(getLocalTimeString() + " , (Collect) : bleRaw = \(serviceManager.collectData.bleRaw)")
+        } else {
+            DispatchQueue.main.async {
+                self.updateCoord(data: self.coordToDisplay, flag: true)
+            }
+            if (self.isSaved) {
+                saveButton.isHidden = true
+            }
         }
     }
 }

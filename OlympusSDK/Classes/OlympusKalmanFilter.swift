@@ -30,7 +30,6 @@ public class OlympusKalmanFilter: NSObject {
     var pathTrajTurnIndex: Int = 0
     var matchedTraj = [[Double]]()
     var inputTraj = [[Double]]()
-    var distanceToAdd: Double = 0
     
     var uvdIndexBuffer = [Int]()
     var uvdHeadingBuffer = [Double]()

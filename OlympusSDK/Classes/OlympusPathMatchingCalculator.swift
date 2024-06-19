@@ -24,8 +24,8 @@ public class OlympusPathMatchingCalculator {
     var isNeedClearBuffer: Bool = false
     var anchorNode = PassedNodeInfo(nodeNumber: -1, nodeCoord: [], nodeHeadings: [], matchedIndex: -1, userHeading: 0)
     var anchorSection: Int = -1
-    
     var distFromNode: Double = -1
+    
     var linkCoord: [Double] = [0, 0]
     var linkDirections = [Double]()
     var isInNode: Bool = false
@@ -584,7 +584,7 @@ public class OlympusPathMatchingCalculator {
     }
     
     
-    public func updateNodeAndLinkInfo(uvdIndex: Int, currentResult: FineLocationTrackingFromServer, currentResultHeading: Double, pastResult: FineLocationTrackingFromServer, pastResultHeading: Double, pathType: Int, updateType: UpateNodeLinkType) {
+    public func updateNodeAndLinkInfo(uvdIndex: Int, currentResult: FineLocationTrackingFromServer, currentResultHeading: Double, pastResult: FineLocationTrackingFromServer, pastResultHeading: Double, pathType: Int, updateType: UpdateNodeLinkType) {
         let diffX = abs(currentResult.x - pastResult.x)
         let diffY = abs(currentResult.y - pastResult.y)
         
@@ -1187,8 +1187,8 @@ public class OlympusPathMatchingCalculator {
 //            var sectionLength = OlympusConstants.REQUIRED_SECTION_STRAIGHT_LENGTH
 //            if (pathType == 1) { sectionLength = sectionLength*2 }
 //            let PIXELS_TO_CHECK = Int(sectionLength)
-            let PIXEL_LENGTH = OlympusConstants.PIXEL_LENGTH_TO_FIND_NOOE
-            let PIXELS_TO_CHECK = Int(OlympusConstants.PIXEL_LENGTH_TO_FIND_NOOE)
+            let PIXEL_LENGTH = OlympusConstants.PIXEL_LENGTH_TO_FIND_NODE
+            let PIXELS_TO_CHECK = Int(OlympusConstants.PIXEL_LENGTH_TO_FIND_NODE)
             
             var nodeCandidatesInfo = [PassedNodeInfo]()
             
@@ -1285,8 +1285,8 @@ public class OlympusPathMatchingCalculator {
 //            if (pathType == 1) { sectionLength = sectionLength*2 }
 //            let PIXELS_TO_CHECK = Int(sectionLength)
             
-            let PIXEL_LENGTH = OlympusConstants.PIXEL_LENGTH_TO_FIND_NOOE
-            let PIXELS_TO_CHECK = Int(OlympusConstants.PIXEL_LENGTH_TO_FIND_NOOE)
+            let PIXEL_LENGTH = OlympusConstants.PIXEL_LENGTH_TO_FIND_NODE
+            let PIXELS_TO_CHECK = Int(OlympusConstants.PIXEL_LENGTH_TO_FIND_NODE)
             
             var nodeCandidatesInfo = [PassedNodeInfo]()
             

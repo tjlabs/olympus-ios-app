@@ -2,8 +2,11 @@ import Foundation
 import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
-    public static let sdkVersion: String = "0.0.15"
+    public static let sdkVersion: String = "0.0.16"
     var isSimulationMode: Bool = false
+    var bleFileName: String = ""
+    var sensorFileName: String = ""
+    
     var simulationBleData = [[String: Double]]()
     var simulationSensorData = [OlympusSensorData]()
     var bleLineCount: Int = 0
@@ -104,6 +107,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     var userVelocityTimer: DispatchSourceTimer?
     var outputTimer: DispatchSourceTimer?
     var osrTimer: DispatchSourceTimer?    
+    var collectTimer: DispatchSourceTimer?
     
     // RFD
     var bleTrimed = [String: [[Double]]]()
@@ -114,6 +118,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     var pastUvdHeading: Double = 0
     var unitDRInfoIndex: Int = 0
     var isPostUvdAnswered: Bool = false
+    
+    // Collect
+    public var collectData = OlympusCollectData()
+    var isStartCollect: Bool = false
     
     // ----- State Observer ----- //
     var runMode: String = OlympusConstants.MODE_DR
@@ -219,6 +227,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         sectionController.initialize()
         stateManager.initialize(isStopService: isStopService)
         trajController.initialize()
+        OlympusFileManager.shared.initalize()
         
         inputReceivedForce = []
         inputUserVelocity = []
@@ -232,6 +241,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         pastUvdTime = 0
         pastUvdHeading = 0
         isPostUvdAnswered = false
+        
+        isStartCollect = false
+        collectData = OlympusCollectData()
         
         currentBuilding = ""
         currentLevel = ""
@@ -257,6 +269,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         serverResultBuffer = []
         unitDRInfoBuffer = []
         unitDRInfoBufferForPhase4 = []
+        isNeedClearBuffer = false
+        userMaskBufferPathTrajMatching = []
         userMaskBuffer = []
         userMaskBufferDisplay = []
         userMaskSendCount = 0
@@ -398,16 +412,22 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         return (isSuccess, msg)
     }
     
+    public func setSimulationMode(flag: Bool, bleFileName: String, sensorFileName: String) {
+        self.isSimulationMode = flag
+        self.bleFileName = bleFileName
+        self.sensorFileName = sensorFileName
+    }
+    
     private func initSimulationMode(region: String, sector_id: Int) {
-        OlympusFileManager.shared.setRegion(region: region)
-        OlympusFileManager.shared.createFiles(region: region, sector_id: sector_id, deviceModel: deviceModel, osVersion: deviceOsVersion)
-        
         if (isSimulationMode) {
-            let result = OlympusFileManager.shared.loadFilesForSimulation()
+            let result = OlympusFileManager.shared.loadFilesForSimulation(bleFile: self.bleFileName, sensorFile: self.sensorFileName)
             simulationBleData = result.0
             simulationSensorData = result.1
 //            print(getLocalTimeString() + " , (OlympusFileManager) : sensor = \(result.0)")
 //            print(getLocalTimeString() + " , (OlympusFileManager) : ble = \(result.1)" )
+        } else {
+            OlympusFileManager.shared.setRegion(region: region)
+            OlympusFileManager.shared.createFiles(region: region, sector_id: sector_id, deviceModel: deviceModel, osVersion: deviceOsVersion)
         }
     }
 
@@ -872,7 +892,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 let kfTimeUpdate = KF.timeUpdate(currentTime: currentTime, recentResult: olympusResult, length: unitUvdLength, diffHeading: diffHeading, isPossibleHeadingCorrection: isPossibleHeadingCorrection, unitDRInfoBuffer: unitDRInfoBuffer, userMaskBuffer: userMaskBufferPathTrajMatching, isNeedPathTrajMatching: isNeedPathTrajMatching, PADDING_VALUES: PADDING_VALUES, mode: runMode)
                 let tuResult = kfTimeUpdate.0
                 let isDidPathTrajMatching: Bool = kfTimeUpdate.1
-                var updateType: UpateNodeLinkType = .NONE
+                var updateType: UpdateNodeLinkType = .NONE
                 var mustInSameLink: Bool = true
                 let isNeedRqPhase4: Bool = kfTimeUpdate.2
                 // Path-Traj 매칭 했으면 anchor node 업데이트하는 과정 필요
@@ -1575,6 +1595,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         var pathType: Int = 1
         if (mode == OlympusConstants.MODE_PDR) { pathType = 0 }
         var recoveryInput = fltInput
+        recoveryInput.mobile_time = currentTime
         recoveryInput.retry = true
         let recoveryNodeCandidates = OlympusPathMatchingCalculator.shared.getAnchorNodeCandidatesForRecovery(fltResult: fltResult, inputNodeCandidateInfo: inputNodeCandidateInfo, pathType: pathType)
         let nodeCandidatesInfo = recoveryNodeCandidates.nodeCandidatesInfo
@@ -1705,7 +1726,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         self.tracking(input: self.olympusResult)
     }
     
-    func makeTemporalResult(input: FineLocationTrackingFromServer, isStableMode: Bool, mustInSameLink: Bool, updateType: UpateNodeLinkType) {
+    func makeTemporalResult(input: FineLocationTrackingFromServer, isStableMode: Bool, mustInSameLink: Bool, updateType: UpdateNodeLinkType) {
         var result = input
         let resultIndex = unitDRInfoIndex
         result.index = resultIndex
@@ -2425,5 +2446,82 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 INDEX_THRESHOLD = UVD_INPUT_NUM+1
             }
         }
+    }
+    
+    // Collect
+    public func initCollect(region: String) {
+        unitDRGenerator.setMode(mode: "pdr")
+        let initSensors = sensorManager.initSensors()
+        let initBle = bleManager.initBle()
+        
+        OlympusFileManager.shared.createCollectFile(region: region, deviceModel: deviceModel, osVersion: deviceOsVersion)
+        startCollectTimer()
+    }
+    
+    public func startCollect() {
+        isStartCollect = true
+    }
+    
+    public func stopCollect() {
+        bleManager.stopScan()
+        stopCollectTimer()
+        OlympusFileManager.shared.saveCollectData()
+        
+        isStartCollect = false
+    }
+    
+    func startCollectTimer() {
+        if (self.collectTimer == nil) {
+            let queueCollect = DispatchQueue(label: Bundle.main.bundleIdentifier! + ".collectTimer")
+            self.collectTimer = DispatchSource.makeTimerSource(queue: queueCollect)
+            self.collectTimer!.schedule(deadline: .now(), repeating: OlympusConstants.UVD_INTERVAL)
+            self.collectTimer!.setEventHandler(handler: self.collectTimerUpdate)
+            self.collectTimer!.resume()
+        }
+        
+    }
+    
+    func stopCollectTimer() {
+        self.collectTimer?.cancel()
+        self.collectTimer = nil
+    }
+    
+    @objc func collectTimerUpdate() {
+        let currentTime = getCurrentTimeInMilliseconds()
+        
+        var collectData = sensorManager.collectData
+        collectData.time = currentTime
+        
+        let validTime = OlympusConstants.BLE_VALID_TIME
+        let bleDictionary: [String: [[Double]]]? = bleManager.bleDictionary
+        if let bleData = bleDictionary {
+            let trimmedResult = OlympusRFDFunctions.shared.trimBleData(bleInput: bleData, nowTime: getCurrentTimeInMillisecondsDouble(), validTime: validTime)
+            switch trimmedResult {
+            case .success(let trimmedData):
+                let bleAvg = OlympusRFDFunctions.shared.avgBleData(bleDictionary: trimmedData)
+                let bleRaw = OlympusRFDFunctions.shared.getLatestBleData(bleDictionary: trimmedData)
+                
+                collectData.bleAvg = bleAvg
+                collectData.bleRaw = bleRaw
+            case .failure(_):
+                print(getLocalTimeString() + " , (Olympus) Error : BLE trim error in collect")
+            }
+        }
+        
+        if (isStartCollect) {
+            unitDRInfo = unitDRGenerator.generateDRInfo(sensorData: sensorManager.sensorData)
+        }
+        
+        collectData.isIndexChanged = false
+        if (unitDRInfo.isIndexChanged) {
+            collectData.isIndexChanged = unitDRInfo.isIndexChanged
+            collectData.index = unitDRInfo.index
+            collectData.length = unitDRInfo.length
+            collectData.heading = unitDRInfo.heading
+            collectData.lookingFlag = unitDRInfo.lookingFlag
+        }
+        
+        self.collectData = collectData
+        OlympusFileManager.shared.writeCollectData(data: collectData)
     }
 }

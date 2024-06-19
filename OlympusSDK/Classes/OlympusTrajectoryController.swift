@@ -1,5 +1,6 @@
 
 public class OlympusTrajectoryController {
+    let defaultTrajCompensataionArray: [Double] = [0.8, 1.0, 1.2]
     
     var isMovePhase2To4: Bool = false
     var distanceAfterPhase2To4: Double = 0
@@ -19,7 +20,7 @@ public class OlympusTrajectoryController {
     var phase2ReqCount: Int = 0
     
     // Trajectory Compensation
-    let defaultTrajCompensataionArray: [Double] = [0.8, 1.0, 1.2]
+    
     var trajCompensation: Double = 1.0
     var trajCompensationBadCount: Int = 0
     var isFltRequested: Bool = false

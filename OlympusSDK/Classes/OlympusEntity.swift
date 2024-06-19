@@ -587,7 +587,7 @@ public enum LimitationType {
     case X_LIMIT, Y_LIMIT, NO_LIMIT
 }
 
-public enum UpateNodeLinkType {
+public enum UpdateNodeLinkType {
     case PHASE_5,
          PATH_TRAJ_MATCHING,
          NONE

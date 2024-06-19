@@ -294,6 +294,9 @@ public class OlympusSensorManager: NSObject, CLLocationManagerDelegate {
         sensorData.trueHeading = newHeading.trueHeading
         sensorData.magneticHeading = newHeading.magneticHeading
         
+        collectData.trueHeading = newHeading.trueHeading
+        collectData.magneticHeading = newHeading.magneticHeading
+        
 //        print(getLocalTimeString() + " , (Heading Info) : True = \(self.heading) // Mag = \(newHeading.magneticHeading) // Azimuth = \(getAzimuthHeading())")
         
 //        let magneticHeading = newHeading.magneticHeading
