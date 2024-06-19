@@ -137,7 +137,6 @@ public class OlympusKalmanFilter: NSObject {
     }
     
     public func timeUpdate(currentTime: Int, recentResult: FineLocationTrackingResult, length: Double, diffHeading: Double, isPossibleHeadingCorrection: Bool, unitDRInfoBuffer: [UnitDRInfo], userMaskBuffer: [UserMask], isNeedPathTrajMatching: IsNeedPathTrajMatching, PADDING_VALUES: [Double], mode: String) -> (FineLocationTrackingFromServer, Bool, Bool) {
-        //    public func timeUpdate(currentTime: Int, recentResult: FineLocationTrackingResult, length: Double, diffHeading: Double, isPossibleHeadingCorrection: Bool, unitDRInfoBuffer: [UnitDRInfo], userMaskBuffer: [UserMask], isNeedPathTrajMatching: Bool, mode: String) -> (FineLocationTrackingFromServer, Bool, Bool) {
         var isNeedRequestPhase4: Bool = false
         var isDidPathTrajMatching: Bool = false
         
@@ -171,14 +170,6 @@ public class OlympusKalmanFilter: NSObject {
                     break
                 }
             }
-            
-//            for unitUvd in Array(unitDRInfoBuffer.suffix(OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT/2)) {
-//                if (unitUvd.index == self.pathTrajTurnIndex) {
-//                    isPossiblePathTrajMatching = false
-//                    print(getLocalTimeString() + " , (Olympus) Path-Matching : pathTrajTurnIndex = \(pathTrajTurnIndex) // isPossiblePathTrajMatching = \(false)")
-//                    break
-//                }
-//            }
             
             let drBufferStraightResult = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT, condition: 60.0)
             
@@ -241,7 +232,6 @@ public class OlympusKalmanFilter: NSObject {
                             let MARGIN: Double = 44
                             
                             for pathMatchingNode in findPathMatchingNodeResult {
-//                                var diffHeadings = [Double]()
                                 var candidateDirections = [Double]()
                                 var bestMapHeading: Double = endHeading
                                 var minDiffValue: Double = 360
@@ -278,20 +268,7 @@ public class OlympusKalmanFilter: NSObject {
                                     for i in (0..<turnIndex).reversed() {
                                         startX += inputUnitDrInfoBuffer[i].length*cos((startHeading-180)*OlympusConstants.D2R)
                                         startY += inputUnitDrInfoBuffer[i].length*sin((startHeading-180)*OlympusConstants.D2R)
-//                                        if (turnType == 1) {
-//                                            distanceCompensation += inputUnitDrInfoBuffer[i].length
-//                                            compensationCount += 1
-//                                        }
                                     }
-                                    
-//                                    if (turnType == 1) {
-//                                        let startUserX = Double(inputUserMaskBuffer[0].x)
-//                                        let startUserY = Double(inputUserMaskBuffer[0].y)
-//                                        let diffX = abs(startUserX - startX)
-//                                        let diffY = abs(startUserY - startY)
-//                                        distanceCompensation = sqrt(diffX*diffX + diffY*diffY)
-//                                        print(getLocalTimeString() + " , (Olympus) Turn Type : distanceCompensation = \(distanceCompensation)")
-//                                    }
                                     
                                     var startPaddingValues: [Double] = [1, 1, 1, 1]
                                     let headingRange: Double = 10
@@ -509,14 +486,6 @@ public class OlympusKalmanFilter: NSObject {
         print(getLocalTimeString() + " , (Olympus) Turn Type : absoluteChanges = \(absoluteChanges)")
         print(getLocalTimeString() + " , (Olympus) Turn Type : maxChange = \(maxChange)")
         print(getLocalTimeString() + " , (Olympus) Turn Type : turnCount = \(turnCount)")
-        
-//        if maxChange > 40 && maxChange < 120 {
-//            return 0
-//        } else if absoluteChanges.allSatisfy({ $0 < 30 }) {
-//            return 1
-//        } else {
-//            return 2
-//        }
         
         if (turnCount >= 1) || (maxChange > 55 && maxChange < 125) {
             return 0

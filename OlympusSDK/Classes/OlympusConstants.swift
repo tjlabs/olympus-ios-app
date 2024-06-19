@@ -162,17 +162,9 @@ class OlympusConstants {
     static let SECTION_STRAIGHT_ANGLE: Double = 10 // degree
     static let SAME_COORD_THRESHOLD: Int = 3
     static let STRAIGHT_SAME_COORD_THRESHOLD: Int = 5
-//    static let REQUIRED_SECTION_STRAIGHT_IDX: Int = 8
-//    static let REQUIRED_SECTION_RQ_IDX: Int = 8
-    
-//    static let REQUIRED_SECTION_STRAIGHT_IDX: Int = 30 // LG
-//    static let REQUIRED_SECTION_RQ_IDX: Int = 30 // LG
-    
-//    static let REQUIRED_SECTION_STRAIGHT_IDX: Int = 20 // COEX DR
-//    static let REQUIRED_SECTION_RQ_IDX: Int = 20 // COEX DR
-    
     static let REQUIRED_SECTION_STRAIGHT_LENGTH: Double = 8
     static let REQUIRED_SECTION_REQUEST_LENGTH: Double = 25
+    static let PIXEL_LENGTH_TO_FIND_NOOE: Double = 20
     
     // Path-Matching
     static let HEADING_RANGE: Double = 46

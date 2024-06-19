@@ -1685,7 +1685,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         indexPast = fltResult.index
                     }
                     preServerResultMobileTime = fltResult.mobile_time
-                    
                 } else {
                     let msg: String = getLocalTimeString() + " , (Olympus) Error : \(statusCode) Fail to request indoor position in Phase 5 recovery"
                     print(msg)
@@ -1809,8 +1808,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             }
             
             if (KF.isRunning) {
-//                OlympusPathMatchingCalculator.shared.updateNodeAndLinkInfo(uvdIndex: resultIndex, currentResult: result, currentResultHeading: self.curTemporalResultHeading, pastResult: preTemporalResult, pastResultHeading: preTemporalResultHeading, pathType: pathTypeForNodeAndLink, isDidPathTrajMatching: isDidPathTrajMatching)
-                OlympusPathMatchingCalculator.shared.extendedUpdateNodeAndLinkInfo(uvdIndex: resultIndex, currentResult: result, currentResultHeading: self.curTemporalResultHeading, pastResult: preTemporalResult, pastResultHeading: preTemporalResultHeading, pathType: pathTypeForNodeAndLink, updateType: updateType)
+                OlympusPathMatchingCalculator.shared.updateNodeAndLinkInfo(uvdIndex: resultIndex, currentResult: result, currentResultHeading: self.curTemporalResultHeading, pastResult: preTemporalResult, pastResultHeading: preTemporalResultHeading, pathType: pathTypeForNodeAndLink, updateType: updateType)
                 KF.setLinkInfo(coord: OlympusPathMatchingCalculator.shared.linkCoord, directions: OlympusPathMatchingCalculator.shared.linkDirections)
                 self.paddingValues = OlympusPathMatchingCalculator.shared.getPaddingValues(mode: runMode, isPhaseBreak: isPhaseBreak, PADDING_VALUE: PADDING_VALUE)
             }
