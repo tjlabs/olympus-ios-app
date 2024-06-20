@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
-    public static let sdkVersion: String = "0.0.18"
+    public static let sdkVersion: String = "0.0.19"
     var isSimulationMode: Bool = false
     var bleFileName: String = ""
     var sensorFileName: String = ""
@@ -898,6 +898,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     let pathTrajMatchingNode: PassedNodeInfo = KF.getPathTrajMatchingNode()
                     OlympusPathMatchingCalculator.shared.updateAnchorNodeAfterPathTrajMatching(nodeInfo: pathTrajMatchingNode, sectionNumber: sectionController.getSectionNumber())
                     updateType = .PATH_TRAJ_MATCHING
+                    mustInSameLink = false
+                } else if (OlympusPathMatchingCalculator.shared.isInNode) {
                     mustInSameLink = false
                 }
                 

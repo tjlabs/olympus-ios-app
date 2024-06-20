@@ -162,7 +162,10 @@ public class OlympusKalmanFilter: NSObject {
             let inputUnitDrInfoBuffer = Array(unitDRInfoBuffer.suffix(OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT))
             var isPossiblePathTrajMatching: Bool = true
             
+            var uvdCount: Int = 0
+            var straight_threshold: Int = OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT
             for unitUvd in inputUnitDrInfoBuffer {
+                uvdCount += 1
                 if (unitUvd.index == self.pathTrajTurnIndex) {
                     isPossiblePathTrajMatching = false
                     print(getLocalTimeString() + " , (Olympus) Path-Matching : pathTrajTurnIndex = \(pathTrajTurnIndex) // isPossiblePathTrajMatching = \(false)")
@@ -170,7 +173,12 @@ public class OlympusKalmanFilter: NSObject {
                 }
             }
             
-            let drBufferStraightResult = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT, condition: 60.0)
+            if (!isPossiblePathTrajMatching && uvdCount < 5) {
+                straight_threshold -= uvdCount
+                isPossiblePathTrajMatching = true
+            }
+            
+            let drBufferStraightResult = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: straight_threshold, condition: 60.0)
             
             let isDrStraight: Bool = drBufferStraightResult.0
             let turnAngle = drBufferStraightResult.1
@@ -184,7 +192,7 @@ public class OlympusKalmanFilter: NSObject {
                     print(getLocalTimeString() + " , (Olympus) Path-Matching : isNeedRequestPhase4 (1) = \(isNeedRequestPhase4)")
                     let linkDirArray = linkDirections
                     if (!linkDirArray.isEmpty) {
-                        let inputUserMaskBuffer = Array(userMaskBuffer.suffix(OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT))
+                        let inputUserMaskBuffer = Array(userMaskBuffer.suffix(straight_threshold))
                         
                         var turnIndex: Int = 0
                         var uvdIndexMatchedWithTurn: Int = 0
