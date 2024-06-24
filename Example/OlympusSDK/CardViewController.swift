@@ -91,7 +91,7 @@ class CardViewController: UIViewController, Observer {
         super.viewDidLoad()
         headingImage = headingImage?.resize(newWidth: 20)
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg02.csv", sensorFileName: "sensor_lg02.csv")
-        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg_debug02.csv", sensorFileName: "sensor_lg_debug02.csv")
+        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg_eval02.csv", sensorFileName: "sensor_lg_eval02.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex01.csv", sensorFileName: "sensor_coex01.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_dr1.csv", sensorFileName: "sensor_dr1.csv")
         
