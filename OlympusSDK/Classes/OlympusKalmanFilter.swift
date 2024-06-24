@@ -232,6 +232,7 @@ public class OlympusKalmanFilter: NSObject {
                         
                         let findPathMatchingNodeResult = OlympusPathMatchingCalculator.shared.findPathTrajMatchingNode(fltResult: outputResult, x: Double(userX), y: Double(userY), heading: startHeading, uvdBuffer: inputUnitDrInfoBuffer, pathType: 0, linkDirections: linkDirArray)
                         print(getLocalTimeString() + " , (Olympus) Path-Matching : findPathMatchingNodeResult = \(findPathMatchingNodeResult)")
+                        
                         var pathMatchingNodeInfoCandidates = [PassedNodeInfo]()
                         if !findPathMatchingNodeResult.isEmpty {
                             var resultCoordX = [Double]()
@@ -241,25 +242,45 @@ public class OlympusKalmanFilter: NSObject {
                             for pathMatchingNode in findPathMatchingNodeResult {
                                 var candidateDirections = [Double]()
                                 var bestMapHeading: Double = endHeading
+                                
                                 var minDiffValue: Double = 360
-                                for mapHeading in pathMatchingNode.nodeHeadings {
-                                    if !(linkDirArray.contains(mapHeading)) {
-                                        var diffValue: Double = 0
-                                        
-                                        if (endHeading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
-                                            diffValue = abs(endHeading - (mapHeading+360))
-                                        } else if (mapHeading > 270 && (endHeading >= 0 && endHeading < 90)) {
-                                            diffValue = abs(mapHeading - (endHeading+360))
-                                        } else {
-                                            diffValue = abs(endHeading - mapHeading)
-                                        }
-                                        
-                                        if diffValue < minDiffValue {
-                                            minDiffValue = diffValue
-                                            bestMapHeading = mapHeading
-                                        }
+                                let endHeadingCandidates: [Double] = pathMatchingNode.nodeHeadings.filter { !linkDirArray.contains($0) }
+                                for eh in endHeadingCandidates {
+                                    var diffValue: Double = 0
+                                    
+                                    if (eh > 270 && (updatedHeading >= 0 && updatedHeading < 90)) {
+                                        diffValue = abs(eh - (updatedHeading+360))
+                                    } else if (updatedHeading > 270 && (eh >= 0 && eh < 90)) {
+                                        diffValue = abs(updatedHeading - (eh+360))
+                                    } else {
+                                        diffValue = abs(eh - updatedHeading)
+                                    }
+                                    
+                                    if diffValue < minDiffValue {
+                                        minDiffValue = diffValue
+                                        bestMapHeading = eh
                                     }
                                 }
+                                
+//                                var minDiffValue: Double = 360
+//                                for mapHeading in pathMatchingNode.nodeHeadings {
+//                                    if !(linkDirArray.contains(mapHeading)) {
+//                                        var diffValue: Double = 0
+//                                        
+//                                        if (endHeading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
+//                                            diffValue = abs(endHeading - (mapHeading+360))
+//                                        } else if (mapHeading > 270 && (endHeading >= 0 && endHeading < 90)) {
+//                                            diffValue = abs(mapHeading - (endHeading+360))
+//                                        } else {
+//                                            diffValue = abs(endHeading - mapHeading)
+//                                        }
+//                                        
+//                                        if diffValue < minDiffValue {
+//                                            minDiffValue = diffValue
+//                                            bestMapHeading = mapHeading
+//                                        }
+//                                    }
+//                                }
                                 candidateDirections.append(bestMapHeading)
                                 
                                 print(getLocalTimeString() + " , (Olympus) Path-Matching : after findPathMatchingNodeResult // endHeading = \(endHeading)")

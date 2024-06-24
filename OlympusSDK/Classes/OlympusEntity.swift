@@ -593,6 +593,11 @@ public enum UpdateNodeLinkType {
          NONE
 }
 
+public enum PathMatchingType {
+    case NARROW,
+         WIDE
+}
+
 public struct SearchInfo {
     public var searchRange: [Int] = []
     public var searchArea: [[Double]] = [[0, 0]]

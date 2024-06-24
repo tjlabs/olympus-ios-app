@@ -21,7 +21,7 @@ class CardViewController: UIViewController, Observer {
     
     
     override func viewDidDisappear(_ animated: Bool) {
-//        serviceManager.stopService()
+        serviceManager.stopService()
         serviceManager.removeObserver(self)
     }
     
@@ -90,7 +90,10 @@ class CardViewController: UIViewController, Observer {
     override func viewDidLoad() {
         super.viewDidLoad()
         headingImage = headingImage?.resize(newWidth: 20)
-        serviceManager.setSimulationMode(flag: false, bleFileName: "ble_lg01.csv", sensorFileName: "sensor_lg01.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg02.csv", sensorFileName: "sensor_lg02.csv")
+        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg_debug02.csv", sensorFileName: "sensor_lg_debug02.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex01.csv", sensorFileName: "sensor_coex01.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_dr1.csv", sensorFileName: "sensor_dr1.csv")
         
         // collect
 //        isCollect = true

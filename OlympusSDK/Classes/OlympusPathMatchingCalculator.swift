@@ -1386,7 +1386,7 @@ public class OlympusPathMatchingCalculator {
                 paddingValues = [20, 20, 20, 20]
             }
             
-            print(getLocalTimeString() + " , (Olympus) Node Find : paddingValues = \(paddingValues)")
+//            print(getLocalTimeString() + " , (Olympus) Node Find : paddingValues = \(paddingValues)")
             var x: Double = startCoord[0]
             var y: Double = startCoord[1]
             for _ in 0..<PIXELS_TO_CHECK {

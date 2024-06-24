@@ -599,6 +599,13 @@ public class OlympusNetworkManager {
             requestURL.addValue("application/json", forHTTPHeaderField: "Content-Type")
             requestURL.setValue("\(encodingData)", forHTTPHeaderField: "Content-Length")
             
+//            print("")
+//            print("====================================")
+//            print("POST FLT Phase 3 :: ", url)
+//            print("POST FLT Phase 3 :: ", input)
+//            print("====================================")
+//            print("")
+            
             let dataTask = self.fltSession.dataTask(with: requestURL, completionHandler: { (data, response, error) in
                 // [error가 존재하면 종료]
                 guard error == nil else {
