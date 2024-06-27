@@ -66,11 +66,11 @@ class CardViewController: UIViewController, Observer {
 //    var sector_id: Int = 14 // DS
 //    var mode: String = "pdr"
     
-    var sector_id: Int = 6
-    var mode: String = "auto"
+//    var sector_id: Int = 6
+//    var mode: String = "auto"
     
-//    var sector_id: Int = 15 // LG G2
-//    var mode: String = "pdr"
+    var sector_id: Int = 15 // LG G2
+    var mode: String = "pdr"
     
     var currentBuilding: String = ""
     var currentLevel: String = ""
@@ -91,10 +91,10 @@ class CardViewController: UIViewController, Observer {
     override func viewDidLoad() {
         super.viewDidLoad()
         headingImage = headingImage?.resize(newWidth: 20)
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg_eval03.csv", sensorFileName: "sensor_lg_eval03.csv")
+        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg_eval03.csv", sensorFileName: "sensor_lg_eval03.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg_debug05.csv", sensorFileName: "sensor_lg_debug05.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex02.csv", sensorFileName: "sensor_coex02.csv")
-        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_dr1.csv", sensorFileName: "sensor_dr1.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_dr1.csv", sensorFileName: "sensor_dr1.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg01_0620.csv", sensorFileName: "sensor_lg01_0620.csv")
         
         // collect

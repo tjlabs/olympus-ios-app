@@ -1309,7 +1309,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         }
                         
                         if (KF.isRunning) {
-                            if (fltInput.phase != OlympusConstants.PHASE_1) {
+                            let inputTrajLength = trajController.calculateTrajectoryLength(trajectoryInfo: inputTraj)
+                            if (inputTrajLength >= OlympusConstants.STABLE_ENTER_LENGTH) {
+//                            if (fltInput.phase != OlympusConstants.PHASE_1) {
                                 var copiedResult: FineLocationTrackingFromServer = fltResult
                                 let propagationResult = propagateUsingUvd(unitDRInfoBuffer: unitDRInfoBuffer, fltResult: fltResult)
                                 let propagationValues: [Double] = propagationResult.1
@@ -1327,7 +1329,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 copiedResult.x = propagatedResult[0]
                                 copiedResult.y = propagatedResult[1]
                                 
-                                let inputTrajLength = trajController.calculateTrajectoryLength(trajectoryInfo: inputTraj)
                                 if (resultPhase.0 == OlympusConstants.PHASE_3 || resultPhase.0 == OlympusConstants.PHASE_5) {
                                     if (resultPhase.0 == OlympusConstants.PHASE_5 && isPhaseBreak) {
                                         KF.resetKalmanR()
