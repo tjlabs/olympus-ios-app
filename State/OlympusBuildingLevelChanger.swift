@@ -56,10 +56,10 @@ public class OlympusBuildingLevelChanger {
         }
     }
     
-    func estimateBuildingLevel(user_id: String, mode: String, phase: Int, isGetFirstResponse: Bool, isInNetworkBadEntrance: Bool, result: FineLocationTrackingResult, currentBuilding: String, currentLevel: String, currentEntrance: String) {
+    func estimateBuildingLevel(user_id: String, mode: String, phase: Int, isGetFirstResponse: Bool, networkStatus: Bool, result: FineLocationTrackingResult, currentBuilding: String, currentLevel: String, currentEntrance: String) {
         let currentTime = getCurrentTimeInMilliseconds()
         var isRunOsr: Bool = true
-        if (isGetFirstResponse && !isInNetworkBadEntrance) {
+        if (isGetFirstResponse && networkStatus) {
             if (mode != OlympusConstants.MODE_PDR) {
                 if (phase == OlympusConstants.PHASE_4) {
                     let isInLevelChangeArea = self.checkInLevelChangeArea(result: result, mode: mode)
@@ -70,6 +70,7 @@ public class OlympusBuildingLevelChanger {
                 
                 if (isRunOsr) {
                     let input = OnSpotRecognition(operating_system: OlympusConstants.OPERATING_SYSTEM, user_id: user_id, mobile_time: currentTime, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), standard_min_rss: Int(OlympusConstants.STANDARD_MIN_RSS))
+                    print(getLocalTimeString() + " , (Olympus) Run OSR : input = \(input)")
                     OlympusNetworkManager.shared.postOSR(url: CALC_OSR_URL, input: input, completion: { [self] statusCode, returnedString in
                         if (statusCode == 200) {
                             let result = jsonToOnSpotRecognitionResult(jsonString: returnedString)

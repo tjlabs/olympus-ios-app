@@ -257,7 +257,8 @@ public class OlympusStateManager: NSObject {
         
         if (!self.isGetFirstResponse) {
             let findResult = self.findNetworkBadEntrance(bleAvg: bleAvg)
-            if (!self.isIndoor && (self.timeForInit >= OlympusConstants.TIME_INIT_THRESHOLD) && findResult.0) {
+            let networkStatus = findResult.0
+            if (!self.isIndoor && (self.timeForInit >= OlympusConstants.TIME_INIT_THRESHOLD) && !networkStatus) {
                 setIsGetFirstResponse(isGetFirstResponse: true)
                 setIsIndoor(isIndoor: true)
                 return (true, findResult.1)
@@ -270,7 +271,7 @@ public class OlympusStateManager: NSObject {
     }
     
     private func findNetworkBadEntrance(bleAvg: [String: Double]) -> (Bool, FineLocationTrackingFromServer) {
-        var isInNetworkBadEntrance: Bool = false
+        var networkStatus: Bool = true
         var entrance = FineLocationTrackingFromServer()
         
         let networkBadEntranceWards = ["TJ-00CB-00000386-0000"]
@@ -278,7 +279,7 @@ public class OlympusStateManager: NSObject {
             if networkBadEntranceWards.contains(key) {
                 let rssi = value
                 if (rssi >= -82.0) {
-                    isInNetworkBadEntrance = true
+                    networkStatus = false
                     
                     entrance.building_name = "COEX"
                     entrance.level_name = "B0"
@@ -286,12 +287,12 @@ public class OlympusStateManager: NSObject {
                     entrance.y = 10
                     entrance.absolute_heading = 270
                     
-                    return (isInNetworkBadEntrance, entrance)
+                    return (networkStatus, entrance)
                 }
             }
         }
         
-        return (isInNetworkBadEntrance, entrance)
+        return (networkStatus, entrance)
     }
     
     public func updateTimeForInit() {

@@ -154,6 +154,7 @@ public class OlympusKalmanFilter: NSObject {
         outputResult.x = updatedX
         outputResult.y = updatedY
         outputResult.absolute_heading = updatedHeading
+        var pathTrajMatchingHeading: Double = updatedHeading
         
         if (mode == OlympusConstants.MODE_PDR) {
             // PDR
@@ -282,10 +283,10 @@ public class OlympusKalmanFilter: NSObject {
 //                                    }
 //                                }
                                 candidateDirections.append(bestMapHeading)
-                                
                                 print(getLocalTimeString() + " , (Olympus) Path-Matching : after findPathMatchingNodeResult // endHeading = \(endHeading)")
                                 print(getLocalTimeString() + " , (Olympus) Path-Matching : after findPathMatchingNodeResult // candidateDirections = \(candidateDirections)")
                                 if (candidateDirections.count == 1) {
+                                    pathTrajMatchingHeading = candidateDirections[0]
                                     let nodeCoord = pathMatchingNode.nodeCoord
                                     let turnType = determineTurnType(headings: uvdHeadings)
                                     print(getLocalTimeString() + " , (Olympus) Turn Type : turnType = \(turnType)")
@@ -363,6 +364,7 @@ public class OlympusKalmanFilter: NSObject {
                                     self.pathTrajMatchingIndex = currentUvdIndex
                                     outputResult.x = bestCoord[0]
                                     outputResult.y = bestCoord[1]
+                                    outputResult.absolute_heading = weightedAverageHeading(A: outputResult.absolute_heading, B: pathTrajMatchingHeading, weightA: 4, weightB: 6)
                                     
                                     let headingCompensation: Double = userHeading - inputUnitDrInfoBuffer[inputUnitDrInfoBuffer.count-1].heading
                                     var headingBuffer: [Double] = []

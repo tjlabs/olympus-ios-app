@@ -1246,7 +1246,7 @@ public class OlympusPathMatchingCalculator {
             }
         }
         
-        print(getLocalTimeString() + " , (Olympus) Node Find : getAnchorNodeCandidatesForRecovery // anchorNodeInfo = \(anchorNodeInfo)")
+        print(getLocalTimeString() + " , (Olympus) Node Find : getAnchorNodeCandidatesForRecovery (1) // anchorNodeInfo = \(anchorNodeInfo)")
         
         if anchorNodeInfo.matchedIndex == -1 {
             return recoveryCaseNodeInfo
@@ -1258,7 +1258,7 @@ public class OlympusPathMatchingCalculator {
             let nodeMatchedIndex = anchorNodeInfo.matchedIndex
             
             let heading = getUserDirection(from: nodeCoord, to: linkCoord)
-            print(getLocalTimeString() + " , (Olympus) Node Find : getAnchorNodeCandidatesForRecovery // anchorNodeInfo = \(anchorNodeInfo)")
+            print(getLocalTimeString() + " , (Olympus) Node Find : getAnchorNodeCandidatesForRecovery (2) // anchorNodeInfo = \(anchorNodeInfo)")
             
             var diffHeading = [Double]()
             var candidateDirections = [Double]()

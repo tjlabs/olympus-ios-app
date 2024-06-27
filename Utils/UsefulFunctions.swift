@@ -161,3 +161,27 @@ public func flattenAndUniquify(_ array2D: [[Double]]) -> [Double] {
     
     return Array(uniqueElements)
 }
+
+func normalizeAngle(_ angle: Double) -> Double {
+    let normalizedAngle = fmod(angle, 360)
+    return normalizedAngle < 0 ? normalizedAngle + 360 : normalizedAngle
+}
+
+public func weightedAverageHeading(A: Double, B: Double, weightA: Double, weightB: Double) -> Double {
+    let A_rad = normalizeAngle(A)*OlympusConstants.D2R
+    let B_rad = normalizeAngle(B)*OlympusConstants.D2R
+    
+    // Compute the weighted components
+    let x = weightA * cos(A_rad) + weightB * cos(B_rad)
+    let y = weightA * sin(A_rad) + weightB * sin(B_rad)
+    
+    let result_rad = atan2(y, x)
+
+    var result_deg = result_rad*OlympusConstants.R2D
+
+    if result_deg < 0 {
+        result_deg += 360
+    }
+    
+    return result_deg
+}

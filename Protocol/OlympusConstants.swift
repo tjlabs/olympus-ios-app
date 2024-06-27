@@ -38,9 +38,10 @@ class OlympusConstants {
     static let PHASE_5: Int = 5
     static let PHASE_BECOME3_SCC: Double = 0.62
     static let PHASE_BREAK_SCC: Double = 0.45
-    static let PHASE5_RECOVERY_SCC: Double = 0.55 // 0.55
+    static let PHASE5_RECOVERY_SCC: Double = 0.5 // 0.55
     static let PHASE_BREAK_IN_PHASE2_SCC: Double = 0.26
     static let PHASE2_RESULT_USE_SCC: Double = 0.6
+    static let STABLE_ENTER_LENGTH: Double = 20
     
     
     // Sector Info //

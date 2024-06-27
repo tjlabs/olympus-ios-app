@@ -26,30 +26,31 @@ class CardViewController: UIViewController, Observer {
     }
     
     func update(result: OlympusSDK.FineLocationTrackingResult) {
-        if (result.x != 0 && result.y != 0) {
-            let building = result.building_name
-            let level = result.level_name
-            let x = result.x
-            let y = result.y
-            
-            if (result.ble_only_position) {
-                self.isBleOnlyMode = true
-            } else {
-                self.isBleOnlyMode = false
+        DispatchQueue.main.async {
+            if (result.x != 0 && result.y != 0) {
+                let building = result.building_name
+                let level = result.level_name
+                let x = result.x
+                let y = result.y
+                
+                if (result.ble_only_position) {
+                    self.isBleOnlyMode = true
+                } else {
+                    self.isBleOnlyMode = false
+                }
+                
+                if (building.count < 2 && level.count < 2) {
+                    print("(VC) Error : \(result)")
+                }
+                
+                self.coordToDisplay.building = building
+                self.coordToDisplay.level = level
+                self.coordToDisplay.x = x
+                self.coordToDisplay.y = y
+                self.coordToDisplay.heading = result.absolute_heading
+                self.coordToDisplay.isIndoor = result.isIndoor
             }
-            
-            if (building.count < 2 && level.count < 2) {
-                print("(VC) Error : \(result)")
-            }
-            
-            self.coordToDisplay.building = building
-            self.coordToDisplay.level = level
-            self.coordToDisplay.x = x
-            self.coordToDisplay.y = y
-            self.coordToDisplay.heading = result.absolute_heading
-            self.coordToDisplay.isIndoor = result.isIndoor
         }
-        
     }
     
     func report(flag: Int) {
@@ -65,11 +66,11 @@ class CardViewController: UIViewController, Observer {
 //    var sector_id: Int = 14 // DS
 //    var mode: String = "pdr"
     
-//    var sector_id: Int = 6
-//    var mode: String = "auto"
+    var sector_id: Int = 6
+    var mode: String = "auto"
     
-    var sector_id: Int = 15 // LG G2
-    var mode: String = "pdr"
+//    var sector_id: Int = 15 // LG G2
+//    var mode: String = "pdr"
     
     var currentBuilding: String = ""
     var currentLevel: String = ""
@@ -90,10 +91,11 @@ class CardViewController: UIViewController, Observer {
     override func viewDidLoad() {
         super.viewDidLoad()
         headingImage = headingImage?.resize(newWidth: 20)
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg02.csv", sensorFileName: "sensor_lg02.csv")
-        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg_eval02.csv", sensorFileName: "sensor_lg_eval02.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex01.csv", sensorFileName: "sensor_coex01.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_dr1.csv", sensorFileName: "sensor_dr1.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg_eval03.csv", sensorFileName: "sensor_lg_eval03.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg_debug05.csv", sensorFileName: "sensor_lg_debug05.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex02.csv", sensorFileName: "sensor_coex02.csv")
+        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_dr1.csv", sensorFileName: "sensor_dr1.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg01_0620.csv", sensorFileName: "sensor_lg01_0620.csv")
         
         // collect
 //        isCollect = true
@@ -101,9 +103,11 @@ class CardViewController: UIViewController, Observer {
 //        serviceManager.startCollect()
 //        self.startTimer()
         
+//        let uniqueId = makeUniqueId(uuid: self.userId)
+        let uniqueId = self.userId
         // service
         serviceManager.addObserver(self)
-        serviceManager.startService(user_id: self.userId, region: self.region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
+        serviceManager.startService(user_id: uniqueId, region: self.region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
             if (isStart) {
                 self.startTimer()
             } else {
@@ -657,5 +661,12 @@ class CardViewController: UIViewController, Observer {
                 saveButton.isHidden = true
             }
         }
+    }
+    
+    private func makeUniqueId(uuid: String) -> String {
+        let currentTime: Int = getCurrentTimeInMilliseconds()
+        let unique_id: String = "\(uuid)_\(currentTime)"
+        
+        return unique_id
     }
 }

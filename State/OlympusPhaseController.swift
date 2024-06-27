@@ -97,7 +97,6 @@ public class OlympusPhaseController {
     public func controlPhase(serverResultArray: [FineLocationTrackingFromServer], drBuffer: [UnitDRInfo], UVD_INTERVAL: Int, TRAJ_LENGTH: Double, INDEX_THRESHOLD: Int, inputPhase: Int, mode: String, isVenusMode: Bool) -> (Int, Bool) {
         var phase: Int = 0
         var isPhaseBreak: Bool = false
-        
         if (isVenusMode) {
             phase = 1
             return (phase, isPhaseBreak)
@@ -164,7 +163,7 @@ public class OlympusPhaseController {
             } else if (previousResult.index == 0 || currentResult.index == 0) {
 //                print(getLocalTimeString() + " , (Olympus) Check Phase3->4 : preIndex = \(previousResult.index) // curIndex = \(currentResult.index)")
                 return phase
-            } else if (currentResult.cumulative_length < (TRAJ_LENGTH/2)) {
+            } else if (currentResult.cumulative_length < OlympusConstants.STABLE_ENTER_LENGTH) {
 //                print(getLocalTimeString() + " , (Olympus) Check Phase3->4 : cumulative_length = \(currentResult.cumulative_length) // TRAJ_LENGTH/2 = \(TRAJ_LENGTH/2)")
                 return phase
             } else {

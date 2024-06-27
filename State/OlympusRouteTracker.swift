@@ -163,7 +163,7 @@ public class OlympusRouteTracker {
     }
     
     public func startRouteTracking(result: FineLocationTrackingFromServer, isStartRouteTrack: Bool) -> (Bool, Bool) {
-        var networkBad: Bool = false
+        var networkStatus: Bool = false
         
         for i in 0..<self.EntranceNumbers {
             if (!isStartRouteTrack) {
@@ -181,14 +181,16 @@ public class OlympusRouteTracker {
 
                     self.currentEntrance = entranceKey
                     self.currentEntranceLength = entranceResult.1
+                    print(getLocalTimeString() + " , (Olympus) Route Tracker : EntranceNetworkStatus = \(EntranceNetworkStatus)")
                     if let entranceNetworkStatus: Bool = self.EntranceNetworkStatus[entranceKey] {
-                        networkBad = entranceNetworkStatus
+                        networkStatus = entranceNetworkStatus
                     }
-                    return (true, networkBad)
+                    print(getLocalTimeString() + " , (Olympus) Start Route Tracker : entrance = \(currentEntrance) // networkStatus = \(networkStatus) // length = \(currentEntranceLength)")
+                    return (true, networkStatus)
                 }
             }
         }
-        return (false, networkBad)
+        return (false, networkStatus)
     }
     
     public func getRouteTrackResult(temporalResult: FineLocationTrackingFromServer, currentLevel: String, isVenusMode: Bool, isKF: Bool, isPhaseBreakInRouteTrack: Bool) -> (isRouteTrackFinished: Bool, FineLocationTrackingFromServer) {
@@ -197,7 +199,7 @@ public class OlympusRouteTracker {
         var result = temporalResult
         let localTime = getLocalTimeString()
         result = routeTrackEntrance(temporalResult: temporalResult, currentEntranceIndex: self.currentEntranceIndex)
-        if (self.currentEntranceIndex < self.currentEntranceLength) {
+        if (self.currentEntranceIndex < (self.currentEntranceLength-1)) {
             self.currentEntranceIndex += 1
                                     
             if (isVenusMode) {
@@ -270,6 +272,8 @@ public class OlympusRouteTracker {
     
     private func routeTrackEntrance(temporalResult: FineLocationTrackingFromServer, currentEntranceIndex: Int) -> FineLocationTrackingFromServer {
         var result = temporalResult
+        
+//        print(getLocalTimeString() + " , (Olympus) : Route Tracker : enterance = \(currentEntrance) , index = \(currentEntranceIndex)")
         
         guard let entranceRouteLevel: [String] = self.EntranceRouteLevel[self.currentEntrance] else {
             return result
