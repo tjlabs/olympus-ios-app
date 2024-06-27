@@ -27,8 +27,12 @@ public class OlympusNetworkManager {
     var uvdSessions = [URLSession]()
     var umSessions  = [URLSession]()
     var mrSessions  = [URLSession]()
+    var fltSessions = [URLSession]()
     
-    let fltSession: URLSession
+    let fltSession1: URLSession
+    let fltSession2: URLSession
+    var fltSessionCount: Int = 0
+    
     let osrSession: URLSession
     let reportSession: URLSession
     
@@ -73,10 +77,18 @@ public class OlympusNetworkManager {
         self.mrSessions.append(self.mrSession2)
         self.mrSessions.append(self.mrSession3)
         
+//        let fltConfig = URLSessionConfiguration.default
+//        fltConfig.timeoutIntervalForResource = TIMEOUT_VALUE_POST
+//        fltConfig.timeoutIntervalForRequest = TIMEOUT_VALUE_POST
+//        self.fltSession = URLSession(configuration: fltConfig)
+        
         let fltConfig = URLSessionConfiguration.default
         fltConfig.timeoutIntervalForResource = TIMEOUT_VALUE_POST
         fltConfig.timeoutIntervalForRequest = TIMEOUT_VALUE_POST
-        self.fltSession = URLSession(configuration: fltConfig)
+        self.fltSession1 = URLSession(configuration: mrConfig)
+        self.fltSession2 = URLSession(configuration: mrConfig)
+        self.fltSessions.append(self.fltSession1)
+        self.fltSessions.append(self.fltSession2)
         
         let osrConfig = URLSessionConfiguration.default
         osrConfig.timeoutIntervalForResource = TIMEOUT_VALUE_POST
@@ -471,11 +483,21 @@ public class OlympusNetworkManager {
         requestURL.httpMethod = "POST"
         let encodingData = JSONConverter.encodeJson(param: input)
         if (encodingData != nil) {
+            print("")
+            print("====================================")
+            print("POST FLT Phase 3 :: ", url)
+            print("POST FLT Phase 3 :: ", input)
+            print("====================================")
+            print("")
+            
             requestURL.httpBody = encodingData
             requestURL.addValue("application/json", forHTTPHeaderField: "Content-Type")
             requestURL.setValue("\(encodingData)", forHTTPHeaderField: "Content-Length")
             
-            let dataTask = self.fltSession.dataTask(with: requestURL, completionHandler: { (data, response, error) in
+            let fltSession = self.fltSessions[self.rfdSessionCount%2]
+            self.rfdSessionCount+=1
+            
+            let dataTask = fltSession.dataTask(with: requestURL, completionHandler: { (data, response, error) in
                 // [error가 존재하면 종료]
                 guard error == nil else {
                     // [콜백 반환]
@@ -537,7 +559,9 @@ public class OlympusNetworkManager {
             requestURL.addValue("application/json", forHTTPHeaderField: "Content-Type")
             requestURL.setValue("\(encodingData)", forHTTPHeaderField: "Content-Length")
             
-            let dataTask = self.fltSession.dataTask(with: requestURL, completionHandler: { (data, response, error) in
+            let fltSession = self.fltSessions[self.rfdSessionCount%2]
+            self.rfdSessionCount+=1
+            let dataTask = fltSession.dataTask(with: requestURL, completionHandler: { (data, response, error) in
                 // [error가 존재하면 종료]
                 guard error == nil else {
                     // [콜백 반환]
@@ -606,7 +630,9 @@ public class OlympusNetworkManager {
 //            print("====================================")
 //            print("")
             
-            let dataTask = self.fltSession.dataTask(with: requestURL, completionHandler: { (data, response, error) in
+            let fltSession = self.fltSessions[self.rfdSessionCount%2]
+            self.rfdSessionCount+=1
+            let dataTask = fltSession.dataTask(with: requestURL, completionHandler: { (data, response, error) in
                 // [error가 존재하면 종료]
                 guard error == nil else {
                     // [콜백 반환]
