@@ -91,7 +91,7 @@ class CardViewController: UIViewController, Observer {
     override func viewDidLoad() {
         super.viewDidLoad()
         headingImage = headingImage?.resize(newWidth: 20)
-        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg_eval03.csv", sensorFileName: "sensor_lg_eval03.csv")
+        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg_eval01.csv", sensorFileName: "sensor_lg_eval01.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg_debug05.csv", sensorFileName: "sensor_lg_debug05.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex02.csv", sensorFileName: "sensor_coex02.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_dr1.csv", sensorFileName: "sensor_dr1.csv")
@@ -103,8 +103,8 @@ class CardViewController: UIViewController, Observer {
 //        serviceManager.startCollect()
 //        self.startTimer()
         
-//        let uniqueId = makeUniqueId(uuid: self.userId)
-        let uniqueId = self.userId
+        let uniqueId = makeUniqueId(uuid: self.userId)
+//        let uniqueId = self.userId
         // service
         serviceManager.addObserver(self)
         serviceManager.startService(user_id: uniqueId, region: self.region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in

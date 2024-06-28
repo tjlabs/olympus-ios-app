@@ -27,6 +27,10 @@ public class OlympusRssCompensator {
         self.timeStackEst = 0
     }
     
+    public func setIsScaleLoaded(flag: Bool) {
+        self.isScaleLoaded = flag
+    }
+    
     
     public func loadRssiCompensationParam(sector_id: Int, device_model: String, os_version: Int, completion: @escaping (Bool, Double, String) -> Void) {
         var loadedNormalizationScale: Double = 1.0
@@ -124,16 +128,20 @@ public class OlympusRssCompensator {
                     if (!self.isScaleConverged) {
                         if (normalizationScale.0) {
                             let smoothedScale: Double = smoothNormalizationScale(scale: normalizationScale.1)
-//                            print(getLocalTimeString() + " , (Olympus) RSS Compensator : smoothedScale = \(smoothedScale)")
+                            print(getLocalTimeString() + " , (Olympus) RSS Compensator : smoothedScale = \(smoothedScale)")
                             self.normalizationScale = smoothedScale
                             let diffScale = abs(smoothedScale - self.preNormalizationScale)
                             if (diffScale < 1e-3 && self.timeAfterResponse >= OlympusConstants.REQUIRED_RC_CONVERGENCE_TIME && (smoothedScale != self.preNormalizationScale)) {
                                 self.isScaleConverged = true
                             }
                             self.preNormalizationScale = smoothedScale
-                        } else {
-                            let smoothedScale: Double = smoothNormalizationScale(scale: self.preNormalizationScale)
-                            self.normalizationScale = smoothedScale
+//                            let estimatedScale = normalizationScale.1
+//                            self.normalizationScale = normalizationScale.1
+//                            let diffScale = abs(estimatedScale - self.preNormalizationScale)
+//                            if (diffScale < 1e-3 && self.timeAfterResponse >= OlympusConstants.REQUIRED_RC_CONVERGENCE_TIME && (estimatedScale != self.preNormalizationScale)) {
+//                                self.isScaleConverged = true
+//                            }
+//                            self.preNormalizationScale = estimatedScale
                         }
                     }
                 }
@@ -156,8 +164,13 @@ public class OlympusRssCompensator {
                     }
                 }
             }
-            print(getLocalTimeString() + " , (Olympus) RSS Compensator : setNormalizationScale // normalizationScale = \(self.normalizationScale)")
-            OlympusConstants().setNormalizationScale(cur: self.normalizationScale, pre: self.preNormalizationScale)
+            
+            if (isScaleConverged) {
+                print(getLocalTimeString() + " , (Olympus) RSS Compensator : setNormalizationScale // normalizationScale = \(self.normalizationScale)")
+                OlympusConstants().setNormalizationScale(cur: self.normalizationScale, pre: self.preNormalizationScale)
+            }
+//            print(getLocalTimeString() + " , (Olympus) RSS Compensator : setNormalizationScale // normalizationScale = \(self.normalizationScale)")
+//            OlympusConstants().setNormalizationScale(cur: self.normalizationScale, pre: self.preNormalizationScale)
         }
     }
     
@@ -220,17 +233,22 @@ public class OlympusRssCompensator {
             let amplitude: Double = abs(avgMax - avgMin)
             
             let digit: Double = pow(10, 4)
-            var normalizationScale: Double = round(((standardAmplitude/amplitude)*digit)/digit)
-            normalizationScale = normalizationScale > 1.7 ? 1.7 : normalizationScale
+            var normalizationScale: Double = (standardAmplitude/amplitude)*digit/digit
+            print(getLocalTimeString() + " , (Olympus) RSS Compensator : normalizationScale before = \(normalizationScale)")
+            if normalizationScale > 1.2 {
+                normalizationScale = 1.2
+            } else if normalizationScale < 0.8 {
+                normalizationScale = 0.8
+            }
             print(getLocalTimeString() + " , (Olympus) RSS Compensator : amplitude = \(amplitude)")
-            print(getLocalTimeString() + " , (Olympus) RSS Compensator : normalizationScale = \(normalizationScale)")
+            print(getLocalTimeString() + " , (Olympus) RSS Compensator : normalizationScale after = \(normalizationScale)")
             updateScaleQueue(data: normalizationScale)
             return (true, normalizationScale)
         }
     }
     
     func updateScaleQueue(data: Double) {
-        if (self.scaleQueue.count >= 20) {
+        if (self.scaleQueue.count >= 10) {
             self.scaleQueue.remove(at: 0)
         }
         self.scaleQueue.append(data)

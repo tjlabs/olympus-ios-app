@@ -938,7 +938,6 @@ public class OlympusPathMatchingCalculator {
         }
     }
     
-    
     private func controlPassedNodeInfo(passedNodeInfo: PassedNodeInfo) {
         if (self.passedNodeInfoBuffer.count > 1) {
             let currentNode = passedNodeInfo.nodeNumber
@@ -958,16 +957,23 @@ public class OlympusPathMatchingCalculator {
             let pastBuffer = self.passedNodeInfoBuffer
             var newBuffer = [PassedNodeInfo]()
             var startIndex: Int = 0
+            var isFind: Bool = false
             for i in 0..<pastBuffer.count {
                 if pastBuffer[i].nodeNumber == self.anchorNode.nodeNumber {
                     startIndex = i
+                    isFind = true
                     break
                 }
             }
             
-            for i in startIndex..<pastBuffer.count {
-                newBuffer.append(pastBuffer[i])
+            if (isFind) {
+                for i in startIndex..<pastBuffer.count {
+                    newBuffer.append(pastBuffer[i])
+                }
+            } else {
+                newBuffer.append(self.anchorNode)
             }
+            
             self.passedNodeInfoBuffer = newBuffer
             isNeedClearBuffer = false
             print(getLocalTimeString() + " , (Olympus) Node Find : after -> passedNodeInfoBuffer = \(passedNodeInfoBuffer)")

@@ -319,9 +319,11 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                         self.setSectorInfo(sector_id: sector_id, sector_info_from_server: sectorInfoFromServer.1)
                                         rssCompensator.loadRssiCompensationParam(sector_id: sector_id, device_model: deviceModel, os_version: deviceOsVersion, completion: { [self] isSuccess, loadedParam, returnedString in
                                             if (isSuccess) {
+                                                rssCompensator.setIsScaleLoaded(flag: isSuccess)
                                                 OlympusConstants().setNormalizationScale(cur: loadedParam, pre: loadedParam)
                                                 print(getLocalTimeString() + " , (Olympus) Scale cur : \(OlympusConstants.NORMALIZATION_SCALE)")
                                                 print(getLocalTimeString() + " , (Olympus) Scale pre : \(OlympusConstants.PRE_NORMALIZATION_SCALE)")
+                                                
                                                 if (!bleManager.bluetoothReady) {
                                                     let msg: String = getLocalTimeString() + " , (Olympus) Error : Bluetooth is not enabled"
                                                     completion(false, msg)
@@ -525,7 +527,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 rssCompensator.saveNormalizationScale(scale: rssCompensator.normalizationScale, sector_id: self.sector_id)
 //                self.postParam(sector_id: self.sector_id, normailzationScale: self.normalizationScale)
             }
-            
+            rssCompensator.setIsScaleLoaded(flag: false)
             
             return (true, message)
         } else {
