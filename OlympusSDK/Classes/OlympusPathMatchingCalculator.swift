@@ -1160,7 +1160,11 @@ public class OlympusPathMatchingCalculator {
             let nodeHeadings = anchorNodeInfo.nodeHeadings
             let nodeMatchedIndex = anchorNodeInfo.matchedIndex
             
-            let heading = getUserDirection(from: nodeCoord, to: linkCoord)
+            var heading = fltResult.absolute_heading
+            if (nodeCoord != linkCoord) {
+                heading = getUserDirection(from: nodeCoord, to: linkCoord)
+            }
+//            let heading = getUserDirection(from: nodeCoord, to: linkCoord)
             print(getLocalTimeString() + " , (Olympus) Node Find : getAnchorNodeCandidatesForBadCase // heading = \(heading) , anchorNodeInfo = \(anchorNodeInfo)")
             
             var diffHeading = [Double]()

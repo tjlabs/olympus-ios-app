@@ -207,7 +207,7 @@ public class OlympusRssCompensator {
     
     public func calNormalizationScale(standardMin: Double, standardMax: Double) -> (Bool, Double) {
         let standardAmplitude: Double = abs(standardMax - standardMin)
-        print(getLocalTimeString() + " , (Olympus) RSS Compensator // standardMin = \(standardMin) , standardMax = \(standardMax) , amp = \(standardAmplitude)")
+        print(getLocalTimeString() + " , (Olympus) RSS Compensator : standardMin = \(standardMin) , standardMax = \(standardMax) , amp = \(standardAmplitude)")
         if (self.wardMaxRssi.isEmpty || self.wardMinRssi.isEmpty) {
             return (false, 1.0)
         } else {
@@ -222,7 +222,7 @@ public class OlympusRssCompensator {
             let digit: Double = pow(10, 4)
             var normalizationScale: Double = round(((standardAmplitude/amplitude)*digit)/digit)
             normalizationScale = normalizationScale > 1.7 ? 1.7 : normalizationScale
-            print(getLocalTimeString() + " , (Olympus) RSS Compensator // amplitude = \(amplitude)")
+            print(getLocalTimeString() + " , (Olympus) RSS Compensator : amplitude = \(amplitude)")
             print(getLocalTimeString() + " , (Olympus) RSS Compensator : normalizationScale = \(normalizationScale)")
             updateScaleQueue(data: normalizationScale)
             return (true, normalizationScale)

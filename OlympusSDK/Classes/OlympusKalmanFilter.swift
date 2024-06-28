@@ -359,6 +359,7 @@ public class OlympusKalmanFilter: NSObject {
                                         bestCoord = [resultCoordX[c], resultCoordY[c]]
                                     }
                                 }
+                                print(getLocalTimeString() + " , (Olympus) Path-Matching : bestCoord = \(bestCoord)")
                                 if (!bestCoord.isEmpty) {
                                     self.pathTrajTurnIndex = uvdIndexMatchedWithTurn
                                     self.pathTrajMatchingIndex = currentUvdIndex
@@ -402,14 +403,25 @@ public class OlympusKalmanFilter: NSObject {
                         isNeedRequestPhase4 = true
                     }
                     let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 0, PADDING_VALUES: PADDING_VALUES)
-                    outputResult.x = pathMatchingResult.xyhs[0]*0.5 + updatedX*0.5
-                    outputResult.y = pathMatchingResult.xyhs[1]*0.5 + updatedY*0.5
+                    
+                    let compensatedHeading = compensateHeading(heading: pathMatchingResult.xyhs[2])
+                    let dx = length*cos(compensatedHeading*OlympusConstants.D2R)
+                    let dy = length*sin(compensatedHeading*OlympusConstants.D2R)
+                    
+                    let updatedX = self.tuResult.x + dx
+                    let updatedY = self.tuResult.y + dy
+                    
+                    outputResult.x = updatedX
+                    outputResult.y = updatedY
+//                    outputResult.x = pathMatchingResult.xyhs[0]*0.5 + updatedX*0.5
+//                    outputResult.y = pathMatchingResult.xyhs[1]*0.5 + updatedY*0.5
                     if (pathMatchingResult.0) { outputResult.absolute_heading = compensateHeading(heading: pathMatchingResult.xyhs[2]) }
                 }
                 initPathTrajMatchingInfo()
             }
             
             if (!isDidPathTrajMatching) {
+                // Path-Traj Matching을 안했으면
                 let limitationResult = OlympusPathMatchingCalculator.shared.getTimeUpdateLimitation(mode: mode)
                 if (limitationResult.limitType == .Y_LIMIT) {
                     if (outputResult.y < limitationResult.limitValues[0]) {
@@ -425,9 +437,11 @@ public class OlympusKalmanFilter: NSObject {
                     }
                 }
             } else {
-                let pathMatching = OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: outputResult.x, y: outputResult.y, heading: outputResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 0, PADDING_VALUES: PADDING_VALUES)
-                outputResult.x = pathMatching.xyhs[0]
-                outputResult.y = pathMatching.xyhs[1]
+//                let pathMatching = OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: outputResult.x, y: outputResult.y, heading: outputResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 0, PADDING_VALUES: PADDING_VALUES)
+//                outputResult.x = pathMatching.xyhs[0]*0.5 + updatedX*0.5
+//                outputResult.y = pathMatching.xyhs[1]*0.5 + updatedY*0.5
+//                outputResult.x = pathMatching.xyhs[0]
+//                outputResult.y = pathMatching.xyhs[1]
             }
         } else {
             let drBufferStraightResult = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_HEADING_CORR_NUM_IDX, condition: 10.0)

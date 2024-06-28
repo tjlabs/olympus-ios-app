@@ -483,12 +483,12 @@ public class OlympusNetworkManager {
         requestURL.httpMethod = "POST"
         let encodingData = JSONConverter.encodeJson(param: input)
         if (encodingData != nil) {
-            print("")
-            print("====================================")
-            print("POST FLT Phase 3 :: ", url)
-            print("POST FLT Phase 3 :: ", input)
-            print("====================================")
-            print("")
+//            print("")
+//            print("====================================")
+//            print("POST FLT Phase 3 :: ", url)
+//            print("POST FLT Phase 3 :: ", input)
+//            print("====================================")
+//            print("")
             
             requestURL.httpBody = encodingData
             requestURL.addValue("application/json", forHTTPHeaderField: "Content-Type")
