@@ -127,6 +127,11 @@ public class OlympusKalmanFilter: NSObject {
         self.tuResultBuffer.append([tuResult.x, tuResult.y, tuResult.absolute_heading])
     }
     
+    public func updateTuResult(x: Double, y: Double) {
+        self.tuResult.x = x
+        self.tuResult.y = y
+    }
+    
     public func updateTuResultNow(result: FineLocationTrackingFromServer) {
         self.tuResultNow = result
     }

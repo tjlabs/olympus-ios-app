@@ -29,6 +29,7 @@ public class OlympusPathMatchingCalculator {
     var linkCoord: [Double] = [0, 0]
     var linkDirections = [Double]()
     var isInNode: Bool = false
+    var mapEndIndex: Int = 0
     
     var pathTrajMatchingArea: [[Double]] = [[0, 0]]
     
@@ -56,6 +57,7 @@ public class OlympusPathMatchingCalculator {
         self.linkCoord = [0, 0]
         self.linkDirections = [Double]()
         self.isInNode = false
+        self.mapEndIndex = 0
     }
     
     public func initPassedNodeInfo() {
@@ -1072,6 +1074,56 @@ public class OlympusPathMatchingCalculator {
         return paddingValues
     }
     
+    public func checkIsInMapEnd(resultStandard: FineLocationTrackingFromServer, tuResult: FineLocationTrackingFromServer, pathType: Int) -> Bool {
+        var isInMapEnd: Bool = false
+        let curIndex = tuResult.index
+        
+        if (curIndex - self.mapEndIndex) < 5 {
+            return isInMapEnd
+        }
+        
+        let modeInput = pathType == 1 ? OlympusConstants.MODE_DR : OlympusConstants.MODE_PDR
+        let coordHeadings = getPathMatchingHeadings(building: resultStandard.building_name, level: resultStandard.level_name, x: resultStandard.x, y: resultStandard.y, PADDING_VALUE: 0.0, mode: modeInput)
+//        let tuHeading = tuResult.absolute_heading
+        let tuHeading = resultStandard.absolute_heading
+        
+        if !coordHeadings.isEmpty {
+            print(getLocalTimeString() + " , (Olympus) Check Map End : Index = \(tuResult.index)")
+            print(getLocalTimeString() + " , (Olympus) Check Map End : resultStandard = \(resultStandard)")
+            print(getLocalTimeString() + " , (Olympus) Check Map End : coordHeadings = \(coordHeadings)")
+            print(getLocalTimeString() + " , (Olympus) Check Map End : tuHeading = \(tuHeading)")
+            var diffHeading = [Double]()
+            var bestHeading: Double = tuResult.absolute_heading
+            for dir in coordHeadings {
+                var diffValue: Double = 0
+                if (tuHeading > 270 && (dir >= 0 && dir < 90)) {
+                    diffValue = abs(tuHeading - (dir+360))
+                } else if (dir > 270 && (tuHeading >= 0 && tuHeading < 90)) {
+                    diffValue = abs(dir - (tuHeading+360))
+                } else {
+                    diffValue = abs(tuHeading - dir)
+                }
+                diffHeading.append(diffValue)
+            }
+            
+            if let minIndex = diffHeading.firstIndex(of: diffHeading.min()!) {
+                bestHeading = coordHeadings[minIndex]
+            }
+            print(getLocalTimeString() + " , (Olympus) Check Map End : bestHeading = \(bestHeading)")
+            var resultForEndCheck = resultStandard
+            resultForEndCheck.x += cos(bestHeading*OlympusConstants.D2R)
+            resultForEndCheck.y += sin(bestHeading*OlympusConstants.D2R)
+            let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: resultForEndCheck.building_name, level: resultForEndCheck.level_name, x: resultForEndCheck.x, y: resultForEndCheck.y, heading: resultForEndCheck.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: pathType, PADDING_VALUES: [0, 0, 0, 0])
+            if !pathMatchingResult.isSuccess {
+                self.mapEndIndex = tuResult.index
+                isInMapEnd = true
+                print(getLocalTimeString() + " , (Olympus) Check Map End : isInMapEnd = \(isInMapEnd)")
+            }
+        }
+        
+        return isInMapEnd
+    }
+    
     
     private func findIntersection(point1: Point, point2: Point) -> Point? {
         let radian1 = point1.direction*OlympusConstants.D2R
@@ -1169,6 +1221,24 @@ public class OlympusPathMatchingCalculator {
             var heading = fltResult.absolute_heading
             if (nodeCoord != linkCoord) {
                 heading = getUserDirection(from: nodeCoord, to: linkCoord)
+                print(getLocalTimeString() + " , (Olympus) Node Find : getAnchorNodeCandidatesForBadCase // getUserDirection = \(heading)")
+            } else {
+                var minValue: Double = 360
+                for mapHeading in nodeHeadings {
+                    var diffValue: Double = 0
+                    if (heading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
+                        diffValue = abs(heading - (mapHeading+360))
+                    } else if (mapHeading > 270 && (heading >= 0 && heading < 90)) {
+                        diffValue = abs(mapHeading - (heading+360))
+                    } else {
+                        diffValue = abs(heading - mapHeading)
+                    }
+                    if diffValue < minValue {
+                        heading = mapHeading
+                        minValue = diffValue
+                    }
+                }
+                print(getLocalTimeString() + " , (Olympus) Node Find : getAnchorNodeCandidatesForBadCase // else = \(heading)")
             }
 //            let heading = getUserDirection(from: nodeCoord, to: linkCoord)
             print(getLocalTimeString() + " , (Olympus) Node Find : getAnchorNodeCandidatesForBadCase // heading = \(heading) , anchorNodeInfo = \(anchorNodeInfo)")
@@ -1191,6 +1261,9 @@ public class OlympusPathMatchingCalculator {
                 if (diffValue >= 90-MARGIN && diffValue <= 90+MARGIN) || (diffValue >= 270-MARGIN && diffValue <= 270+MARGIN) {
                     candidateDirections.append(mapHeading)
                 }
+//                else if (nodeCoord == linkCoord) && (diffValue <= MARGIN) {
+//                    heading = mapHeading
+//                }
             }
             print(getLocalTimeString() + " , (Olympus) Node Find : getAnchorNodeCandidatesForBadCase // candidateDirections = \(candidateDirections)")
             
@@ -1201,7 +1274,7 @@ public class OlympusPathMatchingCalculator {
             let PIXELS_TO_CHECK = Int(OlympusConstants.PIXEL_LENGTH_TO_FIND_NODE)
             
             var nodeCandidatesInfo = [PassedNodeInfo]()
-            
+
             for direction in candidateDirections {
                 var paddingValues = [Double] (repeating: Double(PIXELS_TO_CHECK), count: 4)
                 if (direction == 0) {
@@ -1220,12 +1293,15 @@ public class OlympusPathMatchingCalculator {
                     x += cos(direction*OlympusConstants.D2R)
                     y += sin(direction*OlympusConstants.D2R)
                     let matchedNodeResult = getMatchedNodeWithCoord(fltResult: fltResult, originCoord: nodeCoord, coordToCheck: [x, y], pathType: pathType, PADDING_VALUES: paddingValues)
+                    print(getLocalTimeString() + " , (Olympus) Node Find : getAnchorNodeCandidatesForBadCase // nodeCoord = \(nodeCoord) // xy = \(x),\(y) // dir = \(direction) // paddingValues = \(paddingValues)")
+                    print(getLocalTimeString() + " , (Olympus) Node Find : getAnchorNodeCandidatesForBadCase // matchedNodeResult = \(matchedNodeResult)")
                     if (matchedNodeResult.0) {
                         break
                     } else {
                         if (matchedNodeResult.1 != -1) {
                             let coordToCheck: [Double] = [x+cos(heading*OlympusConstants.D2R), y+sin(heading*OlympusConstants.D2R)]
                             let isPossibleNode = checkPathPixelHasCoords(fltResult: fltResult, coordToCheck: coordToCheck)
+                            print(getLocalTimeString() + " , (Olympus) Node Find : getAnchorNodeCandidatesForBadCase // isPossibleNode = \(isPossibleNode) // coordToCheck = \(coordToCheck) // heading = \(heading)")
                             if (isPossibleNode) {
                                 let nodeInfo = PassedNodeInfo(nodeNumber: matchedNodeResult.1, nodeCoord: [x, y], nodeHeadings: matchedNodeResult.2, matchedIndex: nodeMatchedIndex, userHeading: heading)
                                 nodeCandidatesInfo.append(nodeInfo)
@@ -1539,8 +1615,6 @@ public class OlympusPathMatchingCalculator {
                 diffValue = abs(startHeading - mapHeading)
             }
             diffHeadings.append(diffValue)
-            
-            
             
             if diffValue <= MARGIN || (diffValue >= 180-MARGIN && diffValue < 180+MARGIN) {
                 candidateDirections.append(mapHeading)

@@ -119,16 +119,16 @@ public class OlympusRssCompensator {
         self.timeStackEst += OlympusConstants.RFD_INTERVAL
         
         if (isGetFirstResponse && isIndoor && diffMinMaxRssi >= 25 && minRssi <= -97 && self.timeStackEst >= OlympusConstants.EST_RC_INTERVAL) {
-            print(getLocalTimeString() + " , (Olympus) RSS Compensator : timeStackEst = \(timeStackEst) // isScaleLoaded = \(isScaleLoaded)")
+//            print(getLocalTimeString() + " , (Olympus) RSS Compensator : timeStackEst = \(timeStackEst) // isScaleLoaded = \(isScaleLoaded)")
             self.timeStackEst = 0
             if (self.isScaleLoaded) {
                 if (currentLevel != "B0") {
                     let normalizationScale = calNormalizationScale(standardMin: OlympusConstants.STANDARD_MIN_RSS, standardMax: OlympusConstants.STANDARD_MAX_RSS)
-                    print(getLocalTimeString() + " , (Olympus) RSS Compensator : isScaleConverged = \(isScaleConverged)")
+//                    print(getLocalTimeString() + " , (Olympus) RSS Compensator : isScaleConverged = \(isScaleConverged)")
                     if (!self.isScaleConverged) {
                         if (normalizationScale.0) {
                             let smoothedScale: Double = smoothNormalizationScale(scale: normalizationScale.1)
-                            print(getLocalTimeString() + " , (Olympus) RSS Compensator : smoothedScale = \(smoothedScale)")
+//                            print(getLocalTimeString() + " , (Olympus) RSS Compensator : smoothedScale = \(smoothedScale)")
                             self.normalizationScale = smoothedScale
                             let diffScale = abs(smoothedScale - self.preNormalizationScale)
                             if (diffScale < 1e-3 && self.timeAfterResponse >= OlympusConstants.REQUIRED_RC_CONVERGENCE_TIME && (smoothedScale != self.preNormalizationScale)) {
@@ -148,10 +148,10 @@ public class OlympusRssCompensator {
             } else {
                 if (!self.isScaleConverged) {
                     let normalizationScale = calNormalizationScale(standardMin: OlympusConstants.STANDARD_MIN_RSS, standardMax: OlympusConstants.STANDARD_MAX_RSS)
-                    print(getLocalTimeString() + " , (Olympus) RSS Compensator : normalizationScale = \(normalizationScale)")
+//                    print(getLocalTimeString() + " , (Olympus) RSS Compensator : normalizationScale = \(normalizationScale)")
                     if (normalizationScale.0) {
                         let smoothedScale: Double = smoothNormalizationScale(scale: normalizationScale.1)
-                        print(getLocalTimeString() + " , (Olympus) RSS Compensator : smoothedScale = \(smoothedScale)")
+//                        print(getLocalTimeString() + " , (Olympus) RSS Compensator : smoothedScale = \(smoothedScale)")
                         self.normalizationScale = smoothedScale
                         let diffScale = abs(smoothedScale - self.preNormalizationScale)
                         if (diffScale < 1e-3 && self.timeAfterResponse >= OlympusConstants.REQUIRED_RC_CONVERGENCE_TIME && (smoothedScale != self.preNormalizationScale)) {
@@ -166,7 +166,7 @@ public class OlympusRssCompensator {
             }
             
             if (isScaleConverged) {
-                print(getLocalTimeString() + " , (Olympus) RSS Compensator : setNormalizationScale // normalizationScale = \(self.normalizationScale)")
+//                print(getLocalTimeString() + " , (Olympus) RSS Compensator : setNormalizationScale // normalizationScale = \(self.normalizationScale)")
                 OlympusConstants().setNormalizationScale(cur: self.normalizationScale, pre: self.preNormalizationScale)
             }
 //            print(getLocalTimeString() + " , (Olympus) RSS Compensator : setNormalizationScale // normalizationScale = \(self.normalizationScale)")
