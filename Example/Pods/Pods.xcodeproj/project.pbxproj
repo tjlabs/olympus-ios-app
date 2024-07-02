@@ -110,7 +110,6 @@
 		127EA02B749517B24BE7C26C4E5C9337 /* SessionStartEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6427C344ABDC6B1BCA2579978FE406 /* SessionStartEvent.swift */; };
 		12A2FD1B761FF812B93DE09448E4E114 /* FIRAppInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = CF38FC951FA4335092EF7F7D93301E7B /* FIRAppInternal.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		12C846C80852466722AEF819E5B026FF /* FIRCLSFile.h in Headers */ = {isa = PBXBuildFile; fileRef = 5F90C9CB721EE3F585CC445676194D2B /* FIRCLSFile.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		13181F20E22334BE698359DA304C3A0D /* LinkedList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ACD8BFDDA118F60976A1804F24084F7 /* LinkedList.swift */; };
 		14101980C484BC85B027BFDD7B6EBD3F /* FBLPromise+Race.h in Headers */ = {isa = PBXBuildFile; fileRef = B8F1B374CD13073A1F93929E7FFB3E97 /* FBLPromise+Race.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1431F526EEBFC869BCDBEEC88CA4BB1F /* FIRCLSMachO.m in Sources */ = {isa = PBXBuildFile; fileRef = C2D2C0E54EB0761FC1735E4B4CFD608D /* FIRCLSMachO.m */; };
 		146E59FAE55E2A42B32F7C0548E3A00F /* FirebaseCoreInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C55D9C0347A2DE6FEEA276F692E222B /* FirebaseCoreInternal.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -118,7 +117,6 @@
 		150DB6950349AEAEBDB84A1994DF55DE /* PieChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB10F3818DE086842F76CF76354120C6 /* PieChartView.swift */; };
 		151209680E99882C3E0B754F07791ABD /* FIRComponentContainerInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = 04AD63EAC2E1CAE52C9368C62A4BD1CE /* FIRComponentContainerInternal.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		1578DDC5147C1D4EF9461F3F39B4E38A /* GULAppDelegateSwizzler.h in Headers */ = {isa = PBXBuildFile; fileRef = 7FEDD07F4A4BF59F4260D7631B436254 /* GULAppDelegateSwizzler.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		15A040E22234149C12A31E393F87B65E /* OlympusRouteTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF7C7EC4F639E53FF388360972D8FB05 /* OlympusRouteTracker.swift */; };
 		15F88F4F010B7E729052AF5DB390D975 /* FIRInstallationsItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 58F36DF3BE73A3179E0A8CBBA6D8CD58 /* FIRInstallationsItem.m */; };
 		1611A02A50E8ECD5F31ECF1CDDCCFF7F /* LegendEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BC0EAC37728372D692235F17C14220D /* LegendEntry.swift */; };
 		16362413D2756A8A8BD2E5D20726520D /* LineScatterCandleRadarChartDataSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7C9D9B1B6EA98B77D6C60108108487 /* LineScatterCandleRadarChartDataSet.swift */; };
@@ -142,7 +140,6 @@
 		1E55C1FA5BF81F5F5711C3A4EE6AC89B /* GDTCORClock.m in Sources */ = {isa = PBXBuildFile; fileRef = 730819B46D0251031D9F93174BC2098C /* GDTCORClock.m */; };
 		1E584E636754EA0E3D124A384D452529 /* FIRDependency.m in Sources */ = {isa = PBXBuildFile; fileRef = 6E5F6F50A59143938DA52F4032A0E022 /* FIRDependency.m */; };
 		1E7046098E54791AFBB5CC3C249F6F34 /* FirebaseInstallations-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 81D0FD418B8F7EF9CC80149061D7E0B3 /* FirebaseInstallations-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		1E823CACE86AFE98225DD9852A948083 /* OlympusNetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12245179347ED09C18A56EABD2E5C0E5 /* OlympusNetworkManager.swift */; };
 		1E9192E9E56346B28102DCBD2DE063B9 /* FIRCLSLaunchMarkerModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AD8643B4DF84A93C8543C15049958F6 /* FIRCLSLaunchMarkerModel.m */; };
 		1EAF9D7E1C64F42DC55D6A527B91F355 /* FIRAnalyticsConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = 03C83D8FBA6C97C340A8F8C8C62E7D85 /* FIRAnalyticsConfiguration.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		1EF9FFC0209F1A64EB75C267158423A2 /* sessions.nanopb.h in Headers */ = {isa = PBXBuildFile; fileRef = FCF7569BFD559D45A92F91DF340E5B72 /* sessions.nanopb.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -151,7 +148,6 @@
 		1FEA3631C311F40D848805E609D60378 /* FIROptionsInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = 3B3320713C980437062C158B86736647 /* FIROptionsInternal.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1FFDE55E0C54B4A16EAD7BC59F1EA91A /* FIRCLSAnalyticsManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 7DCE06361F6A9E3238108AEBD9499CE4 /* FIRCLSAnalyticsManager.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		200E101E04FF4F44E036533B82F4746A /* FIRCLSMultipartMimeStreamEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 08D25D630E8A18CF903FF7E48DAF8DDE /* FIRCLSMultipartMimeStreamEncoder.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		20E9F7D6D494AFE9E1F48240EE100514 /* OlympusJsonDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6B7B39EE5DFD815EF66AA556241E92 /* OlympusJsonDecoder.swift */; };
 		20F9C017F83AE89F6DFCDC8780CC08AB /* GoogleUtilities-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = A64E73DAAC2C9337265CBBC988711FAE /* GoogleUtilities-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2131FC1139E571CDF2C95575E40B998C /* GULNetworkLoggerProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 86F608160AFE3547B73E2F199A618A24 /* GULNetworkLoggerProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		214B5B55DAD5C89E1E05BD6CF127626F /* FIRCLSURLBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E6FCF729D3B8CB16FAEB8CAEA467F74 /* FIRCLSURLBuilder.h */; settings = {ATTRIBUTES = (Project, ); }; };
@@ -191,7 +187,6 @@
 		2A3BBE33D18AE2FC16DB3BF8AE660CA4 /* Trim.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C959C2A7C998C95F2781C92DEA83527 /* Trim.swift */; };
 		2A3E5517FCBEDB8B4944F0584D3CCBF6 /* FirebaseCore-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = A4DF699B9470342A98F922CDF63F11D9 /* FirebaseCore-dummy.m */; };
 		2A87BD8C4B4DDDAA7B3A3E925EE648AC /* FIRCLSReportManager_Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 723D7E7D9E4AEF4663CD55CC456B7815 /* FIRCLSReportManager_Private.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		2A95B959AEE3983F651568F6F857F0F5 /* ArrayExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3856E790C68E10D98EB84CCE7146671 /* ArrayExtension.swift */; };
 		2B70F20EBF66737DD1E8319215A8EBF4 /* FIRVersion.m in Sources */ = {isa = PBXBuildFile; fileRef = 5D5D47E7914FD40AF6087A87A47095B3 /* FIRVersion.m */; };
 		2C506FB7404387D4BCC6107CE4DAEABD /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 94E9152E2DF7BE75526EBDE149B7CFD3 /* Foundation.framework */; };
 		2C85755AC504A1815E06D82E291FF108 /* FIRCLSOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = DF60DFCDE72016CA2EF28BBFB750ED91 /* FIRCLSOperation.h */; settings = {ATTRIBUTES = (Project, ); }; };
@@ -223,7 +218,6 @@
 		341C4C56C45E00A6B58E63A7EDF7F7C1 /* BubbleChartDataSetProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46CF43B0E43CC303F26125FF9B4868A2 /* BubbleChartDataSetProtocol.swift */; };
 		344E3700AC1AEE4CDF606A3EF8DC5500 /* FIRCLSExecutionIdentifierModel.m in Sources */ = {isa = PBXBuildFile; fileRef = DF2FE83F8C7E0A07E99BDAD307B290D9 /* FIRCLSExecutionIdentifierModel.m */; };
 		34774D671EAD1C09EA595DF99BEE9888 /* FIRCLSLaunchMarkerModel.h in Headers */ = {isa = PBXBuildFile; fileRef = EBC9DFD0D725ADD8E38AB589179B7702 /* FIRCLSLaunchMarkerModel.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		3479F234653DB9EC8CE3FCFE6D175116 /* OlympusRflowCorrelator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89181A0F2ACB6B4265AED4BBC8CEA99B /* OlympusRflowCorrelator.swift */; };
 		34C5F8C98AADA39845B7E9D0201A9D1F /* GDTCCTNanopbHelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = D0DBA6DA20E74C7175C71B01EF4E8EFE /* GDTCCTNanopbHelpers.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		35BFC4C3A46CF7EEC15BEA91AC6CE39B /* HorizontalBarHighlighter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D01269C6A64C01164CADCB897539B9A /* HorizontalBarHighlighter.swift */; };
 		35CDBE278AEEE4732BA1AAA55AE08B34 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = CFFB8BC7844F2B3E3FAB2D23FF520667 /* PrivacyInfo.xcprivacy */; };
@@ -290,8 +284,6 @@
 		494DAE02C6BD413F95D9B35E4C9B8473 /* Platform+Accessibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45743E940D5EA94FE83AEE821F5DF84 /* Platform+Accessibility.swift */; };
 		49AB579EAEE536D9E37F71D110C40AA7 /* FIRCLSReportUploader.h in Headers */ = {isa = PBXBuildFile; fileRef = 3BEC3785494182C0A667C20E29934AE6 /* FIRCLSReportUploader.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		4A04F1D7B9E77B8DE8E47D4488C92038 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D8A092E8C3EC251E223FF95CE3872CF /* SystemConfiguration.framework */; };
-		4A094FE8BB399230D34D28E12DBF19E5 /* OlympusStepLengthEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5FB2E08AEEE9815B8C25AF68A09FA85 /* OlympusStepLengthEstimator.swift */; };
-		4A6C9DF1F4F9E7D74D61C9E43B47021B /* JSONConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72E564282CDAA37EC2375BDC6F2EF1C1 /* JSONConverter.swift */; };
 		4A933CE8E89069DF1BDDFF6D1536753A /* FIRInstallationsIIDTokenStore.h in Headers */ = {isa = PBXBuildFile; fileRef = 329BD6E762D183D43E8D948DD1A01669 /* FIRInstallationsIIDTokenStore.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		4BB83D1F64CD9A4A323C66D26EB73257 /* FIRComponentType.h in Headers */ = {isa = PBXBuildFile; fileRef = E953A90F982E1EB85C3415AAF88C74DA /* FIRComponentType.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		4BEF63F261CCE818DC250E240A67E649 /* PromisesSwift-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = E724B3AC0D7B03FBD26B84A297A41933 /* PromisesSwift-dummy.m */; };
@@ -303,11 +295,9 @@
 		4CA7F45C3912FC30F9BDBC14627C51E3 /* pb_common.c in Sources */ = {isa = PBXBuildFile; fileRef = 8676409F3A61DA92E61BEA216E8ED7FD /* pb_common.c */; settings = {COMPILER_FLAGS = "-fno-objc-arc -fno-objc-arc -fno-objc-arc"; }; };
 		4CC547A71CBFE853DEF5D792D8CA7604 /* FIRCLSHost.m in Sources */ = {isa = PBXBuildFile; fileRef = 1311BB4929CE75EAA3DBDBB210910BBA /* FIRCLSHost.m */; };
 		4CDE5AD6B91F8E1859C196089A01F927 /* BarLineScatterCandleBubbleChartDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F12F3A72C2666F6E4139F4E8BCEFB855 /* BarLineScatterCandleBubbleChartDataProvider.swift */; };
-		4D4BC65AE476B712FAF267DF5C602588 /* OlympusSectionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33161F1FF44AE3DEEA691FDA702049A2 /* OlympusSectionController.swift */; };
 		4DBE6148C5266B95C3B407CAAC5B7C84 /* FIRBundleUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = EA55751B5E53298AA9525F838F060E9D /* FIRBundleUtil.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		4DD87555F6E6BE5D99569F063FEDCA52 /* SessionInitiator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 936985083BB273A8998B4E05ED07CEE7 /* SessionInitiator.swift */; };
 		4E0CE7C1CD75F9926C1453AC1AFCFBF7 /* BarChartDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07C516F0742C0BBD8B9D5E374E97F0C4 /* BarChartDataProvider.swift */; };
-		4E8722032BE0A876A655DEDE3229BAE1 /* StringExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 502EE8C42CC9487103C61B00C37072E7 /* StringExtension.swift */; };
 		4EDDB74656BD966F3CC3590903ECD633 /* FIRCLSProcessReportOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 136C937D9B51905A13155F46F297380B /* FIRCLSProcessReportOperation.m */; };
 		4F4D360ABF3F0A9DBB3BE3A2AC7D5863 /* FIRCLSCrashedMarkerFile.h in Headers */ = {isa = PBXBuildFile; fileRef = 14A247EB88C0681D8AA4D9C04BE0D5C6 /* FIRCLSCrashedMarkerFile.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		4FA0497D8036EC4FEE1182866925D8A0 /* GULKeychainStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = 8DC964C49DE58A1C67CF92D7A9117CA5 /* GULKeychainStorage.m */; };
@@ -350,7 +340,6 @@
 		57528D634E35C46064F5D471EEEC3017 /* MinMax.swift in Sources */ = {isa = PBXBuildFile; fileRef = 121C1D3DFEFF0BA5FEB6E2799E546DBB /* MinMax.swift */; };
 		576283B4043F4D8E6D676DD38A9D3D34 /* FIRCLSThreadState.c in Sources */ = {isa = PBXBuildFile; fileRef = 69087242D7E41C9C26299B02ABCFF333 /* FIRCLSThreadState.c */; };
 		57B6E623AE2C3C5273C137DFB9FA367E /* FIRInstallationsAuthTokenResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 0025DBA34C56249EFF3B8776E76BAB7F /* FIRInstallationsAuthTokenResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		57D79950CD1C3FAFDB3EB0E7C590AFD2 /* NotificationExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6908FCDD9CD3F1634656FFF1B18F575D /* NotificationExtension.swift */; };
 		5829E60F3B1D9D7166301BC4AA17E83D /* ViewPortJob.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB79049BDC3AEA1244D3A8994B9CE390 /* ViewPortJob.swift */; };
 		582C527049C70CD208C88A87B3AA1E48 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 94E9152E2DF7BE75526EBDE149B7CFD3 /* Foundation.framework */; };
 		585FD9DA0B21341F777A5B39ED1CA562 /* RadarChartDataEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B6AAB455DA2B458AB39D37323AD4F85 /* RadarChartDataEntry.swift */; };
@@ -388,7 +377,6 @@
 		62F15C497174DA74F650606929458CBE /* FIRCLSInternalReport.m in Sources */ = {isa = PBXBuildFile; fileRef = 66D278667F78A6972E8DEE2109E5B0BD /* FIRCLSInternalReport.m */; };
 		633864F2788C9C010CA3290EA354F159 /* FIRCrashlyticsReport_Private.h in Headers */ = {isa = PBXBuildFile; fileRef = DB1A164ED6593641BFA9A2A7D48AE546 /* FIRCrashlyticsReport_Private.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		6351CC48D4CD08A64B93027110D0BFD7 /* Marker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 980EA88B0217DA9E69C40C7EEE4DC3CF /* Marker.swift */; };
-		6358793DAFFDB59FCFF582CFD52E334D /* OlympusRssCompensator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56B22959C91A050EBF6CFB60420F914F /* OlympusRssCompensator.swift */; };
 		635F98537789CA4E2E24DE49D0B01AA7 /* GDTCORTransformer.h in Headers */ = {isa = PBXBuildFile; fileRef = 940E85F5EBEF677FAA24D9B67E8B28D6 /* GDTCORTransformer.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		636944D0E28560496DB04E76F037A957 /* NanoPB+CustomStringConvertible.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBC39E835D67EFF746CBC54FE6A95FD6 /* NanoPB+CustomStringConvertible.swift */; };
 		63FCE1745E2AE32A8C8214E5267D3915 /* FIRInstallationsHTTPError.m in Sources */ = {isa = PBXBuildFile; fileRef = 94ABD660F7049ACA8ACCABF47D3C592E /* FIRInstallationsHTTPError.m */; };
@@ -401,9 +389,7 @@
 		6535A7915988034A3B834F92DD46F23F /* FIRCLSRecordBase.m in Sources */ = {isa = PBXBuildFile; fileRef = 54F803E9B51EDDB516EFEE7460DADF50 /* FIRCLSRecordBase.m */; };
 		659BA098FA467D1C3DB46DA2EDD0DD8E /* GULOriginalIMPConvenienceMacros.h in Headers */ = {isa = PBXBuildFile; fileRef = 256BE3E966824971733BB49BA07CF24C /* GULOriginalIMPConvenienceMacros.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		6637FD805478060FF47C1ECE52C7E097 /* Promise+Reduce.swift in Sources */ = {isa = PBXBuildFile; fileRef = F61F3E76F0D9C99B017F4A56C6076B5B /* Promise+Reduce.swift */; };
-		6638FDDF1A2B3358505D0B734255D43F /* OlympusUnitAttitudeEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA0CA4E26065776414FA70201861E458 /* OlympusUnitAttitudeEstimator.swift */; };
 		663D2ACFEA93D16988DAA8E3E74172CD /* RemoteSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CAF3E7316193A6DFB20BA224D7B720 /* RemoteSettings.swift */; };
-		6728F281C83FAFE69589FC0BFE32B372 /* OlympusSensorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB69F20671429D5000CDD5EF09E7624 /* OlympusSensorManager.swift */; };
 		67AF0FFA8C4DD3594D2D4F7F0EB13D6F /* LineChartDataSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739383A97BFF588CDFA0A5C483495CA4 /* LineChartDataSet.swift */; };
 		67B204F5256FEF107E699EC998AB9998 /* FIRCLSdSYM.m in Sources */ = {isa = PBXBuildFile; fileRef = D0B93A23C0482835B0938FC7422D9262 /* FIRCLSdSYM.m */; };
 		68047C5BD5B0C77274FAB5CD38F2EF0E /* TriangleShapeRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8080312250A9A6E52D1FF7E01E95218 /* TriangleShapeRenderer.swift */; };
@@ -427,7 +413,6 @@
 		6BF89CE827B78634E997E64AB70EA507 /* GDTCOREvent.h in Headers */ = {isa = PBXBuildFile; fileRef = EEC326240E9A793528C75858AF6F51A7 /* GDTCOREvent.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		6C1CA20C74F689597D5746BB9384BBDE /* GULHeartbeatDateStorable.h in Headers */ = {isa = PBXBuildFile; fileRef = F4DA89AF311EB41E16754E031974FD68 /* GULHeartbeatDateStorable.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		6C9AD174AC82A267D14C9C052144003F /* GDTCORMetricsMetadata.m in Sources */ = {isa = PBXBuildFile; fileRef = 8383B6434B47D4D4F95B95B30D5586F6 /* GDTCORMetricsMetadata.m */; };
-		6CEE6FF2CDE9C181764E17417F9F5AA6 /* OlympusBluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53F02536EC315D75103995C97EA830B7 /* OlympusBluetoothManager.swift */; };
 		6D39C765F96F0DABCA19FE4AF0B0840A /* GDTCCTUploader.m in Sources */ = {isa = PBXBuildFile; fileRef = 6E3837150192726ECECC742521A2CFD5 /* GDTCCTUploader.m */; };
 		6D6F86EFA52E4F33F2A9F33F1F59D3EC /* FIRInstallationsStatus.h in Headers */ = {isa = PBXBuildFile; fileRef = 57D3FC3E5B9F7654E5AE542508F02B3D /* FIRInstallationsStatus.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		6D878FE6964089A7F47EB406F566ECC0 /* ScatterChartDataSetProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E66E775689ED6EB4A61581773E2D91F1 /* ScatterChartDataSetProtocol.swift */; };
@@ -441,13 +426,11 @@
 		7207A5C4DFF2AB57FCFC9745C35BD1B3 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 94E9152E2DF7BE75526EBDE149B7CFD3 /* Foundation.framework */; };
 		7278C4CD5B35C5376DC5D8A8E4BD4511 /* FIRCLSNetworkResponseHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 125EFC034CD1EEE8AA27000187B6D3F5 /* FIRCLSNetworkResponseHandler.m */; };
 		72AF0D866E4E8D89B411E398BA0BF013 /* dwarf.h in Headers */ = {isa = PBXBuildFile; fileRef = 27013A11EDF8D2BDE2D522BBA5565C6A /* dwarf.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		72B31B6AED261C15D28EEC69DE3240EA /* OlympusRFDFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53A7C097B11D8B230674D2CD712DF7 /* OlympusRFDFunctions.swift */; };
 		72BA74F8DF73484F097D32E674362448 /* client_metrics.nanopb.c in Sources */ = {isa = PBXBuildFile; fileRef = BAB8D5908D799809BB42B0D0C4D9A0FD /* client_metrics.nanopb.c */; };
 		72BC1AEF757C8097F1CA250442EB450B /* FIRLibrary.h in Headers */ = {isa = PBXBuildFile; fileRef = 8F1A28F48078A8F4C9F5F3AE549EE6B4 /* FIRLibrary.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		72D291892DF6BBE2BDCE856C2DBD0F0E /* SessionCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7766C722317416D85E44EDFEC0DE76 /* SessionCoordinator.swift */; };
 		738E5BF0FEFD3C2D678354C8BB21FE62 /* GDTCORFlatFileStorage+Promises.h in Headers */ = {isa = PBXBuildFile; fileRef = 2E662AE4EF8BC68AE789DA2987CF5513 /* GDTCORFlatFileStorage+Promises.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		73A1D609D1FAE2328D4B7A0CEFA3486A /* FIRCrashlytics.h in Headers */ = {isa = PBXBuildFile; fileRef = 658D30388422551D996E53AF8C083C83 /* FIRCrashlytics.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		756A070586AB8B78FFE56F223A881F74 /* OlympusNetworkConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAE55EBBBD5E8BC840CE4A335CDA0664 /* OlympusNetworkConstants.swift */; };
 		7580F4771BAB028F8BC36BAE0E1E01BE /* FIRLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 121BBC5DCD41D57DE6730996D6374E7E /* FIRLogger.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		758D938D2450D68DE327763BD6787F05 /* GULSceneDelegateSwizzler.m in Sources */ = {isa = PBXBuildFile; fileRef = 4019820CF3936F7A03F337115020A745 /* GULSceneDelegateSwizzler.m */; };
 		75E493B239F29100777CBB38AAAE08D7 /* BarLineScatterCandleBubbleRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6190F9291ED2C92AEF7646423724A111 /* BarLineScatterCandleBubbleRenderer.swift */; };
@@ -471,18 +454,14 @@
 		7C1A3799D69C2E6CC3891E22275D8B45 /* FIRAppInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = 666F0E49FB71634FE2C3478193CE7D77 /* FIRAppInternal.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		7C415C51E431D2844F6DC27FCC7FB2AF /* FIRInstallationsIIDStore.m in Sources */ = {isa = PBXBuildFile; fileRef = FAF4B51F3A2003DEB51F8DDBDF93494A /* FIRInstallationsIIDStore.m */; };
 		7CCF82181DBCB654E8D0C2A7952AEF3F /* PromisesSwift-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 0ED55F6C82D2D485F5E566237EB8C3E8 /* PromisesSwift-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		7D3A359E249C3873C019E523E35BFA4C /* OlympusPDRDistanceEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C7C39FBA8EAE01BB22423E32194C451 /* OlympusPDRDistanceEstimator.swift */; };
 		7E03E0F41746FD084F1B9A085C7DD54C /* IsAppEncrypted.h in Headers */ = {isa = PBXBuildFile; fileRef = BD0906A545FAFD12DAADA4261208EE17 /* IsAppEncrypted.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		7E38EA07E9DB06809F38E37076298623 /* GDTCORFlatFileStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = F17C0967AA773AD5BCB4CD55C7E29FAA /* GDTCORFlatFileStorage.m */; };
 		7E4D58075ADB79DEBE2D2B53422B4102 /* FIRAnalyticsInteropListener.h in Headers */ = {isa = PBXBuildFile; fileRef = 19BE3201B60EF7C1DEA6B6D970FAC1B7 /* FIRAnalyticsInteropListener.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		7E7749B21AF0AB3824F187F4AF21C360 /* FIRCLSMachException.c in Sources */ = {isa = PBXBuildFile; fileRef = 815CB79B3765D3A27605BF24DA436EFE /* FIRCLSMachException.c */; };
-		7EC2FF8BCE43BC0F73DF690A407C2A1D /* OlympusUnitStatusEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BADCFC20826A5B4F31B2207A54DCB73C /* OlympusUnitStatusEstimator.swift */; };
 		7FBA83CE09B8A5DE4BB7FD851684F80B /* FBLPromise+Testing.m in Sources */ = {isa = PBXBuildFile; fileRef = 5D66E863D62DDA3FF28914B0817D6056 /* FBLPromise+Testing.m */; };
 		8013874B60EDB9FC4A4F29FE3F5ACC6D /* _ObjC_HeartbeatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111F22E285627A07E2FD47B60793F6B9 /* _ObjC_HeartbeatController.swift */; };
 		801F32AFCDA6CBB7D3661AF892339D28 /* FIRHeartbeatLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 672571003998EA7FD88A71CACD5A157A /* FIRHeartbeatLogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		80E88D848625ADD942D49552233940C3 /* XAxisRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDCFB9B7A80D27DD7BA4FF4AD235C868 /* XAxisRenderer.swift */; };
-		81286BD93D454888FC5EF80A595DE38A /* OlympusStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21AB4816C7BA11313ABCA3D7F0C15093 /* OlympusStateManager.swift */; };
-		817717FA7E99FBB286E09BA595B28A45 /* OlympusEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7DD6553CE7D55AB9E4AE752B83EFB9F /* OlympusEntity.swift */; };
 		82369B8DFFCCCFE881045F6DADC1734B /* GDTCORStorageProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 20B65324DE08191EA9114CCEEFC4916E /* GDTCORStorageProtocol.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		8261A5FF4AA5FDABBE9355025B03BC9D /* FIRCLSExecutionIdentifierModel.h in Headers */ = {isa = PBXBuildFile; fileRef = AD1DEC4E13595F29118E06C3331D7373 /* FIRCLSExecutionIdentifierModel.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		82CC8695DFDDA198680A7C7BF2DFAAAE /* FIRCurrentDateProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = DCA5C644AE8C0F24044B644AFA5FAB2C /* FIRCurrentDateProvider.m */; };
@@ -490,7 +469,6 @@
 		839F873A001FE9169E9978BE89195B5F /* ScatterChartDataSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD4986E7A5E0FA471AB65EE580E2019 /* ScatterChartDataSet.swift */; };
 		83B784BC643EC90D2F45EA412B8DEE78 /* GDTCOREvent+GDTMetricsSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = AD31A387AF0D99257F55AFDECA79B508 /* GDTCOREvent+GDTMetricsSupport.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		83BC732EB871663140FAD4257E6D8831 /* FIRInstallationsErrorUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 542E0EED0195212A98A8068F055D85AF /* FIRInstallationsErrorUtil.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		83C5445C5188968A20D3D1DF3A8912D0 /* Node.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93BCBE3200C41784ED079B282B24881C /* Node.swift */; };
 		840B5B00D61E653CF487077F231C11B0 /* FIRCLSMachOSlice.m in Sources */ = {isa = PBXBuildFile; fileRef = 98AFB83ED9CFCAA922B3AC015227F1DA /* FIRCLSMachOSlice.m */; };
 		84222574F754D0A61BFD389958CC345A /* GULNetworkMessageCode.h in Headers */ = {isa = PBXBuildFile; fileRef = 533C3EC54911383E0E61452548629E37 /* GULNetworkMessageCode.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		84C41C729298CABAD27D13D1096118BA /* FIRComponentType.h in Headers */ = {isa = PBXBuildFile; fileRef = EA3D29145CD5A2F0F89C0FB2E94B16CB /* FIRComponentType.h */; settings = {ATTRIBUTES = (Project, ); }; };
@@ -519,7 +497,6 @@
 		8A68B69E5477ABDC627F5C1B4212F6FF /* FIRCLSUUID.h in Headers */ = {isa = PBXBuildFile; fileRef = F8B76F69B7BBB5695BFB570E0CDAC50B /* FIRCLSUUID.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		8A957B8DA377B10FF5871D216A2FF586 /* FIRComponentContainer.h in Headers */ = {isa = PBXBuildFile; fileRef = 79504DFB87D2E3F11F3F3E0DA550A09A /* FIRComponentContainer.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		8B34E5B5CC765C0AE36AEE6BAAC27E65 /* FIRComponentContainer.h in Headers */ = {isa = PBXBuildFile; fileRef = DDA56E40DB4D820ACEF9E2CEFCC83DCD /* FIRComponentContainer.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		8CB65D56EDA081D5FD0826C89831CACC /* OlympusUnitDRGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91EB908019C3BEA4E4DD2F190E2CE6CC /* OlympusUnitDRGenerator.swift */; };
 		8CBBABF8343FBDF9C887E1FC12C95D53 /* FirebaseRemoteConfigInterop-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8CA195F9D1F35B3C24BFDFCC565865 /* FirebaseRemoteConfigInterop-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8DCEDFD94343EA177F253F0C12E9186B /* FBLPromise+Retry.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C59D0BDF720C72DA3A384148FC75C49 /* FBLPromise+Retry.m */; };
 		8F28CCB11BE6C7D139D7B2CD4E056438 /* GDTCORRegistrar.m in Sources */ = {isa = PBXBuildFile; fileRef = BBA28A5EE2512611A4DDD9AA260F5EB8 /* GDTCORRegistrar.m */; };
@@ -531,7 +508,6 @@
 		8FD826D1119F87EB638FAC888F74BE51 /* LineChartData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FE41509847F9B7C7D220AB29B74808C /* LineChartData.swift */; };
 		8FDCA72F349897774711AA8AB1F23522 /* CandleChartDataEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 971BF7D3FC44EB7657E31F12A9FD3E3F /* CandleChartDataEntry.swift */; };
 		91C66BFA999B44B31DF2BCDB7FDBC829 /* Rotate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2500B0C9468DDA08B8024A74DDB68616 /* Rotate.swift */; };
-		92C4C1BE935C646E03E8F2CFB11944EF /* OlympusBuildingLevelChanger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C6C016E7FF8B627BBEEB6248898C343 /* OlympusBuildingLevelChanger.swift */; };
 		92C7BAE4CC1EA95C35F3CE1D2DFB463B /* YAxis.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD89FA360DD74DD91BBE09653A40ADAF /* YAxis.swift */; };
 		92F85BA954CAD476F1964EFD067DF138 /* LineChartRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920A868AD01CEF13826D1EE9D05600C4 /* LineChartRenderer.swift */; };
 		932AE52104A0AB336F6CFED603F1EB72 /* FIRInstallationsBackoffController.m in Sources */ = {isa = PBXBuildFile; fileRef = EB358F8F36FA5DAF9DC3441CEBBD89B4 /* FIRInstallationsBackoffController.m */; };
@@ -544,7 +520,6 @@
 		954359C1F38A0865CD1FB0B07317395F /* FIRCLSSymbolResolver.m in Sources */ = {isa = PBXBuildFile; fileRef = 8C0429A5608AF7791383F0CD494A7443 /* FIRCLSSymbolResolver.m */; };
 		9567A26CD3A4350EA7FFA751AF032462 /* GULUserDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = E43BAFF4D5698E8F349CF34353529D54 /* GULUserDefaults.m */; };
 		95826C07F14DFF13BAA349F49C84917F /* Platform+Graphics.swift in Sources */ = {isa = PBXBuildFile; fileRef = F865E26C19DBAC79D841D026EC50935F /* Platform+Graphics.swift */; };
-		9591C75498225F448D5BEA823A6534BC /* OlympusPeakValleyDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 344CAD03FFCC7FD92973278B32F1F99A /* OlympusPeakValleyDetector.swift */; };
 		95985C051E69C61E471EDAD5CD30D9F5 /* GDTCORConsoleLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 3804986CFAC4DAEFDB7CB191212A35A6 /* GDTCORConsoleLogger.m */; };
 		95A1B95CBBECD93E94F4DE00DE1DF658 /* SwiftAlgorithms-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D2D3F9ABF183D3C7CCC72838917D7B5 /* SwiftAlgorithms-dummy.m */; };
 		95F79405200A197E7F201569D3834CC8 /* FIRStackFrame.h in Headers */ = {isa = PBXBuildFile; fileRef = 548BBE538D54CD8669B3BB0AE41A8C5B /* FIRStackFrame.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -564,7 +539,6 @@
 		989C55D59430BB74A32AA4B291F9D867 /* FIRLoggerLevel.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F7D8B4FF857D1066B0CBB0FC51AC549 /* FIRLoggerLevel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		99288EBF5E5716EF2F27C0978E602446 /* AxisValueFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F260EEF29F197345D23A1DF8933C2B0D /* AxisValueFormatter.swift */; };
 		994F5496167E74506363EAB76B13AB79 /* FIRStackFrame.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CE0B5200709F22D99B4A3A832B7E791 /* FIRStackFrame.m */; };
-		99AB7DF8D3D2A912A9E21286F038B97F /* OlympusDRDistanceEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 092CF44613925C394801C2589537CDAE /* OlympusDRDistanceEstimator.swift */; };
 		99B6D1D40DA0EC779B99D1AF9F2E1EB9 /* FIRComponentContainer.h in Headers */ = {isa = PBXBuildFile; fileRef = DF4B7BA355DE90041D71784DB0596593 /* FIRComponentContainer.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		9AA869E29ED1ED03AE93C5941028BBEC /* GULLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C09947BB9EC73278686C145854B018C /* GULLogger.m */; };
 		9B23EDD7C9AFC45D0C82CAB58D8C033E /* FIRHeartbeatLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 1FBAF820A5CD788A83E0C03701B5A614 /* FIRHeartbeatLogger.h */; settings = {ATTRIBUTES = (Project, ); }; };
@@ -586,7 +560,6 @@
 		A18DCA2E4390CF83891A75973DD5BE00 /* FIRCLSProcessReportOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 30EAE8A6DB2DA5046A997DB14D86BFF6 /* FIRCLSProcessReportOperation.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		A197D3AA32410E08AC2CCC1D0D2EBFF7 /* FBLPromise+Catch.m in Sources */ = {isa = PBXBuildFile; fileRef = E64A7E3EB20C64247A52757187F5AF5B /* FBLPromise+Catch.m */; };
 		A1AEF8712C0D6597A56EE1C9E6A8C7F9 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = CD44E5CF515084A338BE2BA914CB4305 /* PrivacyInfo.xcprivacy */; };
-		A28D61E6C3A168F2310176E6FE47380D /* OlympusPhaseController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E1BA908D32C7CE3FE60CA04ADCB7592 /* OlympusPhaseController.swift */; };
 		A2D1A4890603B208B7A9EE2DD03A0525 /* Indexed.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7E727F3198A497FB03A5D6AB227C67B /* Indexed.swift */; };
 		A30C038EDC0F58383128AAECB8FF4C74 /* FIRLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = DE5CF0231F5508D69C14A1A7879E69CC /* FIRLogger.m */; };
 		A365F13F760737D56827B5236A409C5B /* FIRCLSHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = C98B09FF256B4E4771B257BC97EAB912 /* FIRCLSHandler.h */; settings = {ATTRIBUTES = (Project, ); }; };
@@ -643,8 +616,44 @@
 		B2232125D1648C91E02E1535D6559539 /* FIRCLSFABNetworkClient.m in Sources */ = {isa = PBXBuildFile; fileRef = A1219FAC5D08F87771098AC5280EFBCB /* FIRCLSFABNetworkClient.m */; };
 		B291676E233A48CFD345E72095FE2013 /* FIRComponentContainer.h in Headers */ = {isa = PBXBuildFile; fileRef = CE2A34AA651BFAFFA2D8D17FABAFC954 /* FIRComponentContainer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B2DD7CF96035374C7AC80D88B8904691 /* ShapeRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CA0D3880930CB65C570D1DA2C250229 /* ShapeRenderer.swift */; };
+		B305FA582C33BFD000DBE807 /* OlympusBluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA572C33BFD000DBE807 /* OlympusBluetoothManager.swift */; };
+		B305FA5A2C33BFEE00DBE807 /* OlympusRFDFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA592C33BFEE00DBE807 /* OlympusRFDFunctions.swift */; };
+		B305FA5C2C33C00A00DBE807 /* OlympusRflowCorrelator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA5B2C33C00A00DBE807 /* OlympusRflowCorrelator.swift */; };
+		B305FA5E2C33C02300DBE807 /* OlympusRssCompensator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA5D2C33C02300DBE807 /* OlympusRssCompensator.swift */; };
+		B305FA602C33C04600DBE807 /* ArrayExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA5F2C33C04600DBE807 /* ArrayExtension.swift */; };
+		B305FA622C33C05300DBE807 /* NotificationExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA612C33C05300DBE807 /* NotificationExtension.swift */; };
+		B305FA642C33C05F00DBE807 /* StringExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA632C33C05F00DBE807 /* StringExtension.swift */; };
+		B305FA662C33C08F00DBE807 /* OlympusFileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA652C33C08F00DBE807 /* OlympusFileManager.swift */; };
+		B305FA682C33C09C00DBE807 /* OlympusFileDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA672C33C09C00DBE807 /* OlympusFileDownloader.swift */; };
+		B305FA6A2C33C0C100DBE807 /* JSONConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA692C33C0C100DBE807 /* JSONConverter.swift */; };
+		B305FA6C2C33C0CB00DBE807 /* OlympusJsonDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA6B2C33C0CB00DBE807 /* OlympusJsonDecoder.swift */; };
+		B305FA6E2C33C0F100DBE807 /* OlympusBuildingLevelChanger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA6D2C33C0F100DBE807 /* OlympusBuildingLevelChanger.swift */; };
+		B305FA702C33C10700DBE807 /* OlympusPhaseController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA6F2C33C10700DBE807 /* OlympusPhaseController.swift */; };
+		B305FA722C33C11A00DBE807 /* OlympusRouteTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA712C33C11A00DBE807 /* OlympusRouteTracker.swift */; };
+		B305FA742C33C12D00DBE807 /* OlympusSectionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA732C33C12D00DBE807 /* OlympusSectionController.swift */; };
+		B305FA762C33C14000DBE807 /* OlympusStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA752C33C14000DBE807 /* OlympusStateManager.swift */; };
+		B305FA782C33C15200DBE807 /* OlympusTrajectoryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA772C33C15200DBE807 /* OlympusTrajectoryController.swift */; };
+		B305FA7A2C33C18700DBE807 /* OlympusConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA792C33C18700DBE807 /* OlympusConstants.swift */; };
+		B305FA7C2C33C19E00DBE807 /* OlympusEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA7B2C33C19E00DBE807 /* OlympusEntity.swift */; };
+		B305FA7E2C33C1AF00DBE807 /* OlympusObservers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA7D2C33C1AF00DBE807 /* OlympusObservers.swift */; };
+		B305FA802C33C1CA00DBE807 /* OlympusSensorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA7F2C33C1CA00DBE807 /* OlympusSensorManager.swift */; };
+		B305FA822C33C1E900DBE807 /* OlympusUsefulFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA812C33C1E900DBE807 /* OlympusUsefulFunctions.swift */; };
+		B305FA842C33C20A00DBE807 /* DeviceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA832C33C20A00DBE807 /* DeviceModel.swift */; };
+		B305FA862C33C21700DBE807 /* Node.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA852C33C21700DBE807 /* Node.swift */; };
+		B305FA882C33C22100DBE807 /* LinkedList.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA872C33C22100DBE807 /* LinkedList.swift */; };
+		B305FA8A2C33C25000DBE807 /* OlympusNetworkChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA892C33C25000DBE807 /* OlympusNetworkChecker.swift */; };
+		B305FA8C2C33C26500DBE807 /* OlympusNetworkConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA8B2C33C26500DBE807 /* OlympusNetworkConstants.swift */; };
+		B305FA8E2C33C27700DBE807 /* OlympusNetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA8D2C33C27700DBE807 /* OlympusNetworkManager.swift */; };
+		B305FA902C33C28D00DBE807 /* OlympusDRDistanceEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA8F2C33C28D00DBE807 /* OlympusDRDistanceEstimator.swift */; };
+		B305FA922C33C2A400DBE807 /* OlympusMathFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA912C33C2A400DBE807 /* OlympusMathFunctions.swift */; };
+		B305FA942C33C2B400DBE807 /* OlympusPacingDetectFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA932C33C2B400DBE807 /* OlympusPacingDetectFunctions.swift */; };
+		B305FA962C33C2C600DBE807 /* OlympusPDRDistanceEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA952C33C2C600DBE807 /* OlympusPDRDistanceEstimator.swift */; };
+		B305FA982C33C2D800DBE807 /* OlympusPeakValleyDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA972C33C2D800DBE807 /* OlympusPeakValleyDetector.swift */; };
+		B305FA9A2C33C2EB00DBE807 /* OlympusStepLengthEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA992C33C2EB00DBE807 /* OlympusStepLengthEstimator.swift */; };
+		B305FA9C2C33C2FC00DBE807 /* OlympusUnitAttitudeEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA9B2C33C2FC00DBE807 /* OlympusUnitAttitudeEstimator.swift */; };
+		B305FA9E2C33C30F00DBE807 /* OlympusUnitDRGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA9D2C33C30F00DBE807 /* OlympusUnitDRGenerator.swift */; };
+		B305FAA02C33C32000DBE807 /* OlympusUnitStatusEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA9F2C33C32000DBE807 /* OlympusUnitStatusEstimator.swift */; };
 		B330D4879E6DB962A4B765DC1701A245 /* GULNetworkInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = 780FC3DB00F7698B0FFBD671F56CA10E /* GULNetworkInternal.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		B39464A62BE9B97300A929CC /* OlympusFileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B39464A52BE9B97300A929CC /* OlympusFileManager.swift */; };
 		B3E91A918126C3D265E295A275A5AA83 /* FIRCLSReportAdapter.m in Sources */ = {isa = PBXBuildFile; fileRef = 40A01E180FDBA6E118BF5CEAEA9F0092 /* FIRCLSReportAdapter.m */; };
 		B4015BE1313094DACA3DBB86191C5030 /* CombinedHighlighter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EF83C3BB4E6D70C22C6957DC42117C0 /* CombinedHighlighter.swift */; };
 		B4B20AD0CA1AC876CE1AA55870C1559C /* GDTCOREvent_Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 53908EA759EC49201F998819B6771EEE /* GDTCOREvent_Private.h */; settings = {ATTRIBUTES = (Project, ); }; };
@@ -658,7 +667,6 @@
 		B6842E8216234F894A1E16B3F68ACE47 /* FIRExceptionModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 649087A13124755CA9825D493D04FD94 /* FIRExceptionModel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B6BE0AA5FDAEE6E1C50B7096152E3247 /* FIRCLSInstallIdentifierModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 238277D33C08A9A70EAA38AC44B62371 /* FIRCLSInstallIdentifierModel.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		B709B3F0FD7D89C78DE139C07924760B /* Highlighter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15C21A5EEED570802041309F059A9A3B /* Highlighter.swift */; };
-		B70EDB2DE592D3A922043B7F2CECF6B8 /* OlympusObservers.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2D8C9B94CF10E2D0312DD2F7AFD8CCA /* OlympusObservers.swift */; };
 		B73EC799F8A8BF2D4EFA597976986D94 /* GDTCORMetricsMetadata.h in Headers */ = {isa = PBXBuildFile; fileRef = 0A2F05CC352B6940434D3BB1677CDBE1 /* GDTCORMetricsMetadata.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		B7BBCEEBC3108B283BAFBFB4FEEE32FB /* FIRCLSAllocate.c in Sources */ = {isa = PBXBuildFile; fileRef = BF1932FA320141F9842D71B57E41110E /* FIRCLSAllocate.c */; };
 		B7D3233A0852570C4FD422741A19D55F /* nanopb-nanopb_Privacy in Resources */ = {isa = PBXBuildFile; fileRef = 3227F3FC45681D7CEE5D1355A532398A /* nanopb-nanopb_Privacy */; };
@@ -715,13 +723,10 @@
 		CA81CA8FDE59E9B9F767B078DC030A98 /* FIRInstallationsErrors.h in Headers */ = {isa = PBXBuildFile; fileRef = 7E4C621AD5EA9001574CE51C9EE01E9C /* FIRInstallationsErrors.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CA823EEDC9320F3F4C327E69ED3E5F6E /* GDTCORDirectorySizeTracker.h in Headers */ = {isa = PBXBuildFile; fileRef = 27AC803FAAAED14F95C40663F44355FE /* GDTCORDirectorySizeTracker.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		CA8E99E20AC6AB47E995DA2C2C3E6B78 /* GDTCORStorageSizeBytes.h in Headers */ = {isa = PBXBuildFile; fileRef = 314F5257119F3E61287EEEDD258786F8 /* GDTCORStorageSizeBytes.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		CAC9AC6D32A7C9226EC3279C6E876BBE /* OlympusMathFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2091E7DF68F28D34709923023AC6D7F /* OlympusMathFunctions.swift */; };
-		CB3677765FC29D5DF559C3C27046E892 /* OlympusFileDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAAEEB8D9392098EC5F5B1D3D23867E1 /* OlympusFileDownloader.swift */; };
 		CCDC0ADA4DA18BF25EC104B32620F2E2 /* cct.nanopb.c in Sources */ = {isa = PBXBuildFile; fileRef = 124F9715B0DAC89F241223775E6F75B6 /* cct.nanopb.c */; };
 		CD8096C2F073372CCC725603287471F8 /* FIRComponentType.h in Headers */ = {isa = PBXBuildFile; fileRef = D6D6E02683E61E69D640EDAB9EB1752E /* FIRComponentType.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CDAB5AF38623BCB3C9D376552CB00455 /* FIRCLSCompoundOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 83F7D543BD5E6D1E3DB3C2E2B7C7CAA1 /* FIRCLSCompoundOperation.m */; };
 		CDD78157606040E4F623E20FBC0E73ED /* FIRCLSRecordApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = A8FC858B496B5657D99537A2EBB96B7C /* FIRCLSRecordApplication.m */; };
-		CDDB584B0C3EBDC9C00795297F7F84A5 /* OlympusConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12EF46471951D95A770BE4FAAD4DE5C0 /* OlympusConstants.swift */; };
 		CE2EF80A6EE5F1C30C9FDA9463F4E5A1 /* FIRHeartbeatLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 64A63755021F5F18CD64A54272242FDC /* FIRHeartbeatLogger.m */; };
 		CE305D3949660D8E53A6A7467D6EF63A /* FIRCLSMultipartMimeStreamEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = E219DDD8C286F4A2F5AAD7F1EDFD8A0F /* FIRCLSMultipartMimeStreamEncoder.m */; };
 		CE36829A8549473AAF4AAB5DD6E07374 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 94E9152E2DF7BE75526EBDE149B7CFD3 /* Foundation.framework */; };
@@ -736,7 +741,6 @@
 		D09D81F488542F55874BE09260DF5349 /* Promise+Race.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7E352A24E9FED05180F9610A2A88E1C /* Promise+Race.swift */; };
 		D184EA3F9BCD8AA97A80375D11CF1B7F /* GDTCCTCompressionHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 69250B0B2EA2074F7C7DDBA249D43BF4 /* GDTCCTCompressionHelper.m */; };
 		D2FB387B155067BC3041CD855E444E1B /* FIRCLSUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = 51A456B862FA73C93B69113303AAFFD5 /* FIRCLSUtility.m */; };
-		D36EFDA2E9935052ED5B681DE73CF1BD /* OlympusPacingDetectFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28BF4CB6AB7C4F1DE32C1B5174801639 /* OlympusPacingDetectFunctions.swift */; };
 		D3C1DF71E5C9B446A1B111B0BB749AA3 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 94E9152E2DF7BE75526EBDE149B7CFD3 /* Foundation.framework */; };
 		D44078A1F1CDB70D6EE87689EE274CAD /* AnimatedMoveViewJob.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CCC69B6D513F079C96056BD80B9A34D /* AnimatedMoveViewJob.swift */; };
 		D4CA2E7BEFB05036A68F9E7764B58928 /* FIRCLSSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = C855228CD665FD83294DDB8E636613B2 /* FIRCLSSettings.m */; };
@@ -821,7 +825,6 @@
 		ED6EF326ECC250BB7DB92E7E919B62CF /* FIRCLSProcess.c in Sources */ = {isa = PBXBuildFile; fileRef = D78137D2FED3495D9656B7ADC32B0DDC /* FIRCLSProcess.c */; };
 		EDADF4669731CCF5FEA4B5A987BEDE77 /* compliance.nanopb.c in Sources */ = {isa = PBXBuildFile; fileRef = F6C245A39BF18CA87ABB7C2F32ABEBF0 /* compliance.nanopb.c */; };
 		EDDF9582903FB5520F01DFE208EB0784 /* FIRFirebaseUserAgent.m in Sources */ = {isa = PBXBuildFile; fileRef = E7C45FF0B06D82868B57C427EC58953B /* FIRFirebaseUserAgent.m */; };
-		EDF7FD58A51408E607B2B185E4067237 /* DeviceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8415983AEBE64235D6038AE066C36ED3 /* DeviceModel.swift */; };
 		EE1FA6FFC0360594E5FB1836E9D50D32 /* FIRCLSFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 732A3532E6B460B128112EBB1B5DC40B /* FIRCLSFile.m */; };
 		EF96959C3049DAF932F792D19608F437 /* BubbleChartDataEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB8264F906FA8F7F5A5BDC701AE3AF8D /* BubbleChartDataEntry.swift */; };
 		EFB50EC81679D248C14EB6BFACC27EEC /* FIRStackFrame_Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D72D58ED9613E525787641BA810B74CB /* FIRStackFrame_Private.h */; settings = {ATTRIBUTES = (Project, ); }; };
@@ -843,7 +846,6 @@
 		F5EC37AD29E9491D6904CFE9F8BF659D /* cct.nanopb.h in Headers */ = {isa = PBXBuildFile; fileRef = 5EFD09FB8D816A0DC255197B718EDEE4 /* cct.nanopb.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		F69382A54E7A89D29F33BCC7565F262D /* GDTCOREndpoints_Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CACAF255031F8FC20696B6384B5364A /* GDTCOREndpoints_Private.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		F718864C733CDDD58E3B1FA2E904F1A2 /* FIRDependency.h in Headers */ = {isa = PBXBuildFile; fileRef = 51C1211C51C3067CD364853178D49F95 /* FIRDependency.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		F71AE2EAEFB73EC0420E6888AF2B4764 /* OlympusNetworkChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E531440931D029490F8A50957240F57 /* OlympusNetworkChecker.swift */; };
 		F7273D3E7BE6D43A0430EC83EF4701B0 /* FIRCLSManagerData.m in Sources */ = {isa = PBXBuildFile; fileRef = 62ECE07C324F70B7FD5CBC4C2FCD30C8 /* FIRCLSManagerData.m */; };
 		F78B392035C687FC79F0017BD4CACC89 /* FirebaseSessionsError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42A9BEAB19CEDDD3ED2B36ED15AABC2D /* FirebaseSessionsError.swift */; };
 		F79F950874C5B3DD5B0E8E4D2FD6FB29 /* FIRCLSDwarfUnwind.h in Headers */ = {isa = PBXBuildFile; fileRef = 432300E315E90FB18E3A2C01CDE7D01F /* FIRCLSDwarfUnwind.h */; settings = {ATTRIBUTES = (Project, ); }; };
@@ -863,7 +865,6 @@
 		FB1DB0FFBBE85BF2862F2386CB809D12 /* GoogleUtilities-GoogleUtilities_Privacy in Resources */ = {isa = PBXBuildFile; fileRef = 44E291D18340EAC3F761346198515323 /* GoogleUtilities-GoogleUtilities_Privacy */; };
 		FB6851ED18F5BB9B69325FD28D978AF2 /* FirstNonNil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97BDA7BC6BA7E677241160CA02C68BD7 /* FirstNonNil.swift */; };
 		FB72825750ADCA4A6CF886E359AD9430 /* Promise+Then.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A63801BDA45ED9EF994E1FB39DEC917 /* Promise+Then.swift */; };
-		FBA5E0DE657D80EEF2B5E49D12A1A944 /* UsefulFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78D4D2A0C0FE2DB2DAD197973BEC7AEA /* UsefulFunctions.swift */; };
 		FBD738385C0E1F811E80ECF03A821724 /* FIRLibrary.h in Headers */ = {isa = PBXBuildFile; fileRef = 298A2F61235D37B23A23A9C27CCA6D47 /* FIRLibrary.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		FC0C7262B3BE6F2D6D4F9F485CB9E0CB /* Chain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E4F833646A8890532185E86C041ED6E /* Chain.swift */; };
 		FC1FAF373A9EA9E5B476E3A30C226C56 /* AxisRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1071FEF880E03A5C7172268C396BEC2B /* AxisRenderer.swift */; };
@@ -875,7 +876,6 @@
 		FD8BFF36768B8F569E269ED06BD10557 /* Platform+Gestures.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD92D1567621C4AA5D3CF67A10A495E8 /* Platform+Gestures.swift */; };
 		FE367B40DDF14017468C6989B2BD3A98 /* external_privacy_context.nanopb.h in Headers */ = {isa = PBXBuildFile; fileRef = E83A87384C1F665AFDB66870A070052A /* external_privacy_context.nanopb.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		FEAE72583E6CFCD21D3AF7406D7C3A22 /* DataApproximator+N.swift in Sources */ = {isa = PBXBuildFile; fileRef = D701BE4A57B24DE3D2468996BCE96A36 /* DataApproximator+N.swift */; };
-		FEB8B32103E73659917EA45364212A05 /* OlympusTrajectoryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19BBAAB3393D1AC854520354FFB8C751 /* OlympusTrajectoryController.swift */; };
 		FEF98EBDC0A3E4588FB23A1F8A992B52 /* IsAppEncrypted.m in Sources */ = {isa = PBXBuildFile; fileRef = 19D876CB50008E54A2EB072B86C57D97 /* IsAppEncrypted.m */; };
 		FF1B2D80122562F270172CFF9131EBA2 /* FIRCLSFABHost.m in Sources */ = {isa = PBXBuildFile; fileRef = 94B26CDEA3674033E2F6A75A6978802E /* FIRCLSFABHost.m */; };
 		FF363E21E3A10ADC15B24525D6E6F3E9 /* XShapeRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F5330EC4BB632C45FCF0EEA0F33CB2E /* XShapeRenderer.swift */; };
@@ -1382,14 +1382,12 @@
 		0883A9FE1C15E54641E4CA2428C1194F /* FBLPromise+Retry.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "FBLPromise+Retry.h"; path = "Sources/FBLPromises/include/FBLPromise+Retry.h"; sourceTree = "<group>"; };
 		08D25D630E8A18CF903FF7E48DAF8DDE /* FIRCLSMultipartMimeStreamEncoder.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSMultipartMimeStreamEncoder.h; path = Crashlytics/Shared/FIRCLSNetworking/FIRCLSMultipartMimeStreamEncoder.h; sourceTree = "<group>"; };
 		08F315E6DD99F8982D6D237C5FB40266 /* GULNetworkInfo.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = GULNetworkInfo.m; path = GoogleUtilities/Environment/NetworkInfo/GULNetworkInfo.m; sourceTree = "<group>"; };
-		092CF44613925C394801C2589537CDAE /* OlympusDRDistanceEstimator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusDRDistanceEstimator.swift; sourceTree = "<group>"; };
 		09573CED9F290CCF2EF2AF248048437D /* ViewPortHandler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ViewPortHandler.swift; path = Source/Charts/Utils/ViewPortHandler.swift; sourceTree = "<group>"; };
 		09E979063E9E8AD7F8FF7F421D207A98 /* Storage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Storage.swift; path = FirebaseCore/Internal/Sources/HeartbeatLogging/Storage.swift; sourceTree = "<group>"; };
 		0A2F05CC352B6940434D3BB1677CDBE1 /* GDTCORMetricsMetadata.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = GDTCORMetricsMetadata.h; path = GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetricsMetadata.h; sourceTree = "<group>"; };
 		0A7CDBD0134008A3DE488BC16B469C64 /* FBLPromise+Delay.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "FBLPromise+Delay.h"; path = "Sources/FBLPromises/include/FBLPromise+Delay.h"; sourceTree = "<group>"; };
 		0A9F78D78CCE1CD523663BAB5AE872F2 /* GoogleAppMeasurementIdentitySupport.xcframework */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = wrapper.xcframework; name = GoogleAppMeasurementIdentitySupport.xcframework; path = Frameworks/GoogleAppMeasurementIdentitySupport.xcframework; sourceTree = "<group>"; };
 		0AA350A8B68B659F7560E987A0DCB037 /* OlympusSDK */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = OlympusSDK; path = OlympusSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		0ACD8BFDDA118F60976A1804F24084F7 /* LinkedList.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LinkedList.swift; sourceTree = "<group>"; };
 		0B2AE10DA4349E69DD6DD72470113A4D /* FIRFirebaseUserAgent.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRFirebaseUserAgent.h; path = FirebaseCore/Sources/FIRFirebaseUserAgent.h; sourceTree = "<group>"; };
 		0B5393DED40D452769E2988050C397AF /* FirebaseInstallations.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = FirebaseInstallations.modulemap; sourceTree = "<group>"; };
 		0C50E569793906829E4D644C3A7177F0 /* StringToHexConverter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = StringToHexConverter.swift; path = Crashlytics/Crashlytics/Rollouts/StringToHexConverter.swift; sourceTree = "<group>"; };
@@ -1400,7 +1398,6 @@
 		0DFA72B043C5D8759A43DE8E5012B530 /* FIRCLSConstants.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSConstants.h; path = Crashlytics/Shared/FIRCLSConstants.h; sourceTree = "<group>"; };
 		0DFFDDDA7A0BC4522700E9B48E54573C /* FIRCLSContextInitData.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = FIRCLSContextInitData.m; path = Crashlytics/Crashlytics/Helpers/FIRCLSContextInitData.m; sourceTree = "<group>"; };
 		0E528B44D53D42640CA3AD5E4E834421 /* SessionsSettings.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SessionsSettings.swift; path = FirebaseSessions/Sources/Settings/SessionsSettings.swift; sourceTree = "<group>"; };
-		0E53A7C097B11D8B230674D2CD712DF7 /* OlympusRFDFunctions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusRFDFunctions.swift; sourceTree = "<group>"; };
 		0E66A5A0AA4DB66006E80FBEFC0F3F2D /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		0E74BBDF7DCA269E769FABB31D106384 /* GDTCORProductData.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = GDTCORProductData.h; path = GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORProductData.h; sourceTree = "<group>"; };
 		0E9D78D12B3BCD22536F729902B83A41 /* FIRCLSMachOBinary.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = FIRCLSMachOBinary.m; path = Crashlytics/Shared/FIRCLSMachO/FIRCLSMachOBinary.m; sourceTree = "<group>"; };
@@ -1422,7 +1419,6 @@
 		1130A23C49F4CC2AEC650E728147E58D /* FIRCLSAsyncOperation.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSAsyncOperation.h; path = Crashlytics/Crashlytics/Operations/FIRCLSAsyncOperation.h; sourceTree = "<group>"; };
 		121BBC5DCD41D57DE6730996D6374E7E /* FIRLogger.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRLogger.h; path = FirebaseCore/Extension/FIRLogger.h; sourceTree = "<group>"; };
 		121C1D3DFEFF0BA5FEB6E2799E546DBB /* MinMax.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MinMax.swift; path = Sources/Algorithms/MinMax.swift; sourceTree = "<group>"; };
-		12245179347ED09C18A56EABD2E5C0E5 /* OlympusNetworkManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusNetworkManager.swift; sourceTree = "<group>"; };
 		124F9715B0DAC89F241223775E6F75B6 /* cct.nanopb.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = cct.nanopb.c; path = GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/cct.nanopb.c; sourceTree = "<group>"; };
 		125EFC034CD1EEE8AA27000187B6D3F5 /* FIRCLSNetworkResponseHandler.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = FIRCLSNetworkResponseHandler.m; path = Crashlytics/Shared/FIRCLSNetworking/FIRCLSNetworkResponseHandler.m; sourceTree = "<group>"; };
 		126EE9ED52D5D76F7094707809C21833 /* FirebaseCore.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FirebaseCore.h; path = FirebaseCore/Sources/Public/FirebaseCore/FirebaseCore.h; sourceTree = "<group>"; };
@@ -1431,7 +1427,6 @@
 		12D6F7AF480C17B6D30E6647F1D7A20B /* GULReachabilityChecker+Internal.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "GULReachabilityChecker+Internal.h"; path = "GoogleUtilities/Reachability/GULReachabilityChecker+Internal.h"; sourceTree = "<group>"; };
 		12D706EC87D24BEE1C6EFA88FB1FB17E /* AnimatedViewPortJob.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AnimatedViewPortJob.swift; path = Source/Charts/Jobs/AnimatedViewPortJob.swift; sourceTree = "<group>"; };
 		12E39A3E21697D2740A014A690F6C147 /* FIRCLSNetworkOperation.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSNetworkOperation.h; path = Crashlytics/Crashlytics/Settings/Operations/FIRCLSNetworkOperation.h; sourceTree = "<group>"; };
-		12EF46471951D95A770BE4FAAD4DE5C0 /* OlympusConstants.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusConstants.swift; sourceTree = "<group>"; };
 		12F1CE745EECB1EA48A9CA58B68CB186 /* FIRCLSCrashedMarkerFile.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = FIRCLSCrashedMarkerFile.c; path = Crashlytics/Crashlytics/Components/FIRCLSCrashedMarkerFile.c; sourceTree = "<group>"; };
 		1311BB4929CE75EAA3DBDBB210910BBA /* FIRCLSHost.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = FIRCLSHost.m; path = Crashlytics/Crashlytics/Components/FIRCLSHost.m; sourceTree = "<group>"; };
 		13302C2B29B771F681C673BE227AC754 /* GDTCORProductData.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = GDTCORProductData.m; path = GoogleDataTransport/GDTCORLibrary/GDTCORProductData.m; sourceTree = "<group>"; };
@@ -1464,7 +1459,6 @@
 		193FF48403C98363C52DE4F9801C9DAF /* ComponentBase.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ComponentBase.swift; path = Source/Charts/Components/ComponentBase.swift; sourceTree = "<group>"; };
 		19677B1187D49F3C653247A18F437CA2 /* GULReachabilityChecker.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = GULReachabilityChecker.m; path = GoogleUtilities/Reachability/GULReachabilityChecker.m; sourceTree = "<group>"; };
 		198EEE46ADBCB54937ABDA3545029710 /* GULNSData+zlib.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "GULNSData+zlib.h"; path = "GoogleUtilities/NSData+zlib/Public/GoogleUtilities/GULNSData+zlib.h"; sourceTree = "<group>"; };
-		19BBAAB3393D1AC854520354FFB8C751 /* OlympusTrajectoryController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusTrajectoryController.swift; sourceTree = "<group>"; };
 		19BE3201B60EF7C1DEA6B6D970FAC1B7 /* FIRAnalyticsInteropListener.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRAnalyticsInteropListener.h; path = Interop/Analytics/Public/FIRAnalyticsInteropListener.h; sourceTree = "<group>"; };
 		19D876CB50008E54A2EB072B86C57D97 /* IsAppEncrypted.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = IsAppEncrypted.m; path = third_party/IsAppEncrypted/IsAppEncrypted.m; sourceTree = "<group>"; };
 		1A590A992DF919032316E071C3744734 /* Permutations.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Permutations.swift; path = Sources/Algorithms/Permutations.swift; sourceTree = "<group>"; };
@@ -1476,7 +1470,6 @@
 		1D5C1A4B000A49ED0156F6D2680FF972 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = FirebaseCore/Internal/Sources/Resources/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		1DBDDB31D9846A1BA476CB8FAEA24524 /* FBLPromisePrivate.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FBLPromisePrivate.h; path = Sources/FBLPromises/include/FBLPromisePrivate.h; sourceTree = "<group>"; };
 		1E071A26C7B55056AC8BF75FAD2ADB75 /* FirebaseCoreInternal-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "FirebaseCoreInternal-dummy.m"; sourceTree = "<group>"; };
-		1E1BA908D32C7CE3FE60CA04ADCB7592 /* OlympusPhaseController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusPhaseController.swift; sourceTree = "<group>"; };
 		1E5D060DB96F7CC36291F4A72B954782 /* ScatterChartData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ScatterChartData.swift; path = Source/Charts/Data/Implementations/Standard/ScatterChartData.swift; sourceTree = "<group>"; };
 		1E7046F81432359380A81DEB42BCBC55 /* EncodedRolloutAssignment.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = EncodedRolloutAssignment.swift; path = Crashlytics/Crashlytics/Rollouts/EncodedRolloutAssignment.swift; sourceTree = "<group>"; };
 		1E7D99A57F9B4CA2F830A6A595B747FD /* FIRCLSUtility.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSUtility.h; path = Crashlytics/Crashlytics/Helpers/FIRCLSUtility.h; sourceTree = "<group>"; };
@@ -1488,7 +1481,6 @@
 		1FE41509847F9B7C7D220AB29B74808C /* LineChartData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LineChartData.swift; path = Source/Charts/Data/Implementations/Standard/LineChartData.swift; sourceTree = "<group>"; };
 		20B5205B7DB160D4ADE2DCBCA5BCC964 /* CombinedChartDataProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CombinedChartDataProvider.swift; path = Source/Charts/Interfaces/CombinedChartDataProvider.swift; sourceTree = "<group>"; };
 		20B65324DE08191EA9114CCEEFC4916E /* GDTCORStorageProtocol.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = GDTCORStorageProtocol.h; path = GoogleDataTransport/GDTCORLibrary/Internal/GDTCORStorageProtocol.h; sourceTree = "<group>"; };
-		21AB4816C7BA11313ABCA3D7F0C15093 /* OlympusStateManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusStateManager.swift; sourceTree = "<group>"; };
 		21E37C7F2BCF3D6A411190DBF2499648 /* Pods-OlympusSDK_Tests-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-OlympusSDK_Tests-Info.plist"; sourceTree = "<group>"; };
 		2210D34D7F263C819065799F3D0C6680 /* FirebaseCoreInternal.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = FirebaseCoreInternal.modulemap; sourceTree = "<group>"; };
 		23102D556A508A8BB9183188ACC69D55 /* Logger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Logger.swift; path = FirebaseSessions/Sources/Logger.swift; sourceTree = "<group>"; };
@@ -1515,7 +1507,6 @@
 		27C9A7CE880999100741E775027F5EC6 /* GULURLSessionDataResponse.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = GULURLSessionDataResponse.h; path = GoogleUtilities/Environment/Public/GoogleUtilities/GULURLSessionDataResponse.h; sourceTree = "<group>"; };
 		2807609DE4778111F860B68EE8AE6731 /* GULSecureCoding.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = GULSecureCoding.m; path = GoogleUtilities/Environment/GULSecureCoding.m; sourceTree = "<group>"; };
 		28B0EB67EDD3018732F4380D766F2564 /* FIRCLSException.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSException.h; path = Crashlytics/Crashlytics/Handlers/FIRCLSException.h; sourceTree = "<group>"; };
-		28BF4CB6AB7C4F1DE32C1B5174801639 /* OlympusPacingDetectFunctions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusPacingDetectFunctions.swift; sourceTree = "<group>"; };
 		2902B60061633E9D0876BB637008704C /* GULHeartbeatDateStorage.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = GULHeartbeatDateStorage.m; path = GoogleUtilities/Environment/GULHeartbeatDateStorage.m; sourceTree = "<group>"; };
 		2957C5C0B2024CD5A9E29F9463CFC58D /* FIRCLSUserLogging.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSUserLogging.h; path = Crashlytics/Crashlytics/Components/FIRCLSUserLogging.h; sourceTree = "<group>"; };
 		298A2F61235D37B23A23A9C27CCA6D47 /* FIRLibrary.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRLibrary.h; path = FirebaseCore/Extension/FIRLibrary.h; sourceTree = "<group>"; };
@@ -1533,7 +1524,6 @@
 		2E3B1F8150762416E688C1C8661D123C /* Suffix.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Suffix.swift; path = Sources/Algorithms/Suffix.swift; sourceTree = "<group>"; };
 		2E3F36D3271C6B994052F71CAE47A23D /* Charts.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = Charts.modulemap; sourceTree = "<group>"; };
 		2E47701FB4692471147EEF0421671B08 /* Time.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Time.swift; path = FirebaseSessions/Sources/Time.swift; sourceTree = "<group>"; };
-		2E531440931D029490F8A50957240F57 /* OlympusNetworkChecker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusNetworkChecker.swift; sourceTree = "<group>"; };
 		2E662AE4EF8BC68AE789DA2987CF5513 /* GDTCORFlatFileStorage+Promises.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "GDTCORFlatFileStorage+Promises.h"; path = "GoogleDataTransport/GDTCORLibrary/Private/GDTCORFlatFileStorage+Promises.h"; sourceTree = "<group>"; };
 		2EA82C5860D6698E3A21AA86BBF6EBC9 /* FIRCLSCompoundOperation.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSCompoundOperation.h; path = Crashlytics/Shared/FIRCLSOperation/FIRCLSCompoundOperation.h; sourceTree = "<group>"; };
 		2EB8500CCE904183C58EC92D7F92000C /* LineChartDataProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LineChartDataProvider.swift; path = Source/Charts/Interfaces/LineChartDataProvider.swift; sourceTree = "<group>"; };
@@ -1555,11 +1545,9 @@
 		3230C228CE2C0D7EE4EFC31C8B787B7F /* FIRCLSRecordIdentity.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = FIRCLSRecordIdentity.m; path = Crashlytics/Crashlytics/Models/Record/FIRCLSRecordIdentity.m; sourceTree = "<group>"; };
 		329BD6E762D183D43E8D948DD1A01669 /* FIRInstallationsIIDTokenStore.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRInstallationsIIDTokenStore.h; path = FirebaseInstallations/Source/Library/IIDMigration/FIRInstallationsIIDTokenStore.h; sourceTree = "<group>"; };
 		32D4B5B2AE662AA2FCAA5961822088C0 /* GDTCORUploadBatch.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = GDTCORUploadBatch.h; path = GoogleDataTransport/GDTCORLibrary/Private/GDTCORUploadBatch.h; sourceTree = "<group>"; };
-		33161F1FF44AE3DEEA691FDA702049A2 /* OlympusSectionController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusSectionController.swift; sourceTree = "<group>"; };
 		33201F5FD01075C01D432E9AF4236C2C /* FIRInstallationsStoredAuthToken.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRInstallationsStoredAuthToken.h; path = FirebaseInstallations/Source/Library/InstallationsStore/FIRInstallationsStoredAuthToken.h; sourceTree = "<group>"; };
 		3347A1AB6546F0A3977529B8F199DC41 /* PromisesObjC */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = PromisesObjC; path = FBLPromises.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		33BD2D42B66B750AE1A204A37B1658F6 /* FIRComponent.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = FIRComponent.m; path = FirebaseCore/Sources/FIRComponent.m; sourceTree = "<group>"; };
-		344CAD03FFCC7FD92973278B32F1F99A /* OlympusPeakValleyDetector.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusPeakValleyDetector.swift; sourceTree = "<group>"; };
 		34EE799FE1B70E12A8549B9E9D5D0E76 /* BarChartData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BarChartData.swift; path = Source/Charts/Data/Implementations/Standard/BarChartData.swift; sourceTree = "<group>"; };
 		3518965D32527CAEE10194DF1C6E2817 /* FIRCLSContextManager.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSContextManager.h; path = Crashlytics/Crashlytics/Controllers/FIRCLSContextManager.h; sourceTree = "<group>"; };
 		35D172C7EAF6C3541947F3FBC98F9C61 /* BarChartDataSetProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BarChartDataSetProtocol.swift; path = Source/Charts/Data/Interfaces/BarChartDataSetProtocol.swift; sourceTree = "<group>"; };
@@ -1586,9 +1574,7 @@
 		3BE615BEB2CAD0AF71ACC897DBA7A215 /* CandleChartDataSetProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CandleChartDataSetProtocol.swift; path = Source/Charts/Data/Interfaces/CandleChartDataSetProtocol.swift; sourceTree = "<group>"; };
 		3BEC3785494182C0A667C20E29934AE6 /* FIRCLSReportUploader.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSReportUploader.h; path = Crashlytics/Crashlytics/Controllers/FIRCLSReportUploader.h; sourceTree = "<group>"; };
 		3C44A102D8A8732D42DF415FB0E1A90F /* EitherSequence.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = EitherSequence.swift; path = Sources/Algorithms/EitherSequence.swift; sourceTree = "<group>"; };
-		3C6B7B39EE5DFD815EF66AA556241E92 /* OlympusJsonDecoder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusJsonDecoder.swift; sourceTree = "<group>"; };
 		3C79BFBA43992EEBC8F38A1767E5C476 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = spm_resources/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		3C7C39FBA8EAE01BB22423E32194C451 /* OlympusPDRDistanceEstimator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusPDRDistanceEstimator.swift; sourceTree = "<group>"; };
 		3CB3BCF1390F1406B03BC8DB4735D727 /* FirebaseRemoteConfigInterop */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = FirebaseRemoteConfigInterop; path = FirebaseRemoteConfigInterop.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3D2D3F9ABF183D3C7CCC72838917D7B5 /* SwiftAlgorithms-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "SwiftAlgorithms-dummy.m"; sourceTree = "<group>"; };
 		3D45B18347C74354EEDE960452A09644 /* FIRInstallations.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = FIRInstallations.m; path = FirebaseInstallations/Source/Library/FIRInstallations.m; sourceTree = "<group>"; };
@@ -1655,7 +1641,6 @@
 		4F1ECFA330BB1A13F56112DAE84496DB /* Pods-OlympusSDK_Example-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-OlympusSDK_Example-umbrella.h"; sourceTree = "<group>"; };
 		4F8A5354FD595D630948B82394DAC6AD /* GDTCORRegistrar_Private.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = GDTCORRegistrar_Private.h; path = GoogleDataTransport/GDTCORLibrary/Private/GDTCORRegistrar_Private.h; sourceTree = "<group>"; };
 		4FDAA1C439BE8ABF1048B4D1C1996CF3 /* PromisesSwift.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = PromisesSwift.modulemap; sourceTree = "<group>"; };
-		502EE8C42CC9487103C61B00C37072E7 /* StringExtension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StringExtension.swift; sourceTree = "<group>"; };
 		505A10DDE99EAE05FDADA859B4BFB17C /* FIRCLSInternalLogging.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSInternalLogging.h; path = Crashlytics/Crashlytics/Helpers/FIRCLSInternalLogging.h; sourceTree = "<group>"; };
 		508862FCA135ADDF618A5199888F39A8 /* FIRCLSCompactUnwind_Private.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSCompactUnwind_Private.h; path = Crashlytics/Crashlytics/Unwind/Compact/FIRCLSCompactUnwind_Private.h; sourceTree = "<group>"; };
 		50D0F2179AE75ED0DBD60866A711F954 /* BarChartRenderer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BarChartRenderer.swift; path = Source/Charts/Renderers/BarChartRenderer.swift; sourceTree = "<group>"; };
@@ -1664,7 +1649,6 @@
 		51C1211C51C3067CD364853178D49F95 /* FIRDependency.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRDependency.h; path = FirebaseCore/Extension/FIRDependency.h; sourceTree = "<group>"; };
 		533C3EC54911383E0E61452548629E37 /* GULNetworkMessageCode.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = GULNetworkMessageCode.h; path = GoogleUtilities/Network/Public/GoogleUtilities/GULNetworkMessageCode.h; sourceTree = "<group>"; };
 		53908EA759EC49201F998819B6771EEE /* GDTCOREvent_Private.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = GDTCOREvent_Private.h; path = GoogleDataTransport/GDTCORLibrary/Private/GDTCOREvent_Private.h; sourceTree = "<group>"; };
-		53F02536EC315D75103995C97EA830B7 /* OlympusBluetoothManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusBluetoothManager.swift; sourceTree = "<group>"; };
 		542E0EED0195212A98A8068F055D85AF /* FIRInstallationsErrorUtil.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRInstallationsErrorUtil.h; path = FirebaseInstallations/Source/Library/Errors/FIRInstallationsErrorUtil.h; sourceTree = "<group>"; };
 		543F91B2AD8CD20D811F642697BC78A4 /* GDTCCTUploader.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = GDTCCTUploader.h; path = GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTUploader.h; sourceTree = "<group>"; };
 		5465C64B01E4B6709A1D2DE4D7F2759D /* IndexAxisValueFormatter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = IndexAxisValueFormatter.swift; path = Source/Charts/Formatters/IndexAxisValueFormatter.swift; sourceTree = "<group>"; };
@@ -1675,7 +1659,6 @@
 		55E17F2EC130F592CA2B47F80A7BB5B0 /* FirebaseCrashlytics.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = FirebaseCrashlytics.modulemap; sourceTree = "<group>"; };
 		567B0CDD7F96C47937605284C48BA5D6 /* FIRCLSUnwind_x86.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSUnwind_x86.h; path = Crashlytics/Crashlytics/Unwind/FIRCLSUnwind_x86.h; sourceTree = "<group>"; };
 		56804A601AA9430933A92CD4BAB84EF4 /* Charts.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Charts.debug.xcconfig; sourceTree = "<group>"; };
-		56B22959C91A050EBF6CFB60420F914F /* OlympusRssCompensator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusRssCompensator.swift; sourceTree = "<group>"; };
 		56BC7954DCE7FFB38130C9BAB70CA4FB /* Pods-OlympusSDK_Example */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = "Pods-OlympusSDK_Example"; path = Pods_OlympusSDK_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		57481630A5F0C61563F6895DF305F4B9 /* OlympusKalmanFilter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OlympusKalmanFilter.swift; path = OlympusSDK/Classes/OlympusKalmanFilter.swift; sourceTree = "<group>"; };
 		579C0BE4EED6666820458E632D361324 /* BubbleChartData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BubbleChartData.swift; path = Source/Charts/Data/Implementations/Standard/BubbleChartData.swift; sourceTree = "<group>"; };
@@ -1737,7 +1720,6 @@
 		682F21F96EB6D4F1A0B22788E1C844CD /* FirebaseInstallationsInternal.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FirebaseInstallationsInternal.h; path = FirebaseInstallations/Source/Library/Private/FirebaseInstallationsInternal.h; sourceTree = "<group>"; };
 		68B0D689AE431BB61215C78705626CBC /* Promise+Testing.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Promise+Testing.swift"; path = "Sources/Promises/Promise+Testing.swift"; sourceTree = "<group>"; };
 		69087242D7E41C9C26299B02ABCFF333 /* FIRCLSThreadState.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = FIRCLSThreadState.c; path = Crashlytics/Crashlytics/Helpers/FIRCLSThreadState.c; sourceTree = "<group>"; };
-		6908FCDD9CD3F1634656FFF1B18F575D /* NotificationExtension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationExtension.swift; sourceTree = "<group>"; };
 		69250B0B2EA2074F7C7DDBA249D43BF4 /* GDTCCTCompressionHelper.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = GDTCCTCompressionHelper.m; path = GoogleDataTransport/GDTCCTLibrary/GDTCCTCompressionHelper.m; sourceTree = "<group>"; };
 		697F2B4C8029E48040B972CA1FAADF61 /* GULLoggerCodes.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = GULLoggerCodes.h; path = GoogleUtilities/Common/GULLoggerCodes.h; sourceTree = "<group>"; };
 		698F94E6B94E337DF9613987DF4E8B17 /* nanopb-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "nanopb-dummy.m"; sourceTree = "<group>"; };
@@ -1778,7 +1760,6 @@
 		722BD96FF92903A9C98743B38340431E /* TransformerHorizontalBarChart.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TransformerHorizontalBarChart.swift; path = Source/Charts/Utils/TransformerHorizontalBarChart.swift; sourceTree = "<group>"; };
 		722E55843F75716751D46ED1D5079432 /* FIRCLSAsyncOperation.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = FIRCLSAsyncOperation.m; path = Crashlytics/Crashlytics/Operations/FIRCLSAsyncOperation.m; sourceTree = "<group>"; };
 		723D7E7D9E4AEF4663CD55CC456B7815 /* FIRCLSReportManager_Private.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSReportManager_Private.h; path = Crashlytics/Crashlytics/Controllers/FIRCLSReportManager_Private.h; sourceTree = "<group>"; };
-		72E564282CDAA37EC2375BDC6F2EF1C1 /* JSONConverter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = JSONConverter.swift; sourceTree = "<group>"; };
 		72F0A16D576B9B4F88D6391EDBF46023 /* FBLPromise+Always.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "FBLPromise+Always.h"; path = "Sources/FBLPromises/include/FBLPromise+Always.h"; sourceTree = "<group>"; };
 		730819B46D0251031D9F93174BC2098C /* GDTCORClock.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = GDTCORClock.m; path = GoogleDataTransport/GDTCORLibrary/GDTCORClock.m; sourceTree = "<group>"; };
 		732A3532E6B460B128112EBB1B5DC40B /* FIRCLSFile.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = FIRCLSFile.m; path = Crashlytics/Crashlytics/Helpers/FIRCLSFile.m; sourceTree = "<group>"; };
@@ -1799,7 +1780,6 @@
 		788477D1A1BB07B552A2E52EF3283EE6 /* GDTCORMetricsControllerProtocol.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = GDTCORMetricsControllerProtocol.h; path = GoogleDataTransport/GDTCORLibrary/Internal/GDTCORMetricsControllerProtocol.h; sourceTree = "<group>"; };
 		78CFC2D74DA0810507E3504F3E7B19C1 /* NetworkInfo.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NetworkInfo.swift; path = FirebaseSessions/Sources/NetworkInfo.swift; sourceTree = "<group>"; };
 		78D22215293967D1029DF232F8DA91CA /* pb_encode.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = pb_encode.h; sourceTree = "<group>"; };
-		78D4D2A0C0FE2DB2DAD197973BEC7AEA /* UsefulFunctions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UsefulFunctions.swift; sourceTree = "<group>"; };
 		78D7A05DBFD2CE252FDE873464DA23FB /* FIRCLSRolloutsPersistenceManager.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSRolloutsPersistenceManager.h; path = Crashlytics/Crashlytics/Controllers/FIRCLSRolloutsPersistenceManager.h; sourceTree = "<group>"; };
 		78E69224460B1BC148A8B9A30F4AA346 /* dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = dummy.m; path = FirebaseCore/Extension/dummy.m; sourceTree = "<group>"; };
 		78F0A418A46B6A0E3B0A24227FF3072F /* Firebase.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = Firebase.h; path = CoreOnly/Sources/Firebase.h; sourceTree = "<group>"; };
@@ -1820,7 +1800,6 @@
 		7BA86E169C5204B8D688E90466D89DD4 /* Promise+Recover.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Promise+Recover.swift"; path = "Sources/Promises/Promise+Recover.swift"; sourceTree = "<group>"; };
 		7BF892900138EAC31CCF2E71B2D9523D /* GDTCORMetrics+GDTCCTSupport.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = "GDTCORMetrics+GDTCCTSupport.m"; path = "GoogleDataTransport/GDTCCTLibrary/GDTCORMetrics+GDTCCTSupport.m"; sourceTree = "<group>"; };
 		7C51C6438812CE44122C380DEFC0D80E /* FIRCLSExistingReportManager.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSExistingReportManager.h; path = Crashlytics/Crashlytics/Controllers/FIRCLSExistingReportManager.h; sourceTree = "<group>"; };
-		7C6C016E7FF8B627BBEEB6248898C343 /* OlympusBuildingLevelChanger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusBuildingLevelChanger.swift; sourceTree = "<group>"; };
 		7CA9058130031C31DBDBC436F3ACDE32 /* ChartViewBase.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ChartViewBase.swift; path = Source/Charts/Charts/ChartViewBase.swift; sourceTree = "<group>"; };
 		7CD84D972CAD93F69BB64AD7014615A2 /* LineChartDataSetProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LineChartDataSetProtocol.swift; path = Source/Charts/Data/Interfaces/LineChartDataSetProtocol.swift; sourceTree = "<group>"; };
 		7CE0B5200709F22D99B4A3A832B7E791 /* FIRStackFrame.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = FIRStackFrame.m; path = Crashlytics/Crashlytics/FIRStackFrame.m; sourceTree = "<group>"; };
@@ -1850,7 +1829,6 @@
 		83E3A7168DE7B6AFD7F44958C0A696FB /* FIRCLSNotificationManager.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = FIRCLSNotificationManager.m; path = Crashlytics/Crashlytics/Controllers/FIRCLSNotificationManager.m; sourceTree = "<group>"; };
 		83F5CCB22EE126A829F2A8820798DC8D /* FirebaseSessions */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = FirebaseSessions; path = FirebaseSessions.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		83F7D543BD5E6D1E3DB3C2E2B7C7CAA1 /* FIRCLSCompoundOperation.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = FIRCLSCompoundOperation.m; path = Crashlytics/Shared/FIRCLSOperation/FIRCLSCompoundOperation.m; sourceTree = "<group>"; };
-		8415983AEBE64235D6038AE066C36ED3 /* DeviceModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DeviceModel.swift; sourceTree = "<group>"; };
 		84F6C23A99BB29A872F3053BFE945AE9 /* FirebaseCore-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "FirebaseCore-Info.plist"; sourceTree = "<group>"; };
 		856B5CD56F194FAD26EA91620B66D614 /* GoogleDataTransport */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = GoogleDataTransport; path = GoogleDataTransport.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		85732F81CC299E801B76904BAABA9377 /* LineRadarChartDataSet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LineRadarChartDataSet.swift; path = Source/Charts/Data/Implementations/Standard/LineRadarChartDataSet.swift; sourceTree = "<group>"; };
@@ -1865,7 +1843,6 @@
 		8823B2D03A75AFE03944DF553A970B9F /* LineRadarRenderer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LineRadarRenderer.swift; path = Source/Charts/Renderers/LineRadarRenderer.swift; sourceTree = "<group>"; };
 		885529741143E38463ECF88A3A932489 /* GoogleDataTransport-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "GoogleDataTransport-umbrella.h"; sourceTree = "<group>"; };
 		88E307AE229AE94F80D9AE601024166D /* GDTCORReachability_Private.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = GDTCORReachability_Private.h; path = GoogleDataTransport/GDTCORLibrary/Private/GDTCORReachability_Private.h; sourceTree = "<group>"; };
-		89181A0F2ACB6B4265AED4BBC8CEA99B /* OlympusRflowCorrelator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusRflowCorrelator.swift; sourceTree = "<group>"; };
 		89A91AE013D3A2026DB4BA845B2D4827 /* GULAppEnvironmentUtil.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = GULAppEnvironmentUtil.m; path = GoogleUtilities/Environment/GULAppEnvironmentUtil.m; sourceTree = "<group>"; };
 		8A8EB5D2AB56C0E7E7E70012C894BFC1 /* FIRCLSDataCollectionArbiter.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSDataCollectionArbiter.h; path = Crashlytics/Crashlytics/DataCollection/FIRCLSDataCollectionArbiter.h; sourceTree = "<group>"; };
 		8B62932ABB117CE2E3FC5D2185B5D514 /* FIRHeartbeatLogger.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRHeartbeatLogger.h; path = FirebaseCore/Extension/FIRHeartbeatLogger.h; sourceTree = "<group>"; };
@@ -1888,12 +1865,10 @@
 		909B60B4DF6AD023794A75C87C7376AF /* FIRCLSMachO.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSMachO.h; path = Crashlytics/Shared/FIRCLSMachO/FIRCLSMachO.h; sourceTree = "<group>"; };
 		91639335FECADE6CE559E9B3BAD1672B /* Unique.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Unique.swift; path = Sources/Algorithms/Unique.swift; sourceTree = "<group>"; };
 		916D596FB2B00670B0CDF4DDC42D9621 /* GDTCORMetrics+GDTCCTSupport.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "GDTCORMetrics+GDTCCTSupport.h"; path = "GoogleDataTransport/GDTCCTLibrary/Private/GDTCORMetrics+GDTCCTSupport.h"; sourceTree = "<group>"; };
-		91EB908019C3BEA4E4DD2F190E2CE6CC /* OlympusUnitDRGenerator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusUnitDRGenerator.swift; sourceTree = "<group>"; };
 		920A868AD01CEF13826D1EE9D05600C4 /* LineChartRenderer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LineChartRenderer.swift; path = Source/Charts/Renderers/LineChartRenderer.swift; sourceTree = "<group>"; };
 		9257963A3D0A99DB4AED9B89FA1165DE /* FIRCLSMachOSlice.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSMachOSlice.h; path = Crashlytics/Shared/FIRCLSMachO/FIRCLSMachOSlice.h; sourceTree = "<group>"; };
 		926642CAC5F5C9C6CD2F919059BF2137 /* GULNetworkInfo.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = GULNetworkInfo.h; path = GoogleUtilities/Environment/Public/GoogleUtilities/GULNetworkInfo.h; sourceTree = "<group>"; };
 		936985083BB273A8998B4E05ED07CEE7 /* SessionInitiator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SessionInitiator.swift; path = FirebaseSessions/Sources/SessionInitiator.swift; sourceTree = "<group>"; };
-		93BCBE3200C41784ED079B282B24881C /* Node.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Node.swift; sourceTree = "<group>"; };
 		93E4F7675816016FF4CD23D354FE776D /* GULNetwork.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = GULNetwork.h; path = GoogleUtilities/Network/Public/GoogleUtilities/GULNetwork.h; sourceTree = "<group>"; };
 		93F4A394C63AEC01A2B6B3AE1E3295F7 /* FIRCLSRecordHost.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSRecordHost.h; path = Crashlytics/Crashlytics/Models/Record/FIRCLSRecordHost.h; sourceTree = "<group>"; };
 		940E85F5EBEF677FAA24D9B67E8B28D6 /* GDTCORTransformer.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = GDTCORTransformer.h; path = GoogleDataTransport/GDTCORLibrary/Private/GDTCORTransformer.h; sourceTree = "<group>"; };
@@ -1993,11 +1968,47 @@
 		B26AC54159E41262EB22A9DC952B23B0 /* Charts-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Charts-prefix.pch"; sourceTree = "<group>"; };
 		B2944B0304024D9FFAAF12DF03FC76F6 /* GULNetworkURLSession.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = GULNetworkURLSession.m; path = GoogleUtilities/Network/GULNetworkURLSession.m; sourceTree = "<group>"; };
 		B2A9F3D8AA6C6974F4A4260210367256 /* FIRCLSProcess.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSProcess.h; path = Crashlytics/Crashlytics/Components/FIRCLSProcess.h; sourceTree = "<group>"; };
+		B305FA572C33BFD000DBE807 /* OlympusBluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusBluetoothManager.swift; path = OlympusSDK/Classes/OlympusBluetoothManager.swift; sourceTree = "<group>"; };
+		B305FA592C33BFEE00DBE807 /* OlympusRFDFunctions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusRFDFunctions.swift; path = OlympusSDK/Classes/OlympusRFDFunctions.swift; sourceTree = "<group>"; };
+		B305FA5B2C33C00A00DBE807 /* OlympusRflowCorrelator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusRflowCorrelator.swift; path = OlympusSDK/Classes/OlympusRflowCorrelator.swift; sourceTree = "<group>"; };
+		B305FA5D2C33C02300DBE807 /* OlympusRssCompensator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusRssCompensator.swift; path = OlympusSDK/Classes/OlympusRssCompensator.swift; sourceTree = "<group>"; };
+		B305FA5F2C33C04600DBE807 /* ArrayExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ArrayExtension.swift; path = OlympusSDK/Classes/ArrayExtension.swift; sourceTree = "<group>"; };
+		B305FA612C33C05300DBE807 /* NotificationExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NotificationExtension.swift; path = OlympusSDK/Classes/NotificationExtension.swift; sourceTree = "<group>"; };
+		B305FA632C33C05F00DBE807 /* StringExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StringExtension.swift; path = OlympusSDK/Classes/StringExtension.swift; sourceTree = "<group>"; };
+		B305FA652C33C08F00DBE807 /* OlympusFileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusFileManager.swift; path = OlympusSDK/Classes/OlympusFileManager.swift; sourceTree = "<group>"; };
+		B305FA672C33C09C00DBE807 /* OlympusFileDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusFileDownloader.swift; path = OlympusSDK/Classes/OlympusFileDownloader.swift; sourceTree = "<group>"; };
+		B305FA692C33C0C100DBE807 /* JSONConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = JSONConverter.swift; path = OlympusSDK/Classes/JSONConverter.swift; sourceTree = "<group>"; };
+		B305FA6B2C33C0CB00DBE807 /* OlympusJsonDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusJsonDecoder.swift; path = OlympusSDK/Classes/OlympusJsonDecoder.swift; sourceTree = "<group>"; };
+		B305FA6D2C33C0F100DBE807 /* OlympusBuildingLevelChanger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusBuildingLevelChanger.swift; path = OlympusSDK/Classes/OlympusBuildingLevelChanger.swift; sourceTree = "<group>"; };
+		B305FA6F2C33C10700DBE807 /* OlympusPhaseController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusPhaseController.swift; path = OlympusSDK/Classes/OlympusPhaseController.swift; sourceTree = "<group>"; };
+		B305FA712C33C11A00DBE807 /* OlympusRouteTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusRouteTracker.swift; path = OlympusSDK/Classes/OlympusRouteTracker.swift; sourceTree = "<group>"; };
+		B305FA732C33C12D00DBE807 /* OlympusSectionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusSectionController.swift; path = OlympusSDK/Classes/OlympusSectionController.swift; sourceTree = "<group>"; };
+		B305FA752C33C14000DBE807 /* OlympusStateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusStateManager.swift; path = OlympusSDK/Classes/OlympusStateManager.swift; sourceTree = "<group>"; };
+		B305FA772C33C15200DBE807 /* OlympusTrajectoryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusTrajectoryController.swift; path = OlympusSDK/Classes/OlympusTrajectoryController.swift; sourceTree = "<group>"; };
+		B305FA792C33C18700DBE807 /* OlympusConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusConstants.swift; path = OlympusSDK/Classes/OlympusConstants.swift; sourceTree = "<group>"; };
+		B305FA7B2C33C19E00DBE807 /* OlympusEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusEntity.swift; path = OlympusSDK/Classes/OlympusEntity.swift; sourceTree = "<group>"; };
+		B305FA7D2C33C1AF00DBE807 /* OlympusObservers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusObservers.swift; path = OlympusSDK/Classes/OlympusObservers.swift; sourceTree = "<group>"; };
+		B305FA7F2C33C1CA00DBE807 /* OlympusSensorManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusSensorManager.swift; path = OlympusSDK/Classes/OlympusSensorManager.swift; sourceTree = "<group>"; };
+		B305FA812C33C1E900DBE807 /* OlympusUsefulFunctions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusUsefulFunctions.swift; path = OlympusSDK/Classes/OlympusUsefulFunctions.swift; sourceTree = "<group>"; };
+		B305FA832C33C20A00DBE807 /* DeviceModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DeviceModel.swift; path = OlympusSDK/Classes/DeviceModel.swift; sourceTree = "<group>"; };
+		B305FA852C33C21700DBE807 /* Node.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Node.swift; path = OlympusSDK/Classes/Node.swift; sourceTree = "<group>"; };
+		B305FA872C33C22100DBE807 /* LinkedList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LinkedList.swift; path = OlympusSDK/Classes/LinkedList.swift; sourceTree = "<group>"; };
+		B305FA892C33C25000DBE807 /* OlympusNetworkChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusNetworkChecker.swift; path = OlympusSDK/Classes/OlympusNetworkChecker.swift; sourceTree = "<group>"; };
+		B305FA8B2C33C26500DBE807 /* OlympusNetworkConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusNetworkConstants.swift; path = OlympusSDK/Classes/OlympusNetworkConstants.swift; sourceTree = "<group>"; };
+		B305FA8D2C33C27700DBE807 /* OlympusNetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusNetworkManager.swift; path = OlympusSDK/Classes/OlympusNetworkManager.swift; sourceTree = "<group>"; };
+		B305FA8F2C33C28D00DBE807 /* OlympusDRDistanceEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusDRDistanceEstimator.swift; path = OlympusSDK/Classes/OlympusDRDistanceEstimator.swift; sourceTree = "<group>"; };
+		B305FA912C33C2A400DBE807 /* OlympusMathFunctions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusMathFunctions.swift; path = OlympusSDK/Classes/OlympusMathFunctions.swift; sourceTree = "<group>"; };
+		B305FA932C33C2B400DBE807 /* OlympusPacingDetectFunctions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusPacingDetectFunctions.swift; path = OlympusSDK/Classes/OlympusPacingDetectFunctions.swift; sourceTree = "<group>"; };
+		B305FA952C33C2C600DBE807 /* OlympusPDRDistanceEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusPDRDistanceEstimator.swift; path = OlympusSDK/Classes/OlympusPDRDistanceEstimator.swift; sourceTree = "<group>"; };
+		B305FA972C33C2D800DBE807 /* OlympusPeakValleyDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusPeakValleyDetector.swift; path = OlympusSDK/Classes/OlympusPeakValleyDetector.swift; sourceTree = "<group>"; };
+		B305FA992C33C2EB00DBE807 /* OlympusStepLengthEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusStepLengthEstimator.swift; path = OlympusSDK/Classes/OlympusStepLengthEstimator.swift; sourceTree = "<group>"; };
+		B305FA9B2C33C2FC00DBE807 /* OlympusUnitAttitudeEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusUnitAttitudeEstimator.swift; path = OlympusSDK/Classes/OlympusUnitAttitudeEstimator.swift; sourceTree = "<group>"; };
+		B305FA9D2C33C30F00DBE807 /* OlympusUnitDRGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusUnitDRGenerator.swift; path = OlympusSDK/Classes/OlympusUnitDRGenerator.swift; sourceTree = "<group>"; };
+		B305FA9F2C33C32000DBE807 /* OlympusUnitStatusEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusUnitStatusEstimator.swift; path = OlympusSDK/Classes/OlympusUnitStatusEstimator.swift; sourceTree = "<group>"; };
 		B3185CDFA403B6AF270CF263D8F0CBA1 /* OlympusSDK-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "OlympusSDK-dummy.m"; sourceTree = "<group>"; };
 		B358537494260256AC3138BDA6251379 /* SessionsSubscriber.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SessionsSubscriber.swift; path = FirebaseSessions/Sources/Public/SessionsSubscriber.swift; sourceTree = "<group>"; };
 		B378D1162026B0FF7989F1A754CC0CF5 /* FBLPromise+Reduce.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "FBLPromise+Reduce.h"; path = "Sources/FBLPromises/include/FBLPromise+Reduce.h"; sourceTree = "<group>"; };
 		B385554459445169926EAF96251B0449 /* FIRInstallationsIIDTokenStore.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = FIRInstallationsIIDTokenStore.m; path = FirebaseInstallations/Source/Library/IIDMigration/FIRInstallationsIIDTokenStore.m; sourceTree = "<group>"; };
-		B39464A52BE9B97300A929CC /* OlympusFileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OlympusFileManager.swift; sourceTree = "<group>"; };
 		B3E88BA9C9C31857052365E6EC8F90E9 /* GoogleUtilities.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = GoogleUtilities.debug.xcconfig; sourceTree = "<group>"; };
 		B43874C6CBB50E7134FBEC24BABFE14F /* GoogleUtilities */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = GoogleUtilities; path = GoogleUtilities.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B439493B242E971AD741B355AA279112 /* GULSecureCoding.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = GULSecureCoding.h; path = GoogleUtilities/Environment/Public/GoogleUtilities/GULSecureCoding.h; sourceTree = "<group>"; };
@@ -2027,11 +2038,8 @@
 		BAB8D5908D799809BB42B0D0C4D9A0FD /* client_metrics.nanopb.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = client_metrics.nanopb.c; path = GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/client_metrics.nanopb.c; sourceTree = "<group>"; };
 		BAC10BD7667948225042A79D9B17E783 /* FIRAppInternal.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRAppInternal.h; path = FirebaseCore/Extension/FIRAppInternal.h; sourceTree = "<group>"; };
 		BACCBD49BACE3FDBDCAFCBEA3679828D /* FIRCLSDemangleOperation.mm */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.cpp.objcpp; name = FIRCLSDemangleOperation.mm; path = Crashlytics/Crashlytics/Operations/Symbolication/FIRCLSDemangleOperation.mm; sourceTree = "<group>"; };
-		BADCFC20826A5B4F31B2207A54DCB73C /* OlympusUnitStatusEstimator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusUnitStatusEstimator.swift; sourceTree = "<group>"; };
-		BAE55EBBBD5E8BC840CE4A335CDA0664 /* OlympusNetworkConstants.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusNetworkConstants.swift; sourceTree = "<group>"; };
 		BBA28A5EE2512611A4DDD9AA260F5EB8 /* GDTCORRegistrar.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = GDTCORRegistrar.m; path = GoogleDataTransport/GDTCORLibrary/GDTCORRegistrar.m; sourceTree = "<group>"; };
 		BC9E5F0A52695D7CCF83316254C3B874 /* Renderer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Renderer.swift; path = Source/Charts/Renderers/Renderer.swift; sourceTree = "<group>"; };
-		BCB69F20671429D5000CDD5EF09E7624 /* OlympusSensorManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusSensorManager.swift; sourceTree = "<group>"; };
 		BCEB3BD0276E8CA2D0B176BBF2B0DCDE /* ZoomViewJob.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ZoomViewJob.swift; path = Source/Charts/Jobs/ZoomViewJob.swift; sourceTree = "<group>"; };
 		BD006855D86E94924ECD089536ACB59E /* FirebaseCoreExtension-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "FirebaseCoreExtension-umbrella.h"; sourceTree = "<group>"; };
 		BD0906A545FAFD12DAADA4261208EE17 /* IsAppEncrypted.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = IsAppEncrypted.h; path = third_party/IsAppEncrypted/Public/IsAppEncrypted.h; sourceTree = "<group>"; };
@@ -2073,7 +2081,6 @@
 		C9860A8159500BD0F157109F9A643B1C /* GDTCOREventTransformer.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = GDTCOREventTransformer.h; path = GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCOREventTransformer.h; sourceTree = "<group>"; };
 		C98B09FF256B4E4771B257BC97EAB912 /* FIRCLSHandler.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSHandler.h; path = Crashlytics/Crashlytics/Handlers/FIRCLSHandler.h; sourceTree = "<group>"; };
 		CA9CCC35EF8A0D3D31A058E53118F8A2 /* FirebaseCoreInternal.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FirebaseCoreInternal.h; path = FirebaseCore/Extension/FirebaseCoreInternal.h; sourceTree = "<group>"; };
-		CAAEEB8D9392098EC5F5B1D3D23867E1 /* OlympusFileDownloader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusFileDownloader.swift; sourceTree = "<group>"; };
 		CABE362750CB05E79D8728BE65D5B1B8 /* Combinations.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Combinations.swift; path = Sources/Algorithms/Combinations.swift; sourceTree = "<group>"; };
 		CAC51BED57614D2B5207716453AFA426 /* Animator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Animator.swift; path = Source/Charts/Animation/Animator.swift; sourceTree = "<group>"; };
 		CACD966C798ED6FA9199D91E72764C18 /* HorizontalBarChartView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = HorizontalBarChartView.swift; path = Source/Charts/Charts/HorizontalBarChartView.swift; sourceTree = "<group>"; };
@@ -2107,7 +2114,6 @@
 		D34BD63A4476F6C325D354CB7883D326 /* Pods-OlympusSDK_Example-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-OlympusSDK_Example-Info.plist"; sourceTree = "<group>"; };
 		D34CAF8F213BCF6D98CF7A45738CDE36 /* GDTCORPlatform.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = GDTCORPlatform.h; path = GoogleDataTransport/GDTCORLibrary/Internal/GDTCORPlatform.h; sourceTree = "<group>"; };
 		D36313C0AE4067D55B6406894D19047B /* GDTCORUploadCoordinator.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = GDTCORUploadCoordinator.m; path = GoogleDataTransport/GDTCORLibrary/GDTCORUploadCoordinator.m; sourceTree = "<group>"; };
-		D3856E790C68E10D98EB84CCE7146671 /* ArrayExtension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ArrayExtension.swift; sourceTree = "<group>"; };
 		D3940FF10878B2F57124BD9559EC0007 /* GoogleUtilities.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = GoogleUtilities.modulemap; sourceTree = "<group>"; };
 		D39791B02956D2D62A69AD623DBC2B90 /* FIRCLSFeatures.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSFeatures.h; path = Crashlytics/Crashlytics/Helpers/FIRCLSFeatures.h; sourceTree = "<group>"; };
 		D3C0EBC89C29AE3B73B96C3BFB4E3BF1 /* Promise+Do.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Promise+Do.swift"; path = "Sources/Promises/Promise+Do.swift"; sourceTree = "<group>"; };
@@ -2158,13 +2164,11 @@
 		DF48C0FD92DCCF2803D724CE9FEB23A7 /* FBLPromise+All.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "FBLPromise+All.h"; path = "Sources/FBLPromises/include/FBLPromise+All.h"; sourceTree = "<group>"; };
 		DF4B7BA355DE90041D71784DB0596593 /* FIRComponentContainer.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRComponentContainer.h; path = FirebaseCore/Extension/FIRComponentContainer.h; sourceTree = "<group>"; };
 		DF60DFCDE72016CA2EF28BBFB750ED91 /* FIRCLSOperation.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSOperation.h; path = Crashlytics/Shared/FIRCLSOperation/FIRCLSOperation.h; sourceTree = "<group>"; };
-		DF7C7EC4F639E53FF388360972D8FB05 /* OlympusRouteTracker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusRouteTracker.swift; sourceTree = "<group>"; };
 		DF8A08E7778469B4BCA8F243396F2CD4 /* FIRCLSDemangleOperation.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSDemangleOperation.h; path = Crashlytics/Crashlytics/Operations/Symbolication/FIRCLSDemangleOperation.h; sourceTree = "<group>"; };
 		E005D728054119D30DA44B5F354682ED /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = FirebaseCore/Sources/Resources/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		E0920C368669CC844A1359F5AFDAE4E2 /* FIRCLSRecordBase.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSRecordBase.h; path = Crashlytics/Crashlytics/Models/Record/FIRCLSRecordBase.h; sourceTree = "<group>"; };
 		E0A604004E7C562F087A178E75BCE5D9 /* FirebaseCrashlytics-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "FirebaseCrashlytics-dummy.m"; sourceTree = "<group>"; };
 		E1745CB92EBD86D7328197904966F50A /* ApplicationInfo.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ApplicationInfo.swift; path = FirebaseSessions/Sources/ApplicationInfo.swift; sourceTree = "<group>"; };
-		E2091E7DF68F28D34709923023AC6D7F /* OlympusMathFunctions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusMathFunctions.swift; sourceTree = "<group>"; };
 		E219DDD8C286F4A2F5AAD7F1EDFD8A0F /* FIRCLSMultipartMimeStreamEncoder.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = FIRCLSMultipartMimeStreamEncoder.m; path = Crashlytics/Shared/FIRCLSNetworking/FIRCLSMultipartMimeStreamEncoder.m; sourceTree = "<group>"; };
 		E29A2E7383FC17F271677D005CE5F703 /* ChartDataSet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ChartDataSet.swift; path = Source/Charts/Data/Implementations/Standard/ChartDataSet.swift; sourceTree = "<group>"; };
 		E29D020D0204641D077CA86B3A071422 /* FIRCLSSignal.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSSignal.h; path = Crashlytics/Crashlytics/Handlers/FIRCLSSignal.h; sourceTree = "<group>"; };
@@ -2196,7 +2200,6 @@
 		E8B5971AB29382780205C6825C3ED00A /* Promise+Catch.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Promise+Catch.swift"; path = "Sources/Promises/Promise+Catch.swift"; sourceTree = "<group>"; };
 		E8CAAF83E405337701009A9807FE85EE /* GoogleDataTransport.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = GoogleDataTransport.release.xcconfig; sourceTree = "<group>"; };
 		E953A90F982E1EB85C3415AAF88C74DA /* FIRComponentType.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRComponentType.h; path = FirebaseCore/Extension/FIRComponentType.h; sourceTree = "<group>"; };
-		EA0CA4E26065776414FA70201861E458 /* OlympusUnitAttitudeEstimator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusUnitAttitudeEstimator.swift; sourceTree = "<group>"; };
 		EA33FB33049893D46F14F571CD13D84B /* FirebaseCrashlytics-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "FirebaseCrashlytics-Info.plist"; sourceTree = "<group>"; };
 		EA3D29145CD5A2F0F89C0FB2E94B16CB /* FIRComponentType.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRComponentType.h; path = FirebaseCore/Extension/FIRComponentType.h; sourceTree = "<group>"; };
 		EA55751B5E53298AA9525F838F060E9D /* FIRBundleUtil.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRBundleUtil.h; path = FirebaseCore/Sources/FIRBundleUtil.h; sourceTree = "<group>"; };
@@ -2231,7 +2234,6 @@
 		F24ED4CB6B4ECDAA0EED43B17448FBFF /* FIRDependency.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRDependency.h; path = FirebaseCore/Extension/FIRDependency.h; sourceTree = "<group>"; };
 		F260EEF29F197345D23A1DF8933C2B0D /* AxisValueFormatter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AxisValueFormatter.swift; path = Source/Charts/Formatters/AxisValueFormatter.swift; sourceTree = "<group>"; };
 		F2BE229EE56E00B1735D3CA5260CB8F7 /* pb.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = pb.h; sourceTree = "<group>"; };
-		F2D8C9B94CF10E2D0312DD2F7AFD8CCA /* OlympusObservers.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusObservers.swift; sourceTree = "<group>"; };
 		F359D789C931BF13A5EBD644D8FFAB86 /* FBLPromise+Recover.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = "FBLPromise+Recover.m"; path = "Sources/FBLPromises/FBLPromise+Recover.m"; sourceTree = "<group>"; };
 		F3605CDA56607D624335B055CCF842AD /* GULNetworkURLSession.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = GULNetworkURLSession.h; path = GoogleUtilities/Network/Public/GoogleUtilities/GULNetworkURLSession.h; sourceTree = "<group>"; };
 		F3A91EF77611840F9B9B8B2A1E5BAB2D /* Charts-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Charts-umbrella.h"; sourceTree = "<group>"; };
@@ -2239,7 +2241,6 @@
 		F41053EC9CB071B42D966A0A41D8CC78 /* FIRCLSDataCollectionArbiter.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = FIRCLSDataCollectionArbiter.m; path = Crashlytics/Crashlytics/DataCollection/FIRCLSDataCollectionArbiter.m; sourceTree = "<group>"; };
 		F41340AEF1E685D67DED5052C01F8055 /* Pods-OlympusSDK_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-OlympusSDK_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		F4DA89AF311EB41E16754E031974FD68 /* GULHeartbeatDateStorable.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = GULHeartbeatDateStorable.h; path = GoogleUtilities/Environment/Public/GoogleUtilities/GULHeartbeatDateStorable.h; sourceTree = "<group>"; };
-		F5FB2E08AEEE9815B8C25AF68A09FA85 /* OlympusStepLengthEstimator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusStepLengthEstimator.swift; sourceTree = "<group>"; };
 		F618E8C9DA596E1F2EE1F8687A881410 /* OlympusSDK-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "OlympusSDK-prefix.pch"; sourceTree = "<group>"; };
 		F61F3E76F0D9C99B017F4A56C6076B5B /* Promise+Reduce.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Promise+Reduce.swift"; path = "Sources/Promises/Promise+Reduce.swift"; sourceTree = "<group>"; };
 		F62BCDFFA18218B5B45C75FA2C61250A /* GULSwizzler.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = GULSwizzler.m; path = GoogleUtilities/MethodSwizzler/GULSwizzler.m; sourceTree = "<group>"; };
@@ -2249,7 +2250,6 @@
 		F6DCC01CC902F076CB58BB87E65243F3 /* YAxisRendererHorizontalBarChart.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = YAxisRendererHorizontalBarChart.swift; path = Source/Charts/Renderers/YAxisRendererHorizontalBarChart.swift; sourceTree = "<group>"; };
 		F73AA961F4AEFF2B46B00AE435DF6BE3 /* GoogleDataTransport-GoogleDataTransport_Privacy */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = "GoogleDataTransport-GoogleDataTransport_Privacy"; path = GoogleDataTransport_Privacy.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		F7CB04DDA7F71BFEF693745A8CEAFD91 /* FIRCLSdSYM.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSdSYM.h; path = Crashlytics/Shared/FIRCLSMachO/FIRCLSdSYM.h; sourceTree = "<group>"; };
-		F7DD6553CE7D55AB9E4AE752B83EFB9F /* OlympusEntity.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OlympusEntity.swift; sourceTree = "<group>"; };
 		F865E26C19DBAC79D841D026EC50935F /* Platform+Graphics.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Platform+Graphics.swift"; path = "Source/Charts/Utils/Platform+Graphics.swift"; sourceTree = "<group>"; };
 		F8B76F69B7BBB5695BFB570E0CDAC50B /* FIRCLSUUID.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSUUID.h; path = Crashlytics/Shared/FIRCLSUUID.h; sourceTree = "<group>"; };
 		F8C020E51BE0FBC7CF01770651664DAB /* AxisBase.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AxisBase.swift; path = Source/Charts/Components/AxisBase.swift; sourceTree = "<group>"; };
@@ -2701,16 +2701,43 @@
 		27B452EAF1D6FFCA63ECF8A8F93DB919 /* OlympusSDK */ = {
 			isa = PBXGroup;
 			children = (
-				B3C234892C2A9EA700E606F3 /* File */,
-				B3C234882C2A9ABF00E606F3 /* State */,
-				B3C234872C2A9AA500E606F3 /* Protocol */,
-				B3C234862C2A9A8A00E606F3 /* Sensor */,
-				B3C234852C2A9A2C00E606F3 /* UnitDRInfo */,
-				B3C234842C2A9A1100E606F3 /* Network */,
-				B3C234832C2A99EC00E606F3 /* BLE */,
-				B3C234822C2A99BB00E606F3 /* Utils */,
-				B3C234812C2A999B00E606F3 /* JSONParser */,
-				B3C234802C2A998100E606F3 /* Extensions */,
+				B305FA572C33BFD000DBE807 /* OlympusBluetoothManager.swift */,
+				B305FA592C33BFEE00DBE807 /* OlympusRFDFunctions.swift */,
+				B305FA5B2C33C00A00DBE807 /* OlympusRflowCorrelator.swift */,
+				B305FA5D2C33C02300DBE807 /* OlympusRssCompensator.swift */,
+				B305FA5F2C33C04600DBE807 /* ArrayExtension.swift */,
+				B305FA612C33C05300DBE807 /* NotificationExtension.swift */,
+				B305FA632C33C05F00DBE807 /* StringExtension.swift */,
+				B305FA652C33C08F00DBE807 /* OlympusFileManager.swift */,
+				B305FA672C33C09C00DBE807 /* OlympusFileDownloader.swift */,
+				B305FA692C33C0C100DBE807 /* JSONConverter.swift */,
+				B305FA6B2C33C0CB00DBE807 /* OlympusJsonDecoder.swift */,
+				B305FA6D2C33C0F100DBE807 /* OlympusBuildingLevelChanger.swift */,
+				B305FA6F2C33C10700DBE807 /* OlympusPhaseController.swift */,
+				B305FA712C33C11A00DBE807 /* OlympusRouteTracker.swift */,
+				B305FA732C33C12D00DBE807 /* OlympusSectionController.swift */,
+				B305FA752C33C14000DBE807 /* OlympusStateManager.swift */,
+				B305FA772C33C15200DBE807 /* OlympusTrajectoryController.swift */,
+				B305FA792C33C18700DBE807 /* OlympusConstants.swift */,
+				B305FA7B2C33C19E00DBE807 /* OlympusEntity.swift */,
+				B305FA7D2C33C1AF00DBE807 /* OlympusObservers.swift */,
+				B305FA7F2C33C1CA00DBE807 /* OlympusSensorManager.swift */,
+				B305FA812C33C1E900DBE807 /* OlympusUsefulFunctions.swift */,
+				B305FA832C33C20A00DBE807 /* DeviceModel.swift */,
+				B305FA852C33C21700DBE807 /* Node.swift */,
+				B305FA872C33C22100DBE807 /* LinkedList.swift */,
+				B305FA892C33C25000DBE807 /* OlympusNetworkChecker.swift */,
+				B305FA8B2C33C26500DBE807 /* OlympusNetworkConstants.swift */,
+				B305FA8D2C33C27700DBE807 /* OlympusNetworkManager.swift */,
+				B305FA8F2C33C28D00DBE807 /* OlympusDRDistanceEstimator.swift */,
+				B305FA912C33C2A400DBE807 /* OlympusMathFunctions.swift */,
+				B305FA932C33C2B400DBE807 /* OlympusPacingDetectFunctions.swift */,
+				B305FA952C33C2C600DBE807 /* OlympusPDRDistanceEstimator.swift */,
+				B305FA972C33C2D800DBE807 /* OlympusPeakValleyDetector.swift */,
+				B305FA992C33C2EB00DBE807 /* OlympusStepLengthEstimator.swift */,
+				B305FA9B2C33C2FC00DBE807 /* OlympusUnitAttitudeEstimator.swift */,
+				B305FA9D2C33C30F00DBE807 /* OlympusUnitDRGenerator.swift */,
+				B305FA9F2C33C32000DBE807 /* OlympusUnitStatusEstimator.swift */,
 				57481630A5F0C61563F6895DF305F4B9 /* OlympusKalmanFilter.swift */,
 				1780CAD74FDC0EC6B72139EE952B733E /* OlympusPathMatchingCalculator.swift */,
 				D8527BFA232AE64C95D5E00DF8D560B1 /* OlympusServiceManager.swift */,
@@ -3493,113 +3520,6 @@
 				A25E798EE3DAC39CD73FB2804D442DC6 /* SwiftAlgorithms */,
 			);
 			name = Pods;
-			sourceTree = "<group>";
-		};
-		B3C234802C2A998100E606F3 /* Extensions */ = {
-			isa = PBXGroup;
-			children = (
-				502EE8C42CC9487103C61B00C37072E7 /* StringExtension.swift */,
-				6908FCDD9CD3F1634656FFF1B18F575D /* NotificationExtension.swift */,
-				D3856E790C68E10D98EB84CCE7146671 /* ArrayExtension.swift */,
-			);
-			path = Extensions;
-			sourceTree = "<group>";
-		};
-		B3C234812C2A999B00E606F3 /* JSONParser */ = {
-			isa = PBXGroup;
-			children = (
-				72E564282CDAA37EC2375BDC6F2EF1C1 /* JSONConverter.swift */,
-				3C6B7B39EE5DFD815EF66AA556241E92 /* OlympusJsonDecoder.swift */,
-			);
-			path = JSONParser;
-			sourceTree = "<group>";
-		};
-		B3C234822C2A99BB00E606F3 /* Utils */ = {
-			isa = PBXGroup;
-			children = (
-				78D4D2A0C0FE2DB2DAD197973BEC7AEA /* UsefulFunctions.swift */,
-				0ACD8BFDDA118F60976A1804F24084F7 /* LinkedList.swift */,
-				93BCBE3200C41784ED079B282B24881C /* Node.swift */,
-				8415983AEBE64235D6038AE066C36ED3 /* DeviceModel.swift */,
-			);
-			path = Utils;
-			sourceTree = "<group>";
-		};
-		B3C234832C2A99EC00E606F3 /* BLE */ = {
-			isa = PBXGroup;
-			children = (
-				56B22959C91A050EBF6CFB60420F914F /* OlympusRssCompensator.swift */,
-				53F02536EC315D75103995C97EA830B7 /* OlympusBluetoothManager.swift */,
-				0E53A7C097B11D8B230674D2CD712DF7 /* OlympusRFDFunctions.swift */,
-				89181A0F2ACB6B4265AED4BBC8CEA99B /* OlympusRflowCorrelator.swift */,
-			);
-			path = BLE;
-			sourceTree = "<group>";
-		};
-		B3C234842C2A9A1100E606F3 /* Network */ = {
-			isa = PBXGroup;
-			children = (
-				2E531440931D029490F8A50957240F57 /* OlympusNetworkChecker.swift */,
-				BAE55EBBBD5E8BC840CE4A335CDA0664 /* OlympusNetworkConstants.swift */,
-				12245179347ED09C18A56EABD2E5C0E5 /* OlympusNetworkManager.swift */,
-			);
-			path = Network;
-			sourceTree = "<group>";
-		};
-		B3C234852C2A9A2C00E606F3 /* UnitDRInfo */ = {
-			isa = PBXGroup;
-			children = (
-				E2091E7DF68F28D34709923023AC6D7F /* OlympusMathFunctions.swift */,
-				28BF4CB6AB7C4F1DE32C1B5174801639 /* OlympusPacingDetectFunctions.swift */,
-				092CF44613925C394801C2589537CDAE /* OlympusDRDistanceEstimator.swift */,
-				3C7C39FBA8EAE01BB22423E32194C451 /* OlympusPDRDistanceEstimator.swift */,
-				344CAD03FFCC7FD92973278B32F1F99A /* OlympusPeakValleyDetector.swift */,
-				EA0CA4E26065776414FA70201861E458 /* OlympusUnitAttitudeEstimator.swift */,
-				91EB908019C3BEA4E4DD2F190E2CE6CC /* OlympusUnitDRGenerator.swift */,
-				BADCFC20826A5B4F31B2207A54DCB73C /* OlympusUnitStatusEstimator.swift */,
-				F5FB2E08AEEE9815B8C25AF68A09FA85 /* OlympusStepLengthEstimator.swift */,
-			);
-			path = UnitDRInfo;
-			sourceTree = "<group>";
-		};
-		B3C234862C2A9A8A00E606F3 /* Sensor */ = {
-			isa = PBXGroup;
-			children = (
-				BCB69F20671429D5000CDD5EF09E7624 /* OlympusSensorManager.swift */,
-			);
-			path = Sensor;
-			sourceTree = "<group>";
-		};
-		B3C234872C2A9AA500E606F3 /* Protocol */ = {
-			isa = PBXGroup;
-			children = (
-				F2D8C9B94CF10E2D0312DD2F7AFD8CCA /* OlympusObservers.swift */,
-				F7DD6553CE7D55AB9E4AE752B83EFB9F /* OlympusEntity.swift */,
-				12EF46471951D95A770BE4FAAD4DE5C0 /* OlympusConstants.swift */,
-			);
-			path = Protocol;
-			sourceTree = "<group>";
-		};
-		B3C234882C2A9ABF00E606F3 /* State */ = {
-			isa = PBXGroup;
-			children = (
-				1E1BA908D32C7CE3FE60CA04ADCB7592 /* OlympusPhaseController.swift */,
-				7C6C016E7FF8B627BBEEB6248898C343 /* OlympusBuildingLevelChanger.swift */,
-				DF7C7EC4F639E53FF388360972D8FB05 /* OlympusRouteTracker.swift */,
-				21AB4816C7BA11313ABCA3D7F0C15093 /* OlympusStateManager.swift */,
-				33161F1FF44AE3DEEA691FDA702049A2 /* OlympusSectionController.swift */,
-				19BBAAB3393D1AC854520354FFB8C751 /* OlympusTrajectoryController.swift */,
-			);
-			path = State;
-			sourceTree = "<group>";
-		};
-		B3C234892C2A9EA700E606F3 /* File */ = {
-			isa = PBXGroup;
-			children = (
-				CAAEEB8D9392098EC5F5B1D3D23867E1 /* OlympusFileDownloader.swift */,
-				B39464A52BE9B97300A929CC /* OlympusFileManager.swift */,
-			);
-			path = File;
 			sourceTree = "<group>";
 		};
 		B7B3C5A5C22DBE3D1D20058C08233F31 /* Resources */ = {
@@ -5919,47 +5839,47 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2A95B959AEE3983F651568F6F857F0F5 /* ArrayExtension.swift in Sources */,
-				EDF7FD58A51408E607B2B185E4067237 /* DeviceModel.swift in Sources */,
-				4A6C9DF1F4F9E7D74D61C9E43B47021B /* JSONConverter.swift in Sources */,
-				13181F20E22334BE698359DA304C3A0D /* LinkedList.swift in Sources */,
-				83C5445C5188968A20D3D1DF3A8912D0 /* Node.swift in Sources */,
-				57D79950CD1C3FAFDB3EB0E7C590AFD2 /* NotificationExtension.swift in Sources */,
-				6CEE6FF2CDE9C181764E17417F9F5AA6 /* OlympusBluetoothManager.swift in Sources */,
-				92C4C1BE935C646E03E8F2CFB11944EF /* OlympusBuildingLevelChanger.swift in Sources */,
-				CDDB584B0C3EBDC9C00795297F7F84A5 /* OlympusConstants.swift in Sources */,
-				99AB7DF8D3D2A912A9E21286F038B97F /* OlympusDRDistanceEstimator.swift in Sources */,
-				B39464A62BE9B97300A929CC /* OlympusFileManager.swift in Sources */,
-				817717FA7E99FBB286E09BA595B28A45 /* OlympusEntity.swift in Sources */,
-				CB3677765FC29D5DF559C3C27046E892 /* OlympusFileDownloader.swift in Sources */,
-				20E9F7D6D494AFE9E1F48240EE100514 /* OlympusJsonDecoder.swift in Sources */,
+				B305FAA02C33C32000DBE807 /* OlympusUnitStatusEstimator.swift in Sources */,
+				B305FA802C33C1CA00DBE807 /* OlympusSensorManager.swift in Sources */,
+				B305FA7E2C33C1AF00DBE807 /* OlympusObservers.swift in Sources */,
+				B305FA862C33C21700DBE807 /* Node.swift in Sources */,
+				B305FA782C33C15200DBE807 /* OlympusTrajectoryController.swift in Sources */,
+				B305FA722C33C11A00DBE807 /* OlympusRouteTracker.swift in Sources */,
+				B305FA702C33C10700DBE807 /* OlympusPhaseController.swift in Sources */,
+				B305FA8A2C33C25000DBE807 /* OlympusNetworkChecker.swift in Sources */,
+				B305FA902C33C28D00DBE807 /* OlympusDRDistanceEstimator.swift in Sources */,
 				AAD2DC6FE93CAAFDFE4E2F8848C64F01 /* OlympusKalmanFilter.swift in Sources */,
-				CAC9AC6D32A7C9226EC3279C6E876BBE /* OlympusMathFunctions.swift in Sources */,
-				F71AE2EAEFB73EC0420E6888AF2B4764 /* OlympusNetworkChecker.swift in Sources */,
-				756A070586AB8B78FFE56F223A881F74 /* OlympusNetworkConstants.swift in Sources */,
-				1E823CACE86AFE98225DD9852A948083 /* OlympusNetworkManager.swift in Sources */,
-				B70EDB2DE592D3A922043B7F2CECF6B8 /* OlympusObservers.swift in Sources */,
-				D36EFDA2E9935052ED5B681DE73CF1BD /* OlympusPacingDetectFunctions.swift in Sources */,
+				B305FA9A2C33C2EB00DBE807 /* OlympusStepLengthEstimator.swift in Sources */,
+				B305FA8C2C33C26500DBE807 /* OlympusNetworkConstants.swift in Sources */,
+				B305FA6E2C33C0F100DBE807 /* OlympusBuildingLevelChanger.swift in Sources */,
+				B305FA642C33C05F00DBE807 /* StringExtension.swift in Sources */,
+				B305FA822C33C1E900DBE807 /* OlympusUsefulFunctions.swift in Sources */,
+				B305FA6A2C33C0C100DBE807 /* JSONConverter.swift in Sources */,
 				40588B71D3048B5217511EBC1BB484F8 /* OlympusPathMatchingCalculator.swift in Sources */,
-				7D3A359E249C3873C019E523E35BFA4C /* OlympusPDRDistanceEstimator.swift in Sources */,
-				9591C75498225F448D5BEA823A6534BC /* OlympusPeakValleyDetector.swift in Sources */,
-				A28D61E6C3A168F2310176E6FE47380D /* OlympusPhaseController.swift in Sources */,
-				72B31B6AED261C15D28EEC69DE3240EA /* OlympusRFDFunctions.swift in Sources */,
-				3479F234653DB9EC8CE3FCFE6D175116 /* OlympusRflowCorrelator.swift in Sources */,
-				15A040E22234149C12A31E393F87B65E /* OlympusRouteTracker.swift in Sources */,
-				6358793DAFFDB59FCFF582CFD52E334D /* OlympusRssCompensator.swift in Sources */,
+				B305FA7C2C33C19E00DBE807 /* OlympusEntity.swift in Sources */,
+				B305FA5A2C33BFEE00DBE807 /* OlympusRFDFunctions.swift in Sources */,
+				B305FA942C33C2B400DBE807 /* OlympusPacingDetectFunctions.swift in Sources */,
 				5C137D532FE4C1795F8F6EC897222F5D /* OlympusSDK-dummy.m in Sources */,
-				4D4BC65AE476B712FAF267DF5C602588 /* OlympusSectionController.swift in Sources */,
-				6728F281C83FAFE69589FC0BFE32B372 /* OlympusSensorManager.swift in Sources */,
+				B305FA662C33C08F00DBE807 /* OlympusFileManager.swift in Sources */,
+				B305FA9C2C33C2FC00DBE807 /* OlympusUnitAttitudeEstimator.swift in Sources */,
+				B305FA5E2C33C02300DBE807 /* OlympusRssCompensator.swift in Sources */,
+				B305FA882C33C22100DBE807 /* LinkedList.swift in Sources */,
+				B305FA9E2C33C30F00DBE807 /* OlympusUnitDRGenerator.swift in Sources */,
+				B305FA582C33BFD000DBE807 /* OlympusBluetoothManager.swift in Sources */,
+				B305FA7A2C33C18700DBE807 /* OlympusConstants.swift in Sources */,
+				B305FA982C33C2D800DBE807 /* OlympusPeakValleyDetector.swift in Sources */,
+				B305FA682C33C09C00DBE807 /* OlympusFileDownloader.swift in Sources */,
+				B305FA742C33C12D00DBE807 /* OlympusSectionController.swift in Sources */,
+				B305FA962C33C2C600DBE807 /* OlympusPDRDistanceEstimator.swift in Sources */,
+				B305FA622C33C05300DBE807 /* NotificationExtension.swift in Sources */,
+				B305FA842C33C20A00DBE807 /* DeviceModel.swift in Sources */,
+				B305FA762C33C14000DBE807 /* OlympusStateManager.swift in Sources */,
 				3B89DFB98CE9826340AEA0C681E41B51 /* OlympusServiceManager.swift in Sources */,
-				81286BD93D454888FC5EF80A595DE38A /* OlympusStateManager.swift in Sources */,
-				4A094FE8BB399230D34D28E12DBF19E5 /* OlympusStepLengthEstimator.swift in Sources */,
-				FEB8B32103E73659917EA45364212A05 /* OlympusTrajectoryController.swift in Sources */,
-				6638FDDF1A2B3358505D0B734255D43F /* OlympusUnitAttitudeEstimator.swift in Sources */,
-				8CB65D56EDA081D5FD0826C89831CACC /* OlympusUnitDRGenerator.swift in Sources */,
-				7EC2FF8BCE43BC0F73DF690A407C2A1D /* OlympusUnitStatusEstimator.swift in Sources */,
-				FBA5E0DE657D80EEF2B5E49D12A1A944 /* UsefulFunctions.swift in Sources */,
-				4E8722032BE0A876A655DEDE3229BAE1 /* StringExtension.swift in Sources */,
+				B305FA5C2C33C00A00DBE807 /* OlympusRflowCorrelator.swift in Sources */,
+				B305FA8E2C33C27700DBE807 /* OlympusNetworkManager.swift in Sources */,
+				B305FA922C33C2A400DBE807 /* OlympusMathFunctions.swift in Sources */,
+				B305FA6C2C33C0CB00DBE807 /* OlympusJsonDecoder.swift in Sources */,
+				B305FA602C33C04600DBE807 /* ArrayExtension.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

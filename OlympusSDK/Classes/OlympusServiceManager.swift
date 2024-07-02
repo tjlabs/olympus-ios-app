@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
-    public static let sdkVersion: String = "0.0.21"
+    public static let sdkVersion: String = "0.0.22"
     var isSimulationMode: Bool = false
     var bleFileName: String = ""
     var sensorFileName: String = ""

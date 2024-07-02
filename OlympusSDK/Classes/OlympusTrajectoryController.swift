@@ -1289,7 +1289,7 @@ public class OlympusTrajectoryController {
 //            let expandRange: Int = Int((trajLength - OlympusConstants.REQUIRED_LENGTH_PHASE2)/2)
 //            result.searchRange = [result.searchRange[0]-expandRange, result.searchRange[1]-expandRange, result.searchRange[2]+expandRange, result.searchRange[3]+expandRange]
 //        }
-//        
+//
 //        return result
 //    }
     

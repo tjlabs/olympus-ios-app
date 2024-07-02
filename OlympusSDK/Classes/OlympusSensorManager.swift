@@ -304,7 +304,7 @@ public class OlympusSensorManager: NSObject, CLLocationManagerDelegate {
 //        updateHeadingQueue(data: magneticHeading)
 //        let smoothedHeading = smoothMagneticHeading(heading: magneticHeading)
 //        preMagneticHeading = smoothedHeading
-//        
+//
 //        print(getLocalTimeString() + " , (Olympus) SensorData : Smoothed = \(preMagneticHeading) // Raw = \(magneticHeading)")
     }
 }

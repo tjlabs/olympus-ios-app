@@ -202,7 +202,7 @@ class OlympusConstants {
 //            OlympusConstants.VALUE_INPUT_NUM = 6 // 6
 //            OlympusConstants.PADDING_VALUE = OlympusConstants.PADDING_VALUE_SMALL
 //            OlympusConstants.PADDING_VALUES = [Double] (repeating: OlympusConstants.PADDING_VALUE, count: 4)
-//            
+//
 //            if (phase == OlympusConstants.PHASE_4) {
 //                OlympusConstants.UVD_INPUT_NUM = OlympusConstants.VALUE_INPUT_NUM
 //                OlympusConstants.INDEX_THRESHOLD = 21
@@ -218,7 +218,7 @@ class OlympusConstants {
 //            OlympusConstants.VALUE_INPUT_NUM = OlympusConstants.UVD_BUFFER_SIZE
 //            OlympusConstants.PADDING_VALUE = OlympusConstants.PADDING_VALUE_LARGE
 //            OlympusConstants.PADDING_VALUES = [Double] (repeating: OlympusConstants.PADDING_VALUE, count: 4)
-//            
+//
 //            if (phase == OlympusConstants.PHASE_4) {
 //                OlympusConstants.UVD_INPUT_NUM = OlympusConstants.VALUE_INPUT_NUM
 //                OlympusConstants.INDEX_THRESHOLD = (OlympusConstants.UVD_INPUT_NUM*2)+1
