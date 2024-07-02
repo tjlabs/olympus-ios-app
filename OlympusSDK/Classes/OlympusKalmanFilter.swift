@@ -268,25 +268,6 @@ public class OlympusKalmanFilter: NSObject {
                                     }
                                 }
                                 
-//                                var minDiffValue: Double = 360
-//                                for mapHeading in pathMatchingNode.nodeHeadings {
-//                                    if !(linkDirArray.contains(mapHeading)) {
-//                                        var diffValue: Double = 0
-//                                        
-//                                        if (endHeading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
-//                                            diffValue = abs(endHeading - (mapHeading+360))
-//                                        } else if (mapHeading > 270 && (endHeading >= 0 && endHeading < 90)) {
-//                                            diffValue = abs(mapHeading - (endHeading+360))
-//                                        } else {
-//                                            diffValue = abs(endHeading - mapHeading)
-//                                        }
-//                                        
-//                                        if diffValue < minDiffValue {
-//                                            minDiffValue = diffValue
-//                                            bestMapHeading = mapHeading
-//                                        }
-//                                    }
-//                                }
                                 candidateDirections.append(bestMapHeading)
                                 print(getLocalTimeString() + " , (Olympus) Path-Matching : after findPathMatchingNodeResult // endHeading = \(endHeading)")
                                 print(getLocalTimeString() + " , (Olympus) Path-Matching : after findPathMatchingNodeResult // candidateDirections = \(candidateDirections)")
@@ -355,8 +336,10 @@ public class OlympusKalmanFilter: NSObject {
                                 var bestIndex = -1
                                 var bestCoord = [Double]()
                                 for c in 0..<resultCoordX.count {
-                                    let diffX = Double(userX) - resultCoordX[c]
-                                    let diffY = Double(userY) - resultCoordY[c]
+//                                    let diffX = Double(userX) - resultCoordX[c]
+//                                    let diffY = Double(userY) - resultCoordY[c]
+                                    let diffX = Double(updatedX) - resultCoordX[c]
+                                    let diffY = Double(updatedY) - resultCoordY[c]
                                     let distWithUser = sqrt(diffX*diffX + diffY*diffY)
                                     if (distWithUser < minDist) {
                                         minDist = distWithUser

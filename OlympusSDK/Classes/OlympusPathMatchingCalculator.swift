@@ -1078,9 +1078,9 @@ public class OlympusPathMatchingCalculator {
         var isInMapEnd: Bool = false
         let curIndex = tuResult.index
         
-        if (curIndex - self.mapEndIndex) < 5 {
-            return isInMapEnd
-        }
+//        if (curIndex - self.mapEndIndex) < 5 {
+//            return isInMapEnd
+//        }
         
         let modeInput = pathType == 1 ? OlympusConstants.MODE_DR : OlympusConstants.MODE_PDR
         let coordHeadings = getPathMatchingHeadings(building: resultStandard.building_name, level: resultStandard.level_name, x: resultStandard.x, y: resultStandard.y, PADDING_VALUE: 0.0, mode: modeInput)
@@ -1240,6 +1240,7 @@ public class OlympusPathMatchingCalculator {
                 }
                 print(getLocalTimeString() + " , (Olympus) Node Find : getAnchorNodeCandidatesForBadCase // else = \(heading)")
             }
+            
 //            let heading = getUserDirection(from: nodeCoord, to: linkCoord)
             print(getLocalTimeString() + " , (Olympus) Node Find : getAnchorNodeCandidatesForBadCase // heading = \(heading) , anchorNodeInfo = \(anchorNodeInfo)")
             

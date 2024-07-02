@@ -220,28 +220,28 @@ public class OlympusRssCompensator {
     
     public func calNormalizationScale(standardMin: Double, standardMax: Double) -> (Bool, Double) {
         let standardAmplitude: Double = abs(standardMax - standardMin)
-        print(getLocalTimeString() + " , (Olympus) RSS Compensator : standardMin = \(standardMin) , standardMax = \(standardMax) , amp = \(standardAmplitude)")
+//        print(getLocalTimeString() + " , (Olympus) RSS Compensator : standardMin = \(standardMin) , standardMax = \(standardMax) , amp = \(standardAmplitude)")
         if (self.wardMaxRssi.isEmpty || self.wardMinRssi.isEmpty) {
             return (false, 1.0)
         } else {
             let avgMax = self.wardMaxRssi.average
             let avgMin = self.wardMinRssi.average
             self.deviceMinValue = avgMin
-            print(getLocalTimeString() + " , (Olympus) RSS Compensator : wardMaxRssi = \(wardMaxRssi) // avgMax = \(avgMax)")
-            print(getLocalTimeString() + " , (Olympus) RSS Compensator : wardMinRssi = \(wardMinRssi) // avgMin = \(avgMin)")
-            print(getLocalTimeString() + " , (Olympus) RSS Compensator : deviceMinValue = \(deviceMinValue)")
+//            print(getLocalTimeString() + " , (Olympus) RSS Compensator : wardMaxRssi = \(wardMaxRssi) // avgMax = \(avgMax)")
+//            print(getLocalTimeString() + " , (Olympus) RSS Compensator : wardMinRssi = \(wardMinRssi) // avgMin = \(avgMin)")
+//            print(getLocalTimeString() + " , (Olympus) RSS Compensator : deviceMinValue = \(deviceMinValue)")
             let amplitude: Double = abs(avgMax - avgMin)
             
             let digit: Double = pow(10, 4)
             var normalizationScale: Double = (standardAmplitude/amplitude)*digit/digit
-            print(getLocalTimeString() + " , (Olympus) RSS Compensator : normalizationScale before = \(normalizationScale)")
+//            print(getLocalTimeString() + " , (Olympus) RSS Compensator : normalizationScale before = \(normalizationScale)")
             if normalizationScale > 1.2 {
                 normalizationScale = 1.2
             } else if normalizationScale < 0.8 {
                 normalizationScale = 0.8
             }
-            print(getLocalTimeString() + " , (Olympus) RSS Compensator : amplitude = \(amplitude)")
-            print(getLocalTimeString() + " , (Olympus) RSS Compensator : normalizationScale after = \(normalizationScale)")
+//            print(getLocalTimeString() + " , (Olympus) RSS Compensator : amplitude = \(amplitude)")
+//            print(getLocalTimeString() + " , (Olympus) RSS Compensator : normalizationScale after = \(normalizationScale)")
             updateScaleQueue(data: normalizationScale)
             return (true, normalizationScale)
         }
