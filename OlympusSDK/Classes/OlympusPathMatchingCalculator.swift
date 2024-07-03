@@ -29,7 +29,6 @@ public class OlympusPathMatchingCalculator {
     var linkCoord: [Double] = [0, 0]
     var linkDirections = [Double]()
     var isInNode: Bool = false
-    var mapEndIndex: Int = 0
     
     var pathTrajMatchingArea: [[Double]] = [[0, 0]]
     
@@ -57,7 +56,6 @@ public class OlympusPathMatchingCalculator {
         self.linkCoord = [0, 0]
         self.linkDirections = [Double]()
         self.isInNode = false
-        self.mapEndIndex = 0
     }
     
     public func initPassedNodeInfo() {
@@ -1076,18 +1074,15 @@ public class OlympusPathMatchingCalculator {
     
     public func checkIsInMapEnd(resultStandard: FineLocationTrackingFromServer, tuResult: FineLocationTrackingFromServer, pathType: Int) -> Bool {
         var isInMapEnd: Bool = false
-        let curIndex = tuResult.index
-        
-//        if (curIndex - self.mapEndIndex) < 5 {
-//            return isInMapEnd
-//        }
-        
         let modeInput = pathType == 1 ? OlympusConstants.MODE_DR : OlympusConstants.MODE_PDR
         let coordHeadings = getPathMatchingHeadings(building: resultStandard.building_name, level: resultStandard.level_name, x: resultStandard.x, y: resultStandard.y, PADDING_VALUE: 0.0, mode: modeInput)
-//        let tuHeading = tuResult.absolute_heading
         let tuHeading = resultStandard.absolute_heading
         
         if !coordHeadings.isEmpty {
+            let filteredCount = coordHeadings.filter { $0 != 0 && $0 != 90 && $0 != 180 && $0 != 270 }.count
+            if (filteredCount > 1) {
+                return isInMapEnd
+            }
 //            print(getLocalTimeString() + " , (Olympus) Check Map End : Index = \(tuResult.index)")
 //            print(getLocalTimeString() + " , (Olympus) Check Map End : resultStandard = \(resultStandard)")
 //            print(getLocalTimeString() + " , (Olympus) Check Map End : coordHeadings = \(coordHeadings)")
@@ -1115,7 +1110,6 @@ public class OlympusPathMatchingCalculator {
             resultForEndCheck.y += sin(bestHeading*OlympusConstants.D2R)
             let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: resultForEndCheck.building_name, level: resultForEndCheck.level_name, x: resultForEndCheck.x, y: resultForEndCheck.y, heading: resultForEndCheck.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: pathType, PADDING_VALUES: [0, 0, 0, 0])
             if !pathMatchingResult.isSuccess {
-                self.mapEndIndex = tuResult.index
                 isInMapEnd = true
                 print(getLocalTimeString() + " , (Olympus) Check Map End : isInMapEnd = \(isInMapEnd)")
             }

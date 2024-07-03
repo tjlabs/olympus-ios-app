@@ -1197,12 +1197,6 @@ public class OlympusTrajectoryController {
                 uvdRawHeading.append(value.heading)
                 uvdHeading.append(compensateHeading(heading: value.heading))
             }
-            let userBuilding    = trajectoryInfo[trajectoryInfo.count-1].userBuilding
-            let userLevel       = trajectoryInfo[trajectoryInfo.count-1].userLevel
-            var userX           = trajectoryInfo[trajectoryInfo.count-1].userX
-            var userY           = trajectoryInfo[trajectoryInfo.count-1].userY
-            let userHeading     = trajectoryInfo[trajectoryInfo.count-1].userHeading
-            
             searchInfo.tailIndex = trajectoryInfo[0].index
             
             let headInfo = trajectoryInfo[trajectoryInfo.count-1]

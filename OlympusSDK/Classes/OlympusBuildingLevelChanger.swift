@@ -122,7 +122,7 @@ public class OlympusBuildingLevelChanger {
                     self.lastSpotId = result.spot_id
                     self.travelingOsrDistance = 0
                     self.buildingLevelChangedTime = currentTime
-//                    print(getLocalTimeString() + " , (Olympus) Run OSR (1) : levelDestination = \(levelDestination)")
+                    print(getLocalTimeString() + " , (Olympus) Run OSR (1) : levelDestination = \(levelDestination)")
 //                    print(getLocalTimeString() + " , (Olympus) Run OSR (1) : phase2Range = \(phase2Range) // phase2Direction = \(phase2Direction)")
                     self.notifyObservers(building: result.building_name, level: levelDestination, range: self.phase2Range, direction: self.phase2Direction)
                     self.isDetermineSpot = true
@@ -149,7 +149,7 @@ public class OlympusBuildingLevelChanger {
                         self.lastSpotId = result.spot_id
                         self.travelingOsrDistance = 0
                         self.buildingLevelChangedTime = currentTime
-//                        print(getLocalTimeString() + " , (Olympus) Run OSR (2) : levelDestination = \(levelDestination)")
+                        print(getLocalTimeString() + " , (Olympus) Run OSR (2) : levelDestination = \(levelDestination)")
 //                        print(getLocalTimeString() + " , (Olympus) Run OSR (2) : phase2Range = \(phase2Range) // phase2Direction = \(phase2Direction)")
                         self.notifyObservers(building: result.building_name, level: levelDestination, range: self.phase2Range, direction: self.phase2Direction)
                         self.isDetermineSpot = true
