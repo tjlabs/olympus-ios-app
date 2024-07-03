@@ -127,6 +127,13 @@ public class OlympusKalmanFilter: NSObject {
         self.tuResultBuffer.append([tuResult.x, tuResult.y, tuResult.absolute_heading])
     }
     
+    public func updateTuBuildingLevel(building: String, level: String) {
+        self.tuResult.building_name = building
+        self.tuResult.level_name = level
+        self.tuResultNow.building_name = building
+        self.tuResultNow.level_name = level
+    }
+    
     public func updateTuResult(x: Double, y: Double) {
         self.tuResult.x = x
         self.tuResult.y = y

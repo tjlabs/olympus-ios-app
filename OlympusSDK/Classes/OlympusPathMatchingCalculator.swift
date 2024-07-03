@@ -1088,10 +1088,10 @@ public class OlympusPathMatchingCalculator {
         let tuHeading = resultStandard.absolute_heading
         
         if !coordHeadings.isEmpty {
-            print(getLocalTimeString() + " , (Olympus) Check Map End : Index = \(tuResult.index)")
-            print(getLocalTimeString() + " , (Olympus) Check Map End : resultStandard = \(resultStandard)")
-            print(getLocalTimeString() + " , (Olympus) Check Map End : coordHeadings = \(coordHeadings)")
-            print(getLocalTimeString() + " , (Olympus) Check Map End : tuHeading = \(tuHeading)")
+//            print(getLocalTimeString() + " , (Olympus) Check Map End : Index = \(tuResult.index)")
+//            print(getLocalTimeString() + " , (Olympus) Check Map End : resultStandard = \(resultStandard)")
+//            print(getLocalTimeString() + " , (Olympus) Check Map End : coordHeadings = \(coordHeadings)")
+//            print(getLocalTimeString() + " , (Olympus) Check Map End : tuHeading = \(tuHeading)")
             var diffHeading = [Double]()
             var bestHeading: Double = tuResult.absolute_heading
             for dir in coordHeadings {
@@ -1109,7 +1109,7 @@ public class OlympusPathMatchingCalculator {
             if let minIndex = diffHeading.firstIndex(of: diffHeading.min()!) {
                 bestHeading = coordHeadings[minIndex]
             }
-            print(getLocalTimeString() + " , (Olympus) Check Map End : bestHeading = \(bestHeading)")
+//            print(getLocalTimeString() + " , (Olympus) Check Map End : bestHeading = \(bestHeading)")
             var resultForEndCheck = resultStandard
             resultForEndCheck.x += cos(bestHeading*OlympusConstants.D2R)
             resultForEndCheck.y += sin(bestHeading*OlympusConstants.D2R)

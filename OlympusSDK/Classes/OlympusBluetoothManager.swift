@@ -111,13 +111,12 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
                 userInfo["DeviceID"] = deviceIDString
                 userInfo["RSSI"] = String(format: "%d", RSSI.intValue )
                 
-                let bleTime = getCurrentTimeInMilliseconds()
+                let bleTime = getCurrentTimeInMillisecondsDouble()
                 let validTime = (OlympusConstants.BLE_VALID_TIME*2)
                 self.bleDiscoveredTime = bleTime
                 
                 if RSSI.intValue != 127 {
-                    NotificationCenter.default.post(name: .scanInfo, object: nil, userInfo: userInfo)
-                    
+//                    NotificationCenter.default.post(name: .scanInfo, object: nil, userInfo: userInfo)
                     let condition: ((String, [[Double]])) -> Bool = {
                         $0.0.contains(bleName)
                     }
@@ -140,11 +139,10 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
                     switch trimmedResult {
                     case .success(let trimmedData):
                         self.bleDictionary = trimmedData
+//                        NotificationCenter.default.post(name: .scanInfo, object: nil, userInfo: userInfo)
                     case .failure(let error):
                         print(getLocalTimeString() + " , (Olympus) Error : BleManager \(error)")
                     }
-                    
-                    NotificationCenter.default.post(name: .scanInfo, object: nil, userInfo: userInfo)
                 }
             }
         }
@@ -271,13 +269,7 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
     
     @objc func waitTimerUpdate() {
         stopScan()
-        
         startScan(option: .Background)
-    }
-    
-    func getCurrentTimeInMilliseconds() -> Double
-    {
-        return Double(Date().timeIntervalSince1970 * 1000)
     }
     
     // Eddystone parsing
