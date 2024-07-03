@@ -1163,7 +1163,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             if (statusCode == 200 && (phaseController.PHASE == OlympusConstants.PHASE_2)) {
                 let result = jsonToFineLocatoinTrackingResultFromServer(jsonString: returnedString)
                 let fltResult = result.1
-                if (result.0 && fltResult.x != 0 && fltResult.y != 0) {
+                if (result.0 && (fltResult.x != 0 || fltResult.y != 0)) {
                     trajController.updateTrajCompensationArray(result: fltResult)
                     if (fltResult.mobile_time > self.preServerResultMobileTime) {
                         print(getLocalTimeString() + " , (Olympus) Request Phase 2 : result = \(fltResult)")
@@ -1221,10 +1221,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             }
                             
                             if (isUpdateResult) {
-                                copiedResult.x = pathMatchingResult.xyhs[0]
-                                copiedResult.y = pathMatchingResult.xyhs[1]
+                                copiedResult.x = propagatedResult[0]
+                                copiedResult.y = propagatedResult[1]
                                 if (inputTrajLength > OlympusConstants.USER_TRAJECTORY_LENGTH_DR*0.4 && fltInput.phase != OlympusConstants.PHASE_1) {
-                                    copiedResult.absolute_heading = pathMatchingResult.xyhs[2]
+                                    copiedResult.absolute_heading = propagatedResult[2]
                                 }
                                 let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: copiedResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
                                 currentBuilding = updatedResult.building_name
