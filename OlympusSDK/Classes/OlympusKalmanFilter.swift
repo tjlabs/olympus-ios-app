@@ -742,12 +742,12 @@ public class OlympusKalmanFilter: NSObject {
                     updatedResult.y = tuResult.y
                     updatedResult.absolute_heading = tuResult.absolute_heading
                 }
-                
                 backKalmanParam()
             } else {
                 if (!isPossibleHeadingCorrection && mode == OlympusConstants.MODE_DR) {
                     pmMuResult.absolute_heading = tuResult.absolute_heading
                 }
+                updatedResult = pmMuResult
                 saveKalmanParam()
             }
         } else {

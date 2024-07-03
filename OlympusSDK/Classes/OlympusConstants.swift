@@ -164,7 +164,7 @@ class OlympusConstants {
     static let SAME_COORD_THRESHOLD: Int = 3
     static let STRAIGHT_SAME_COORD_THRESHOLD: Int = 5
     static let REQUIRED_SECTION_STRAIGHT_LENGTH: Double = 8
-    static let REQUIRED_SECTION_REQUEST_LENGTH: Double = 25
+    static let REQUIRED_SECTION_REQUEST_LENGTH: Double = 25 //25
     static let PIXEL_LENGTH_TO_FIND_NODE: Double = 20
     
     // Path-Matching
