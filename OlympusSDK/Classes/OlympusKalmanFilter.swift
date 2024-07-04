@@ -444,17 +444,29 @@ public class OlympusKalmanFilter: NSObject {
             let pathMatchingResult =  OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, PADDING_VALUES: PADDING_VALUES)
             
             if (pathMatchingResult.isSuccess) {
-                outputResult.x = (pathMatchingResult.1[0]*0.5 + updatedX*0.5)
-                outputResult.y = (pathMatchingResult.1[1]*0.5 + updatedY*0.5)
-                outputResult.absolute_heading = compensateHeading(heading: updatedHeading)
+                let compensatedHeading = compensateHeading(heading: pathMatchingResult.xyhs[2])
+                let dx = length*cos(compensatedHeading*OlympusConstants.D2R)
+                let dy = length*sin(compensatedHeading*OlympusConstants.D2R)
                 
-                if (pathMatchingResult.0 && isDrStraight){
+                let updatedX = self.tuResult.x + dx
+                let updatedY = self.tuResult.y + dy
+                
+                outputResult.x = updatedX
+                outputResult.y = updatedY
+                
+//                outputResult.x = (pathMatchingResult.1[0]*0.5 + updatedX*0.5)
+//                outputResult.y = (pathMatchingResult.1[1]*0.5 + updatedY*0.5)
+//                outputResult.absolute_heading = compensateHeading(heading: updatedHeading)
+                
+                if (isDrStraight) {
                     outputResult.absolute_heading = compensateHeading(heading: pathMatchingResult.1[2])
+                } else {
+                    outputResult.absolute_heading = compensateHeading(heading: updatedHeading)
                 }
             } else {
                 let pathMatchingResult =  OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 1, PADDING_VALUES: PADDING_VALUES)
-                outputResult.x = (pathMatchingResult.1[0]*0.5 + updatedX*0.5)
-                outputResult.y = (pathMatchingResult.1[1]*0.5 + updatedY*0.5)
+                outputResult.x = (pathMatchingResult.1[0]*0.2 + updatedX*0.8)
+                outputResult.y = (pathMatchingResult.1[1]*0.2 + updatedY*0.8)
                 outputResult.absolute_heading = compensateHeading(heading: updatedHeading)
             }
             
@@ -602,6 +614,7 @@ public class OlympusKalmanFilter: NSObject {
                 
         if (tuResultNow.mobile_time != 0 && tuResultWhenUvdPosted.mobile_time != 0) {
             if let idx = uvdIndexBuffer.firstIndex(of: fltResult.index) {
+//                print(getLocalTimeString() + " , (Olympus) MU : curIndex = \(unitDRInfoBuffer[unitDRInfoBuffer.count-1].index) // serverIndex = \(fltResult.index)")
                 var isNeedUvdPropagation: Bool = false
                 if (mode == OlympusConstants.MODE_PDR) {
                     let propagationResult = propagateUsingUvd(unitDRInfoBuffer: unitDRInfoBuffer, fltResult: fltResult)
@@ -629,7 +642,7 @@ public class OlympusKalmanFilter: NSObject {
                         dh = tuResultNow.absolute_heading - tuBufferHeading
                     }
                 }
-                
+//                print(getLocalTimeString() + " , (Olympus) MU : dx = \(dx) // dy = \(dy) // dh = \(dh)")
                 self.usedUvdIndex = idx
                 self.isNeedUvdIndexBufferClear = true
             } else {
