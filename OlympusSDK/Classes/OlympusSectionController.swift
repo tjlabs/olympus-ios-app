@@ -60,16 +60,17 @@ public class OlympusSectionController {
         return isNeedUpdate
     }
     
-    public func checkIsNeedRequestFlt() -> Bool {
+    public func checkIsNeedRequestFlt() -> (Bool, Bool) {
         var isNeedRequest: Bool = false
+        var isSectionChanged: Bool = false
 //        print(getLocalTimeString() + " , (Olympus) Request : (0) Section Length = \(uvdSectionLength)")
         if (uvdSectionLength >= OlympusConstants.REQUIRED_SECTION_REQUEST_LENGTH) {
             if (requestSectionNumber != sectionNumber) {
 //                print(getLocalTimeString() + " , (Olympus) Request : (1) Section Length = \(uvdSectionLength)")
                 requestSectionNumber = sectionNumber
-                
                 sameSectionCount = 2
                 isNeedRequest = true
+                isSectionChanged = true
             } else {
                 if (uvdSectionLength >= (OlympusConstants.REQUIRED_SECTION_REQUEST_LENGTH*Double(sameSectionCount))) {
 //                    print(getLocalTimeString() + " , (Olympus) Request : (2) Section Length = \(uvdSectionLength)")
@@ -78,9 +79,16 @@ public class OlympusSectionController {
                 }
             }
         }
-        
-        return isNeedRequest
+        return (isNeedRequest, isSectionChanged)
     }
+    
+//    public func checkSectionChanged() -> Bool {
+//        if (requestSectionNumber != sectionNumber) {
+//            return true
+//        } else {
+//            return false
+//        }
+//    }
     
     public func getSectionNumber() -> Int {
         return self.sectionNumber

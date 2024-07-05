@@ -8,7 +8,6 @@ public class OlympusPathMatchingCalculator {
     public var PpMinMax = [Double]()
     public var PpMagScale = [String: [Double]]()
     public var PpHeading = [String: [String]]()
-    
     public var PpIsLoaded = [String: Bool]()
     
     // Path-Matching Areas
@@ -245,6 +244,247 @@ public class OlympusPathMatchingCalculator {
         }
     }
     
+//    public func pathMatching(building: String, level: String, x: Double, y: Double, heading: Double, HEADING_RANGE: Double, isUseHeading: Bool, pathType: Int, PADDING_VALUES: [Double]) -> (isSuccess: Bool, xyhs: [Double], bestHeading: Double) {
+//        var isSuccess: Bool = false
+//        var xyhs: [Double] = [x, y, heading, 1.0]
+//        var bestHeading: Double = heading
+//        
+//        let levelCopy: String = removeLevelDirectionString(levelName: level)
+//        let key: String = "\(building)_\(levelCopy)"
+//        
+//        if (!(building.isEmpty) && !(level.isEmpty)) {
+//            guard let mainType: [Int] = self.PpType[key] else {
+//                return (isSuccess, xyhs, bestHeading)
+//            }
+//            guard let mainRoad: [[Double]] = self.PpCoord[key] else {
+//                return (isSuccess, xyhs, bestHeading)
+//            }
+//            
+//            guard let mainMagScale: [Double] = self.PpMagScale[key] else {
+//                return (isSuccess, xyhs, bestHeading)
+//            }
+//            
+//            guard let mainHeading: [String] = self.PpHeading[key] else {
+//                return (isSuccess, xyhs, bestHeading)
+//            }
+//            
+//            let pathhMatchingArea = self.checkInEntranceMatchingArea(x: x, y: y, building: building, level: levelCopy)
+//            
+//            var idshArray = [[Double]]()
+//            var idshArrayWhenFail = [[Double]]()
+//            
+//            var linkDirections = [Double]()
+//            if (!mainRoad.isEmpty) {
+//                let roadX = mainRoad[0]
+//                let roadY = mainRoad[1]
+//                
+//                var xMin = x - PADDING_VALUES[0]
+//                var xMax = x + PADDING_VALUES[2]
+//                var yMin = y - PADDING_VALUES[1]
+//                var yMax = y + PADDING_VALUES[3]
+////                print(getLocalTimeString() + " , (Olympus) pathMatching : x = \(x) // y = \(y) // heading = \(heading) // ranage = [\(xMin) , \(xMax) , \(yMin) , \(yMax)]")
+//                if (pathhMatchingArea.0) {
+//                    xMin = pathhMatchingArea.1[0]
+//                    yMin = pathhMatchingArea.1[1]
+//                    xMax = pathhMatchingArea.1[2]
+//                    yMax = pathhMatchingArea.1[3]
+//                }
+//                
+//                for i in 0..<roadX.count {
+//                    let xPath = roadX[i]
+//                    let yPath = roadY[i]
+//                    
+//                    let pathTypeLoaded = mainType[i]
+//                    if (pathType == 1) {
+//                        if (pathType != pathTypeLoaded) {
+//                            continue
+//                        }
+//                    }
+//                    // XY 범위 안에 있는 값 중에 검사
+//                    if (xPath >= xMin && xPath <= xMax) {
+//                        if (yPath >= yMin && yPath <= yMax) {
+//                            let index = Double(i)
+//                            let distance = sqrt(pow(x-xPath, 2) + pow(y-yPath, 2))
+//                            
+//                            let magScale = mainMagScale[i]
+//                            var idsh: [Double] = [index, distance, magScale, heading]
+//                            
+//                            idshArrayWhenFail.append(idsh)
+//                            
+//                            // Heading 사용
+//                            if (isUseHeading) {
+//                                let headingArray = mainHeading[i]
+//                                var isValidIdh: Bool = true
+//                                if (!headingArray.isEmpty) {
+//                                    let headingData = headingArray.components(separatedBy: ",")
+//                                    var diffHeading = [Double]()
+//                                    for j in 0..<headingData.count {
+//                                        if(!headingData[j].isEmpty) {
+//                                            let mapHeading = Double(headingData[j])!
+//                                            if (xPath == x && yPath == y) {
+//                                                linkDirections.append(mapHeading)
+//                                            }
+//                                            if (heading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
+//                                                diffHeading.append(abs(heading - (mapHeading+360)))
+//                                            } else if (mapHeading > 270 && (heading >= 0 && heading < 90)) {
+//                                                diffHeading.append(abs(mapHeading - (heading+360)))
+//                                            } else {
+//                                                diffHeading.append(abs(heading - mapHeading))
+//                                            }
+//                                        }
+//                                    }
+//                                    
+//                                    if (!diffHeading.isEmpty) {
+//                                        let idxHeading = diffHeading.firstIndex(of: diffHeading.min()!)
+//                                        let minHeading = Double(headingData[idxHeading!])!
+//                                        idsh[3] = minHeading
+//                                        if (isUseHeading) {
+//                                            if (heading > 270 && (minHeading >= 0 && minHeading < 90)) {
+//                                                if (abs(minHeading+360-heading) >= HEADING_RANGE) {
+//                                                    isValidIdh = false
+//                                                }
+//                                            } else if (minHeading > 270 && (heading >= 0 && heading < 90)) {
+//                                                if (abs(heading+360-minHeading) >= HEADING_RANGE) {
+//                                                    isValidIdh = false
+//                                                }
+//                                            } else {
+//                                                if (abs(heading-minHeading) >= HEADING_RANGE) {
+//                                                    isValidIdh = false
+//                                                }
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                                
+//                                if (isValidIdh) {
+//                                    idshArray.append(idsh)
+//                                }
+//                                
+//                                if (!idshArray.isEmpty) {
+//                                    let sortedIdsh = idshArray.sorted(by: {$0[1] < $1[1] })
+//                                    var index: Int = 0
+//                                    var correctedHeading: Double = heading
+//                                    var correctedScale = 1.0
+//
+//                                    if (!sortedIdsh.isEmpty) {
+//                                        let minData: [Double] = sortedIdsh[0]
+//                                        index = Int(minData[0])
+//                                        if (isUseHeading) {
+//                                            correctedScale = minData[2]
+//                                            correctedHeading = minData[3]
+//                                        } else {
+//                                            correctedHeading = heading
+//                                        }
+//                                    }
+//                                    
+//                                    isSuccess = true
+//                                    
+//                                    if (correctedScale < 0.7) {
+//                                        correctedScale = 0.7
+//                                    }
+//                                    
+//                                    xyhs = [roadX[index], roadY[index], correctedHeading, correctedScale]
+//                                    bestHeading = correctedHeading
+//                                } else {
+//                                    let sortedIdsh = idshArrayWhenFail.sorted(by: {$0[1] < $1[1] })
+//                                    var index: Int = 0
+//                                    var correctedScale = 1.0
+//                                    
+//                                    if (!sortedIdsh.isEmpty) {
+//                                        let minData: [Double] = sortedIdsh[0]
+//                                        index = Int(minData[0])
+//                                        correctedScale = minData[2]
+//                                    }
+//                                    
+//                                    isSuccess = false
+//                                    
+//                                    if (correctedScale < 0.7) {
+//                                        correctedScale = 0.7
+//                                    }
+//                                    
+//                                    xyhs = [roadX[index], roadY[index], heading, correctedScale]
+//                                    
+//                                    let headingArray = mainHeading[index]
+//                                    if (!headingArray.isEmpty) {
+//                                        let headingData = headingArray.components(separatedBy: ",")
+//                                        var diffHeading = [Double]()
+//                                        for j in 0..<headingData.count {
+//                                            if(!headingData[j].isEmpty) {
+//                                                let mapHeading = Double(headingData[j])!
+//                                                if (heading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
+//                                                    diffHeading.append(abs(heading - (mapHeading+360)))
+//                                                } else if (mapHeading > 270 && (heading >= 0 && heading < 90)) {
+//                                                    diffHeading.append(abs(mapHeading - (heading+360)))
+//                                                } else {
+//                                                    diffHeading.append(abs(heading - mapHeading))
+//                                                }
+//                                            }
+//                                        }
+//                                        
+//                                        if (!diffHeading.isEmpty) {
+//                                            let idxHeading = diffHeading.firstIndex(of: diffHeading.min()!)
+//                                            let minHeading = Double(headingData[idxHeading!])!
+//                                            bestHeading = minHeading
+//                                        }
+//                                    }
+//                                }
+//                            } else {
+//                                // Heading 미사용
+//                                idshArray.append(idsh)
+//                                if (!idshArray.isEmpty) {
+//                                    isSuccess = true
+//                                    
+//                                    let sortedIdsh = idshArray.sorted(by: {$0[1] < $1[1] })
+//                                    var index: Int = 0
+//                                    var correctedScale = 1.0
+//                                    
+//                                    if (!sortedIdsh.isEmpty) {
+//                                        let minData: [Double] = sortedIdsh[0]
+//                                        index = Int(minData[0])
+//                                        correctedScale = minData[2]
+//                                        
+//                                        if (correctedScale < 0.7) {
+//                                            correctedScale = 0.7
+//                                        }
+//                                        
+//                                        xyhs = [roadX[index], roadY[index], heading, correctedScale]
+//                                        
+//                                        let headingArray = mainHeading[index]
+//                                        if (!headingArray.isEmpty) {
+//                                            let headingData = headingArray.components(separatedBy: ",")
+//                                            var diffHeading = [Double]()
+//                                            for j in 0..<headingData.count {
+//                                                if(!headingData[j].isEmpty) {
+//                                                    let mapHeading = Double(headingData[j])!
+//                                                    if (heading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
+//                                                        diffHeading.append(abs(heading - (mapHeading+360)))
+//                                                    } else if (mapHeading > 270 && (heading >= 0 && heading < 90)) {
+//                                                        diffHeading.append(abs(mapHeading - (heading+360)))
+//                                                    } else {
+//                                                        diffHeading.append(abs(heading - mapHeading))
+//                                                    }
+//                                                }
+//                                            }
+//                                            
+//                                            if (!diffHeading.isEmpty) {
+//                                                let idxHeading = diffHeading.firstIndex(of: diffHeading.min()!)
+//                                                let minHeading = Double(headingData[idxHeading!])!
+//                                                bestHeading = minHeading
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        
+//        xyhs[2] = compensateHeading(heading: xyhs[2])
+//        return (isSuccess, xyhs, bestHeading)
+//    }
+    
     public func pathMatching(building: String, level: String, x: Double, y: Double, heading: Double, HEADING_RANGE: Double, isUseHeading: Bool, pathType: Int, PADDING_VALUES: [Double]) -> (isSuccess: Bool, xyhs: [Double], bestHeading: Double) {
         var isSuccess: Bool = false
         var xyhs: [Double] = [x, y, heading, 1.0]
@@ -273,7 +513,6 @@ public class OlympusPathMatchingCalculator {
             
             var idshArray = [[Double]]()
             var idshArrayWhenFail = [[Double]]()
-            var pathArray = [[Double]]()
             
             var linkDirections = [Double]()
             if (!mainRoad.isEmpty) {
@@ -310,7 +549,6 @@ public class OlympusPathMatchingCalculator {
                             
                             let magScale = mainMagScale[i]
                             var idsh: [Double] = [index, distance, magScale, heading]
-                            var path: [Double] = [xPath, yPath, 0, 0]
                             
                             idshArrayWhenFail.append(idsh)
                             
@@ -356,129 +594,128 @@ public class OlympusPathMatchingCalculator {
                                                 }
                                             }
                                         }
-                                        path[2] = minHeading
-                                        path[3] = 1
                                     }
                                 }
                                 
                                 if (isValidIdh) {
                                     idshArray.append(idsh)
-                                    pathArray.append(path)
-                                }
-                                
-                                if (!idshArray.isEmpty) {
-                                    let sortedIdsh = idshArray.sorted(by: {$0[1] < $1[1] })
-                                    var index: Int = 0
-                                    var correctedHeading: Double = heading
-                                    var correctedScale = 1.0
-
-                                    if (!sortedIdsh.isEmpty) {
-                                        let minData: [Double] = sortedIdsh[0]
-                                        index = Int(minData[0])
-                                        if (isUseHeading) {
-                                            correctedScale = minData[2]
-                                            correctedHeading = minData[3]
-                                        } else {
-                                            correctedHeading = heading
-                                        }
-                                    }
-                                    
-                                    isSuccess = true
-                                    
-                                    if (correctedScale < 0.7) {
-                                        correctedScale = 0.7
-                                    }
-                                    
-                                    xyhs = [roadX[index], roadY[index], correctedHeading, correctedScale]
-                                    bestHeading = correctedHeading
-                                } else {
-                                    let sortedIdsh = idshArrayWhenFail.sorted(by: {$0[1] < $1[1] })
-                                    var index: Int = 0
-                                    var correctedScale = 1.0
-                                    
-                                    if (!sortedIdsh.isEmpty) {
-                                        let minData: [Double] = sortedIdsh[0]
-                                        index = Int(minData[0])
-                                        correctedScale = minData[2]
-                                    }
-                                    
-                                    isSuccess = false
-                                    
-                                    if (correctedScale < 0.7) {
-                                        correctedScale = 0.7
-                                    }
-                                    
-                                    xyhs = [roadX[index], roadY[index], heading, correctedScale]
-                                    
-                                    let headingArray = mainHeading[index]
-                                    if (!headingArray.isEmpty) {
-                                        let headingData = headingArray.components(separatedBy: ",")
-                                        var diffHeading = [Double]()
-                                        for j in 0..<headingData.count {
-                                            if(!headingData[j].isEmpty) {
-                                                let mapHeading = Double(headingData[j])!
-                                                if (heading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
-                                                    diffHeading.append(abs(heading - (mapHeading+360)))
-                                                } else if (mapHeading > 270 && (heading >= 0 && heading < 90)) {
-                                                    diffHeading.append(abs(mapHeading - (heading+360)))
-                                                } else {
-                                                    diffHeading.append(abs(heading - mapHeading))
-                                                }
-                                            }
-                                        }
-                                        
-                                        if (!diffHeading.isEmpty) {
-                                            let idxHeading = diffHeading.firstIndex(of: diffHeading.min()!)
-                                            let minHeading = Double(headingData[idxHeading!])!
-                                            bestHeading = minHeading
-                                        }
-                                    }
                                 }
                             } else {
                                 // Heading 미사용
                                 idshArray.append(idsh)
-                                pathArray.append(path)
-                                if (!idshArray.isEmpty) {
-                                    isSuccess = true
-                                    
-                                    let sortedIdsh = idshArray.sorted(by: {$0[1] < $1[1] })
-                                    var index: Int = 0
-                                    var correctedScale = 1.0
-                                    
-                                    if (!sortedIdsh.isEmpty) {
-                                        let minData: [Double] = sortedIdsh[0]
-                                        index = Int(minData[0])
-                                        correctedScale = minData[2]
-                                        
-                                        if (correctedScale < 0.7) {
-                                            correctedScale = 0.7
+                            }
+                        }
+                    }
+                    
+                    if (isUseHeading) {
+                        if (!idshArray.isEmpty) {
+                            let sortedIdsh = idshArray.sorted(by: {$0[1] < $1[1] })
+                            var index: Int = 0
+                            var correctedHeading: Double = heading
+                            var correctedScale = 1.0
+
+                            if (!sortedIdsh.isEmpty) {
+                                let minData: [Double] = sortedIdsh[0]
+                                index = Int(minData[0])
+                                if (isUseHeading) {
+                                    correctedScale = minData[2]
+                                    correctedHeading = minData[3]
+                                } else {
+                                    correctedHeading = heading
+                                }
+                            }
+                            
+                            isSuccess = true
+                            
+                            if (correctedScale < 0.7) {
+                                correctedScale = 0.7
+                            }
+                            
+                            xyhs = [roadX[index], roadY[index], correctedHeading, correctedScale]
+                            bestHeading = correctedHeading
+                        } else {
+                            let sortedIdsh = idshArrayWhenFail.sorted(by: {$0[1] < $1[1] })
+                            var index: Int = 0
+                            var correctedScale = 1.0
+                            
+                            if (!sortedIdsh.isEmpty) {
+                                let minData: [Double] = sortedIdsh[0]
+                                index = Int(minData[0])
+                                correctedScale = minData[2]
+                            }
+                            
+                            isSuccess = false
+                            
+                            if (correctedScale < 0.7) {
+                                correctedScale = 0.7
+                            }
+                            
+                            xyhs = [roadX[index], roadY[index], heading, correctedScale]
+                            
+                            let headingArray = mainHeading[index]
+                            if (!headingArray.isEmpty) {
+                                let headingData = headingArray.components(separatedBy: ",")
+                                var diffHeading = [Double]()
+                                for j in 0..<headingData.count {
+                                    if(!headingData[j].isEmpty) {
+                                        let mapHeading = Double(headingData[j])!
+                                        if (heading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
+                                            diffHeading.append(abs(heading - (mapHeading+360)))
+                                        } else if (mapHeading > 270 && (heading >= 0 && heading < 90)) {
+                                            diffHeading.append(abs(mapHeading - (heading+360)))
+                                        } else {
+                                            diffHeading.append(abs(heading - mapHeading))
                                         }
-                                        
-                                        xyhs = [roadX[index], roadY[index], heading, correctedScale]
-                                        
-                                        let headingArray = mainHeading[index]
-                                        if (!headingArray.isEmpty) {
-                                            let headingData = headingArray.components(separatedBy: ",")
-                                            var diffHeading = [Double]()
-                                            for j in 0..<headingData.count {
-                                                if(!headingData[j].isEmpty) {
-                                                    let mapHeading = Double(headingData[j])!
-                                                    if (heading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
-                                                        diffHeading.append(abs(heading - (mapHeading+360)))
-                                                    } else if (mapHeading > 270 && (heading >= 0 && heading < 90)) {
-                                                        diffHeading.append(abs(mapHeading - (heading+360)))
-                                                    } else {
-                                                        diffHeading.append(abs(heading - mapHeading))
-                                                    }
-                                                }
-                                            }
-                                            
-                                            if (!diffHeading.isEmpty) {
-                                                let idxHeading = diffHeading.firstIndex(of: diffHeading.min()!)
-                                                let minHeading = Double(headingData[idxHeading!])!
-                                                bestHeading = minHeading
+                                    }
+                                }
+                                
+                                if (!diffHeading.isEmpty) {
+                                    let idxHeading = diffHeading.firstIndex(of: diffHeading.min()!)
+                                    let minHeading = Double(headingData[idxHeading!])!
+                                    bestHeading = minHeading
+                                }
+                            }
+                        }
+                    } else {
+                        if (!idshArray.isEmpty) {
+                            isSuccess = true
+                            
+                            let sortedIdsh = idshArray.sorted(by: {$0[1] < $1[1] })
+                            var index: Int = 0
+                            var correctedScale = 1.0
+                            
+                            if (!sortedIdsh.isEmpty) {
+                                let minData: [Double] = sortedIdsh[0]
+                                index = Int(minData[0])
+                                correctedScale = minData[2]
+                                
+                                if (correctedScale < 0.7) {
+                                    correctedScale = 0.7
+                                }
+                                
+                                xyhs = [roadX[index], roadY[index], heading, correctedScale]
+                                
+                                let headingArray = mainHeading[index]
+                                if (!headingArray.isEmpty) {
+                                    let headingData = headingArray.components(separatedBy: ",")
+                                    var diffHeading = [Double]()
+                                    for j in 0..<headingData.count {
+                                        if(!headingData[j].isEmpty) {
+                                            let mapHeading = Double(headingData[j])!
+                                            if (heading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
+                                                diffHeading.append(abs(heading - (mapHeading+360)))
+                                            } else if (mapHeading > 270 && (heading >= 0 && heading < 90)) {
+                                                diffHeading.append(abs(mapHeading - (heading+360)))
+                                            } else {
+                                                diffHeading.append(abs(heading - mapHeading))
                                             }
                                         }
+                                    }
+                                    
+                                    if (!diffHeading.isEmpty) {
+                                        let idxHeading = diffHeading.firstIndex(of: diffHeading.min()!)
+                                        let minHeading = Double(headingData[idxHeading!])!
+                                        bestHeading = minHeading
                                     }
                                 }
                             }
@@ -1332,8 +1569,6 @@ public class OlympusPathMatchingCalculator {
         if anchorNodeInfo.matchedIndex == -1 {
             return recoveryCaseNodeInfo
         } else {
-//            let heading = anchorNodeInfo.userHeading
-            
             let nodeCoord = anchorNodeInfo.nodeCoord
             let nodeHeadings = anchorNodeInfo.nodeHeadings
             let nodeMatchedIndex = anchorNodeInfo.matchedIndex
@@ -1412,6 +1647,87 @@ public class OlympusPathMatchingCalculator {
         }
         
         return recoveryCaseNodeInfo
+    }
+    
+    public func getMultipleAnchorNodeCandidates(fltResult: FineLocationTrackingFromServer, pathType: Int) -> NodeCandidateInfo {
+        var multipleNodeInfo = NodeCandidateInfo(isPhaseBreak: false, nodeCandidatesInfo: [])
+        let anchorNodeInfo = self.anchorNode
+        print(getLocalTimeString() + " , (Olympus) Node Find : getMultipleAnchorNodeCandidates (1) // anchorNodeInfo = \(anchorNodeInfo)")
+        if anchorNodeInfo.matchedIndex == -1 {
+            return multipleNodeInfo
+        } else {
+            let nodeCoord = anchorNodeInfo.nodeCoord
+            let nodeHeadings = anchorNodeInfo.nodeHeadings
+            let nodeMatchedIndex = anchorNodeInfo.matchedIndex
+            
+            let heading = getUserDirection(from: nodeCoord, to: linkCoord)
+            print(getLocalTimeString() + " , (Olympus) Node Find : getMultipleAnchorNodeCandidates (2) // anchorNodeInfo = \(anchorNodeInfo)")
+            
+            var diffHeading = [Double]()
+            var candidateDirections = [Double]()
+            for mapHeading in nodeHeadings {
+                var diffValue: Double = 0
+                if (heading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
+                    diffValue = abs(heading - (mapHeading+360))
+                } else if (mapHeading > 270 && (heading >= 0 && heading < 90)) {
+                    diffValue = abs(mapHeading - (heading+360))
+                } else {
+                    diffValue = abs(heading - mapHeading)
+                }
+                diffHeading.append(diffValue)
+                
+                let MARGIN: Double = 30
+                
+                if (diffValue >= 90-MARGIN && diffValue <= 90+MARGIN) || (diffValue >= 270-MARGIN && diffValue <= 270+MARGIN) {
+                    candidateDirections.append(mapHeading)
+                }
+            }
+            print(getLocalTimeString() + " , (Olympus) Node Find : getMultipleAnchorNodeCandidates // candidateDirections = \(candidateDirections)")
+            
+            let PIXEL_LENGTH = OlympusConstants.PIXEL_LENGTH_TO_FIND_NODE*2
+            let PIXELS_TO_CHECK = Int(PIXEL_LENGTH)
+            
+            var nodeCandidatesInfo = [PassedNodeInfo]()
+            nodeCandidatesInfo.append(anchorNodeInfo)
+            
+            for direction in candidateDirections {
+                var paddingValues = [Double] (repeating: Double(PIXELS_TO_CHECK), count: 4)
+                if (direction == 0) {
+                    paddingValues = [0, PIXEL_LENGTH, 1, 1]
+                } else if (direction == 90) {
+                    paddingValues = [1, 1, 0, PIXEL_LENGTH]
+                } else if (direction == 180) {
+                    paddingValues = [PIXEL_LENGTH, 0, 1, 1]
+                } else if (direction == 270) {
+                    paddingValues = [1, 1, PIXEL_LENGTH, 0]
+                }
+                
+                var x: Double = nodeCoord[0]
+                var y: Double = nodeCoord[1]
+                for _ in 0..<PIXELS_TO_CHECK {
+                    x += cos(direction*OlympusConstants.D2R)
+                    y += sin(direction*OlympusConstants.D2R)
+                    let matchedNodeResult = getMatchedNodeWithCoord(fltResult: fltResult, originCoord: nodeCoord, coordToCheck: [x, y], pathType: pathType, PADDING_VALUES: paddingValues)
+                    if (matchedNodeResult.0) {
+                        break
+                    } else {
+                        if (matchedNodeResult.1 != -1) {
+                            let coordToCheck: [Double] = [x+cos(heading*OlympusConstants.D2R), y+sin(heading*OlympusConstants.D2R)]
+                            let isPossibleNode = checkPathPixelHasCoords(fltResult: fltResult, coordToCheck: coordToCheck)
+                            if (isPossibleNode) {
+                                let nodeInfo = PassedNodeInfo(nodeNumber: matchedNodeResult.1, nodeCoord: [x, y], nodeHeadings: matchedNodeResult.2, matchedIndex: nodeMatchedIndex, userHeading: heading)
+                                nodeCandidatesInfo.append(nodeInfo)
+                                break
+                            }
+                        }
+                    }
+                }
+            }
+            multipleNodeInfo = NodeCandidateInfo(isPhaseBreak: false, nodeCandidatesInfo: nodeCandidatesInfo)
+            print(getLocalTimeString() + " , (Olympus) Node Find : getMultipleAnchorNodeCandidates // candidateNodeNumbers = \(nodeCandidatesInfo)")
+        }
+        
+        return multipleNodeInfo
     }
     
     private func findAnchorNode(fltResult: FineLocationTrackingFromServer, pathType: Int) -> PassedNodeInfo {
