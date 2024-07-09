@@ -1336,19 +1336,70 @@ public class OlympusPathMatchingCalculator {
                 }
                 diffHeading.append(diffValue)
             }
-            
-            if let minIndex = diffHeading.firstIndex(of: diffHeading.min()!) {
+//            print(getLocalTimeString() + " , (Olympus) Check Map End : diffHeading = \(diffHeading)")
+            let minHeading = diffHeading.min()!
+            if let minIndex = diffHeading.firstIndex(of: minHeading) {
                 bestHeading = coordHeadings[minIndex]
             }
 //            print(getLocalTimeString() + " , (Olympus) Check Map End : bestHeading = \(bestHeading)")
-            var resultForEndCheck = resultStandard
-            resultForEndCheck.x += cos(bestHeading*OlympusConstants.D2R)
-            resultForEndCheck.y += sin(bestHeading*OlympusConstants.D2R)
-            let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: resultForEndCheck.building_name, level: resultForEndCheck.level_name, x: resultForEndCheck.x, y: resultForEndCheck.y, heading: resultForEndCheck.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: pathType, PADDING_VALUES: [0, 0, 0, 0])
-            if !pathMatchingResult.isSuccess {
-                isInMapEnd = true
-                print(getLocalTimeString() + " , (Olympus) Check Map End : isInMapEnd = \(isInMapEnd)")
+            if bestHeading.truncatingRemainder(dividingBy: 90.0) == 0 {
+                var resultForEndCheck = resultStandard
+                resultForEndCheck.x += cos(bestHeading*OlympusConstants.D2R)
+                resultForEndCheck.y += sin(bestHeading*OlympusConstants.D2R)
+                let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: resultForEndCheck.building_name, level: resultForEndCheck.level_name, x: resultForEndCheck.x, y: resultForEndCheck.y, heading: resultForEndCheck.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: pathType, PADDING_VALUES: [0, 0, 0, 0])
+                if !pathMatchingResult.isSuccess {
+                    isInMapEnd = true
+                    print(getLocalTimeString() + " , (Olympus) Check Map End (1) : isInMapEnd = \(isInMapEnd)")
+                }
+            } else {
+                var checkValues = [[Double]]()
+                let dividedValue = round(bestHeading/90)
+//                print(getLocalTimeString() + " , (Olympus) Check Map End : dividedValue = \(dividedValue)")
+                if dividedValue == 0 || dividedValue == 4 {
+                    // 0도에 가깝
+                    checkValues = [[1, 1], [1, 0], [1, -1]]
+                } else if dividedValue == 1 {
+                    // 90도에 가깝
+                    checkValues = [[-1, 1], [0, 1], [1, 1]]
+                } else if dividedValue == 2 {
+                    // 180도에 가깝
+                    checkValues = [[-1, 1], [-1, 0], [-1, -1]]
+                } else {
+                    // 270도에 가깝
+                    checkValues = [[-1, -1], [0, -1], [1, -1]]
+                }
+                
+                var failCount = 0
+                for v in checkValues {
+                    let xToCheck = resultStandard.x + v[0]
+                    let yToCheck = resultStandard.y + v[1]
+//                    print(getLocalTimeString() + " , (Olympus) Check Map End : x & y ToCheck = \(xToCheck) , \(yToCheck)")
+                    let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: resultStandard.building_name, level: resultStandard.level_name, x: xToCheck, y: yToCheck, heading: resultStandard.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: pathType, PADDING_VALUES: [0, 0, 0, 0])
+                    if !pathMatchingResult.isSuccess {
+                        failCount += 1
+                    }
+                }
+                
+//                print(getLocalTimeString() + " , (Olympus) Check Map End : failCount = \(failCount)")
+                if failCount == checkValues.count {
+                    isInMapEnd = true
+                    print(getLocalTimeString() + " , (Olympus) Check Map End (2) : isInMapEnd = \(isInMapEnd)")
+                }
             }
+            
+//            print(getLocalTimeString() + " , (Olympus) Check Map End : diffHeading = \(diffHeading)")
+//            if let minIndex = diffHeading.firstIndex(of: diffHeading.min()!) {
+//                bestHeading = coordHeadings[minIndex]
+//            }
+//            print(getLocalTimeString() + " , (Olympus) Check Map End : bestHeading = \(bestHeading)")
+//            var resultForEndCheck = resultStandard
+//            resultForEndCheck.x += cos(bestHeading*OlympusConstants.D2R)
+//            resultForEndCheck.y += sin(bestHeading*OlympusConstants.D2R)
+//            let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: resultForEndCheck.building_name, level: resultForEndCheck.level_name, x: resultForEndCheck.x, y: resultForEndCheck.y, heading: resultForEndCheck.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: pathType, PADDING_VALUES: [0, 0, 0, 0])
+//            if !pathMatchingResult.isSuccess {
+//                isInMapEnd = true
+//                print(getLocalTimeString() + " , (Olympus) Check Map End : isInMapEnd = \(isInMapEnd)")
+//            }
         }
         
         return isInMapEnd

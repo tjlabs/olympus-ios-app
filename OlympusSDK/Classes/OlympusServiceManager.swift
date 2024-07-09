@@ -959,7 +959,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     } else if (!isNeedPathTrajMatching.straight) {
                         // Phase 5 요청 보내야하는 상황이면 요쳥 보내기
                         let isNeedRq = sectionController.checkIsNeedRequestFlt()
-                        if (isNeedRq.0) {
+                        if (isNeedRq.0 && phaseController.PHASE == OlympusConstants.PHASE_5) {
                             let goodCaseNodeCandidates = OlympusPathMatchingCalculator.shared.getAnchorNodeCandidatesForGoodCase(fltResult: tuResult, pathType: pathType)
                             var inputNodeCandidates = goodCaseNodeCandidates
                             let nodeCandidatesInfo = goodCaseNodeCandidates.nodeCandidatesInfo
@@ -1057,12 +1057,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
         
         if ((self.unitDRInfoIndex % RQ_IDX) == 0 && !stateManager.isBackground) {
-            if (phaseController.PHASE == OlympusConstants.PHASE_2) {
-//                let phase2Trajectory = trajectoryInfo
-//                let searchInfo = trajController.makeSearchInfoInPhase2(trajectoryInfo: phase2Trajectory, unitDRInfoBuffer: unitDRInfoBuffer, phase2Range: phase2Range, phase2Direction: phase2Direction)
-//                if (searchInfo.trajType == .DR_RQ_IN_PHASE2) {
-//                    processPhase2(currentTime: currentTime, mode: mode, trajectoryInfo: phase2Trajectory, searchInfo: searchInfo)
-//                }
+            if (phaseController.PHASE == OlympusConstants.PHASE_2 && !self.isStartRouteTrack) {
+                let phase2Trajectory = trajectoryInfo
+                let searchInfo = trajController.makeSearchInfoInPhase2(trajectoryInfo: phase2Trajectory, unitDRInfoBuffer: unitDRInfoBuffer, phase2Range: phase2Range, phase2Direction: phase2Direction)
+                if (searchInfo.trajType == .DR_RQ_IN_PHASE2) {
+                    processPhase2(currentTime: currentTime, mode: mode, trajectoryInfo: phase2Trajectory, searchInfo: searchInfo)
+                }
             } else if (phaseController.PHASE == OlympusConstants.PHASE_1 || phaseController.PHASE == OlympusConstants.PHASE_3) {
                 // Phase 1 ~ 3
                 let phase3Trajectory = trajectoryInfo
@@ -1182,9 +1182,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 if (inputTrajLength > OlympusConstants.USER_TRAJECTORY_LENGTH_DR*0.4 && fltInput.phase != OlympusConstants.PHASE_1) {
                                     copiedResult.absolute_heading = propagatedResult[2]
                                 }
-                                let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: copiedResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
-                                currentBuilding = updatedResult.building_name
-                                currentLevel = updatedResult.level_name
+                                let updatedResult = copiedResult
+//                                let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: copiedResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+//                                currentBuilding = updatedResult.building_name
+//                                currentLevel = updatedResult.level_name
                                 displayOutput.serverResult[0] = updatedResult.x
                                 displayOutput.serverResult[1] = updatedResult.y
                                 displayOutput.serverResult[2] = updatedResult.absolute_heading

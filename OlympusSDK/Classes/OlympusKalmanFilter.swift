@@ -431,33 +431,22 @@ public class OlympusKalmanFilter: NSObject {
                         outputResult.x = limitationResult.limitValues[1]
                     }
                 }
-            } else {
-//                let pathMatching = OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: outputResult.x, y: outputResult.y, heading: outputResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 0, PADDING_VALUES: PADDING_VALUES)
-//                outputResult.x = pathMatching.xyhs[0]*0.5 + updatedX*0.5
-//                outputResult.y = pathMatching.xyhs[1]*0.5 + updatedY*0.5
-//                outputResult.x = pathMatching.xyhs[0]
-//                outputResult.y = pathMatching.xyhs[1]
             }
         } else {
             let drBufferStraightResult = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_HEADING_CORR_NUM_IDX, condition: 10.0)
             let isDrStraight: Bool = drBufferStraightResult.0
             let pathMatchingResult =  OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, PADDING_VALUES: PADDING_VALUES)
-            
             if (pathMatchingResult.isSuccess) {
                 let compensatedHeading = compensateHeading(heading: pathMatchingResult.xyhs[2])
                 let dx = length*cos(compensatedHeading*OlympusConstants.D2R)
                 let dy = length*sin(compensatedHeading*OlympusConstants.D2R)
+
+                let updatedTuX = self.tuResult.x + dx
+                let updatedTuY = self.tuResult.y + dy
                 
-                let updatedX = self.tuResult.x + dx
-                let updatedY = self.tuResult.y + dy
-                
-                outputResult.x = updatedX
-                outputResult.y = updatedY
-                
-//                outputResult.x = (pathMatchingResult.1[0]*0.5 + updatedX*0.5)
-//                outputResult.y = (pathMatchingResult.1[1]*0.5 + updatedY*0.5)
-//                outputResult.absolute_heading = compensateHeading(heading: updatedHeading)
-                
+                outputResult.x = updatedTuX
+                outputResult.y = updatedTuY
+
                 if (isDrStraight) {
                     outputResult.absolute_heading = compensateHeading(heading: pathMatchingResult.1[2])
                 } else {
@@ -492,7 +481,6 @@ public class OlympusKalmanFilter: NSObject {
 //                print("(Link Info) -------------------------------------- ")
             }
         }
-        
         
         tuResult = outputResult
         
