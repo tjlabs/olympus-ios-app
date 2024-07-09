@@ -1037,32 +1037,32 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     
     func requestOlympusResult(trajectoryInfo: [TrajectoryInfo], trueHeading: Double, mode: String) {
         let currentTime = getCurrentTimeInMilliseconds()
-//        if (!stateManager.isBackground && isStartRouteTrack) {
-//            let isCorrelation = routeTracker.checkIsEntranceFinished(bleData: self.bleAvg, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: OlympusConstants.DEVICE_MIN_RSSI, standard_min_rss: OlympusConstants.STANDARD_MIN_RSS)
-//            if isCorrelation.0 {
-//                let correlationInfo = isCorrelation.1
-//                var lastServerResult = serverResultBuffer[serverResultBuffer.count-1]
-//                self.currentLevel = routeTrackResult.level_name
-//                lastServerResult.level_name = routeTrackResult.level_name
-//                lastServerResult.x = correlationInfo[0]
-//                lastServerResult.y = correlationInfo[1]
-//                lastServerResult.absolute_heading = correlationInfo[2]
-//                
-//                makeTemporalResult(input: lastServerResult, isStableMode: false, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
-//                NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_5])
-//                displayOutput.phase = String(phaseController.PHASE)
-//                displayOutput.indexRx = unitDRInfoIndex
-//                KF.activateKalmanFilter(fltResult: lastServerResult)
-//            }
-//        }
+        if (!stateManager.isBackground && isStartRouteTrack) {
+            let isCorrelation = routeTracker.checkIsEntranceFinished(bleData: self.bleAvg, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: OlympusConstants.DEVICE_MIN_RSSI, standard_min_rss: OlympusConstants.STANDARD_MIN_RSS)
+            if isCorrelation.0 {
+                let correlationInfo = isCorrelation.1
+                var lastServerResult = serverResultBuffer[serverResultBuffer.count-1]
+                self.currentLevel = routeTrackResult.level_name
+                lastServerResult.level_name = routeTrackResult.level_name
+                lastServerResult.x = correlationInfo[0]
+                lastServerResult.y = correlationInfo[1]
+                lastServerResult.absolute_heading = correlationInfo[2]
+                
+                makeTemporalResult(input: lastServerResult, isStableMode: false, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
+                NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_5])
+                displayOutput.phase = String(phaseController.PHASE)
+                displayOutput.indexRx = unitDRInfoIndex
+                KF.activateKalmanFilter(fltResult: lastServerResult)
+            }
+        }
         
         if ((self.unitDRInfoIndex % RQ_IDX) == 0 && !stateManager.isBackground) {
             if (phaseController.PHASE == OlympusConstants.PHASE_2) {
-                let phase2Trajectory = trajectoryInfo
-                let searchInfo = trajController.makeSearchInfoInPhase2(trajectoryInfo: phase2Trajectory, unitDRInfoBuffer: unitDRInfoBuffer, phase2Range: phase2Range, phase2Direction: phase2Direction)
-                if (searchInfo.trajType == .DR_RQ_IN_PHASE2) {
-                    processPhase2(currentTime: currentTime, mode: mode, trajectoryInfo: phase2Trajectory, searchInfo: searchInfo)
-                }
+//                let phase2Trajectory = trajectoryInfo
+//                let searchInfo = trajController.makeSearchInfoInPhase2(trajectoryInfo: phase2Trajectory, unitDRInfoBuffer: unitDRInfoBuffer, phase2Range: phase2Range, phase2Direction: phase2Direction)
+//                if (searchInfo.trajType == .DR_RQ_IN_PHASE2) {
+//                    processPhase2(currentTime: currentTime, mode: mode, trajectoryInfo: phase2Trajectory, searchInfo: searchInfo)
+//                }
             } else if (phaseController.PHASE == OlympusConstants.PHASE_1 || phaseController.PHASE == OlympusConstants.PHASE_3) {
                 // Phase 1 ~ 3
                 let phase3Trajectory = trajectoryInfo
@@ -1529,8 +1529,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     // 임시
                     
                     if (KF.isRunning && resultPhase.0 == OlympusConstants.PHASE_5) {
-                        //임시
-//                        unitDRGenerator.setVelocityScScale(scale: max(fltResult.sc_compensation, 1.0))
                         if (!(fltResult.x == 0 && fltResult.y == 0) && !buildingLevelChanger.isDetermineSpot && phaseController.PHASE != OlympusConstants.PHASE_2) {
                             scCompensation = fltResult.sc_compensation
                             
@@ -2097,7 +2095,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         phaseController.setPhase2BadCount(value: 0)
         isPhaseBreakInRouteTrack = isStartRouteTrack
         isPhaseBreak = KF.isRunning
-        unitDRGenerator.setVelocityScScale(scale: 1.0)
     }
     
     private func phaseBreakInPhase4(fltResult: FineLocationTrackingFromServer, isUpdatePhaseBreakResult: Bool) {
@@ -2113,7 +2110,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_1])
         isInRecoveryProcess = false
         isPhaseBreak = true
-        unitDRGenerator.setVelocityScScale(scale: 1.0)
     }
     
     // 임시

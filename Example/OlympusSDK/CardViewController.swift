@@ -106,8 +106,7 @@ class CardViewController: UIViewController, Observer {
 //        serviceManager.startCollect()
 //        self.startTimer()
         
-//        let uniqueId = makeUniqueId(uuid: self.userId)
-        let uniqueId = "CurVersion"
+        let uniqueId = makeUniqueId(uuid: self.userId)
         // service
         serviceManager.addObserver(self)
         serviceManager.startService(user_id: uniqueId, region: self.region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
