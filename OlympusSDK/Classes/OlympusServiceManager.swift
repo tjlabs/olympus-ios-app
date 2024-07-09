@@ -329,11 +329,14 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                                     let msg: String = getLocalTimeString() + " , (Olympus) Error : Bluetooth is not enabled"
                                                     completion(false, msg)
                                                 } else {
+                                                    if (!self.isSimulationMode) {
+                                                        OlympusFileManager.shared.setRegion(region: region)
+                                                        OlympusFileManager.shared.createFiles(region: region, sector_id: sector_id, deviceModel: deviceModel, osVersion: deviceOsVersion)
+                                                    }
+                                                    
                                                     self.isStartComplete = true
                                                     self.startTimer()
                                                     NotificationCenter.default.post(name: .serviceStarted, object: nil, userInfo: nil)
-                                                    
-                                                    self.initSimulationMode(region: region, sector_id: sector_id)
                                                     print(getLocalTimeString() + " , (Olympus) Service Start")
                                                     completion(true, getLocalTimeString() + success_msg)
                                                 }
@@ -412,7 +415,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             }
         }
         
-        
         return (isSuccess, msg)
     }
     
@@ -421,20 +423,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         self.bleFileName = bleFileName
         self.sensorFileName = sensorFileName
         
-        print(getLocalTimeString() + " , (Olympus) Simulation Mode : flag = \(self.isSimulationMode)")
-    }
-    
-    private func initSimulationMode(region: String, sector_id: Int) {
         if (self.isSimulationMode) {
             let result = OlympusFileManager.shared.loadFilesForSimulation(bleFile: self.bleFileName, sensorFile: self.sensorFileName)
             simulationBleData = result.0
             simulationSensorData = result.1
-//            print(getLocalTimeString() + " , (OlympusFileManager) : sensor = \(result.0)")
-//            print(getLocalTimeString() + " , (OlympusFileManager) : ble = \(result.1)" )
-        } else {
-            OlympusFileManager.shared.setRegion(region: region)
-            OlympusFileManager.shared.createFiles(region: region, sector_id: sector_id, deviceModel: deviceModel, osVersion: deviceOsVersion)
         }
+        print(getLocalTimeString() + " , (Olympus) Simulation Mode : flag = \(self.isSimulationMode)")
     }
     
     public func stopService() -> (Bool, String) {
@@ -763,7 +757,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 sensorData = sensorManager.sensorData
             }
             unitDRInfo = unitDRGenerator.generateDRInfo(sensorData: sensorData)
-            OlympusFileManager.shared.writeSensorData(data: sensorData)
+            OlympusFileManager.shared.writeSensorData(currentTime: getCurrentTimeInMillisecondsDouble(), data: sensorData)
         }
         
         var backgroundScale: Double = 1.0
@@ -1023,8 +1017,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     self.routeTrackResult = routeTrackResult.2
                 }
             }
-            
-            
             
             if (abs(getCurrentTimeInMillisecondsDouble() - bleManager.bleDiscoveredTime) < 1000*10) || isSimulationMode {
                 requestOlympusResult(trajectoryInfo: trajectoryInfo, trueHeading: sensorData.trueHeading, mode: self.runMode)

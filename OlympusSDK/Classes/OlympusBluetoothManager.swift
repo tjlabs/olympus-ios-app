@@ -116,7 +116,6 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
                 self.bleDiscoveredTime = bleTime
                 
                 if RSSI.intValue != 127 {
-//                    NotificationCenter.default.post(name: .scanInfo, object: nil, userInfo: userInfo)
                     let condition: ((String, [[Double]])) -> Bool = {
                         $0.0.contains(bleName)
                     }
@@ -139,7 +138,6 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
                     switch trimmedResult {
                     case .success(let trimmedData):
                         self.bleDictionary = trimmedData
-//                        NotificationCenter.default.post(name: .scanInfo, object: nil, userInfo: userInfo)
                     case .failure(let error):
                         print(getLocalTimeString() + " , (Olympus) Error : BleManager \(error)")
                     }

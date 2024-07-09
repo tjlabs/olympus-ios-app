@@ -85,9 +85,11 @@ public class OlympusFileManager {
         }
     }
     
-    public func writeSensorData(data: OlympusSensorData) {
+    public func writeSensorData(currentTime: Double, data: OlympusSensorData) {
         dataQueue.async(flags: .barrier) {
-            self.sensorData.append(data)
+            var sensorRow = data
+            sensorRow.time = currentTime
+            self.sensorData.append(sensorRow)
         }
     }
     

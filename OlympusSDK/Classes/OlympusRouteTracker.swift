@@ -225,10 +225,10 @@ public class OlympusRouteTracker {
         var result = temporalResult
         let localTime = getLocalTimeString()
         result = routeTrackEntrance(temporalResult: temporalResult, currentEntranceIndex: self.currentEntranceIndex)
-        print(getLocalTimeString() + " , (Olympus) Route Track : currentEntranceIndex = \(currentEntranceIndex) // currentEntranceLength = \(currentEntranceLength)")
+//        print(getLocalTimeString() + " , (Olympus) Route Track : currentEntranceIndex = \(currentEntranceIndex) // currentEntranceLength = \(currentEntranceLength)")
         if (self.currentEntranceIndex < (self.currentEntranceLength-1)) {
             self.currentEntranceIndex += 1
-            print(getLocalTimeString() + " , (Olympus) Route Track : temporalResult = \(temporalResult)")
+//            print(getLocalTimeString() + " , (Olympus) Route Track : temporalResult = \(temporalResult)")
             
             if (isVenusMode) {
                 print(localTime + " , (Olympus) Entrance Route Tracker : Finish (BLE Only Mode)")

@@ -18,7 +18,7 @@ public func getCurrentTimeInMilliseconds() -> Int
 
 public func getCurrentTimeInMillisecondsDouble() -> Double
 {
-    return (Date().timeIntervalSince1970 * 1000)
+    return Double(Date().timeIntervalSince1970 * 1000)
 }
 
 public func removeLevelDirectionString(levelName: String) -> String {
