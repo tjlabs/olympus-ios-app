@@ -227,6 +227,11 @@ public class OlympusUnitDRGenerator: NSObject {
         self.drDistanceEstimator.velocityScale = scale
     }
     
+    public func setVelocityScScale(scale: Double) {
+        print(getLocalTimeString() + " , (Olympus) Velocity Scale : scale = \(scale)")
+        self.drDistanceEstimator.velocityScScale = scale
+    }
+    
     public func setEntranceVelocityScale(scale: Double) {
         self.drDistanceEstimator.entranceVelocityScale = scale
     }

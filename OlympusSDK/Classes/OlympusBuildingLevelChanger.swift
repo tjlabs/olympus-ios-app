@@ -70,15 +70,15 @@ public class OlympusBuildingLevelChanger {
                 
                 if (isRunOsr) {
                     let input = OnSpotRecognition(operating_system: OlympusConstants.OPERATING_SYSTEM, user_id: user_id, mobile_time: currentTime, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), standard_min_rss: Int(OlympusConstants.STANDARD_MIN_RSS))
-                    print(getLocalTimeString() + " , (Olympus) Run OSR : input = \(input)")
+//                    print(getLocalTimeString() + " , (Olympus) Run OSR : input = \(input)")
                     OlympusNetworkManager.shared.postOSR(url: CALC_OSR_URL, input: input, completion: { [self] statusCode, returnedString in
-                        print(getLocalTimeString() + " , (Olympus) Run OSR : result = \(returnedString)")
+//                        print(getLocalTimeString() + " , (Olympus) Run OSR : result = \(returnedString)")
                         if (statusCode == 200) {
                             let result = jsonToOnSpotRecognitionResult(jsonString: returnedString)
                             let decodedOsr = result.1
                             if (result.0 && decodedOsr.building_name != "" && decodedOsr.level_name != "") {
                                 let isOnSpot = isOnSpotRecognition(result: decodedOsr, level: currentLevel)
-                                print(getLocalTimeString() + " , (Olympus) Run OSR : isOnSpot = \(isOnSpot)")
+//                                print(getLocalTimeString() + " , (Olympus) Run OSR : isOnSpot = \(isOnSpot)")
                                 if (isOnSpot.isOn) {
                                     let levelDestination = isOnSpot.levelDestination + isOnSpot.levelDirection
                                     determineSpotDetect(result: decodedOsr, lastSpotId: self.lastSpotId, levelDestination: levelDestination, currentBuilding: currentBuilding, currentLevel: currentLevel, currentEntrance: currentEntrance, currentTime: currentTime)
@@ -122,7 +122,7 @@ public class OlympusBuildingLevelChanger {
                     self.lastSpotId = result.spot_id
                     self.travelingOsrDistance = 0
                     self.buildingLevelChangedTime = currentTime
-                    print(getLocalTimeString() + " , (Olympus) Run OSR (1) : levelDestination = \(levelDestination)")
+//                    print(getLocalTimeString() + " , (Olympus) Run OSR (1) : levelDestination = \(levelDestination)")
 //                    print(getLocalTimeString() + " , (Olympus) Run OSR (1) : phase2Range = \(phase2Range) // phase2Direction = \(phase2Direction)")
                     self.notifyObservers(building: result.building_name, level: levelDestination, range: self.phase2Range, direction: self.phase2Direction)
                     self.isDetermineSpot = true
@@ -149,7 +149,7 @@ public class OlympusBuildingLevelChanger {
                         self.lastSpotId = result.spot_id
                         self.travelingOsrDistance = 0
                         self.buildingLevelChangedTime = currentTime
-                        print(getLocalTimeString() + " , (Olympus) Run OSR (2) : levelDestination = \(levelDestination)")
+//                        print(getLocalTimeString() + " , (Olympus) Run OSR (2) : levelDestination = \(levelDestination)")
 //                        print(getLocalTimeString() + " , (Olympus) Run OSR (2) : phase2Range = \(phase2Range) // phase2Direction = \(phase2Direction)")
                         self.notifyObservers(building: result.building_name, level: levelDestination, range: self.phase2Range, direction: self.phase2Direction)
                         self.isDetermineSpot = true
@@ -162,7 +162,6 @@ public class OlympusBuildingLevelChanger {
     }
     
     func isOnSpotRecognition(result: OnSpotRecognitionResult, level: String) -> (isOn: Bool, levelDestination: String, levelDirection: String) {
-        let localTime = getLocalTimeString()
         var isOn: Bool = false
         let building_name = result.building_name
         let level_name = result.level_name

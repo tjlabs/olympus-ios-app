@@ -82,14 +82,6 @@ public class OlympusSectionController {
         return (isNeedRequest, isSectionChanged)
     }
     
-//    public func checkSectionChanged() -> Bool {
-//        if (requestSectionNumber != sectionNumber) {
-//            return true
-//        } else {
-//            return false
-//        }
-//    }
-    
     public func getSectionNumber() -> Int {
         return self.sectionNumber
     }
