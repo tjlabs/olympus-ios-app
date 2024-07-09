@@ -1316,9 +1316,8 @@ public class OlympusPathMatchingCalculator {
         let tuHeading = resultStandard.absolute_heading
         
         if !coordHeadings.isEmpty {
-            let filteredCount = coordHeadings.filter { $0 != 0 && $0 != 90 && $0 != 180 && $0 != 270 }.count
-            if (filteredCount > 1) {
-                return isInMapEnd
+            if coordHeadings.count < 3 {
+                return false
             }
 //            print(getLocalTimeString() + " , (Olympus) Check Map End : Index = \(tuResult.index)")
 //            print(getLocalTimeString() + " , (Olympus) Check Map End : resultStandard = \(resultStandard)")
@@ -1806,6 +1805,20 @@ public class OlympusPathMatchingCalculator {
                         resultPassedNodeInfo = item
                         return resultPassedNodeInfo
                     }
+                }
+            }
+        } else {
+            let linkDirs = linkDirections
+            for item in nodeInfoBuffer.reversed() {
+                var validCount = 0
+                for heading in linkDirs {
+                    if item.nodeHeadings.contains(heading) {
+                        validCount += 1
+                    }
+                }
+                if validCount == linkDirs.count {
+                    resultPassedNodeInfo = item
+                    return resultPassedNodeInfo
                 }
             }
         }
