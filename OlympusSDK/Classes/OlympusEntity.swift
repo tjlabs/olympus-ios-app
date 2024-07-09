@@ -598,6 +598,12 @@ public enum PathMatchingType {
          WIDE
 }
 
+public enum RouteTrackFinishType {
+    case STABLE,
+        VENUS,
+        NOT_STABLE
+}
+
 public struct SearchInfo {
     public var searchRange: [Int] = []
     public var searchArea: [[Double]] = [[0, 0]]

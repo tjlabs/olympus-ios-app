@@ -9,6 +9,9 @@ public class OlympusRouteTracker {
     public var EntranceVelocityScales = [String: Double]()
     public var EntranceIsLoaded = [String: Bool]()
     public var EntranceNumbers: Int = 0
+    public var EntranceInnerWardID = [String: String]()
+    public var EntranceInnerWardRSSI = [String: Double]()
+    public var EntranceInnerWardCoord = [String: [Double]]()
     
     var indexAfterRouteTrack: Int = 0
     public var entranceVelocityScale: Double = 1.0
@@ -24,6 +27,28 @@ public class OlympusRouteTracker {
         self.currentEntranceLength = 0
     }
     
+    public func setEntranceInnerWardInfo() {
+        self.EntranceInnerWardID["COEX_B0_1"] = "TJ-00CB-00000320-0000"
+        self.EntranceInnerWardRSSI["COEX_B0_1"] = -80
+        self.EntranceInnerWardCoord["COEX_B0_1"] = [252, 70, 90]
+        
+        self.EntranceInnerWardID["COEX_B0_2"] = "TJ-00CB-00000323-0000"
+        self.EntranceInnerWardRSSI["COEX_B0_2"] = -80
+        self.EntranceInnerWardCoord["COEX_B0_2"] = [250, 180, 90]
+        
+        self.EntranceInnerWardID["COEX_B0_3"] = "TJ-00CB-00000344-0000"
+        self.EntranceInnerWardRSSI["COEX_B0_3"] = -72
+        self.EntranceInnerWardCoord["COEX_B0_3"] = [291, 290, 90]
+        
+        self.EntranceInnerWardID["COEX_B0_4"] = "TJ-00CB-000002A4-0000"
+        self.EntranceInnerWardRSSI["COEX_B0_4"] = -80
+        self.EntranceInnerWardCoord["COEX_B0_4"] = [248, 442, 180]
+        
+        self.EntranceInnerWardID["COEX_B0_5"] = "TJ-00CB-000002B1-0000"
+        self.EntranceInnerWardRSSI["COEX_B0_5"] = -80
+        self.EntranceInnerWardCoord["COEX_B0_5"] = [59, 350, 270]
+    }
+
     private func parseEntrance(data: String) -> ([String], [[Double]]) {
         var entracneLevelArray = [String]()
         var entranceArray = [[Double]]()
@@ -193,24 +218,22 @@ public class OlympusRouteTracker {
         return (false, networkStatus)
     }
     
-    public func getRouteTrackResult(temporalResult: FineLocationTrackingFromServer, currentLevel: String, isVenusMode: Bool, isKF: Bool, isPhaseBreakInRouteTrack: Bool) -> (isRouteTrackFinished: Bool, FineLocationTrackingFromServer) {
+    public func getRouteTrackResult(temporalResult: FineLocationTrackingFromServer, currentLevel: String, isVenusMode: Bool, isKF: Bool, isPhaseBreakInRouteTrack: Bool) -> (isRouteTrackFinished: Bool, RouteTrackFinishType, FineLocationTrackingFromServer) {
         var isRouteTrackFinished: Bool = false
+        var finishType = RouteTrackFinishType.NOT_STABLE
         
         var result = temporalResult
         let localTime = getLocalTimeString()
         result = routeTrackEntrance(temporalResult: temporalResult, currentEntranceIndex: self.currentEntranceIndex)
+        print(getLocalTimeString() + " , (Olympus) Route Track : currentEntranceIndex = \(currentEntranceIndex) // currentEntranceLength = \(currentEntranceLength)")
         if (self.currentEntranceIndex < (self.currentEntranceLength-1)) {
             self.currentEntranceIndex += 1
-                                    
+            print(getLocalTimeString() + " , (Olympus) Route Track : temporalResult = \(temporalResult)")
+            
             if (isVenusMode) {
                 print(localTime + " , (Olympus) Entrance Route Tracker : Finish (BLE Only Mode)")
                 isRouteTrackFinished = true
-                
-//                self.isStartSimulate = false
-//                unitDRGenerator.setIsStartSimulate(isStartSimulate: self.isStartSimulate)
-//                self.isPhaseBreakInSimulate = false
-//                self.isInNetworkBadEntrance = false
-                
+                finishType = .VENUS
                 self.indexAfterRouteTrack = 0
                 self.currentEntrance = ""
                 self.currentEntranceLength = 0
@@ -219,22 +242,9 @@ public class OlympusRouteTracker {
                 if (result.level_name != "B0") {
                     let curLevel = removeLevelDirectionString(levelName: currentLevel)
                     if (isKF && (curLevel == result.level_name)) {
-                        print(localTime + " , (Olympus) Entrance Route Tracker : Finish (Enter Phase4)")
-//                        self.timeUpdatePosition.x = self.outputResult.x
-//                        self.timeUpdatePosition.y = self.outputResult.y
-//                        self.timeUpdatePosition.heading = self.outputResult.absolute_heading
-//                        self.timeUpdateOutput.x = self.outputResult.x
-//                        self.timeUpdateOutput.y = self.outputResult.y
-//                        self.timeUpdateOutput.absolute_heading = self.outputResult.absolute_heading
-//                        self.measurementPosition.x = self.outputResult.x
-//                        self.measurementPosition.y = self.outputResult.y
-//                        self.measurementPosition.heading = self.outputResult.absolute_heading
-//                        self.measurementOutput.x = self.outputResult.x
-//                        self.measurementOutput.y = self.outputResult.y
-//                        self.measurementOutput.absolute_heading = self.outputResult.absolute_heading
-                        
-                        
+                        print(localTime + " , (Olympus) Entrance Route Tracker : Finish (Enter Phase5)")
                         isRouteTrackFinished = true
+                        finishType = .STABLE
                         self.indexAfterRouteTrack = 0
                         self.currentEntrance = ""
                         self.currentEntranceLength = 0
@@ -243,38 +253,20 @@ public class OlympusRouteTracker {
                 }
             }
         } else {
-//            self.currentLevel = self.resultToReturn.level_name
-//            if (isKF) {
-//                self.timeUpdatePosition.x = self.outputResult.x
-//                self.timeUpdatePosition.y = self.outputResult.y
-//                self.timeUpdatePosition.heading = self.outputResult.absolute_heading
-//                self.timeUpdateOutput.x = self.outputResult.x
-//                self.timeUpdateOutput.y = self.outputResult.y
-//                self.timeUpdateOutput.absolute_heading = self.outputResult.absolute_heading
-//                self.measurementPosition.x = self.outputResult.x
-//                self.measurementPosition.y = self.outputResult.y
-//                self.measurementPosition.heading = self.outputResult.absolute_heading
-//                self.measurementOutput.x = self.outputResult.x
-//                self.measurementOutput.y = self.outputResult.y
-//                self.measurementOutput.absolute_heading = self.outputResult.absolute_heading
-//            }
             print(localTime + " , (Olympus) Entrance Route Tracker : Finish")
-            
             isRouteTrackFinished = true
+            finishType = .NOT_STABLE
             self.indexAfterRouteTrack = 0
             self.currentEntrance = ""
             self.currentEntranceLength = 0
             self.currentEntranceIndex = 0
         }
         
-        return (isRouteTrackFinished, result)
+        return (isRouteTrackFinished, finishType, result)
     }
     
     private func routeTrackEntrance(temporalResult: FineLocationTrackingFromServer, currentEntranceIndex: Int) -> FineLocationTrackingFromServer {
         var result = temporalResult
-        
-//        print(getLocalTimeString() + " , (Olympus) : Route Tracker : enterance = \(currentEntrance) , index = \(currentEntranceIndex)")
-        
         guard let entranceRouteLevel: [String] = self.EntranceRouteLevel[self.currentEntrance] else {
             return result
         }
@@ -300,6 +292,74 @@ public class OlympusRouteTracker {
         
         return scale
     }
+    
+    public func checkIsEntranceFinished(bleData: [String: Double], normalization_scale: Double, device_min_rss: Double, standard_min_rss: Double) -> (Bool, [Double]) {
+        let xyh: [Double] = [0, 0, 0]
+        if let bleID = EntranceInnerWardID[currentEntrance] {
+            if let scannedRSSI = bleData[bleID] {
+                if let thresholdRSSI = EntranceInnerWardRSSI[currentEntrance] {
+                    if let wardCoord = EntranceInnerWardCoord[currentEntrance] {
+                        let normalizedRSSI = (scannedRSSI - device_min_rss)*normalization_scale + standard_min_rss
+                        return normalizedRSSI >= thresholdRSSI ? (true, wardCoord) : (false, xyh)
+                    } else {
+                        return (false, xyh)
+                    }
+                } else {
+                    return (false, xyh)
+                }
+            } else {
+                return (false, xyh)
+            }
+        } else {
+            return (false, xyh)
+        }
+    }
+    
+//    public func checkIsEntranceAnchor(bleData: [String: Double]) -> (Bool, [Double]) {
+//        let xyh: [Double] = [0, 0, 0]
+//        if (currentEntrance == "COEX_B0_1") {
+//            let bleID = "TJ-00CB-00000320-0000"
+//            if let bleRSSI = bleData[bleID] {
+//                print(getLocalTimeString() + " , (Olympus) Route Track : checkIsEntranceAnchor // \(currentEntrance) // RSSI = \(bleRSSI)")
+//                return bleRSSI >= -80 ? (true, [252, 70, 90]) : (false, xyh)
+//            } else {
+//                return (false, xyh)
+//            }
+//        } else if (currentEntrance == "COEX_B0_2") {
+//            let bleID = "TJ-00CB-00000323-0000"
+//            if let bleRSSI = bleData[bleID] {
+//                print(getLocalTimeString() + " , (Olympus) Route Track : checkIsEntranceAnchor // \(currentEntrance) // RSSI = \(bleRSSI)")
+//                return bleRSSI >= -80 ? (true, [250, 180, 90]) : (false, xyh)
+//            } else {
+//                return (false, xyh)
+//            }
+//        } else if (currentEntrance == "COEX_B0_3") {
+//            let bleID = "TJ-00CB-00000344-0000"
+//            if let bleRSSI = bleData[bleID] {
+//                print(getLocalTimeString() + " , (Olympus) Route Track : checkIsEntranceAnchor // \(currentEntrance) // RSSI = \(bleRSSI)")
+//                return bleRSSI >= -72 ? (true, [291, 290, 90]) : (false, xyh)
+//            } else {
+//                return (false, xyh)
+//            }
+//        } else if (currentEntrance == "COEX_B0_4") {
+//            let bleID = "TJ-00CB-000002A4-0000"
+//            if let bleRSSI = bleData[bleID] {
+//                print(getLocalTimeString() + " , (Olympus) Route Track : checkIsEntranceAnchor // \(currentEntrance) // RSSI = \(bleRSSI)")
+//                return bleRSSI >= -80 ? (true, [248, 442, 180]) : (false, xyh)
+//            } else {
+//                return (false, xyh)
+//            }
+//        } else if (currentEntrance == "COEX_B0_5") {
+//            let bleID = "TJ-00CB-000002B1-0000"
+//            if let bleRSSI = bleData[bleID] {
+//                print(getLocalTimeString() + " , (Olympus) Route Track : checkIsEntranceAnchor // \(currentEntrance) // RSSI = \(bleRSSI)")
+//                return bleRSSI >= -80 ? (true, [59, 350, 270]) : (false, xyh)
+//            } else {
+//                return (false, xyh)
+//            }
+//        }
+//        return (false, xyh)
+//    }
     
     public func findEntrance(result: FineLocationTrackingFromServer, entrance: Int) -> (Int, Int) {
         var entranceNumber: Int = 0
@@ -358,5 +418,15 @@ public class OlympusRouteTracker {
         }
         
         return (entranceNumber, entranceLength)
+    }
+    
+    public func getCurrentEntranceNumber() -> Int {
+        let entranceString = self.currentEntrance.split(separator: "_")
+        if entranceString.count == 3 {
+            let entranceNumber = Int(entranceString[entranceString.count-1])
+            
+            return entranceNumber ?? 0
+        }
+        return 0
     }
 }

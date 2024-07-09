@@ -1231,9 +1231,9 @@ public class OlympusPathMatchingCalculator {
 //        print(getLocalTimeString() + " , (Olympus) linkDirections = \(linkDirections)")
         var isDefault: Bool = true
         if directions.count == 2 {
-            var xyLimitValue: Double = 30
+            var xyLimitValue: Double = 20
             if (mode == OlympusConstants.MODE_PDR) {
-                xyLimitValue = xyLimitValue/2
+                xyLimitValue = xyLimitValue - 5
             }
             if (directions.contains(0) && directions.contains(180)) {
                 paddingValues = [xyLimitValue, 2, xyLimitValue, 2]
