@@ -94,6 +94,7 @@ public class OlympusKalmanFilter: NSObject {
         self.tuResult = fltResult
         self.tuFlag = true
         self.isRunning = true
+        print(getLocalTimeString() + " , (Olympus) Route Track : KalmanFilter init")
     }
     
     public func setLinkInfo(coord: [Double], directions: [Double]) {

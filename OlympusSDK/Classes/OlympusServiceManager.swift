@@ -208,6 +208,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     }
     
     func isBuildingLevelChanged(newBuilding: String, newLevel: String, newRange: [Int], newDirection: [Int]) {
+        print(getLocalTimeString() + " , (Olympus) Building Level Changed : \(currentLevel) -> \(newLevel)")
         self.currentBuilding = newBuilding
         self.currentLevel = newLevel
         KF.updateTuBuildingLevel(building: newBuilding, level: newLevel)
@@ -1042,8 +1043,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             if isCorrelation.0 {
                 let correlationInfo = isCorrelation.1
                 var lastServerResult = serverResultBuffer[serverResultBuffer.count-1]
-                self.currentLevel = routeTrackResult.level_name
-                lastServerResult.level_name = routeTrackResult.level_name
+                self.currentLevel = routeTracker.getRouteTrackEndLevel()
+                lastServerResult.level_name = routeTracker.getRouteTrackEndLevel()
                 lastServerResult.x = correlationInfo[0]
                 lastServerResult.y = correlationInfo[1]
                 lastServerResult.absolute_heading = correlationInfo[2]
@@ -1057,7 +1058,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
         
         if ((self.unitDRInfoIndex % RQ_IDX) == 0 && !stateManager.isBackground) {
-            if (phaseController.PHASE == OlympusConstants.PHASE_2 && !self.isStartRouteTrack) {
+            if (phaseController.PHASE == OlympusConstants.PHASE_2 && !isStartRouteTrack) {
                 let phase2Trajectory = trajectoryInfo
                 let searchInfo = trajController.makeSearchInfoInPhase2(trajectoryInfo: phase2Trajectory, unitDRInfoBuffer: unitDRInfoBuffer, phase2Range: phase2Range, phase2Direction: phase2Direction)
                 if (searchInfo.trajType == .DR_RQ_IN_PHASE2) {

@@ -283,6 +283,15 @@ public class OlympusRouteTracker {
         return result
     }
     
+    public func getRouteTrackEndLevel() -> String {
+        if let entranceRouteLevel: [String] = self.EntranceRouteLevel[self.currentEntrance] {
+            let levelName = entranceRouteLevel[currentEntranceLength-1]
+            return levelName
+        } else {
+            return ""
+        }
+    }
+    
     public func getEntranceVelocityScale(isGetFirstResponse: Bool, isStartRouteTrack: Bool) -> Double {
         var scale: Double = 1.0
         if (isStartRouteTrack) {

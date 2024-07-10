@@ -1316,9 +1316,6 @@ public class OlympusPathMatchingCalculator {
         let tuHeading = resultStandard.absolute_heading
         
         if !coordHeadings.isEmpty {
-            if coordHeadings.count < 3 {
-                return false
-            }
 //            print(getLocalTimeString() + " , (Olympus) Check Map End : Index = \(tuResult.index)")
 //            print(getLocalTimeString() + " , (Olympus) Check Map End : resultStandard = \(resultStandard)")
 //            print(getLocalTimeString() + " , (Olympus) Check Map End : coordHeadings = \(coordHeadings)")
@@ -1817,9 +1814,26 @@ public class OlympusPathMatchingCalculator {
         let PIXELS_TO_CHECK = Int(sectionLength)
         
         if (candidateDirections.count == 1) {
+            let direction = candidateDirections[0]
             var candidateNodeNumbers = [Int]()
             
-            let direction = candidateDirections[0]
+            // Add
+            if direction.truncatingRemainder(dividingBy: 90) != 0 {
+                let linkDirs = linkDirections
+                for item in nodeInfoBuffer.reversed() {
+                    var validCount = 0
+                    for heading in linkDirs {
+                        if item.nodeHeadings.contains(heading) {
+                            validCount += 1
+                        }
+                    }
+                    if validCount == linkDirs.count {
+                        resultPassedNodeInfo = item
+                        return resultPassedNodeInfo
+                    }
+                }
+            }
+            
             var paddingValues = [Double] (repeating: Double(PIXELS_TO_CHECK), count: 4)
             if (direction == 0) {
                 paddingValues = [0, sectionLength, 1, 1]
