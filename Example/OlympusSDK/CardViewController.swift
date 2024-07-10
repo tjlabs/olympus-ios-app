@@ -66,11 +66,11 @@ class CardViewController: UIViewController, Observer {
 //    var sector_id: Int = 14 // DS
 //    var mode: String = "pdr"
     
-    var sector_id: Int = 6
-    var mode: String = "auto"
+//    var sector_id: Int = 6
+//    var mode: String = "auto"
     
-//    var sector_id: Int = 15 // LG G2
-//    var mode: String = "pdr"
+    var sector_id: Int = 15 // LG G2
+    var mode: String = "pdr"
     
 //    var sector_id: Int = 4
 //    var mode: String = "pdr"
@@ -96,7 +96,7 @@ class CardViewController: UIViewController, Observer {
         headingImage = headingImage?.resize(newWidth: 20)
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg_eval10.csv", sensorFileName: "sensor_lg_eval10.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg_debug02.csv", sensorFileName: "sensor_lg_debug02.csv")
-        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex03.csv", sensorFileName: "sensor_coex03.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex03.csv", sensorFileName: "sensor_coex03.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_dr1.csv", sensorFileName: "sensor_dr1.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg01_0620.csv", sensorFileName: "sensor_lg01_0620.csv")
         
