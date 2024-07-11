@@ -224,9 +224,9 @@ public class OlympusRouteTracker {
         
         var result = temporalResult
         let localTime = getLocalTimeString()
-        result = routeTrackEntrance(temporalResult: temporalResult, currentEntranceIndex: self.currentEntranceIndex)
+        result = routeTrackEntrance(temporalResult: temporalResult, currentEntranceIndex: currentEntranceIndex)
 //        print(getLocalTimeString() + " , (Olympus) Route Track : currentEntranceIndex = \(currentEntranceIndex) // currentEntranceLength = \(currentEntranceLength)")
-        if (self.currentEntranceIndex < (self.currentEntranceLength-1)) {
+        if (currentEntranceIndex < (currentEntranceLength-1)) {
             self.currentEntranceIndex += 1
 //            print(getLocalTimeString() + " , (Olympus) Route Track : temporalResult = \(temporalResult)")
             
@@ -382,10 +382,6 @@ public class OlympusRouteTracker {
         let coordX = resultPm.xyhs[0]
         let coordY = resultPm.xyhs[1]
         
-        var resultCopy = result
-        resultCopy.x = coordX
-        resultCopy.y = coordY
-        
         if (levelName == "B0") {
             let number = entrance+1
             
@@ -413,10 +409,10 @@ public class OlympusRouteTracker {
                 column2Max = max(column2Max, value)
             }
 
-            let xMin = column1Min
-            let xMax = column1Max
-            let yMin = column2Min
-            let yMax = column2Max
+            let xMin = column1Min - 5
+            let xMax = column1Max + 5
+            let yMin = column2Min - 5
+            let yMax = column2Max + 5
 
             if (coordX >= xMin && coordX <= xMax) {
                 if (coordY >= yMin && coordY <= yMax) {
