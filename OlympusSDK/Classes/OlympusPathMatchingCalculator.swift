@@ -1578,7 +1578,8 @@ public class OlympusPathMatchingCalculator {
                         break
                     } else {
                         if (matchedNodeResult.1 != -1) {
-                            let coordToCheck: [Double] = [x+cos(heading*OlympusConstants.D2R), y+sin(heading*OlympusConstants.D2R)]
+                            let nearestHeading = getNearestNodeHeading(userHeading: heading, nodeHeadings: matchedNodeResult.2)
+                            let coordToCheck: [Double] = [x+cos(nearestHeading*OlympusConstants.D2R), y+sin(nearestHeading*OlympusConstants.D2R)]
                             let isPossibleNode = checkPathPixelHasCoords(fltResult: fltResult, coordToCheck: coordToCheck)
                             print(getLocalTimeString() + " , (Olympus) Node Find : getAnchorNodeCandidatesForBadCase // isPossibleNode = \(isPossibleNode) // coordToCheck = \(coordToCheck) // heading = \(heading)")
                             if (isPossibleNode) {
@@ -1675,7 +1676,8 @@ public class OlympusPathMatchingCalculator {
                         break
                     } else {
                         if (matchedNodeResult.1 != -1) {
-                            let coordToCheck: [Double] = [x+cos(heading*OlympusConstants.D2R), y+sin(heading*OlympusConstants.D2R)]
+                            let nearestHeading = getNearestNodeHeading(userHeading: heading, nodeHeadings: matchedNodeResult.2)
+                            let coordToCheck: [Double] = [x+cos(nearestHeading*OlympusConstants.D2R), y+sin(nearestHeading*OlympusConstants.D2R)]
                             let isPossibleNode = checkPathPixelHasCoords(fltResult: fltResult, coordToCheck: coordToCheck)
                             if (isPossibleNode) {
                                 let nodeInfo = PassedNodeInfo(nodeNumber: matchedNodeResult.1, nodeCoord: [x, y], nodeHeadings: matchedNodeResult.2, matchedIndex: nodeMatchedIndex, userHeading: heading)
@@ -1759,7 +1761,8 @@ public class OlympusPathMatchingCalculator {
                         break
                     } else {
                         if (matchedNodeResult.1 != -1) {
-                            let coordToCheck: [Double] = [x+cos(heading*OlympusConstants.D2R), y+sin(heading*OlympusConstants.D2R)]
+                            let nearestHeading = getNearestNodeHeading(userHeading: heading, nodeHeadings: matchedNodeResult.2)
+                            let coordToCheck: [Double] = [x+cos(nearestHeading*OlympusConstants.D2R), y+sin(nearestHeading*OlympusConstants.D2R)]
                             let isPossibleNode = checkPathPixelHasCoords(fltResult: fltResult, coordToCheck: coordToCheck)
                             if (isPossibleNode) {
                                 let nodeInfo = PassedNodeInfo(nodeNumber: matchedNodeResult.1, nodeCoord: [x, y], nodeHeadings: matchedNodeResult.2, matchedIndex: nodeMatchedIndex, userHeading: heading)
@@ -1985,6 +1988,31 @@ public class OlympusPathMatchingCalculator {
             }
         }
         return (isPpEndPoint, matchedNode, matchedNodeHeadings)
+    }
+    
+    private func getNearestNodeHeading(userHeading: Double, nodeHeadings: [Double]) -> Double {
+        var nearestHeading = userHeading
+        
+        var diffHeading = [Double]()
+        for mapHeading in nodeHeadings {
+            var diffValue: Double = 0
+            if (userHeading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
+                diffValue = abs(userHeading - (mapHeading+360))
+            } else if (mapHeading > 270 && (userHeading >= 0 && userHeading < 90)) {
+                diffValue = abs(mapHeading - (userHeading+360))
+            } else {
+                diffValue = abs(userHeading - mapHeading)
+            }
+            diffHeading.append(diffValue)
+        }
+        
+        if let minHeading = diffHeading.min() {
+            if let minIndex = diffHeading.firstIndex(of: minHeading) {
+                nearestHeading = nodeHeadings[minIndex]
+            }
+        }
+        print(getLocalTimeString() + " , (Olympus) Node Find : getNearestNodeHeading // nearestHeading = \(nearestHeading)")
+        return nearestHeading
     }
     
     public func findPathTrajMatchingNode(fltResult: FineLocationTrackingFromServer, x: Double, y: Double, heading: Double, uvdBuffer: [UnitDRInfo], pathType: Int, linkDirections: [Double]) -> [PathMatchingNodeCandidateInfo] {

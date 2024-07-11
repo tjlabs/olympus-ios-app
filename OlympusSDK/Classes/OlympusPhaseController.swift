@@ -64,11 +64,15 @@ public class OlympusPhaseController {
     }
     
     public func phase4control(serverResult: FineLocationTrackingFromServer, mode: String) -> Int {
+        var phaseBreakSCC = OlympusConstants.PHASE_BREAK_SCC_DR
+        if (mode == OlympusConstants.MODE_PDR) {
+            phaseBreakSCC = OlympusConstants.PHASE_BREAK_SCC_PDR
+        }
         var phase: Int = 4
         
         let scc = serverResult.scc
         
-        if (scc < OlympusConstants.PHASE_BREAK_SCC) {
+        if (scc < phaseBreakSCC) {
             phase = 1
         } else if (serverResult.x == 0 && serverResult.y == 0) {
             phase = 1
@@ -80,11 +84,15 @@ public class OlympusPhaseController {
     }
     
     public func phase5control(serverResult: FineLocationTrackingFromServer, mode: String) -> Int {
+        var phaseBreakSCC = OlympusConstants.PHASE_BREAK_SCC_DR
+        if (mode == OlympusConstants.MODE_PDR) {
+            phaseBreakSCC = OlympusConstants.PHASE_BREAK_SCC_PDR
+        }
         var phase: Int = 5
         
         let scc = serverResult.scc
         
-        if (scc < OlympusConstants.PHASE_BREAK_SCC) {
+        if (scc < phaseBreakSCC) {
             phase = 1
         } else if (serverResult.x == 0 && serverResult.y == 0) {
             phase = 1
@@ -95,6 +103,11 @@ public class OlympusPhaseController {
     
     
     public func controlPhase(serverResultArray: [FineLocationTrackingFromServer], drBuffer: [UnitDRInfo], UVD_INTERVAL: Int, TRAJ_LENGTH: Double, INDEX_THRESHOLD: Int, inputPhase: Int, mode: String, isVenusMode: Bool) -> (Int, Bool) {
+        var phaseBreakSCC = OlympusConstants.PHASE_BREAK_SCC_DR
+        if (mode == OlympusConstants.MODE_PDR) {
+            phaseBreakSCC = OlympusConstants.PHASE_BREAK_SCC_PDR
+        }
+        
         var phase: Int = 0
         var isPhaseBreak: Bool = false
         if (isVenusMode) {
@@ -111,7 +124,7 @@ public class OlympusPhaseController {
         case 2:
             phase = self.checkScResultConnectionForStable(inputPhase: inputPhase, serverResultArray: serverResultArray, drBuffer: drBuffer, UVD_INTERVAL: UVD_INTERVAL, TRAJ_LENGTH: TRAJ_LENGTH, INDEX_THRESHOLD: INDEX_THRESHOLD, mode: mode)
         case 3:
-            if (currentResult.scc < OlympusConstants.PHASE_BREAK_SCC) {
+            if (currentResult.scc < phaseBreakSCC) {
                 phase = 1
             } else {
                 phase = self.checkScResultConnectionForStable(inputPhase: inputPhase, serverResultArray: serverResultArray, drBuffer: drBuffer, UVD_INTERVAL: UVD_INTERVAL, TRAJ_LENGTH: TRAJ_LENGTH, INDEX_THRESHOLD: INDEX_THRESHOLD, mode: mode)
@@ -161,10 +174,10 @@ public class OlympusPhaseController {
             if (currentResult.scc < sccCondition) {
                 return phase
             } else if (previousResult.index == 0 || currentResult.index == 0) {
-//                print(getLocalTimeString() + " , (Olympus) Check Phase3->4 : preIndex = \(previousResult.index) // curIndex = \(currentResult.index)")
+                print(getLocalTimeString() + " , (Olympus) Check Phase3->45: preIndex = \(previousResult.index) // curIndex = \(currentResult.index)")
                 return phase
             } else if (currentResult.cumulative_length < OlympusConstants.STABLE_ENTER_LENGTH) {
-//                print(getLocalTimeString() + " , (Olympus) Check Phase3->4 : cumulative_length = \(currentResult.cumulative_length) // TRAJ_LENGTH/2 = \(TRAJ_LENGTH/2)")
+                print(getLocalTimeString() + " , (Olympus) Check Phase3->5 : cumulative_length = \(currentResult.cumulative_length) // STABLE_ENTER_LENGTH = \(OlympusConstants.STABLE_ENTER_LENGTH)")
                 return phase
             } else {
                 if (inputPhase != 2) {
