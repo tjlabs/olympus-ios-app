@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
-    public static let sdkVersion: String = "0.0.27"
+    public static let sdkVersion: String = "0.0.28"
     var isSimulationMode: Bool = false
     var bleFileName: String = ""
     var sensorFileName: String = ""
@@ -784,8 +784,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             stateManager.setVariblesWhenIsIndexChanged()
             stackHeadingForCheckCorrection()
             isPossibleHeadingCorrection = checkHeadingCorrection(buffer: headingBufferForCorrection)
-            stackUnitDRInfo()
-            stackUnitDRInfoForPhase4(isNeedClear: isNeedClearBuffer)
+//            stackUnitDRInfo()
+//            stackUnitDRInfoForPhase4(isNeedClear: isNeedClearBuffer)
             olympusVelocity = unitDRInfo.velocity * 3.6
             var unitUvdLength: Double = 0
             if (stateManager.isBackground) {
@@ -799,7 +799,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             let headingVar = getHeadingVar(of: self.diffHeadingBuffer)
             unitUvdLength += 0.01*headingVar
             print(getLocalTimeString() + " , (Olympus) Heading Var : index = \(unitDRInfoIndex) , var = \(headingVar) , buffer = \(self.diffHeadingBuffer)) , length = \(unitUvdLength)")
-            
+            unitDRInfo.length = unitUvdLength
+            stackUnitDRInfo()
+            stackUnitDRInfoForPhase4(isNeedClear: isNeedClearBuffer)
             self.unitDRInfoIndex = unitDRInfo.index
             
             let data = UserVelocity(user_id: self.user_id, mobile_time: currentTime, index: unitDRInfo.index, length: unitUvdLength, heading: round(unitDRInfo.heading*100)/100, looking: unitDRInfo.lookingFlag)
@@ -1284,6 +1286,13 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             trajController.setIsNeedTrajCheck(flag: true)
                         }
                         
+                        if (resultPhase.0 == OlympusConstants.PHASE_5 && isPhaseBreak) {
+                            KF.resetKalmanR()
+                            PADDING_VALUE = OlympusConstants.PADDING_VALUE_SMALL
+                            userMaskSendCount = 0
+                            isPhaseBreak = false
+                        }
+                        
                         let buildingName = fltResult.building_name
                         let levelName = fltResult.level_name
                         
@@ -1345,12 +1354,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 copiedResult.y = propagatedResult[1]
                                 
                                 if (resultPhase.0 == OlympusConstants.PHASE_3 || resultPhase.0 == OlympusConstants.PHASE_5) {
-                                    if (resultPhase.0 == OlympusConstants.PHASE_5 && isPhaseBreak) {
-                                        KF.resetKalmanR()
-                                        PADDING_VALUE = OlympusConstants.PADDING_VALUE_SMALL
-                                        userMaskSendCount = 0
-                                        isPhaseBreak = false
-                                    }
+//                                    if (resultPhase.0 == OlympusConstants.PHASE_5 && isPhaseBreak) {
+//                                        KF.resetKalmanR()
+//                                        PADDING_VALUE = OlympusConstants.PADDING_VALUE_SMALL
+//                                        userMaskSendCount = 0
+//                                        isPhaseBreak = false
+//                                    }
                                     sectionController.setInitialAnchorTailIndex(value: unitDRInfoIndex)
                                     if (inputTrajLength > OlympusConstants.USER_TRAJECTORY_LENGTH*0.4 && fltInput.phase != OlympusConstants.PHASE_1 && self.runMode == OlympusConstants.MODE_DR) {
                                         copiedResult.absolute_heading = propagatedResult[2]
@@ -1787,9 +1796,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 if (pathMatchingType == .NARROW) {
                     isUseHeading = true
                     headingRange -= 10
-                    for i in 0..<paddings.count {
-                        paddings[i] = paddings[i]/2
-                    }
+//                    for i in 0..<paddings.count {
+//                        paddings[i] = paddings[i]/2
+//                    }
                 }
                 let correctResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, HEADING_RANGE: headingRange, isUseHeading: isUseHeading, pathType: 0, PADDING_VALUES: paddings)
                 if (correctResult.isSuccess) {

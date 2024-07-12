@@ -63,22 +63,24 @@ public class OlympusSectionController {
     public func checkIsNeedRequestFlt() -> (Bool, Bool) {
         var isNeedRequest: Bool = false
         var isSectionChanged: Bool = false
-//        print(getLocalTimeString() + " , (Olympus) Request : (0) Section Length = \(uvdSectionLength)")
+        print(getLocalTimeString() + " , (Olympus) Section : (0) Section Length = \(uvdSectionLength)")
         if (uvdSectionLength >= OlympusConstants.REQUIRED_SECTION_REQUEST_LENGTH) {
             if (requestSectionNumber != sectionNumber) {
-//                print(getLocalTimeString() + " , (Olympus) Request : (1) Section Length = \(uvdSectionLength)")
+                print(getLocalTimeString() + " , (Olympus) Section : (1) Section Length = \(uvdSectionLength)")
                 requestSectionNumber = sectionNumber
                 sameSectionCount = 2
                 isNeedRequest = true
                 isSectionChanged = true
             } else {
                 if (uvdSectionLength >= (OlympusConstants.REQUIRED_SECTION_REQUEST_LENGTH*Double(sameSectionCount))) {
-//                    print(getLocalTimeString() + " , (Olympus) Request : (2) Section Length = \(uvdSectionLength)")
+                    print(getLocalTimeString() + " , (Olympus) Section : (2) Section Length = \(uvdSectionLength)")
                     sameSectionCount += 1
                     isNeedRequest = true
                 }
             }
         }
+        print(getLocalTimeString() + " , (Olympus) Section : (2) Section Length = \(uvdSectionLength)")
+        print(getLocalTimeString() + " , (Olympus) Section : (3) isNeedRequest = \(isNeedRequest)")
         return (isNeedRequest, isSectionChanged)
     }
     

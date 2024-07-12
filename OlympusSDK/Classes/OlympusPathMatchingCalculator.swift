@@ -2122,12 +2122,12 @@ public class OlympusPathMatchingCalculator {
 //                            break
                         }
                     }
-                }
-                
-                if (matchedNodeNumber != -1) {
-                    print(getLocalTimeString() + " , (Olympus) Path-Matching : matchedNodeNumber = \(matchedNodeNumber) // matchedNodeCoord = \(matchedNodeCoord)")
-                    let nodeInfo = PathMatchingNodeCandidateInfo(nodeNumber: matchedNodeNumber, nodeCoord: matchedNodeCoord, nodeHeadings: matchedNodeHeadings)
-                    pathMatchingNodeCandidates.append(nodeInfo)
+                    
+                    if (matchedNodeNumber != -1) {
+                        print(getLocalTimeString() + " , (Olympus) Path-Matching : matchedNodeNumber = \(matchedNodeNumber) // matchedNodeCoord = \(matchedNodeCoord)")
+                        let nodeInfo = PathMatchingNodeCandidateInfo(nodeNumber: matchedNodeNumber, nodeCoord: matchedNodeCoord, nodeHeadings: matchedNodeHeadings)
+                        pathMatchingNodeCandidates.append(nodeInfo)
+                    }
                 }
             }
         }
