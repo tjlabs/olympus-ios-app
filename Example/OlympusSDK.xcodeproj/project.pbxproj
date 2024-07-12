@@ -38,6 +38,7 @@
 		B3A7A5612BBBE1D400561897 /* Entity.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A7A5602BBBE1D400561897 /* Entity.swift */; };
 		B3A7A5632BBBE2AE00561897 /* JSONConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A7A5622BBBE2AE00561897 /* JSONConverter.swift */; };
 		B3BA95E82BFB2B3A002625FA /* DS_3F.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3BA95E72BFB2B3A002625FA /* DS_3F.csv */; };
+		B3C622942C4107E000371531 /* PG_1F.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3C622932C4107E000371531 /* PG_1F.csv */; };
 		B3FE03582C0043D200039EAC /* G2_2F.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3FE03572C0043D200039EAC /* G2_2F.csv */; };
 		B3FE035D2C04754400039EAC /* S3_7F.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3FE035C2C04754400039EAC /* S3_7F.csv */; };
 /* End PBXBuildFile section */
@@ -91,6 +92,7 @@
 		B3A7A5602BBBE1D400561897 /* Entity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Entity.swift; sourceTree = "<group>"; };
 		B3A7A5622BBBE2AE00561897 /* JSONConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONConverter.swift; sourceTree = "<group>"; };
 		B3BA95E72BFB2B3A002625FA /* DS_3F.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = DS_3F.csv; sourceTree = "<group>"; };
+		B3C622932C4107E000371531 /* PG_1F.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = PG_1F.csv; sourceTree = "<group>"; };
 		B3FE03572C0043D200039EAC /* G2_2F.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = G2_2F.csv; sourceTree = "<group>"; };
 		B3FE035C2C04754400039EAC /* S3_7F.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = S3_7F.csv; sourceTree = "<group>"; };
 		D6BEA357836562D67D800EA2 /* Pods-OlympusSDK_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OlympusSDK_Tests.debug.xcconfig"; path = "Target Support Files/Pods-OlympusSDK_Tests/Pods-OlympusSDK_Tests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -157,6 +159,7 @@
 				B39C2D5A2C0D49E400A34D0C /* COEX_B3.csv */,
 				B39C2D5B2C0D49E400A34D0C /* COEX_B4.csv */,
 				B39464A32BE3315400A929CC /* COEX_B2.csv */,
+				B3C622932C4107E000371531 /* PG_1F.csv */,
 				607FACD91AFB9204008FA782 /* Main.storyboard */,
 				607FACDE1AFB9204008FA782 /* LaunchScreen.xib */,
 				B3787E582BDA47BE00D5EEBC /* GoogleService-Info.plist */,
@@ -365,6 +368,7 @@
 				B3FE035D2C04754400039EAC /* S3_7F.csv in Resources */,
 				B39464A42BE3315400A929CC /* COEX_B2.csv in Resources */,
 				B3FE03582C0043D200039EAC /* G2_2F.csv in Resources */,
+				B3C622942C4107E000371531 /* PG_1F.csv in Resources */,
 				607FACDD1AFB9204008FA782 /* Images.xcassets in Resources */,
 				B39C2D5D2C0D49E400A34D0C /* COEX_B3.csv in Resources */,
 				B3787E592BDA47BE00D5EEBC /* GoogleService-Info.plist in Resources */,

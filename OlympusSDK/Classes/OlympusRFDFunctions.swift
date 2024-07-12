@@ -9,29 +9,30 @@ public class OlympusRFDFunctions: NSObject {
 
     public func trimBleData(bleInput: [String: [[Double]]]?, nowTime: Double, validTime: Double) -> Result<[String: [[Double]]], Error> {
         guard let bleInput = bleInput else {
-                return .failure(TrimBleDataError.invalidInput)
-            }
+            return .failure(TrimBleDataError.invalidInput)
+        }
             
-            var trimmedData = [String: [[Double]]]()
+        var trimmedData = [String: [[Double]]]()
             
-            for (bleID, bleData) in bleInput {
-                let newValue = bleData.filter { data in
-                    let rssi = data[0]
-                    let time = data[1]
-                    
-                    return (nowTime - time <= validTime) && (rssi >= -100)
-                }
+        for (bleID, bleData) in bleInput {
+            let newValue = bleData.filter { data in
+                guard data.count >= 2 else { return false }
+                let rssi = data[0]
+                let time = data[1]
                 
-                if !newValue.isEmpty {
-                    trimmedData[bleID] = newValue
-                }
+                return (nowTime - time <= validTime) && (rssi >= -100)
             }
             
-            if trimmedData.isEmpty {
-                return .failure(TrimBleDataError.noValidData)
-            } else {
-                return .success(trimmedData)
+            if !newValue.isEmpty {
+                trimmedData[bleID] = newValue
             }
+        }
+        
+        if trimmedData.isEmpty {
+            return .failure(TrimBleDataError.noValidData)
+        } else {
+            return .success(trimmedData)
+        }
     }
 
     public func trimBleForCollect(bleData:[String: [[Double]]], nowTime: Double, validTime: Double) -> [String: [[Double]]] {
