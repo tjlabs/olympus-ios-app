@@ -178,8 +178,6 @@ class CardViewController: UIViewController, Observer {
         } catch {
             print(getLocalTimeString() + " , (VC) Error reading .csv file")
         }
-        
-        print(getLocalTimeString() + " , (VC) Load PP : Final \(rpXY)")
         return rpXY
     }
     
