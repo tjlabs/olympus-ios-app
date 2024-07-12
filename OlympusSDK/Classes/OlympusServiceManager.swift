@@ -797,8 +797,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             let diffHeading = unitDRInfo.heading - pastUvdHeading
             stackDiffHeadingBuffer(diffHeading: diffHeading)
             let headingVar = getHeadingVar(of: self.diffHeadingBuffer)
-            print(getLocalTimeString() + " , (Olympus) Heading Var : index = \(unitDRInfoIndex) , var = \(headingVar) , buffer = \(self.diffHeadingBuffer))")
             unitUvdLength += 0.01*headingVar
+            print(getLocalTimeString() + " , (Olympus) Heading Var : index = \(unitDRInfoIndex) , var = \(headingVar) , buffer = \(self.diffHeadingBuffer)) , length = \(unitUvdLength)")
             
             self.unitDRInfoIndex = unitDRInfo.index
             
@@ -854,11 +854,15 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     // 길 끝에 있는지 확인해야 한다
                     self.isInMapEnd = OlympusPathMatchingCalculator.shared.checkIsInMapEnd(resultStandard: self.temporalResult, tuResult: tuResult, pathType: pathType)
                     if (self.isInMapEnd) {
+                        if (self.temporalResult.x == 75 && self.temporalResult.y == 41 && temporalResult.absolute_heading < 40) {
+                            self.temporalResult.y = 43
+                        }
                         tuResult.x = self.temporalResult.x
                         tuResult.y = self.temporalResult.y
                         KF.updateTuResult(x: tuResult.x, y: tuResult.y)
                     }
                 }
+                
                 
                 currentTuResult = tuResult
                 // 임시
@@ -1079,30 +1083,30 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 let phase3Trajectory = trajectoryInfo
                 
                 let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase3Trajectory, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, isKF: KF.isRunning, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult, LENGTH_THRESHOLD: USER_TRAJECTORY_LENGTH)
-                if (searchInfo.trajType != .PDR_IN_PHASE3_NO_MAJOR_DIR) {
-                    // 임시
-                    let displaySearchType: Int = trajTypeConverter(trajType: searchInfo.trajType)
-                    displayOutput.searchArea = searchInfo.searchArea
-                    displayOutput.searchType = displaySearchType
-                    displayOutput.userTrajectory = searchInfo.trajShape
-                    displayOutput.trajectoryStartCoord = searchInfo.trajStartCoord
-                    // 임시
-                    
-                    if (!isStartRouteTrack || isPhaseBreakInRouteTrack) {
-                        processPhase3(currentTime: currentTime, mode: mode, trajectoryInfo: phase3Trajectory, searchInfo: searchInfo)
-                    }
-                }
-//                // 임시
-//                let displaySearchType: Int = trajTypeConverter(trajType: searchInfo.trajType)
-//                displayOutput.searchArea = searchInfo.searchArea
-//                displayOutput.searchType = displaySearchType
-//                displayOutput.userTrajectory = searchInfo.trajShape
-//                displayOutput.trajectoryStartCoord = searchInfo.trajStartCoord
-//                // 임시
-//                
-//                if (!isStartRouteTrack || isPhaseBreakInRouteTrack) {
-//                    processPhase3(currentTime: currentTime, mode: mode, trajectoryInfo: phase3Trajectory, searchInfo: searchInfo)
+//                if (searchInfo.trajType != .PDR_IN_PHASE3_NO_MAJOR_DIR) {
+//                    // 임시
+//                    let displaySearchType: Int = trajTypeConverter(trajType: searchInfo.trajType)
+//                    displayOutput.searchArea = searchInfo.searchArea
+//                    displayOutput.searchType = displaySearchType
+//                    displayOutput.userTrajectory = searchInfo.trajShape
+//                    displayOutput.trajectoryStartCoord = searchInfo.trajStartCoord
+//                    // 임시
+//                    
+//                    if (!isStartRouteTrack || isPhaseBreakInRouteTrack) {
+//                        processPhase3(currentTime: currentTime, mode: mode, trajectoryInfo: phase3Trajectory, searchInfo: searchInfo)
+//                    }
 //                }
+//                // 임시
+                let displaySearchType: Int = trajTypeConverter(trajType: searchInfo.trajType)
+                displayOutput.searchArea = searchInfo.searchArea
+                displayOutput.searchType = displaySearchType
+                displayOutput.userTrajectory = searchInfo.trajShape
+                displayOutput.trajectoryStartCoord = searchInfo.trajStartCoord
+                // 임시
+                
+                if (!isStartRouteTrack || isPhaseBreakInRouteTrack) {
+                    processPhase3(currentTime: currentTime, mode: mode, trajectoryInfo: phase3Trajectory, searchInfo: searchInfo)
+                }
             }
         }
     }
