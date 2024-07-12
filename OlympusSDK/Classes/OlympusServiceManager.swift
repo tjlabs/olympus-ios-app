@@ -854,7 +854,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     // 길 끝에 있는지 확인해야 한다
                     self.isInMapEnd = OlympusPathMatchingCalculator.shared.checkIsInMapEnd(resultStandard: self.temporalResult, tuResult: tuResult, pathType: pathType)
                     if (self.isInMapEnd) {
-                        if (self.temporalResult.x == 75 && self.temporalResult.y == 41 && temporalResult.absolute_heading < 40) {
+                        if (self.temporalResult.building_name == "PG" && self.temporalResult.x == 75 && self.temporalResult.y == 41 && temporalResult.absolute_heading < 40) {
                             self.temporalResult.y = 43
                         }
                         tuResult.x = self.temporalResult.x

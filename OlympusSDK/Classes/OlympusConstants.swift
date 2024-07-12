@@ -111,7 +111,8 @@ class OlympusConstants {
     static let ALPHA: Double = 0.45
     static let DIFFERENCE_PV_STANDARD: Double = 0.83
     static let MID_STEP_LENGTH: Double = 0.5
-    static let DEFAULT_STEP_LENGTH: Double = 0.60
+//    static let DEFAULT_STEP_LENGTH: Double = 0.60
+    static let DEFAULT_STEP_LENGTH: Double = 0.625
     static let MIN_STEP_LENGTH: Double = 0.01
     static let MAX_STEP_LENGTH: Double = 0.93
     static let MIN_DIFFERENCE_PV: Double = 0.2

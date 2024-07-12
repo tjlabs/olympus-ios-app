@@ -89,40 +89,83 @@ public class OlympusPathMatchingCalculator {
                 let lineString = roadString[i]
                 let lineData = roadString[i].components(separatedBy: ",")
                 
-                roadType.append(Int(Double(lineData[0])!))
-                roadNode.append(Int(Double(lineData[1])!))
-                roadX.append(Double(lineData[2])!)
-                roadY.append(Double(lineData[3])!)
-                roadScale.append(Double(lineData[4])!)
+                let typeString = lineData[0]
+                let nodeString = lineData[1]
+                let xString = lineData[2]
+                let yString = lineData[3]
+                let scaleString = lineData[4]
                 
-                let pattern = "\\[[^\\]]+\\]"
-                guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else {
-                    print("Invalid regular expression pattern")
-                    exit(1)
-                }
-                let matches = regex.matches(in: lineString, options: [], range: NSRange(location: 0, length: lineString.utf16.count))
-                let matchedStrings = matches.map { match -> String in
-                    let range = Range(match.range, in: lineString)!
-                    return String(lineString[range])
-                }
-                
-                var headingValues = ""
-                if (!matchedStrings.isEmpty) {
-                    let headingListString = matchedStrings[0]
-                    let headingArray = headingListString
-                        .replacingOccurrences(of: "[", with: "")
-                        .replacingOccurrences(of: "]", with: "")
-                        .components(separatedBy: ",")
-                        .compactMap { Double($0.trimmingCharacters(in: .whitespaces)) }
+                if !xString.isEmpty && !yString.isEmpty {
+                    roadType.append(Int(Double(lineData[0])!))
+                    roadNode.append(Int(Double(lineData[1])!))
+                    roadX.append(Double(lineData[2])!)
+                    roadY.append(Double(lineData[3])!)
+                    roadScale.append(Double(lineData[4])!)
                     
-                    for j in 0..<headingArray.count {
-                        headingValues.append(String(headingArray[j]))
-                        if (j < (headingArray.count-1)) {
-                            headingValues.append(",")
+                    let pattern = "\\[[^\\]]+\\]"
+                    guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else {
+                        print("Invalid regular expression pattern")
+                        exit(1)
+                    }
+                    let matches = regex.matches(in: lineString, options: [], range: NSRange(location: 0, length: lineString.utf16.count))
+                    let matchedStrings = matches.map { match -> String in
+                        let range = Range(match.range, in: lineString)!
+                        return String(lineString[range])
+                    }
+                    
+                    var headingValues = ""
+                    if (!matchedStrings.isEmpty) {
+                        let headingListString = matchedStrings[0]
+                        let headingArray = headingListString
+                            .replacingOccurrences(of: "[", with: "")
+                            .replacingOccurrences(of: "]", with: "")
+                            .components(separatedBy: ",")
+                            .compactMap { Double($0.trimmingCharacters(in: .whitespaces)) }
+                        
+                        for j in 0..<headingArray.count {
+                            headingValues.append(String(headingArray[j]))
+                            if (j < (headingArray.count-1)) {
+                                headingValues.append(",")
+                            }
                         }
                     }
+                    roadHeading.append(headingValues)
                 }
-                roadHeading.append(headingValues)
+                
+//                roadType.append(Int(Double(lineData[0])!))
+//                roadNode.append(Int(Double(lineData[1])!))
+//                roadX.append(Double(lineData[2])!)
+//                roadY.append(Double(lineData[3])!)
+//                roadScale.append(Double(lineData[4])!)
+//                
+//                let pattern = "\\[[^\\]]+\\]"
+//                guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else {
+//                    print("Invalid regular expression pattern")
+//                    exit(1)
+//                }
+//                let matches = regex.matches(in: lineString, options: [], range: NSRange(location: 0, length: lineString.utf16.count))
+//                let matchedStrings = matches.map { match -> String in
+//                    let range = Range(match.range, in: lineString)!
+//                    return String(lineString[range])
+//                }
+//                
+//                var headingValues = ""
+//                if (!matchedStrings.isEmpty) {
+//                    let headingListString = matchedStrings[0]
+//                    let headingArray = headingListString
+//                        .replacingOccurrences(of: "[", with: "")
+//                        .replacingOccurrences(of: "]", with: "")
+//                        .components(separatedBy: ",")
+//                        .compactMap { Double($0.trimmingCharacters(in: .whitespaces)) }
+//                    
+//                    for j in 0..<headingArray.count {
+//                        headingValues.append(String(headingArray[j]))
+//                        if (j < (headingArray.count-1)) {
+//                            headingValues.append(",")
+//                        }
+//                    }
+//                }
+//                roadHeading.append(headingValues)
             }
         }
         road = [roadX, roadY]
@@ -1487,6 +1530,7 @@ public class OlympusPathMatchingCalculator {
     public func getAnchorNodeCandidatesForBadCase(fltResult: FineLocationTrackingFromServer, pathType: Int) -> NodeCandidateInfo {
         var badCaseNodeInfo = NodeCandidateInfo(isPhaseBreak: false, nodeCandidatesInfo: [])
         if self.anchorNode.nodeNumber == -1 {
+            print(getLocalTimeString() + " , (Olympus) Node Find : getAnchorNodeCandidatesForBadCase // anchorNode is Empty")
             return NodeCandidateInfo(isPhaseBreak: true, nodeCandidatesInfo: [])
         } else {
             let anchorNodeInfo = self.anchorNode
@@ -1585,7 +1629,7 @@ public class OlympusPathMatchingCalculator {
                             if (isPossibleNode) {
                                 let nodeInfo = PassedNodeInfo(nodeNumber: matchedNodeResult.1, nodeCoord: [x, y], nodeHeadings: matchedNodeResult.2, matchedIndex: nodeMatchedIndex, userHeading: heading)
                                 nodeCandidatesInfo.append(nodeInfo)
-                                break
+//                                break
                             }
                         }
                     }
@@ -2075,7 +2119,7 @@ public class OlympusPathMatchingCalculator {
                             matchedNodeNumber = matchedNodeResult.1
                             matchedNodeCoord = [xToCheck, yToCheck]
                             matchedNodeHeadings = matchedNodeResult.2
-                            break
+//                            break
                         }
                     }
                 }
