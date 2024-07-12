@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
-    public static let sdkVersion: String = "0.0.26"
+    public static let sdkVersion: String = "0.0.27"
     var isSimulationMode: Bool = false
     var bleFileName: String = ""
     var sensorFileName: String = ""
@@ -182,13 +182,13 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     
     public override init() {
         self.deviceIdentifier = UIDevice.modelIdentifier
-//        self.deviceModel = UIDevice.modelName
+        self.deviceModel = UIDevice.modelName
         let deviceOs = UIDevice.current.systemVersion
         let arr = deviceOs.components(separatedBy: ".")
-//        self.deviceOsVersion = Int(arr[0]) ?? 0
+        self.deviceOsVersion = Int(arr[0]) ?? 0
         
-        self.deviceModel = "iPhone SE (2nd generation)"
-        self.deviceOsVersion = 16
+//        self.deviceModel = "iPhone SE (2nd generation)"
+//        self.deviceOsVersion = 16
         
         super.init()
         let dateFormatter = DateFormatter()
@@ -2146,7 +2146,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         
         diffHeadingVar = sumOfSquaredDifferences / Double(values.count)
         
-        return diffHeadingVar > 20 ? 20 : diffHeadingVar
+        return diffHeadingVar > 22 ? 22 : diffHeadingVar
     }
     
     private func stackHeadingForCheckCorrection() {
