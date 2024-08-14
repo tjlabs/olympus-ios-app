@@ -66,14 +66,14 @@ class CardViewController: UIViewController, Observer {
 //    var sector_id: Int = 14 // DS
 //    var mode: String = "pdr"
     
-//    var sector_id: Int = 6
-//    var mode: String = "auto"
+    var sector_id: Int = 6
+    var mode: String = "auto"
     
 //    var sector_id: Int = 15 // LG G2
 //    var mode: String = "pdr"
     
-    var sector_id: Int = 4
-    var mode: String = "pdr"
+//    var sector_id: Int = 4
+//    var mode: String = "pdr"
     
     var currentBuilding: String = ""
     var currentLevel: String = ""
@@ -97,8 +97,8 @@ class CardViewController: UIViewController, Observer {
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg_eval10.csv", sensorFileName: "sensor_lg_eval10.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg_debug02.csv", sensorFileName: "sensor_lg_debug02.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex03.csv", sensorFileName: "sensor_coex03.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_dr1.csv", sensorFileName: "sensor_dr1.csv")
-        serviceManager.setSimulationMode(flag: true, bleFileName: "pg_test03_ble.csv", sensorFileName: "pg_test03_sensor.csv")
+        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_dr1.csv", sensorFileName: "sensor_dr1.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "pg_test03_ble.csv", sensorFileName: "pg_test03_sensor.csv")
         
         // collect
 //        isCollect = true
@@ -106,12 +106,12 @@ class CardViewController: UIViewController, Observer {
 //        serviceManager.startCollect()
 //        self.startTimer()
         
-//        let uniqueId = makeUniqueId(uuid: self.userId)
-        let uniqueId = "PG_01_test"
+        let uniqueId = makeUniqueId(uuid: self.userId)
+//        let uniqueId = "PG_01_test"
         // service
         serviceManager.addObserver(self)
-//        serviceManager.startService(user_id: uniqueId, region: self.region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
-        serviceManager.startService(user_id: uniqueId, region: "Korea", sector_id: 16, service: "FLT", mode: "pdr", completion: { [self] isStart, returnedString in
+        serviceManager.startService(user_id: uniqueId, region: self.region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
+//        serviceManager.startService(user_id: uniqueId, region: "Korea", sector_id: 16, service: "FLT", mode: "pdr", completion: { [self] isStart, returnedString in
             if (isStart) {
                 self.startTimer()
             } else {

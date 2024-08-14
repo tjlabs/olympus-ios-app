@@ -33,6 +33,8 @@ public class OlympusDRDistanceEstimator: NSObject {
     public var velocityScale: Double = 1.0
     public var entranceVelocityScale: Double = 1.0
     
+    public var preTime: Double = 0
+    public var velocityAcc: Double = 0
     public var distance: Double = 0
     
     var preRoll: Double = 0
@@ -57,7 +59,7 @@ public class OlympusDRDistanceEstimator: NSObject {
         }
     }
     
-    public func estimateDistanceInfo(time: Double, sensorData: OlympusSensorData) -> UnitDistance{
+    public func estimateDistanceInfo(time: Double, sensorData: OlympusSensorData) -> UnitDistance {
         // feature extraction
         // ACC X, Y, Z, Norm Smoothing
         // Use y, z, norm variance (2sec)
@@ -82,6 +84,7 @@ public class OlympusDRDistanceEstimator: NSObject {
         }
         
         let accAttitude = Attitude(Roll: accRoll, Pitch: accPitch, Yaw: 0)
+        let accMovingDirection = MF.transBody2Nav(att: accAttitude, data: acc)[1]
         let gyroNavZ = abs(MF.transBody2Nav(att: accAttitude, data: gyro)[2])
         
         let accNorm = MF.l2Normalize(originalVector: sensorData.acc)
@@ -172,11 +175,12 @@ public class OlympusDRDistanceEstimator: NSObject {
         
         let rflowScale: Double = calRflowVelocityScale(rflowForVelocity: self.rflowForVelocity, isSufficientForVelocity: self.isSufficientRfdVelocityBuffer)
         var velocityInputScale = velocityInput*self.velocityScale*self.entranceVelocityScale
+//        var velocityInputScale = velocityInput*self.entranceVelocityScale
         if velocityInputScale < OlympusConstants.VELOCITY_MIN {
             velocityInputScale = 0
-            if (self.isSufficientRfdBuffer && self.rflow < 0.5) {
-                velocityInputScale = OlympusConstants.VELOCITY_MAX*rflowScale
-            }
+//            if (self.isSufficientRfdBuffer && self.rflow < 0.5) {
+//                velocityInputScale = OlympusConstants.VELOCITY_MAX*rflowScale
+//            }
         } else if velocityInputScale > OlympusConstants.VELOCITY_MAX {
             velocityInputScale = OlympusConstants.VELOCITY_MAX
         }
@@ -185,15 +189,25 @@ public class OlympusDRDistanceEstimator: NSObject {
             velocityInputScale = 0
         }
         
+        let delT = self.preTime == 0 ? 1/OlympusConstants.SAMPLE_HZ : (time-self.preTime)*1e-3
+        let accBias = 1.65
+        velocityAcc += (accMovingDirection + accBias)*delT
+        velocityAcc = velocityAcc < 0 ? 0 : velocityAcc
+        
         if (velocityInputScale == 0 && self.isStartRouteTrack) {
             velocityInputScale = OlympusConstants.VELOCITY_MIN
         }
         
+        
         let velocityMps = (velocityInputScale/3.6)*turnScale
+        let velocityCombine = (velocityMps*0.3) + (velocityAcc*0.7)
+        print(getLocalTimeString() + " , (Olympus) DRDistanceEstimator : vMag = \(velocityMps) // vAcc = \(velocityAcc) // vCombine = \(velocityCombine)")
+        
         finalUnitResult.isIndexChanged = false
         finalUnitResult.velocity = velocityMps
-        distance += (velocityMps*(1/OlympusConstants.SAMPLE_HZ))
-
+//        distance += (velocityMps*(1/OlympusConstants.SAMPLE_HZ))
+        distance += velocityMps*delT
+//        distance += velocityCombine*delT
         if (distance > Double(OlympusConstants.OUTPUT_DISTANCE_SETTING)) {
             index += 1
             finalUnitResult.length = distance
@@ -204,7 +218,7 @@ public class OlympusDRDistanceEstimator: NSObject {
         }
 
         featureExtractionCount += 1
-        
+        preTime = time
         return finalUnitResult
     }
     

@@ -79,8 +79,8 @@ public class OlympusSectionController {
                 }
             }
         }
-        print(getLocalTimeString() + " , (Olympus) Section : (2) Section Length = \(uvdSectionLength)")
-        print(getLocalTimeString() + " , (Olympus) Section : (3) isNeedRequest = \(isNeedRequest)")
+        print(getLocalTimeString() + " , (Olympus) Section : (3) Section Length = \(uvdSectionLength)")
+        print(getLocalTimeString() + " , (Olympus) Section : (4) isNeedRequest = \(isNeedRequest)")
         return (isNeedRequest, isSectionChanged)
     }
     
