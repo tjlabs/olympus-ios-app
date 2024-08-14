@@ -339,7 +339,10 @@ public class OlympusPathMatchingCalculator {
                     
                     let pathTypeLoaded = mainType[i]
                     if (pathType == 1) {
-                        if (pathType != pathTypeLoaded) {
+//                        if (pathType != pathTypeLoaded) {
+//                            continue
+//                        }
+                        if (pathTypeLoaded == 0) {
                             continue
                         }
                     }
@@ -580,7 +583,10 @@ public class OlympusPathMatchingCalculator {
                     
                     let pathTypeLoaded = mainType[i]
                     if (pathType == 1) {
-                        if (pathType != pathTypeLoaded) {
+//                        if (pathType != pathTypeLoaded) {
+//                            continue
+//                        }
+                        if (pathTypeLoaded == 0) {
                             continue
                         }
                     }
@@ -880,6 +886,7 @@ public class OlympusPathMatchingCalculator {
         var xCandidates = [Double]()
         var yCandidates = [Double]()
         var headingCandidates = [String]()
+        var isPossibleNode: Bool = true
         
         let key: String = "\(building)_\(level)"
         if (diffX != 0 || diffY != 0) {
@@ -913,6 +920,11 @@ public class OlympusPathMatchingCalculator {
                                 if (pathType != pathTypeLoaded) {
                                     continue
                                 }
+//                                if (pathTypeLoaded == 2) {
+//                                    isPossibleNode = false
+//                                } else if (pathTypeLoaded == 0) {
+//                                    continue
+//                                }
                             }
                             
                             if (xPath == x && yPath == y) {
@@ -985,7 +997,7 @@ public class OlympusPathMatchingCalculator {
                                     }
                                 }
                                 
-                                if (node != 0) {
+                                if (node != 0 && isPossibleNode) {
                                     self.isInNode = true
                                     self.passedNode = node
                                     self.passedNodeMatchedIndex = uvdIndex
@@ -1014,6 +1026,11 @@ public class OlympusPathMatchingCalculator {
                                 if (pathType != pathTypeLoaded) {
                                     continue
                                 }
+//                                if (pathTypeLoaded == 2) {
+//                                    isPossibleNode = false
+//                                } else if (pathTypeLoaded == 0) {
+//                                    continue
+//                                }
                             }
                             
                             if (xPath >= xMin && xPath <= xMax) {
@@ -1034,7 +1051,7 @@ public class OlympusPathMatchingCalculator {
                                                 ppHeadingValues.append(mapHeading)
                                             }
                                         }
-                                        if (node != 0) {
+                                        if (node != 0 && isPossibleNode) {
                                             self.linkCoord = [xPath, yPath]
                                             
                                             var newLinkDir = [Double]()
@@ -1131,6 +1148,11 @@ public class OlympusPathMatchingCalculator {
                                 if (pathType != pathTypeLoaded) {
                                     continue
                                 }
+//                                if (pathTypeLoaded == 2) {
+//                                    isPossibleNode = false
+//                                } else if (pathTypeLoaded == 0) {
+//                                    continue
+//                                }
                             }
                             
                             // XY 범위 안에 있는 값 중에 검사
@@ -1154,7 +1176,7 @@ public class OlympusPathMatchingCalculator {
                                         }
                                         
                                         self.linkCoord = [xPath, yPath]
-                                        if (node != 0) {
+                                        if (node != 0 && isPossibleNode) {
                                             self.isInNode = true
                                             isNodePassed = true
                                             self.passedNode = node
@@ -1206,6 +1228,8 @@ public class OlympusPathMatchingCalculator {
                                             self.distFromNode = sqrt((xCandidates[idxMin]-x)*(xCandidates[idxMin]-x) + (yCandidates[idxMin]-y)*(yCandidates[idxMin]-y))
                                             print(getLocalTimeString() + " , (Olympus) Node Find : passedNode (Jump) = \(self.passedNode) // dist = \(self.distFromNode) // index = \(passedNodeMatchedIndex) // heading = \(currentResultHeading)")
                                             controlPassedNodeInfo(passedNodeInfo: PassedNodeInfo(nodeNumber: self.passedNode, nodeCoord: self.passedNodeCoord, nodeHeadings: self.passedNodeHeadings, matchedIndex: self.passedNodeMatchedIndex, userHeading: currentResultHeading))
+                                        } else {
+                                            print(getLocalTimeString() + " , (Olympus) Node Find : passedNode (Jump) // minValue over 20 (minValue = \(minValue))")
                                         }
                                     }
                                 }
@@ -1894,12 +1918,13 @@ public class OlympusPathMatchingCalculator {
                 paddingValues = [20, 20, 20, 20]
             }
             
-//            print(getLocalTimeString() + " , (Olympus) Node Find : paddingValues = \(paddingValues)")
+            print(getLocalTimeString() + " , (Olympus) Node Find : paddingValues = \(paddingValues) // direction = \(direction)")
             var x: Double = startCoord[0]
             var y: Double = startCoord[1]
             for _ in 0..<PIXELS_TO_CHECK {
                 x += cos(direction*OlympusConstants.D2R)
                 y += sin(direction*OlympusConstants.D2R)
+//                print(getLocalTimeString() + " , (Olympus) Node Find : x,y = \(x) , \(y) // pathType = \(pathType)")
                 let matchedNodeResult = getMatchedNodeWithCoord(fltResult: fltResult, originCoord: startCoord, coordToCheck: [x, y], pathType: pathType, PADDING_VALUES: paddingValues)
                 if (matchedNodeResult.0) {
                     break
@@ -2000,16 +2025,16 @@ public class OlympusPathMatchingCalculator {
                     let headingArray = mainHeading[i]
                     
                     let pathTypeLoaded = mainType[i]
-                    if (pathType == 1) {
-                        if (pathType != pathTypeLoaded) {
-                            continue
-                        }
-                    }
-                    
                     // XY 범위 안에 있는 값 중에 검사
                     if (xPath >= xMin && xPath <= xMax) {
                         if (yPath >= yMin && yPath <= yMax) {
                             if (x == xPath && y == yPath) {
+                                if (pathType == 1) {
+                                    if (pathType != pathTypeLoaded) {
+                                        return (false, matchedNode, matchedNodeHeadings)
+                                    }
+                                }
+
                                 var ppHeadingValues = [Double]()
                                 let headingData = headingArray.components(separatedBy: ",")
                                 for j in 0..<headingData.count {
@@ -2187,7 +2212,10 @@ public class OlympusPathMatchingCalculator {
             
             let pathTypeLoaded = mainType[i]
             if (pathType == 1) {
-                if (pathType != pathTypeLoaded) {
+//                if (pathType != pathTypeLoaded) {
+//                    continue
+//                }
+                if (pathTypeLoaded == 0) {
                     continue
                 }
             }
