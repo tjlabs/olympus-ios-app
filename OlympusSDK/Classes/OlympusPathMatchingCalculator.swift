@@ -895,6 +895,7 @@ public class OlympusPathMatchingCalculator {
         var xCandidates = [Double]()
         var yCandidates = [Double]()
         var headingCandidates = [String]()
+        var isPossibleNode: Bool = true
         
         let key: String = "\(building)_\(level)"
         if (diffX != 0 || diffY != 0) {
@@ -1006,7 +1007,7 @@ public class OlympusPathMatchingCalculator {
                                     }
                                 }
                                 
-                                if (node != 0) {
+                                if (node != 0 && isPossibleNode) {
                                     self.isInNode = true
                                     self.passedNode = node
                                     self.passedNodeMatchedIndex = uvdIndex
@@ -1061,7 +1062,7 @@ public class OlympusPathMatchingCalculator {
                                                 ppHeadingValues.append(mapHeading)
                                             }
                                         }
-                                        if (node != 0) {
+                                        if (node != 0 && isPossibleNode) {
                                             self.linkCoord = [xPath, yPath]
                                             
                                             var newLinkDir = [Double]()
@@ -1187,7 +1188,7 @@ public class OlympusPathMatchingCalculator {
                                         }
                                         
                                         self.linkCoord = [xPath, yPath]
-                                        if (node != 0) {
+                                        if (node != 0 && isPossibleNode) {
                                             self.isInNode = true
                                             isNodePassed = true
                                             self.passedNode = node
