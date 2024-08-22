@@ -48,6 +48,15 @@ public class OlympusDRDistanceEstimator: NSObject {
     public var isSufficientRfdAutoModeBuffer: Bool = false
     public var isStartRouteTrack: Bool = false
     
+    public var movingDirectionInfoBuffer = [MovingDirectionInfo]()
+    public var clearIndex: Int = 0
+    public var isNeedClearBuffer: Bool = false
+    private var movingDirectionAccBiasQueue = [Double]()
+    private var biasSmoothing: Double = 0
+    private var preBiasSmoothing: Double = 0
+    private var biasBuffer = [Double]()
+    private var isPossibleUseBias: Bool = false
+    
     public func argmax(array: [Float]) -> Int {
         let output1 = array[0]
         let output2 = array[1]
@@ -178,9 +187,9 @@ public class OlympusDRDistanceEstimator: NSObject {
 //        var velocityInputScale = velocityInput*self.entranceVelocityScale
         if velocityInputScale < OlympusConstants.VELOCITY_MIN {
             velocityInputScale = 0
-//            if (self.isSufficientRfdBuffer && self.rflow < 0.5) {
-//                velocityInputScale = OlympusConstants.VELOCITY_MAX*rflowScale
-//            }
+            if (self.isSufficientRfdBuffer && self.rflow < 0.5) {
+                velocityInputScale = OlympusConstants.VELOCITY_MAX*rflowScale
+            }
         } else if velocityInputScale > OlympusConstants.VELOCITY_MAX {
             velocityInputScale = OlympusConstants.VELOCITY_MAX
         }
@@ -191,7 +200,7 @@ public class OlympusDRDistanceEstimator: NSObject {
         
         let delT = self.preTime == 0 ? 1/OlympusConstants.SAMPLE_HZ : (time-self.preTime)*1e-3
         let accBias = 1.65
-        velocityAcc += (accMovingDirection + accBias)*delT
+        velocityAcc += (accMovingDirection + self.biasSmoothing)*delT
         velocityAcc = velocityAcc < 0 ? 0 : velocityAcc
         
         if (velocityInputScale == 0 && self.isStartRouteTrack) {
@@ -200,15 +209,18 @@ public class OlympusDRDistanceEstimator: NSObject {
         
         
         let velocityMps = (velocityInputScale/3.6)*turnScale
-        let velocityCombine = (velocityMps*0.3) + (velocityAcc*0.7)
+        let velocityCombine = (velocityMps*0.7) + (velocityAcc*0.3)
         print(getLocalTimeString() + " , (Olympus) DRDistanceEstimator : vMag = \(velocityMps) // vAcc = \(velocityAcc) // vCombine = \(velocityCombine)")
         
+        let velocityFinal = isPossibleUseBias ? velocityCombine : velocityMps
+        
         finalUnitResult.isIndexChanged = false
-        finalUnitResult.velocity = velocityMps
-//        distance += (velocityMps*(1/OlympusConstants.SAMPLE_HZ))
+        finalUnitResult.velocity = velocityFinal
         distance += velocityMps*delT
+//        distance += velocityFinal*delT
 //        distance += velocityCombine*delT
         if (distance > Double(OlympusConstants.OUTPUT_DISTANCE_SETTING)) {
+            print(getLocalTimeString() + " , (Olympus) DRDistanceEstimator : index = \(index) // vMag = \(velocityMps) // vAcc = \(velocityAcc) // vCombine = \(velocityCombine)")
             index += 1
             finalUnitResult.length = distance
             finalUnitResult.index = index
@@ -216,7 +228,8 @@ public class OlympusDRDistanceEstimator: NSObject {
 
             distance = 0
         }
-
+        controlMovingDirectionInfoBuffer(time: time, index: index, acc: accMovingDirection, velocity: velocityMps)
+        
         featureExtractionCount += 1
         preTime = time
         return finalUnitResult
@@ -304,5 +317,71 @@ public class OlympusDRDistanceEstimator: NSObject {
     
     public func setIsStartRouteTrack(isStartRouteTrack: Bool) {
         self.isStartRouteTrack = isStartRouteTrack
+    }
+    
+    private func controlMovingDirectionInfoBuffer(time: Double, index: Int, acc: Double, velocity: Double) {
+        self.movingDirectionInfoBuffer.append(MovingDirectionInfo(time: time, index: index, acc: acc, velocity: velocity))
+        
+        if isNeedClearBuffer {
+            let pastBuffer = self.movingDirectionInfoBuffer
+            var newBuffer = [MovingDirectionInfo]()
+            for i in 0..<pastBuffer.count {
+                if pastBuffer[i].index >= clearIndex {
+                    newBuffer.append(pastBuffer[i])
+                }
+            }
+            isNeedClearBuffer = false
+        }
+    }
+        
+    public func calAccBias(unitDRInfoBuffer: [UnitDRInfo], resultIndex: Int, scCompensation: Double) {
+        if !unitDRInfoBuffer.isEmpty {
+            let movingDirectionBuffer = self.movingDirectionInfoBuffer
+            
+            let startIndex = unitDRInfoBuffer[0].index
+            let endIndex = resultIndex
+            
+            self.clearIndex = startIndex
+            self.isNeedClearBuffer = true
+            
+            for i in 1..<movingDirectionBuffer.count {
+                if movingDirectionBuffer[i].index <= endIndex {
+                    if movingDirectionBuffer[i].velocity > 2 && movingDirectionBuffer[i-1].velocity > 2 {
+                        let delT = (movingDirectionBuffer[i].time - movingDirectionBuffer[i-1].time)*1e-3 // Seconds
+                        let trueAcc = ((movingDirectionBuffer[i].velocity - movingDirectionBuffer[i-1].velocity)*scCompensation)/delT
+                        let accBias = trueAcc - movingDirectionBuffer[i].acc
+                        
+                        updateMovingDirectionAccBiasQueue(data: accBias)
+                        if (movingDirectionAccBiasQueue.count == 1) {
+                            self.biasSmoothing = accBias
+                        } else if (movingDirectionAccBiasQueue.count < Int(OlympusConstants.SAMPLE_HZ*10)) {
+                            self.biasSmoothing = MF.exponentialMovingAverage(preEMA: preBiasSmoothing, curValue: accBias, windowSize: movingDirectionAccBiasQueue.count)
+                        } else {
+                            self.biasSmoothing = MF.exponentialMovingAverage(preEMA: preBiasSmoothing, curValue: accBias, windowSize: Int(OlympusConstants.SAMPLE_HZ*10))
+                        }
+                        controlBiasBuffer(data: self.biasSmoothing)
+                        self.preBiasSmoothing = self.biasSmoothing
+                        print(getLocalTimeString() + " , (Olympus) Acc Bias : index = \(movingDirectionBuffer[i].index) , accBias = \(accBias) , accBiasSmoothed = \(self.biasSmoothing) , isPossibleUseBias = \(isPossibleUseBias)")
+                    }
+                }
+            }
+        }
+    }
+    
+    public func updateMovingDirectionAccBiasQueue(data: Double) {
+        if (movingDirectionAccBiasQueue.count >= Int(OlympusConstants.SAMPLE_HZ)*10) {
+            movingDirectionAccBiasQueue.remove(at: 0)
+        }
+        movingDirectionAccBiasQueue.append(data)
+    }
+    
+    public func controlBiasBuffer(data: Double) {
+        if (biasBuffer.count >= Int(OlympusConstants.SAMPLE_HZ)*10) {
+            biasBuffer.remove(at: 0)
+            let biasVar = MF.calVariance(buffer: biasBuffer, bufferMean: biasBuffer.average)
+//            print(getLocalTimeString() + " , (Olympus) Acc Bias : Var = \(biasVar)")
+            isPossibleUseBias = biasVar < 0.015 ? true : false
+        }
+        biasBuffer.append(data)
     }
 }

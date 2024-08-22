@@ -88,7 +88,7 @@ public class OlympusUnitDRGenerator: NSObject {
             
             let heading = MF.radian2degree(radian: curAttitudePdr.Yaw)
             
-            return UnitDRInfo(index: unitDistancePdr.index, length: unitDistancePdr.length, heading: heading, velocity: unitDistancePdr.velocity, lookingFlag: unitStatus, isIndexChanged: unitDistancePdr.isIndexChanged, autoMode: 0)
+            return UnitDRInfo(time: currentTime, index: unitDistancePdr.index, length: unitDistancePdr.length, heading: heading, velocity: unitDistancePdr.velocity, lookingFlag: unitStatus, isIndexChanged: unitDistancePdr.isIndexChanged, autoMode: 0)
         case OlympusConstants.MODE_DR:
             unitDistanceDr = drDistanceEstimator.estimateDistanceInfo(time: currentTime, sensorData: sensorData)
             self.autoMode = 1
@@ -97,7 +97,7 @@ public class OlympusUnitDRGenerator: NSObject {
             let heading = MF.radian2degree(radian: curAttitudeDr.Yaw)
             
             let unitStatus = unitStatusEstimator.estimateStatus(Attitude: curAttitudeDr, isIndexChanged: unitDistanceDr.isIndexChanged, unitMode: unitMode)
-            return UnitDRInfo(index: unitDistanceDr.index, length: unitDistanceDr.length, heading: heading, velocity: unitDistanceDr.velocity, lookingFlag: unitStatus, isIndexChanged: unitDistanceDr.isIndexChanged, autoMode: 0)
+            return UnitDRInfo(time: currentTime, index: unitDistanceDr.index, length: unitDistanceDr.length, heading: heading, velocity: unitDistanceDr.velocity, lookingFlag: unitStatus, isIndexChanged: unitDistanceDr.isIndexChanged, autoMode: 0)
         case OlympusConstants.MODE_AUTO:
             pdrDistanceEstimator.isAutoMode(autoMode: true)
             unitDistancePdr = pdrDistanceEstimator.estimateDistanceInfo(time: currentTime, sensorData: sensorData)
@@ -192,9 +192,9 @@ public class OlympusUnitDRGenerator: NSObject {
             let unitStatusDr = unitStatusEstimator.estimateStatus(Attitude: curAttitudeDr, isIndexChanged: unitDistanceDr.isIndexChanged, unitMode: OlympusConstants.MODE_DR)
             
             if (self.autoMode == 0) {
-                return UnitDRInfo(index: unitIndexAuto, length: unitDistanceAuto.length, heading: headingAuto, velocity: unitDistanceAuto.velocity, lookingFlag: unitStatusPdr, isIndexChanged: unitDistanceAuto.isIndexChanged, autoMode: self.autoMode)
+                return UnitDRInfo(time: currentTime, index: unitIndexAuto, length: unitDistanceAuto.length, heading: headingAuto, velocity: unitDistanceAuto.velocity, lookingFlag: unitStatusPdr, isIndexChanged: unitDistanceAuto.isIndexChanged, autoMode: self.autoMode)
             } else {
-                return UnitDRInfo(index: unitIndexAuto, length: unitDistanceAuto.length, heading: headingAuto, velocity: unitDistanceAuto.velocity, lookingFlag: unitStatusDr, isIndexChanged: unitDistanceAuto.isIndexChanged, autoMode: self.autoMode)
+                return UnitDRInfo(time: currentTime, index: unitIndexAuto, length: unitDistanceAuto.length, heading: headingAuto, velocity: unitDistanceAuto.velocity, lookingFlag: unitStatusDr, isIndexChanged: unitDistanceAuto.isIndexChanged, autoMode: self.autoMode)
             }
         default:
             // (Default : DR Mode)
@@ -205,7 +205,7 @@ public class OlympusUnitDRGenerator: NSObject {
             let heading = MF.radian2degree(radian: curAttitudeDr.Yaw)
             
             let unitStatus = unitStatusEstimator.estimateStatus(Attitude: curAttitudeDr, isIndexChanged: unitDistanceDr.isIndexChanged, unitMode: unitMode)
-            return UnitDRInfo(index: unitDistanceDr.index, length: unitDistanceDr.length, heading: heading, velocity: unitDistanceDr.velocity, lookingFlag: unitStatus, isIndexChanged: unitDistanceDr.isIndexChanged, autoMode: 0)
+            return UnitDRInfo(time: currentTime, index: unitDistanceDr.index, length: unitDistanceDr.length, heading: heading, velocity: unitDistanceDr.velocity, lookingFlag: unitStatus, isIndexChanged: unitDistanceDr.isIndexChanged, autoMode: 0)
         }
     }
     
@@ -254,5 +254,9 @@ public class OlympusUnitDRGenerator: NSObject {
     
     public func setIsBackground(isBackground: Bool) {
         self.isBackground = isBackground
+    }
+    
+    public func calAccBias(unitDRInfoBuffer: [UnitDRInfo], resultIndex: Int, scCompensation: Double) {
+        drDistanceEstimator.calAccBias(unitDRInfoBuffer: unitDRInfoBuffer, resultIndex: resultIndex, scCompensation: scCompensation)
     }
 }

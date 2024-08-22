@@ -103,6 +103,7 @@ public struct DistanceInfo: Equatable {
 }
 
 public struct UnitDRInfo {
+    public var time: Double = 0
     public var index: Int = 0
     public var length: Double = 0
     public var heading: Double = 0
@@ -115,6 +116,14 @@ public struct UnitDRInfo {
         return "{index : \(index), length : \(length), heading : \(heading), velocity : \(velocity), lookingFlag : \(lookingFlag), isStepDetected : \(isIndexChanged), autoMode : \(autoMode)}"
     }
 }
+
+public struct MovingDirectionInfo {
+    var time: Double
+    var index: Int
+    var acc: Double
+    var velocity: Double
+}
+
 
 public struct BlackListDevices: Codable {
     let android: [String: [String]]
