@@ -597,7 +597,7 @@ public enum LimitationType {
 }
 
 public enum UpdateNodeLinkType {
-    case PHASE_5,
+    case STABLE,
          PATH_TRAJ_MATCHING,
          NONE
 }

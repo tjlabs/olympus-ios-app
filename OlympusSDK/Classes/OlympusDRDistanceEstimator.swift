@@ -170,10 +170,11 @@ public class OlympusDRDistanceEstimator: NSObject {
             velocitySmoothing = MF.exponentialMovingAverage(preEMA: preVelocitySmoothing, curValue: velocity, windowSize: Int(OlympusConstants.SAMPLE_HZ))
         }
         preVelocitySmoothing = velocitySmoothing
-        var turnScale = exp(-navGyroZSmoothing/1.6)
+        var turnScale = exp(-navGyroZSmoothing/2) // Default 1.6
         if (turnScale > 0.87) {
             turnScale = 1.0
         }
+//        print(getLocalTimeString() + " , (Olympus) Turn Scale : ver1 =  \(exp(-navGyroZSmoothing/1.6)) // ver2 = \(exp(-navGyroZSmoothing/2.1)) ")
         
         var velocityInput = velocitySmoothing
         if velocityInput < OlympusConstants.VELOCITY_MIN {
@@ -199,7 +200,7 @@ public class OlympusDRDistanceEstimator: NSObject {
         }
         
         let delT = self.preTime == 0 ? 1/OlympusConstants.SAMPLE_HZ : (time-self.preTime)*1e-3
-        let accBias = 1.65
+//        let accBias = 1.65
         velocityAcc += (accMovingDirection + self.biasSmoothing)*delT
         velocityAcc = velocityAcc < 0 ? 0 : velocityAcc
         
@@ -220,7 +221,7 @@ public class OlympusDRDistanceEstimator: NSObject {
 //        distance += velocityFinal*delT
 //        distance += velocityCombine*delT
         if (distance > Double(OlympusConstants.OUTPUT_DISTANCE_SETTING)) {
-            print(getLocalTimeString() + " , (Olympus) DRDistanceEstimator : index = \(index) // vMag = \(velocityMps) // vAcc = \(velocityAcc) // vCombine = \(velocityCombine)")
+            print(getLocalTimeString() + " , (Olympus) DRDistanceEstimator : index = \(index) // vMag = \(velocityMps) // vAcc = \(velocityAcc) // vCombine = \(velocityCombine) // isPossibleUseBias = \(isPossibleUseBias)")
             index += 1
             finalUnitResult.length = distance
             finalUnitResult.index = index

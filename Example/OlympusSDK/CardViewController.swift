@@ -49,6 +49,10 @@ class CardViewController: UIViewController, Observer {
                 self.coordToDisplay.y = y
                 self.coordToDisplay.heading = result.absolute_heading
                 self.coordToDisplay.isIndoor = result.isIndoor
+                
+                let diffTime = result.mobile_time - self.preServiceTime
+                print(getLocalTimeString() + " , (Service Time) : diffTime = \(Double(diffTime)*1e-3)")
+                self.preServiceTime = result.mobile_time
             }
         }
     }
@@ -90,13 +94,14 @@ class CardViewController: UIViewController, Observer {
     
     var timer: Timer?
     let TIMER_INTERVAL: TimeInterval = 1/10
+    var preServiceTime: Int = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
         headingImage = headingImage?.resize(newWidth: 20)
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg_eval10.csv", sensorFileName: "sensor_lg_eval10.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg_debug02.csv", sensorFileName: "sensor_lg_debug02.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex03.csv", sensorFileName: "sensor_coex03.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex04.csv", sensorFileName: "sensor_coex04.csv")
         serviceManager.setSimulationMode(flag: true, bleFileName: "ble_dr1.csv", sensorFileName: "sensor_dr1.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "pg_test03_ble.csv", sensorFileName: "pg_test03_sensor.csv")
         
@@ -106,8 +111,8 @@ class CardViewController: UIViewController, Observer {
 //        serviceManager.startCollect()
 //        self.startTimer()
         
-//        let uniqueId = makeUniqueId(uuid: self.userId)
-        let uniqueId = "coex01_olympus"
+        let uniqueId = makeUniqueId(uuid: self.userId)
+//        let uniqueId = "coex01_olympus"
         // service
         serviceManager.addObserver(self)
         serviceManager.startService(user_id: uniqueId, region: self.region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in

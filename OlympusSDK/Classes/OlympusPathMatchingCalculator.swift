@@ -916,7 +916,7 @@ public class OlympusPathMatchingCalculator {
                     
                     let linkDir = linkDirections
                     
-                    if (updateType == .PHASE_5) {
+                    if (updateType == .STABLE) {
                         // 현재 위치에서부터 반대 방향으로 N m 까지 확인해서 가장 가까운 Node 찾기
                         for i in 0..<roadX.count {
                             let xPath = roadX[i]
@@ -1952,7 +1952,7 @@ public class OlympusPathMatchingCalculator {
         }
         
         print(getLocalTimeString() + " , (Olympus) Node Find : prevPassedNodesNumbers = \(nodeNumbers)")
-        print(getLocalTimeString() + " , (Olympus) Node Find : prevPaseedNode = \(passedNodeInfo)")
+        print(getLocalTimeString() + " , (Olympus) Node Find : prevPassedNode = \(passedNodeInfo)")
         return passedNodeInfo
     }
     

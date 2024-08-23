@@ -36,6 +36,7 @@ class OlympusConstants {
     static let PHASE_3: Int = 3
     static let PHASE_4: Int = 4
     static let PHASE_5: Int = 5
+    static let PHASE_6: Int = 6
     static let PHASE_BECOME3_SCC: Double = 0.62
     static let PHASE_BREAK_SCC_PDR: Double = 0.45
     static let PHASE_BREAK_SCC_DR: Double = 0.2

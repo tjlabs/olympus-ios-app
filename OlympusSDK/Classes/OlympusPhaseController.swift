@@ -63,32 +63,50 @@ public class OlympusPhaseController {
         return phase
     }
     
-    public func phase4control(serverResult: FineLocationTrackingFromServer, mode: String) -> Int {
-        var phaseBreakSCC = OlympusConstants.PHASE_BREAK_SCC_DR
-        if (mode == OlympusConstants.MODE_PDR) {
-            phaseBreakSCC = OlympusConstants.PHASE_BREAK_SCC_PDR
-        }
-        var phase: Int = 4
-        
-        let scc = serverResult.scc
-        
-        if (scc < phaseBreakSCC) {
-            phase = 1
-        } else if (serverResult.x == 0 && serverResult.y == 0) {
-            phase = 1
-        } else {
-            phase = 5
-        }
-        
-        return phase
-    }
+//    public func phase4control(serverResult: FineLocationTrackingFromServer, mode: String) -> Int {
+//        var phaseBreakSCC = OlympusConstants.PHASE_BREAK_SCC_DR
+//        if (mode == OlympusConstants.MODE_PDR) {
+//            phaseBreakSCC = OlympusConstants.PHASE_BREAK_SCC_PDR
+//        }
+//        var phase: Int = 4
+//        
+//        let scc = serverResult.scc
+//        
+//        if (scc < phaseBreakSCC) {
+//            phase = 1
+//        } else if (serverResult.x == 0 && serverResult.y == 0) {
+//            phase = 1
+//        } else {
+//            phase = 5
+//        }
+//        
+//        return phase
+//    }
+//    
+//    public func phase5control(serverResult: FineLocationTrackingFromServer, mode: String) -> Int {
+//        var phaseBreakSCC = OlympusConstants.PHASE_BREAK_SCC_DR
+//        if (mode == OlympusConstants.MODE_PDR) {
+//            phaseBreakSCC = OlympusConstants.PHASE_BREAK_SCC_PDR
+//        }
+//        var phase: Int = 5
+//        
+//        let scc = serverResult.scc
+//        
+//        if (scc < phaseBreakSCC) {
+//            phase = 1
+//        } else if (serverResult.x == 0 && serverResult.y == 0) {
+//            phase = 1
+//        }
+//        
+//        return phase
+//    }
     
-    public func phase5control(serverResult: FineLocationTrackingFromServer, mode: String) -> Int {
+    public func phaseControlInStable(serverResult: FineLocationTrackingFromServer, mode: String, inputPhase: Int) -> Int {
         var phaseBreakSCC = OlympusConstants.PHASE_BREAK_SCC_DR
         if (mode == OlympusConstants.MODE_PDR) {
             phaseBreakSCC = OlympusConstants.PHASE_BREAK_SCC_PDR
         }
-        var phase: Int = 5
+        var phase: Int = inputPhase
         
         let scc = serverResult.scc
         
@@ -130,9 +148,11 @@ public class OlympusPhaseController {
                 phase = self.checkScResultConnectionForStable(inputPhase: inputPhase, serverResultArray: serverResultArray, drBuffer: drBuffer, inputTrajType: inputTrajType, UVD_INTERVAL: UVD_INTERVAL, TRAJ_LENGTH: TRAJ_LENGTH, INDEX_THRESHOLD: INDEX_THRESHOLD, mode: mode)
             }
         case 4:
-            phase = self.phase4control(serverResult: currentResult, mode: mode)
+            phase = self.phaseControlInStable(serverResult: currentResult, mode: mode, inputPhase: 4)
         case 5:
-            phase = self.phase5control(serverResult: currentResult, mode: mode)
+            phase = self.phaseControlInStable(serverResult: currentResult, mode: mode, inputPhase: 6)
+        case 6:
+            phase = self.phaseControlInStable(serverResult: currentResult, mode: mode, inputPhase: 6)
         default:
             phase = 0
         }
@@ -174,10 +194,10 @@ public class OlympusPhaseController {
             if (currentResult.scc < sccCondition) {
                 return phase
             } else if (previousResult.index == 0 || currentResult.index == 0) {
-                print(getLocalTimeString() + " , (Olympus) Check Phase3->5: preIndex = \(previousResult.index) // curIndex = \(currentResult.index)")
+                print(getLocalTimeString() + " , (Olympus) Check Phase3->6: preIndex = \(previousResult.index) // curIndex = \(currentResult.index)")
                 return phase
             } else if (currentResult.cumulative_length < OlympusConstants.STABLE_ENTER_LENGTH) {
-                print(getLocalTimeString() + " , (Olympus) Check Phase3->5 : cumulative_length = \(currentResult.cumulative_length) // STABLE_ENTER_LENGTH = \(OlympusConstants.STABLE_ENTER_LENGTH)")
+                print(getLocalTimeString() + " , (Olympus) Check Phase3->6 : cumulative_length = \(currentResult.cumulative_length) // STABLE_ENTER_LENGTH = \(OlympusConstants.STABLE_ENTER_LENGTH)")
                 return phase
             } else if (inputTrajType == .PDR_IN_PHASE3_NO_MAJOR_DIR) {
                 return phase
@@ -189,10 +209,10 @@ public class OlympusPhaseController {
                     return phase
                 } else {
                     if (currentResult.index - previousResult.index) > indexCondition {
-                        print(getLocalTimeString() + " , (Olympus) Check Phase3->5 : preIndex = \(previousResult.index) // curIndex = \(currentResult.index) // indexCondition = \(indexCondition)")
+                        print(getLocalTimeString() + " , (Olympus) Check Phase3->6 : preIndex = \(previousResult.index) // curIndex = \(currentResult.index) // indexCondition = \(indexCondition)")
                         return phase
                     } else if (currentResult.index <= previousResult.index) {
-                        print(getLocalTimeString() + " , (Olympus) Check Phase3->5 : cur <= pre // preIndex = \(previousResult.index) // curIndex = \(currentResult.index)")
+                        print(getLocalTimeString() + " , (Olympus) Check Phase3->6 : cur <= pre // preIndex = \(previousResult.index) // curIndex = \(currentResult.index)")
                         return phase
                     } else {
                         var drBufferStartIndex: Int = 0
@@ -237,7 +257,7 @@ public class OlympusPhaseController {
                         
                         let rendezvousDistance = sqrt(diffX*diffX + diffY*diffY)
                         if (rendezvousDistance <= distanceCondition) && diffH <= headingCondition {
-                            phase = 5
+                            phase = OlympusConstants.PHASE_6
                         }
                         return phase
                     }
@@ -256,7 +276,7 @@ public class OlympusPhaseController {
     
     @objc func onDidReceiveNotification(_ notification: Notification) {
         if let intValue = notification.userInfo?["phase"] as? Int {
-            print(getLocalTimeString() + " , (Olympus) Phase Controller : Phase Become : \(intValue)")
+            print(getLocalTimeString() + " , (Olympus) Phase Controller : Phase Become \(intValue)")
             self.PHASE = intValue
         } else {
             self.PHASE = OlympusConstants.PHASE_1
