@@ -1577,7 +1577,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     if (KF.isRunning && resultPhase.0 == OlympusConstants.PHASE_6) {
                         if (!(fltResult.x == 0 && fltResult.y == 0) && !buildingLevelChanger.isDetermineSpot && phaseController.PHASE != OlympusConstants.PHASE_2) {
                             scCompensation = fltResult.sc_compensation
-                            
+                            unitDRGenerator.setScCompensation(value: fltResult.sc_compensation)
                             if (isPhaseBreak) {
                                 KF.resetKalmanR()
                                 PADDING_VALUE = OlympusConstants.PADDING_VALUE_SMALL
@@ -1681,7 +1681,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     if (KF.isRunning && resultPhase.0 == OlympusConstants.PHASE_6) {
                         if (!(fltResult.x == 0 && fltResult.y == 0) && !buildingLevelChanger.isDetermineSpot && phaseController.PHASE != OlympusConstants.PHASE_2) {
                             scCompensation = fltResult.sc_compensation
-                            
+                            unitDRGenerator.setScCompensation(value: fltResult.sc_compensation)
                             if (isPhaseBreak) {
                                 KF.resetKalmanR()
                                 PADDING_VALUE = OlympusConstants.PADDING_VALUE_SMALL
@@ -1804,6 +1804,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         if (KF.isRunning && resultPhase.0 == OlympusConstants.PHASE_6) {
                             if (!(fltResult.x == 0 && fltResult.y == 0) && !buildingLevelChanger.isDetermineSpot && phaseController.PHASE != OlympusConstants.PHASE_2) {
                                 scCompensation = fltResult.sc_compensation
+                                unitDRGenerator.setScCompensation(value: fltResult.sc_compensation)
                                 // 임시
                                 displayOutput.indexRx = fltResult.index
                                 displayOutput.scc = fltResult.scc
@@ -1935,7 +1936,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 isUseHeading = stateManager.isVenusMode ? false : true
                 let correctedResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: isUseHeading, pathType: 1, PADDING_VALUES: paddingValues)
                 if (correctedResult.isSuccess) {
-//                    unitDRGenerator.setVelocityScale(scale: correctedResult.xyhs[3])
+                    unitDRGenerator.setVelocityScale(scale: correctedResult.xyhs[3])
                     
                     result.x = correctedResult.xyhs[0]
                     result.y = correctedResult.xyhs[1]
@@ -2630,7 +2631,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 UVD_INPUT_NUM = INIT_INPUT_NUM
                 INDEX_THRESHOLD = 11
             }
-        } else if (mode >= OlympusConstants.MODE_DR) {
+        } else if (mode == OlympusConstants.MODE_DR) {
             RQ_IDX = OlympusConstants.RQ_IDX_DR
             USER_TRAJECTORY_LENGTH = OlympusConstants.USER_TRAJECTORY_LENGTH_DR
 

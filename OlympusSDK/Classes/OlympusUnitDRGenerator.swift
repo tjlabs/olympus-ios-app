@@ -223,6 +223,10 @@ public class OlympusUnitDRGenerator: NSObject {
         pdrQueue.append(data)
     }
     
+    public func setScCompensation(value: Double) {
+        self.drDistanceEstimator.scCompensation = value
+    }
+    
     public func setVelocityScale(scale: Double) {
         self.drDistanceEstimator.velocityScale = scale
     }

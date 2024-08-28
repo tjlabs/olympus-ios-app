@@ -51,7 +51,7 @@ class CardViewController: UIViewController, Observer {
                 self.coordToDisplay.isIndoor = result.isIndoor
                 
                 let diffTime = result.mobile_time - self.preServiceTime
-                print(getLocalTimeString() + " , (Service Time) : diffTime = \(Double(diffTime)*1e-3)")
+//                print(getLocalTimeString() + " , (Service Time) : diffTime = \(Double(diffTime)*1e-3)")
                 self.preServiceTime = result.mobile_time
             }
         }
@@ -585,59 +585,52 @@ class CardViewController: UIViewController, Observer {
     }
     
     func updateCoord(data: CoordToDisplay, flag: Bool) {
-        indexTx.text = String(serviceManager.displayOutput.indexTx)
-        indexRx.text = String(serviceManager.displayOutput.indexRx) + " // " + String(serviceManager.displayOutput.phase)
-        scc.text = String(serviceManager.displayOutput.scc)
-        
-        let directionArray = serviceManager.displayOutput.searchDirection
-        let stringArray = directionArray.map { String($0) }
-        searchDirections.text = stringArray.joined(separator: ", ") 
-        resultDirection.text = String(serviceManager.displayOutput.resultDirection)
-        
-        let XY: [Double] = [data.x, data.y]
-        let heading: Double = data.heading
-        let isIndoor = data.isIndoor
-        var limits: [Double] = [0, 0, 0, 0]
-        
-        if (data.building == "") {
-//            currentBuilding = buildings[0]
-        } else {
-            currentBuilding = data.building
-            if (data.level == "") {
-//                currentLevel = levels[currentBuilding]![0]
-            } else {
-                currentLevel = data.level
+        DispatchQueue.main.async { [self] in
+            indexTx.text = String(serviceManager.displayOutput.indexTx)
+            indexRx.text = String(serviceManager.displayOutput.indexRx) + " // " + String(serviceManager.displayOutput.phase)
+            scc.text = String(serviceManager.displayOutput.scc)
+            
+            let directionArray = serviceManager.displayOutput.searchDirection
+            let stringArray = directionArray.map { String($0) }
+            searchDirections.text = stringArray.joined(separator: ", ")
+            resultDirection.text = String(serviceManager.displayOutput.resultDirection)
+            
+            let XY: [Double] = [data.x, data.y]
+            let heading: Double = data.heading
+            let isIndoor = data.isIndoor
+            var limits: [Double] = [0, 0, 0, 0]
+            
+            if (data.building != "") {
+                currentBuilding = data.building
+                if (data.level != "") {
+                    currentLevel = data.level
+                }
             }
-        }
-        
-        
-//        print(getLocalTimeString() + " , (VC) : pBuilding = \(pastBuilding) , pLevel = \(pastLevel) // cBuilding = \(currentBuilding) , cLevel = \(currentLevel)")
-//        if (pastBuilding != currentBuilding || pastLevel != currentLevel) {
-//            displayLevelImage(building: currentBuilding, level: currentLevel, flag: flag)
-//        }
-        
-        pastBuilding = currentBuilding
-        pastLevel = currentLevel
-        
-        
-        let key = "\(data.building)_\(data.level)"
-        let condition: ((String, [[Double]])) -> Bool = {
-            $0.0.contains(key)
-        }
-        let pathPixel: [[Double]] = PathPixel[key] ?? [[Double]]()
-        if (PathPixel.contains(where: condition)) {
-            if (pathPixel.isEmpty) {
+            
+            
+            pastBuilding = currentBuilding
+            pastLevel = currentLevel
+            
+            
+            let key = "\(data.building)_\(data.level)"
+            let condition: ((String, [[Double]])) -> Bool = {
+                $0.0.contains(key)
+            }
+            let pathPixel: [[Double]] = PathPixel[key] ?? [[Double]]()
+            if (PathPixel.contains(where: condition)) {
+                if (pathPixel.isEmpty) {
+                    PathPixel[key] = loadPp(fileName: key)
+    //                scatterChart.isHidden = true
+                } else {
+    //                scatterChart.isHidden = false
+                    let serverXY: [Double] = serviceManager.displayOutput.serverResult
+                    let tuXY: [Double] = serviceManager.timeUpdateResult
+                    drawDebug(XY: XY, RP_X: pathPixel[0], RP_Y: pathPixel[1], serverXY: serverXY, tuXY: tuXY, heading: heading, limits: limits, isBleOnlyMode: self.isBleOnlyMode, isPmSuccess: true, trajectoryStartCoord: serviceManager.displayOutput.trajectoryStartCoord, userTrajectory: serviceManager.displayOutput.userTrajectory, searchArea: serviceManager.displayOutput.searchArea, searchType: serviceManager.displayOutput.searchType, isIndoor: isIndoor, trajPm: serviceManager.displayOutput.trajectoryPm, trajOg: serviceManager.displayOutput.trajectoryOg)
+    //                drawResult(XY: XY, RP_X: pathPixel[0], RP_Y: pathPixel[1], heading: heading, limits: limits, isBleOnlyMode: self.isBleOnlyMode, isPmSuccess: true, isIndoor: isIndoor)
+                }
+            } else {
                 PathPixel[key] = loadPp(fileName: key)
-//                scatterChart.isHidden = true
-            } else {
-//                scatterChart.isHidden = false
-                let serverXY: [Double] = serviceManager.displayOutput.serverResult
-                let tuXY: [Double] = serviceManager.timeUpdateResult
-                drawDebug(XY: XY, RP_X: pathPixel[0], RP_Y: pathPixel[1], serverXY: serverXY, tuXY: tuXY, heading: heading, limits: limits, isBleOnlyMode: self.isBleOnlyMode, isPmSuccess: true, trajectoryStartCoord: serviceManager.displayOutput.trajectoryStartCoord, userTrajectory: serviceManager.displayOutput.userTrajectory, searchArea: serviceManager.displayOutput.searchArea, searchType: serviceManager.displayOutput.searchType, isIndoor: isIndoor, trajPm: serviceManager.displayOutput.trajectoryPm, trajOg: serviceManager.displayOutput.trajectoryOg)
-//                drawResult(XY: XY, RP_X: pathPixel[0], RP_Y: pathPixel[1], heading: heading, limits: limits, isBleOnlyMode: self.isBleOnlyMode, isPmSuccess: true, isIndoor: isIndoor)
             }
-        } else {
-            PathPixel[key] = loadPp(fileName: key)
         }
     }
     

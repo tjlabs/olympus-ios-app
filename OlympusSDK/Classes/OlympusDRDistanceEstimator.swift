@@ -32,6 +32,7 @@ public class OlympusDRDistanceEstimator: NSObject {
     
     public var velocityScale: Double = 1.0
     public var entranceVelocityScale: Double = 1.0
+    public var scCompensation: Double = 1.0
     
     public var preTime: Double = 0
     public var velocityAcc: Double = 0
@@ -94,7 +95,8 @@ public class OlympusDRDistanceEstimator: NSObject {
         
         let accAttitude = Attitude(Roll: accRoll, Pitch: accPitch, Yaw: 0)
         let accMovingDirection = MF.transBody2Nav(att: accAttitude, data: acc)[1]
-        let gyroNavZ = abs(MF.transBody2Nav(att: accAttitude, data: gyro)[2])
+        let gyroNav = MF.transBody2Nav(att: accAttitude, data: gyro)[2]
+        let gyroNavZ = abs(gyroNav)
         
         let accNorm = MF.l2Normalize(originalVector: sensorData.acc)
         let magNorm = MF.l2Normalize(originalVector: sensorData.mag)
@@ -211,8 +213,8 @@ public class OlympusDRDistanceEstimator: NSObject {
         
         let velocityMps = (velocityInputScale/3.6)*turnScale
         let velocityCombine = (velocityMps*0.7) + (velocityAcc*0.3)
-        print(getLocalTimeString() + " , (Olympus) DRDistanceEstimator : vMag = \(velocityMps) // vAcc = \(velocityAcc) // vCombine = \(velocityCombine)")
-        
+//        print(getLocalTimeString() + " , (Olympus) DRDistanceEstimator : index = \(index) // vMag = \(velocityMps) // vAcc = \(velocityAcc) // accBiasSmoothed = \(self.biasSmoothing) // isPossibleUseBias = \(isPossibleUseBias)")
+//        print("DRDistanceEstimator,\(time),\(accMovingDirection),\(velocityMps),\(self.scCompensation),\(gyroNav)")
         let velocityFinal = isPossibleUseBias ? velocityCombine : velocityMps
         
         finalUnitResult.isIndexChanged = false
@@ -221,7 +223,7 @@ public class OlympusDRDistanceEstimator: NSObject {
 //        distance += velocityFinal*delT
 //        distance += velocityCombine*delT
         if (distance > Double(OlympusConstants.OUTPUT_DISTANCE_SETTING)) {
-            print(getLocalTimeString() + " , (Olympus) DRDistanceEstimator : index = \(index) // vMag = \(velocityMps) // vAcc = \(velocityAcc) // vCombine = \(velocityCombine) // isPossibleUseBias = \(isPossibleUseBias)")
+//            print(getLocalTimeString() + " , (Olympus) DRDistanceEstimator : index = \(index) // vMag = \(velocityMps) // vAcc = \(velocityAcc) // vCombine = \(velocityCombine) // isPossibleUseBias = \(isPossibleUseBias)")
             index += 1
             finalUnitResult.length = distance
             finalUnitResult.index = index
@@ -362,7 +364,7 @@ public class OlympusDRDistanceEstimator: NSObject {
                         }
                         controlBiasBuffer(data: self.biasSmoothing)
                         self.preBiasSmoothing = self.biasSmoothing
-                        print(getLocalTimeString() + " , (Olympus) Acc Bias : index = \(movingDirectionBuffer[i].index) , accBias = \(accBias) , accBiasSmoothed = \(self.biasSmoothing) , isPossibleUseBias = \(isPossibleUseBias)")
+//                        print(getLocalTimeString() + " , (Olympus) Acc Bias : index = \(movingDirectionBuffer[i].index) , accBias = \(accBias) , accBiasSmoothed = \(self.biasSmoothing) , isPossibleUseBias = \(isPossibleUseBias)")
                     }
                 }
             }
@@ -381,7 +383,7 @@ public class OlympusDRDistanceEstimator: NSObject {
             biasBuffer.remove(at: 0)
             let biasVar = MF.calVariance(buffer: biasBuffer, bufferMean: biasBuffer.average)
 //            print(getLocalTimeString() + " , (Olympus) Acc Bias : Var = \(biasVar)")
-            isPossibleUseBias = biasVar < 0.015 ? true : false
+            isPossibleUseBias = biasVar < 0.015 && index >= 100 ? true : false
         }
         biasBuffer.append(data)
     }
