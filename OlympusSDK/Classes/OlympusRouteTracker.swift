@@ -49,7 +49,7 @@ public class OlympusRouteTracker {
         self.EntranceInnerWardCoord["COEX_B0_5"] = [59, 350, 270]
     }
 
-    private func parseEntrance(data: String) -> ([String], [[Double]]) {
+    private func parseRoute(data: String) -> ([String], [[Double]]) {
         var entracneLevelArray = [String]()
         var entranceArray = [[Double]]()
 
@@ -106,7 +106,7 @@ public class OlympusRouteTracker {
                     if (routeLocalUrl.0) {
                         do {
                             let contents = routeLocalUrl.1!
-                            let parsedData = self.parseEntrance(data: contents)
+                            let parsedData = self.parseRoute(data: contents)
                             self.EntranceRouteLevel[key] = parsedData.0
                             self.EntranceRouteCoord[key] = parsedData.1
                             self.EntranceIsLoaded[key] = true
@@ -120,7 +120,7 @@ public class OlympusRouteTracker {
                             if error == nil {
                                 do {
                                     let contents = try String(contentsOf: url!)
-                                    let parsedData = self.parseEntrance(data: contents)
+                                    let parsedData = self.parseRoute(data: contents)
                                     EntranceRouteLevel[key] = parsedData.0
                                     EntranceRouteCoord[key] = parsedData.1
                                     saveEntranceRouteVersion(key: key, routeVersion: value)
@@ -145,7 +145,7 @@ public class OlympusRouteTracker {
                         if error == nil {
                             do {
                                 let contents = try String(contentsOf: url!)
-                                let parsedData = self.parseEntrance(data: contents)
+                                let parsedData = self.parseRoute(data: contents)
                                 EntranceRouteLevel[key] = parsedData.0
                                 EntranceRouteCoord[key] = parsedData.1
                                 saveEntranceRouteVersion(key: key, routeVersion: value)
@@ -169,7 +169,7 @@ public class OlympusRouteTracker {
                     if error == nil {
                         do {
                             let contents = try String(contentsOf: url!)
-                            let parsedData = parseEntrance(data: contents)
+                            let parsedData = parseRoute(data: contents)
                             EntranceRouteLevel[key] = parsedData.0
                             EntranceRouteCoord[key] = parsedData.1
                             saveEntranceRouteVersion(key: key, routeVersion: value)

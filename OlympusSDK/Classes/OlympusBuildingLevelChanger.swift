@@ -32,6 +32,8 @@ public class OlympusBuildingLevelChanger {
     public var phase2Direction: [Int] = []
     public var preOutputMobileTime: Int = 0
     
+    public var sectorInfoLevelChange = [String: SectorInfoLevelChange]()
+    
     var trajEditedObserver: Any!
     
     public func initialize() {
@@ -45,6 +47,8 @@ public class OlympusBuildingLevelChanger {
         self.phase2Range = []
         self.phase2Direction = []
         self.preOutputMobileTime = 0
+        
+        self.sectorInfoLevelChange = [String: SectorInfoLevelChange]()
     }
     
     func accumulateOsrDistance(unitLength: Double, isGetFirstResponse: Bool, mode: String, result: FineLocationTrackingResult) {
@@ -331,6 +335,57 @@ public class OlympusBuildingLevelChanger {
         }
         
         return result
+    }
+    
+    public func setSectorInfoLevelChange() {
+        let area_number = 1
+        let area_bounds: [Double] = [230, 390, 260, 445]
+        let area_direction: Double = 0
+        let area_nodes = [AreaNode(node_number: 301, center_coord: [259, 420], direction_type: "D"), AreaNode(node_number: 8, center_coord: [240, 401], direction_type: "U")]
+        
+        let key = "COEX_B2_\(area_number)"
+        self.sectorInfoLevelChange["COEX_B2_1"] = SectorInfoLevelChange(area_number: area_number, area_bounds: area_bounds, area_direction: area_direction, area_nodes: area_nodes)
+    }
+    
+    public func checkInSectorLevelChange(fltResult: FineLocationTrackingResult, passedNodeInfo: PassedNodeInfo) -> Bool {
+        let currentLevel = "_\(fltResult.level_name)_"
+        for (key, value) in self.sectorInfoLevelChange {
+            if key.contains(currentLevel) {
+                if (value.area_bounds[0] >= fltResult.x && fltResult.x <= value.area_bounds[2]) && (value.area_bounds[1] >= fltResult.x && fltResult.x <= value.area_bounds[3]) {
+                    // 사용자 좌표가 영역 안에 존재
+                    if value.area_direction == fltResult.absolute_heading {
+                        // 사용자 방향이 일치함
+                        for n in value.area_nodes {
+                            // passedNode와 매칭 검사
+                            if n.node_number == passedNodeInfo.nodeNumber {
+                                // OSR 동작 시작
+                                // 방향 결정 "U" or "D" or "N"
+                                return true
+                            }
+                        }
+                    } else {
+                        return false
+                    }
+                } else {
+                    return false
+                }
+            }
+        }
+        
+        return false
+    }
+    
+    public func checkIsValidInLevelChange() {
+        // 이 코드는 OSR 동작과 함께 수행된다
+        
+        // 결정된 방향이 U or D 인경우
+        // if : Spot 결정 후 방향이 일치하는 경우
+        // else if : 일치하지 않는 경우
+        
+        
+        // 결정된 방향이 N인경우
+        // if : Spot이 결정 된 경우
+        // else : 아닌 경우
     }
     
     func notificationCenterAddObserver() {

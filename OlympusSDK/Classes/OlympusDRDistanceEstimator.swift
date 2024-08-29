@@ -306,10 +306,8 @@ public class OlympusDRDistanceEstimator: NSObject {
     
     public func calRflowVelocityScale(rflowForVelocity: Double, isSufficientForVelocity: Bool) -> Double {
         var scale: Double = 1.0
-        
         if (isSufficientForVelocity) {
             scale = (-1/(1+exp(10*(-rflowForVelocity+0.66)))) + 1
-            
             if (scale < 0.5) {
                 scale = 0.5
             }

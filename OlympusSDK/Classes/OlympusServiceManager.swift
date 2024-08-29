@@ -187,9 +187,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         let arr = deviceOs.components(separatedBy: ".")
         self.deviceOsVersion = Int(arr[0]) ?? 0
         
-//        self.deviceModel = "iPhone SE (2nd generation)"
-//        self.deviceOsVersion = 16
-        
         super.init()
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd-HH-mm-ss"
@@ -529,6 +526,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         OlympusPathMatchingCalculator.shared.loadPathPixel(sector_id: sector_id, PathPixelVersion: OlympusPathMatchingCalculator.shared.PpVersion)
         
         routeTracker.setEntranceInnerWardInfo()
+        buildingLevelChanger.setSectorInfoLevelChange()
     }
     
     
@@ -840,7 +838,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             if (KF.isRunning && KF.tuFlag && !self.isInRecoveryProcess) {
                 var pathType: Int = 1
                 if (runMode == OlympusConstants.MODE_PDR) { pathType = 0 }
-                
 //                print(getLocalTimeString() + " , (Olympus) Path-Matching : Check Bad Case : isNeedPathTrajMatching = \(isNeedPathTrajMatching) // index = \(unitDRInfoIndex)")
                 let kfTimeUpdate = KF.timeUpdate(currentTime: currentTime, recentResult: olympusResult, length: unitUvdLength, diffHeading: diffHeading, isPossibleHeadingCorrection: isPossibleHeadingCorrection, unitDRInfoBuffer: unitDRInfoBuffer, userMaskBuffer: userMaskBufferPathTrajMatching, isNeedPathTrajMatching: isNeedPathTrajMatching, PADDING_VALUES: PADDING_VALUES, mode: runMode)
                 var tuResult = kfTimeUpdate.0
@@ -859,24 +856,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     // 길 끝에 있는지 확인해야 한다
                     self.isInMapEnd = OlympusPathMatchingCalculator.shared.checkIsInMapEnd(resultStandard: self.temporalResult, tuResult: tuResult, pathType: pathType)
                     if (self.isInMapEnd) {
-                        if (self.temporalResult.building_name == "PG" && self.temporalResult.x == 75 && self.temporalResult.y == 41 && temporalResult.absolute_heading < 40) {
-                            self.temporalResult.y = 43
-                        }
                         tuResult.x = self.temporalResult.x
                         tuResult.y = self.temporalResult.y
                         KF.updateTuResult(x: tuResult.x, y: tuResult.y)
                     }
                 }
-                
-                
                 currentTuResult = tuResult
-                // 임시
-//                timeUpdateResult[0] = tuResult.x
-//                timeUpdateResult[1] = tuResult.y
-//                timeUpdateResult[2] = tuResult.absolute_heading
-//                displayOutput.trajectoryOg = KF.inputTraj
-//                displayOutput.trajectoryPm = KF.matchedTraj
-                // 임시
                 
                 KF.updateTuResultNow(result: currentTuResult)
                 KF.updateTuInformation(unitDRInfo: unitDRInfo)

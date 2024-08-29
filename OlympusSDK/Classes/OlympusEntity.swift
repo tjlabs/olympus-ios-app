@@ -179,6 +179,19 @@ public struct SectorInfoEntrance: Codable {
     let route_version: String
 }
 
+public struct SectorInfoLevelChange: Codable {
+    let area_number: Int
+    let area_bounds: [Double] // xMin yMin xMax yMax
+    let area_direction: Double
+    let area_nodes: [AreaNode]
+}
+  
+public struct AreaNode: Codable {
+    let node_number: Int
+    let center_coord: [Double]
+    let direction_type: String
+}
+    
 public struct SectorInfoLevel: Codable {
     let building_name: String
     let level_name: String
@@ -186,7 +199,6 @@ public struct SectorInfoLevel: Codable {
     let entrance_list: [SectorInfoEntrance]
     let path_pixel_version: String
 }
-
 
 public struct SectorInfoFromServer: Codable {
     let parameter: SectorInfoParam
