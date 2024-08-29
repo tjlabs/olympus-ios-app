@@ -133,7 +133,7 @@ class OlympusConstants {
     static let OUTPUT_DISTANCE_SETTING: Double = 1
     static let SEND_INTERVAL_SECOND: Double = 1 / VELOCITY_QUEUE_SIZE
     static let VELOCITY_MIN: Double = 4
-    static let VELOCITY_MAX: Double = 22
+    static let VELOCITY_MAX: Double = 20
     static let RF_SC_THRESHOLD_DR: Double = 0.67
     
     static let AMP_THRESHOLD: Double = 0.18
