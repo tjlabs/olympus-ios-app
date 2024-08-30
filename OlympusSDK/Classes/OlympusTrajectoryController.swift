@@ -326,7 +326,7 @@ public class OlympusTrajectoryController {
             self.phase2ReqCount = 0
             self.accumulatedLengthWhenPhase2 = calculateTrajectoryLength(trajectoryInfo: newTraj)
             NotificationCenter.default.post(name: .trajEditedAfterOsr, object: nil, userInfo: nil)
-            NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_2])
+//            NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_2])
         } else if (isUnknownTraj) {
             self.isUnknownTraj = false
             

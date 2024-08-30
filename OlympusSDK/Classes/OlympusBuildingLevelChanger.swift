@@ -74,15 +74,15 @@ public class OlympusBuildingLevelChanger {
                 
                 if (isRunOsr) {
                     let input = OnSpotRecognition(operating_system: OlympusConstants.OPERATING_SYSTEM, user_id: user_id, mobile_time: currentTime, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), standard_min_rss: Int(OlympusConstants.STANDARD_MIN_RSS))
-                    print(getLocalTimeString() + " , (Olympus) Run OSR : input = \(input)")
+//                    print(getLocalTimeString() + " , (Olympus) Run OSR : input = \(input)")
                     OlympusNetworkManager.shared.postOSR(url: CALC_OSR_URL, input: input, completion: { [self] statusCode, returnedString in
-                        print(getLocalTimeString() + " , (Olympus) Run OSR : result = \(returnedString)")
+//                        print(getLocalTimeString() + " , (Olympus) Run OSR : result = \(returnedString)")
                         if (statusCode == 200) {
                             let result = jsonToOnSpotRecognitionResult(jsonString: returnedString)
                             let decodedOsr = result.1
                             if (result.0 && decodedOsr.building_name != "" && decodedOsr.level_name != "") {
                                 let isOnSpot = isOnSpotRecognition(result: decodedOsr, level: currentLevel)
-                                print(getLocalTimeString() + " , (Olympus) Run OSR : isOnSpot = \(isOnSpot)")
+//                                print(getLocalTimeString() + " , (Olympus) Run OSR : isOnSpot = \(isOnSpot)")
                                 if (isOnSpot.isOn) {
                                     let levelDestination = isOnSpot.levelDestination + isOnSpot.levelDirection
                                     determineSpotDetect(result: decodedOsr, lastSpotId: self.lastSpotId, levelDestination: levelDestination, currentBuilding: currentBuilding, currentLevel: currentLevel, currentEntrance: currentEntrance, currentTime: currentTime)
@@ -126,8 +126,8 @@ public class OlympusBuildingLevelChanger {
                     self.lastSpotId = result.spot_id
                     self.travelingOsrDistance = 0
                     self.buildingLevelChangedTime = currentTime
-                    print(getLocalTimeString() + " , (Olympus) Run OSR (1) : levelDestination = \(levelDestination)")
-                    print(getLocalTimeString() + " , (Olympus) Run OSR (1) : phase2Range = \(phase2Range) // phase2Direction = \(phase2Direction)")
+//                    print(getLocalTimeString() + " , (Olympus) Run OSR (1) : levelDestination = \(levelDestination)")
+//                    print(getLocalTimeString() + " , (Olympus) Run OSR (1) : phase2Range = \(phase2Range) // phase2Direction = \(phase2Direction)")
                     self.notifyObservers(building: result.building_name, level: levelDestination, range: self.phase2Range, direction: self.phase2Direction)
                     self.isDetermineSpot = true
                     self.spotCutIndex = self.determineSpotCutIndex(entranceString: currentEntrance)
@@ -338,20 +338,29 @@ public class OlympusBuildingLevelChanger {
     }
     
     public func setSectorInfoLevelChange() {
-        let area_number = 1
-        let area_bounds: [Double] = [230, 390, 260, 445]
-        let area_direction: Double = 0
-        let area_nodes = [AreaNode(node_number: 301, center_coord: [259, 420], direction_type: "D"), AreaNode(node_number: 8, center_coord: [240, 401], direction_type: "U")]
+        var area_number = 1
+        var area_bounds: [Double] = [230, 390, 260, 445]
+        var area_direction: Double = 0
+        var area_nodes = [AreaNode(node_number: 301, center_coord: [259, 420], direction_type: "D"), AreaNode(node_number: 8, center_coord: [240, 401], direction_type: "U")]
         
-        let key = "COEX_B2_\(area_number)"
-        self.sectorInfoLevelChange["COEX_B2_1"] = SectorInfoLevelChange(area_number: area_number, area_bounds: area_bounds, area_direction: area_direction, area_nodes: area_nodes)
+        var key = "COEX_B2_\(area_number)"
+        self.sectorInfoLevelChange[key] = SectorInfoLevelChange(area_number: area_number, area_bounds: area_bounds, area_direction: area_direction, area_nodes: area_nodes)
+        
+        area_number = 1
+        area_bounds = [230, 400, 260, 430]
+        area_direction = 0
+        area_nodes = [AreaNode(node_number: 205, center_coord: [257, 415], direction_type: "D"), AreaNode(node_number: 15, center_coord: [250, 402], direction_type: "U")]
+        
+        key = "COEX_B3_\(area_number)"
+        self.sectorInfoLevelChange[key] = SectorInfoLevelChange(area_number: area_number, area_bounds: area_bounds, area_direction: area_direction, area_nodes: area_nodes)
     }
     
-    public func checkInSectorLevelChange(fltResult: FineLocationTrackingResult, passedNodeInfo: PassedNodeInfo) -> Bool {
+    public func checkInSectorLevelChange(fltResult: FineLocationTrackingFromServer, passedNodeInfo: PassedNodeInfo) -> Bool {
         let currentLevel = "_\(fltResult.level_name)_"
         for (key, value) in self.sectorInfoLevelChange {
             if key.contains(currentLevel) {
-                if (value.area_bounds[0] >= fltResult.x && fltResult.x <= value.area_bounds[2]) && (value.area_bounds[1] >= fltResult.x && fltResult.x <= value.area_bounds[3]) {
+//                print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (In) : coord = \(fltResult.x) , \(fltResult.y) , \(fltResult.absolute_heading)")
+                if (value.area_bounds[0] <= fltResult.x && fltResult.x <= value.area_bounds[2]) && (value.area_bounds[1] <= fltResult.y && fltResult.y <= value.area_bounds[3]) {
                     // 사용자 좌표가 영역 안에 존재
                     if value.area_direction == fltResult.absolute_heading {
                         // 사용자 방향이 일치함
@@ -371,8 +380,22 @@ public class OlympusBuildingLevelChanger {
                 }
             }
         }
-        
         return false
+    }
+    
+    public func checkOutSectorLevelChange(fltResult: FineLocationTrackingFromServer) -> Bool {
+        let currentLevel = "_\(fltResult.level_name)_"
+        for (key, value) in self.sectorInfoLevelChange {
+            if key.contains(currentLevel) {
+//                print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (Out) : coord = \(fltResult.x) , \(fltResult.y) , \(fltResult.absolute_heading)")
+                if (value.area_bounds[0] <= fltResult.x && fltResult.x <= value.area_bounds[2]) && (value.area_bounds[1] <= fltResult.y && fltResult.y <= value.area_bounds[3]) {
+                    return true
+                } else {
+                    return false
+                }
+            }
+        }
+        return true
     }
     
     public func checkIsValidInLevelChange() {
