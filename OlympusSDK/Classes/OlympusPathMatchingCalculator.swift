@@ -2268,10 +2268,15 @@ public class OlympusPathMatchingCalculator {
         return pathMatchingNodeCandidates
     }
     
-    public func getTimeUpdateLimitation(mode: String) -> (limitType: LimitationType, limitValues: [Double]) {
+    public func getTimeUpdateLimitation(level:String, mode: String) -> (limitType: LimitationType, limitValues: [Double]) {
         var limitType: LimitationType = .NO_LIMIT
         var limitValues: [Double] = [0, 0]
         var LIMIT: Double = 0.8
+        
+        if (level == "B0") {
+            return (limitType, limitValues)
+        }
+        
         if (mode == OlympusConstants.MODE_PDR) {
             LIMIT = 0.4
         }

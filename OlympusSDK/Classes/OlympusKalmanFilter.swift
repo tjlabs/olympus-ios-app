@@ -158,6 +158,7 @@ public class OlympusKalmanFilter: NSObject {
         let levelName = removeLevelDirectionString(levelName: self.tuResult.level_name)
         
         let updatedHeading = compensateHeading(heading: self.tuResult.absolute_heading + diffHeading)
+        
         let dx = length*cos(updatedHeading*OlympusConstants.D2R)
         let dy = length*sin(updatedHeading*OlympusConstants.D2R)
         
@@ -169,6 +170,7 @@ public class OlympusKalmanFilter: NSObject {
         outputResult.absolute_heading = updatedHeading
         var pathTrajMatchingHeading: Double = updatedHeading
         
+        print(getLocalTimeString() + " , (Olympus) ErrorChecking 0-1 : index = \(unitDRInfoBuffer[unitDRInfoBuffer.count-1].index) , x = \(outputResult.x) , y = \(outputResult.y) , h = \(outputResult.absolute_heading)")
         if (mode == OlympusConstants.MODE_PDR) {
             // PDR
             let currentUvdIndex = unitDRInfoBuffer[unitDRInfoBuffer.count-1].index
@@ -418,7 +420,7 @@ public class OlympusKalmanFilter: NSObject {
             
             if (!isDidPathTrajMatching) {
                 // Path-Traj Matching을 안했으면
-                let limitationResult = OlympusPathMatchingCalculator.shared.getTimeUpdateLimitation(mode: mode)
+                let limitationResult = OlympusPathMatchingCalculator.shared.getTimeUpdateLimitation(level: outputResult.level_name, mode: mode)
                 if (limitationResult.limitType == .Y_LIMIT) {
                     if (outputResult.y < limitationResult.limitValues[0]) {
                         outputResult.y = limitationResult.limitValues[0]
@@ -435,7 +437,8 @@ public class OlympusKalmanFilter: NSObject {
             }
         } else {
             let drBufferStraightResult = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_HEADING_CORR_NUM_IDX, condition: 10.0)
-            let isDrStraight: Bool = drBufferStraightResult.0
+            print(getLocalTimeString() + " , (Olympus) ErrorChecking 0-0 : index = \(unitDRInfoBuffer[unitDRInfoBuffer.count-1].index) , level_name = \(outputResult.level_name)")
+            let isDrStraight: Bool = levelName == "B0" ? false : drBufferStraightResult.0
             let pathMatchingResult =  OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, PADDING_VALUES: PADDING_VALUES)
             if (pathMatchingResult.isSuccess) {
                 let compensatedHeading = compensateHeading(heading: pathMatchingResult.xyhs[2])
@@ -459,9 +462,9 @@ public class OlympusKalmanFilter: NSObject {
                 outputResult.y = (pathMatchingResult.1[1]*0.2 + updatedY*0.8)
                 outputResult.absolute_heading = compensateHeading(heading: updatedHeading)
             }
-            
+            print(getLocalTimeString() + " , (Olympus) ErrorChecking 0-2 : index = \(unitDRInfoBuffer[unitDRInfoBuffer.count-1].index) , x = \(outputResult.x) , y = \(outputResult.y) , h = \(outputResult.absolute_heading) // isDrStraight = \(isDrStraight) // isPm = \(pathMatchingResult.isSuccess)")
             // DR
-            let limitationResult = OlympusPathMatchingCalculator.shared.getTimeUpdateLimitation(mode: mode)
+            let limitationResult = OlympusPathMatchingCalculator.shared.getTimeUpdateLimitation(level: outputResult.level_name, mode: mode)
             if (limitationResult.limitType == .Y_LIMIT) {
 //                print("(Link Info) : Y Limit // before = \(outputResult.x) , \(outputResult.y)")
                 if (outputResult.y < limitationResult.limitValues[0]) {
@@ -484,7 +487,7 @@ public class OlympusKalmanFilter: NSObject {
         }
         
         tuResult = outputResult
-        
+        print(getLocalTimeString() + " , (Olympus) ErrorChecking 0-3 : index = \(unitDRInfoBuffer[unitDRInfoBuffer.count-1].index) , x = \(outputResult.x) , y = \(outputResult.y) , h = \(outputResult.absolute_heading)")
         kalmanP += kalmanQ
         headingKalmanP += headingKalmanQ
         muFlag = true

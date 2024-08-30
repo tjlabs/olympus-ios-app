@@ -353,6 +353,14 @@ public class OlympusBuildingLevelChanger {
         
         key = "COEX_B3_\(area_number)"
         self.sectorInfoLevelChange[key] = SectorInfoLevelChange(area_number: area_number, area_bounds: area_bounds, area_direction: area_direction, area_nodes: area_nodes)
+        
+        area_number = 1
+        area_bounds = [206, 370, 262, 450]
+        area_direction = 0
+        area_nodes = [AreaNode(node_number: 205, center_coord: [257, 415], direction_type: "D"), AreaNode(node_number: 15, center_coord: [250, 402], direction_type: "U")]
+        
+        key = "COEX_B0_\(area_number)"
+        self.sectorInfoLevelChange[key] = SectorInfoLevelChange(area_number: area_number, area_bounds: area_bounds, area_direction: area_direction, area_nodes: area_nodes)
     }
     
     public func checkInSectorLevelChange(fltResult: FineLocationTrackingFromServer, passedNodeInfo: PassedNodeInfo) -> Bool {

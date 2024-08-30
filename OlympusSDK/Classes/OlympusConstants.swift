@@ -195,41 +195,4 @@ class OlympusConstants {
         OlympusConstants.NORMALIZATION_SCALE     = cur
         OlympusConstants.PRE_NORMALIZATION_SCALE = pre
     }
-    
-//    public func setModeParam(mode: String, phase: Int) {
-//        if (mode == OlympusConstants.MODE_PDR) {
-//            OlympusConstants.RQ_IDX = OlympusConstants.RQ_IDX_PDR
-//            OlympusConstants.USER_TRAJECTORY_LENGTH = OlympusConstants.USER_TRAJECTORY_LENGTH_PDR
-//
-//            OlympusConstants.INIT_INPUT_NUM = 4 //
-//            OlympusConstants.VALUE_INPUT_NUM = 6 // 6
-//            OlympusConstants.PADDING_VALUE = OlympusConstants.PADDING_VALUE_SMALL
-//            OlympusConstants.PADDING_VALUES = [Double] (repeating: OlympusConstants.PADDING_VALUE, count: 4)
-//
-//            if (phase == OlympusConstants.PHASE_4) {
-//                OlympusConstants.UVD_INPUT_NUM = OlympusConstants.VALUE_INPUT_NUM
-//                OlympusConstants.INDEX_THRESHOLD = 21
-//            } else {
-//                OlympusConstants.UVD_INPUT_NUM = OlympusConstants.INIT_INPUT_NUM
-//                OlympusConstants.INDEX_THRESHOLD = 11
-//            }
-//        } else if (mode == OlympusConstants.MODE_DR) {
-//            OlympusConstants.RQ_IDX = OlympusConstants.RQ_IDX_DR
-//            OlympusConstants.USER_TRAJECTORY_LENGTH = OlympusConstants.USER_TRAJECTORY_LENGTH_DR
-//
-//            OlympusConstants.INIT_INPUT_NUM = 5
-//            OlympusConstants.VALUE_INPUT_NUM = OlympusConstants.UVD_BUFFER_SIZE
-//            OlympusConstants.PADDING_VALUE = OlympusConstants.PADDING_VALUE_LARGE
-//            OlympusConstants.PADDING_VALUES = [Double] (repeating: OlympusConstants.PADDING_VALUE, count: 4)
-//
-//            if (phase == OlympusConstants.PHASE_4) {
-//                OlympusConstants.UVD_INPUT_NUM = OlympusConstants.VALUE_INPUT_NUM
-//                OlympusConstants.INDEX_THRESHOLD = (OlympusConstants.UVD_INPUT_NUM*2)+1
-//            } else {
-//                OlympusConstants.UVD_INPUT_NUM = OlympusConstants.INIT_INPUT_NUM
-//                OlympusConstants.INDEX_THRESHOLD = OlympusConstants.UVD_INPUT_NUM+1
-//            }
-//        }
-//        OlympusConstants.RQ_IDX = OlympusConstants.UVD_INPUT_NUM
-//    }
 }

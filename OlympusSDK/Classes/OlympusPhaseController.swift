@@ -63,44 +63,6 @@ public class OlympusPhaseController {
         return phase
     }
     
-//    public func phase4control(serverResult: FineLocationTrackingFromServer, mode: String) -> Int {
-//        var phaseBreakSCC = OlympusConstants.PHASE_BREAK_SCC_DR
-//        if (mode == OlympusConstants.MODE_PDR) {
-//            phaseBreakSCC = OlympusConstants.PHASE_BREAK_SCC_PDR
-//        }
-//        var phase: Int = 4
-//        
-//        let scc = serverResult.scc
-//        
-//        if (scc < phaseBreakSCC) {
-//            phase = 1
-//        } else if (serverResult.x == 0 && serverResult.y == 0) {
-//            phase = 1
-//        } else {
-//            phase = 5
-//        }
-//        
-//        return phase
-//    }
-//    
-//    public func phase5control(serverResult: FineLocationTrackingFromServer, mode: String) -> Int {
-//        var phaseBreakSCC = OlympusConstants.PHASE_BREAK_SCC_DR
-//        if (mode == OlympusConstants.MODE_PDR) {
-//            phaseBreakSCC = OlympusConstants.PHASE_BREAK_SCC_PDR
-//        }
-//        var phase: Int = 5
-//        
-//        let scc = serverResult.scc
-//        
-//        if (scc < phaseBreakSCC) {
-//            phase = 1
-//        } else if (serverResult.x == 0 && serverResult.y == 0) {
-//            phase = 1
-//        }
-//        
-//        return phase
-//    }
-    
     public func phaseControlInStable(serverResult: FineLocationTrackingFromServer, mode: String, inputPhase: Int) -> Int {
         var phaseBreakSCC = OlympusConstants.PHASE_BREAK_SCC_DR
         if (mode == OlympusConstants.MODE_PDR) {
