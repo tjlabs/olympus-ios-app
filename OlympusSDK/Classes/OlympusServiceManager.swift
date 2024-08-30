@@ -139,7 +139,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     var networkStatus: Bool = true
     var isStartRouteTrack: Bool = false
     var isInEntranceLevel: Bool = false
-    var isBuildingLevelChanged: Bool = false
     var isDRMode: Bool = false
     var stableModeInitFlag: Bool = true
     var goodCaseCount: Int = 0
@@ -217,7 +216,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         KF.updateTuBuildingLevel(building: newBuilding, level: newLevel)
         self.phase2Range = newRange
         self.phase2Direction = newDirection
-        self.isBuildingLevelChanged = true
     }
     
     private func initialize(isStopService: Bool) {
@@ -260,7 +258,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         networkStatus = true
         isStartRouteTrack = false
         isInEntranceLevel = false
-        isBuildingLevelChanged = false
         isDRMode = false
         stableModeInitFlag = true
         goodCaseCount = 0
@@ -2060,7 +2057,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 pathTypeForNodeAndLink = 1
                 isUseHeading = stateManager.isVenusMode ? false : true
                 let paddings = levelName == "B0" ? OlympusConstants.PADDING_VALUES : paddingValues
-                print(getLocalTimeString() + " , (Olympus) ErrorChecking 1 : buildingName = \(buildingName) , levelName = \(levelName) , x = \(result.x) , y = \(result.y) , h = \(result.absolute_heading)")
                 let correctedResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: isUseHeading, pathType: 1, PADDING_VALUES: paddings)
                 if (correctedResult.isSuccess) {
                     unitDRGenerator.setVelocityScale(scale: correctedResult.xyhs[3])
@@ -2083,7 +2079,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     }
                     isPmFailed = true
                 }
-                print(getLocalTimeString() + " , (Olympus) ErrorChecking 2 : buildingName = \(buildingName) , levelName = \(levelName) , x = \(result.x) , y = \(result.y) , h = \(result.absolute_heading) // isPmFailed = \(isPmFailed)")
             }
             
             if (mustInSameLink && levelName != "B0") {
@@ -2097,7 +2092,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //                        print(getLocalTimeString() + " , (Olympus) Path-Matching : Must In Same Link : (1) diffHeading = \(diffHeading)")
                         if !((diffHeading > 90-MARGIN && diffHeading <= 90+MARGIN) || (diffHeading > 270-MARGIN && diffHeading <= 270+MARGIN)) {
                             result.y = linkCoord[1]
-                            print(getLocalTimeString() + " , (Olympus) Path-Matching : Must In Same Link : y축")
+//                            print(getLocalTimeString() + " , (Olympus) Path-Matching : Must In Same Link : y축")
                         }
                         
                     } else if (directions.contains(90) && directions.contains(270)) {
@@ -2106,14 +2101,11 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //                        print(getLocalTimeString() + " , (Olympus) Path-Matching : Must In Same Link : (2) diffHeading = \(diffHeading)")
                         if !((diffHeading > 90-MARGIN && diffHeading <= 90+MARGIN) || (diffHeading > 270-MARGIN && diffHeading <= 270+MARGIN)) {
                             result.x = linkCoord[0]
-                            print(getLocalTimeString() + " , (Olympus) Path-Matching : Must In Same Link : x축")
+//                            print(getLocalTimeString() + " , (Olympus) Path-Matching : Must In Same Link : x축")
                         }
                     }
                 }
             }
-//            else if (self.isBuildingLevelChanged) {
-//                self.isBuildingLevelChanged = false
-//            }
             
             if (isUseHeading && isStableMode) {
                 let diffX = result.x - temporalResult.x
@@ -2185,8 +2177,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 }
             }
             
-            print(getLocalTimeString() + " , (Olympus) ErrorChecking 3 : buildingName = \(buildingName) , levelName = \(levelName) , x = \(result.x) , y = \(result.y) , h = \(result.absolute_heading) // isPmFailed = \(isPmFailed)")
-            print(getLocalTimeString() + " , (Olympus) ErrorChecking : -----------------------------------------------")
             self.temporalResult = result
             self.preTemporalResult = result
             self.preTemporalResultHeading = temporalResultHeading

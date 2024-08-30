@@ -170,7 +170,7 @@ public class OlympusKalmanFilter: NSObject {
         outputResult.absolute_heading = updatedHeading
         var pathTrajMatchingHeading: Double = updatedHeading
         
-        print(getLocalTimeString() + " , (Olympus) ErrorChecking 0-1 : index = \(unitDRInfoBuffer[unitDRInfoBuffer.count-1].index) , x = \(outputResult.x) , y = \(outputResult.y) , h = \(outputResult.absolute_heading)")
+//        print(getLocalTimeString() + " , (Olympus) ErrorChecking 0-1 : index = \(unitDRInfoBuffer[unitDRInfoBuffer.count-1].index) , x = \(outputResult.x) , y = \(outputResult.y) , h = \(outputResult.absolute_heading)")
         if (mode == OlympusConstants.MODE_PDR) {
             // PDR
             let currentUvdIndex = unitDRInfoBuffer[unitDRInfoBuffer.count-1].index
@@ -243,7 +243,6 @@ public class OlympusKalmanFilter: NSObject {
                         print(getLocalTimeString() + " , (Olympus) Path-Matching : directionCount  = \(directionCount)")
                         let maxIndex = directionCount.firstIndex(of: directionCount.max()!)
                         let startHeading = linkDirArray[maxIndex!]
-//                        let startHeading = inputUserMaskBuffer[0].absolute_heading
                         let endHeading = compensateHeading(heading: userHeading)
                         
                         let findPathMatchingNodeResult = OlympusPathMatchingCalculator.shared.findPathTrajMatchingNode(fltResult: outputResult, x: Double(userX), y: Double(userY), heading: startHeading, uvdBuffer: inputUnitDrInfoBuffer, pathType: 0, linkDirections: linkDirArray)
@@ -346,8 +345,6 @@ public class OlympusKalmanFilter: NSObject {
                                 var bestIndex = -1
                                 var bestCoord = [Double]()
                                 for c in 0..<resultCoordX.count {
-//                                    let diffX = Double(userX) - resultCoordX[c]
-//                                    let diffY = Double(userY) - resultCoordY[c]
                                     let diffX = Double(updatedX) - resultCoordX[c]
                                     let diffY = Double(updatedY) - resultCoordY[c]
                                     let distWithUser = sqrt(diffX*diffX + diffY*diffY)
@@ -411,8 +408,6 @@ public class OlympusKalmanFilter: NSObject {
                     
                     outputResult.x = updatedX
                     outputResult.y = updatedY
-//                    outputResult.x = pathMatchingResult.xyhs[0]*0.5 + updatedX*0.5
-//                    outputResult.y = pathMatchingResult.xyhs[1]*0.5 + updatedY*0.5
                     if (pathMatchingResult.0) { outputResult.absolute_heading = compensateHeading(heading: pathMatchingResult.xyhs[2]) }
                 }
                 initPathTrajMatchingInfo()
@@ -420,7 +415,7 @@ public class OlympusKalmanFilter: NSObject {
             
             if (!isDidPathTrajMatching) {
                 // Path-Traj Matching을 안했으면
-                let limitationResult = OlympusPathMatchingCalculator.shared.getTimeUpdateLimitation(level: outputResult.level_name, mode: mode)
+                let limitationResult = OlympusPathMatchingCalculator.shared.getTimeUpdateLimitation(level: levelName, mode: mode)
                 if (limitationResult.limitType == .Y_LIMIT) {
                     if (outputResult.y < limitationResult.limitValues[0]) {
                         outputResult.y = limitationResult.limitValues[0]
@@ -437,7 +432,7 @@ public class OlympusKalmanFilter: NSObject {
             }
         } else {
             let drBufferStraightResult = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_HEADING_CORR_NUM_IDX, condition: 10.0)
-            print(getLocalTimeString() + " , (Olympus) ErrorChecking 0-0 : index = \(unitDRInfoBuffer[unitDRInfoBuffer.count-1].index) , level_name = \(outputResult.level_name)")
+//            print(getLocalTimeString() + " , (Olympus) ErrorChecking 0-0 : index = \(unitDRInfoBuffer[unitDRInfoBuffer.count-1].index) , level_name = \(outputResult.level_name)")
             let isDrStraight: Bool = levelName == "B0" ? false : drBufferStraightResult.0
             let pathMatchingResult =  OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, PADDING_VALUES: PADDING_VALUES)
             if (pathMatchingResult.isSuccess) {
@@ -462,9 +457,9 @@ public class OlympusKalmanFilter: NSObject {
                 outputResult.y = (pathMatchingResult.1[1]*0.2 + updatedY*0.8)
                 outputResult.absolute_heading = compensateHeading(heading: updatedHeading)
             }
-            print(getLocalTimeString() + " , (Olympus) ErrorChecking 0-2 : index = \(unitDRInfoBuffer[unitDRInfoBuffer.count-1].index) , x = \(outputResult.x) , y = \(outputResult.y) , h = \(outputResult.absolute_heading) // isDrStraight = \(isDrStraight) // isPm = \(pathMatchingResult.isSuccess)")
+//            print(getLocalTimeString() + " , (Olympus) ErrorChecking 0-2 : index = \(unitDRInfoBuffer[unitDRInfoBuffer.count-1].index) , x = \(outputResult.x) , y = \(outputResult.y) , h = \(outputResult.absolute_heading) // isDrStraight = \(isDrStraight) // isPm = \(pathMatchingResult.isSuccess)")
             // DR
-            let limitationResult = OlympusPathMatchingCalculator.shared.getTimeUpdateLimitation(level: outputResult.level_name, mode: mode)
+            let limitationResult = OlympusPathMatchingCalculator.shared.getTimeUpdateLimitation(level: levelName, mode: mode)
             if (limitationResult.limitType == .Y_LIMIT) {
 //                print("(Link Info) : Y Limit // before = \(outputResult.x) , \(outputResult.y)")
                 if (outputResult.y < limitationResult.limitValues[0]) {
@@ -487,7 +482,7 @@ public class OlympusKalmanFilter: NSObject {
         }
         
         tuResult = outputResult
-        print(getLocalTimeString() + " , (Olympus) ErrorChecking 0-3 : index = \(unitDRInfoBuffer[unitDRInfoBuffer.count-1].index) , x = \(outputResult.x) , y = \(outputResult.y) , h = \(outputResult.absolute_heading)")
+//        print(getLocalTimeString() + " , (Olympus) ErrorChecking 0-3 : index = \(unitDRInfoBuffer[unitDRInfoBuffer.count-1].index) , x = \(outputResult.x) , y = \(outputResult.y) , h = \(outputResult.absolute_heading)")
         kalmanP += kalmanQ
         headingKalmanP += headingKalmanQ
         muFlag = true
@@ -525,10 +520,10 @@ public class OlympusKalmanFilter: NSObject {
         let absoluteChanges = angleChanges.map { abs($0) }
         let maxChange = absoluteChanges.max() ?? 0
         
-        print(getLocalTimeString() + " , (Olympus) Turn Type : angleChanges = \(angleChanges)")
-        print(getLocalTimeString() + " , (Olympus) Turn Type : absoluteChanges = \(absoluteChanges)")
-        print(getLocalTimeString() + " , (Olympus) Turn Type : maxChange = \(maxChange)")
-        print(getLocalTimeString() + " , (Olympus) Turn Type : turnCount = \(turnCount)")
+//        print(getLocalTimeString() + " , (Olympus) Turn Type : angleChanges = \(angleChanges)")
+//        print(getLocalTimeString() + " , (Olympus) Turn Type : absoluteChanges = \(absoluteChanges)")
+//        print(getLocalTimeString() + " , (Olympus) Turn Type : maxChange = \(maxChange)")
+//        print(getLocalTimeString() + " , (Olympus) Turn Type : turnCount = \(turnCount)")
         
         if (turnCount >= 1) || (maxChange > 55 && maxChange < 125) {
             return 0
