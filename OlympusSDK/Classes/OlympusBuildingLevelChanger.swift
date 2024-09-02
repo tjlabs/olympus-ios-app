@@ -32,7 +32,7 @@ public class OlympusBuildingLevelChanger {
     public var phase2Direction: [Int] = []
     public var preOutputMobileTime: Int = 0
     
-    public var sectorInfoLevelChange = [String: SectorInfoLevelChange]()
+    public var sectorDRModeArea = [String: SectorDRModeArea]()
     
     var trajEditedObserver: Any!
     
@@ -48,7 +48,7 @@ public class OlympusBuildingLevelChanger {
         self.phase2Direction = []
         self.preOutputMobileTime = 0
         
-        self.sectorInfoLevelChange = [String: SectorInfoLevelChange]()
+        self.sectorDRModeArea = [String: SectorDRModeArea]()
     }
     
     func accumulateOsrDistance(unitLength: Double, isGetFirstResponse: Bool, mode: String, result: FineLocationTrackingResult) {
@@ -337,35 +337,66 @@ public class OlympusBuildingLevelChanger {
         return result
     }
     
-    public func setSectorInfoLevelChange() {
-        var area_number = 1
-        var area_bounds: [Double] = [230, 390, 260, 445]
-        var area_direction: Double = 0
-        var area_nodes = [AreaNode(node_number: 301, center_coord: [259, 420], direction_type: "D"), AreaNode(node_number: 8, center_coord: [240, 401], direction_type: "U")]
-        
-        var key = "COEX_B2_\(area_number)"
-        self.sectorInfoLevelChange[key] = SectorInfoLevelChange(area_number: area_number, area_bounds: area_bounds, area_direction: area_direction, area_nodes: area_nodes)
-        
-        area_number = 1
-        area_bounds = [230, 400, 260, 430]
-        area_direction = 0
-        area_nodes = [AreaNode(node_number: 205, center_coord: [257, 415], direction_type: "D"), AreaNode(node_number: 15, center_coord: [250, 402], direction_type: "U")]
-        
-        key = "COEX_B3_\(area_number)"
-        self.sectorInfoLevelChange[key] = SectorInfoLevelChange(area_number: area_number, area_bounds: area_bounds, area_direction: area_direction, area_nodes: area_nodes)
-        
-        area_number = 1
-        area_bounds = [206, 370, 262, 450]
-        area_direction = 0
-        area_nodes = [AreaNode(node_number: 205, center_coord: [257, 415], direction_type: "D"), AreaNode(node_number: 15, center_coord: [250, 402], direction_type: "U")]
-        
-        key = "COEX_B0_\(area_number)"
-        self.sectorInfoLevelChange[key] = SectorInfoLevelChange(area_number: area_number, area_bounds: area_bounds, area_direction: area_direction, area_nodes: area_nodes)
+    public func setSectorDRModeArea(building: String, level: String, drModeAreaList: [SectorDRModeArea]) {
+        for info in drModeAreaList {
+            let key = "\(building)_\(level)_\(info.area_number)"
+            self.sectorDRModeArea[key] = SectorDRModeArea(area_number: info.area_number, area_bounds: info.area_bounds, area_direction: info.area_direction, area_nodes: info.area_nodes)
+            print(getLocalTimeString() + " , (Olympus) setSectorDRModeArea : key = \(key) , value = \(self.sectorDRModeArea[key])")
+        }
+//        var area_number = 1
+//        var area_bounds: [Double] = [230, 390, 260, 445]
+//        var area_direction: Double = 0
+//        var area_nodes = [DRModeAreaNode(node_number: 301, center_coord: [259, 420], direction_type: "D"), DRModeAreaNode(node_number: 8, center_coord: [240, 401], direction_type: "U")]
+//        
+//        var key = "COEX_B2_\(area_number)"
+//        self.sectorDRModeArea[key] = SectorDRModeArea(area_number: area_number, area_bounds: area_bounds, area_direction: area_direction, area_nodes: area_nodes)
+//        
+//        area_number = 1
+//        area_bounds = [230, 400, 260, 430]
+//        area_direction = 0
+//        area_nodes = [DRModeAreaNode(node_number: 205, center_coord: [257, 415], direction_type: "D"), DRModeAreaNode(node_number: 15, center_coord: [250, 402], direction_type: "U")]
+//        
+//        key = "COEX_B3_\(area_number)"
+//        self.sectorDRModeArea[key] = SectorDRModeArea(area_number: area_number, area_bounds: area_bounds, area_direction: area_direction, area_nodes: area_nodes)
+//        
+//        area_number = 1
+//        area_bounds = [206, 370, 262, 450]
+//        area_direction = 0
+//        area_nodes = [DRModeAreaNode(node_number: 205, center_coord: [257, 415], direction_type: "D"), DRModeAreaNode(node_number: 15, center_coord: [250, 402], direction_type: "U")]
+//        
+//        key = "COEX_B0_\(area_number)"
+//        self.sectorDRModeArea[key] = SectorDRModeArea(area_number: area_number, area_bounds: area_bounds, area_direction: area_direction, area_nodes: area_nodes)
     }
     
-    public func checkInSectorLevelChange(fltResult: FineLocationTrackingFromServer, passedNodeInfo: PassedNodeInfo) -> Bool {
+//    public func setSectorDRModeArea() {
+//        var area_number = 1
+//        var area_bounds: [Double] = [230, 390, 260, 445]
+//        var area_direction: Double = 0
+//        var area_nodes = [DRModeAreaNode(node_number: 301, center_coord: [259, 420], direction_type: "D"), DRModeAreaNode(node_number: 8, center_coord: [240, 401], direction_type: "U")]
+//        
+//        var key = "COEX_B2_\(area_number)"
+//        self.sectorDRModeArea[key] = SectorDRModeArea(area_number: area_number, area_bounds: area_bounds, area_direction: area_direction, area_nodes: area_nodes)
+//        
+//        area_number = 1
+//        area_bounds = [230, 400, 260, 430]
+//        area_direction = 0
+//        area_nodes = [DRModeAreaNode(node_number: 205, center_coord: [257, 415], direction_type: "D"), DRModeAreaNode(node_number: 15, center_coord: [250, 402], direction_type: "U")]
+//        
+//        key = "COEX_B3_\(area_number)"
+//        self.sectorDRModeArea[key] = SectorDRModeArea(area_number: area_number, area_bounds: area_bounds, area_direction: area_direction, area_nodes: area_nodes)
+//        
+//        area_number = 1
+//        area_bounds = [206, 370, 262, 450]
+//        area_direction = 0
+//        area_nodes = [DRModeAreaNode(node_number: 205, center_coord: [257, 415], direction_type: "D"), DRModeAreaNode(node_number: 15, center_coord: [250, 402], direction_type: "U")]
+//        
+//        key = "COEX_B0_\(area_number)"
+//        self.sectorDRModeArea[key] = SectorDRModeArea(area_number: area_number, area_bounds: area_bounds, area_direction: area_direction, area_nodes: area_nodes)
+//    }
+    
+    public func checkInSectorDRModeArea(fltResult: FineLocationTrackingFromServer, passedNodeInfo: PassedNodeInfo) -> Bool {
         let currentLevel = "_\(fltResult.level_name)_"
-        for (key, value) in self.sectorInfoLevelChange {
+        for (key, value) in self.sectorDRModeArea {
             if key.contains(currentLevel) {
 //                print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (In) : coord = \(fltResult.x) , \(fltResult.y) , \(fltResult.absolute_heading)")
                 if (value.area_bounds[0] <= fltResult.x && fltResult.x <= value.area_bounds[2]) && (value.area_bounds[1] <= fltResult.y && fltResult.y <= value.area_bounds[3]) {
@@ -391,9 +422,13 @@ public class OlympusBuildingLevelChanger {
         return false
     }
     
-    public func checkOutSectorLevelChange(fltResult: FineLocationTrackingFromServer) -> Bool {
+    public func checkOutSectorDRModeArea(fltResult: FineLocationTrackingFromServer) -> Bool {
+        if fltResult.level_name == "B0" {
+            return true
+        }
+        
         let currentLevel = "_\(fltResult.level_name)_"
-        for (key, value) in self.sectorInfoLevelChange {
+        for (key, value) in self.sectorDRModeArea {
             if key.contains(currentLevel) {
 //                print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (Out) : coord = \(fltResult.x) , \(fltResult.y) , \(fltResult.absolute_heading)")
                 if (value.area_bounds[0] <= fltResult.x && fltResult.x <= value.area_bounds[2]) && (value.area_bounds[1] <= fltResult.y && fltResult.y <= value.area_bounds[3]) {

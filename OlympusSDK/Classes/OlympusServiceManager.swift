@@ -498,10 +498,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 let entranceArea = element.geofence.entrance_area
                 let entranceMatcingArea = element.geofence.entrance_matching_area
                 let levelChangeArea = element.geofence.level_change_area
+                let drModeArea = element.geofence.dr_mode_area
                 
                 if !entranceArea.isEmpty { OlympusPathMatchingCalculator.shared.EntranceArea[key] = entranceArea }
                 if !entranceMatcingArea.isEmpty { OlympusPathMatchingCalculator.shared.EntranceMatchingArea[key] = entranceMatcingArea }
                 if !levelChangeArea.isEmpty { OlympusPathMatchingCalculator.shared.LevelChangeArea[key] = levelChangeArea }
+                if !drModeArea.isEmpty { buildingLevelChanger.setSectorDRModeArea(building: buildingName, level: levelName, drModeAreaList: drModeArea) }
                 
                 if (levelName == "B0") {
                     routeTracker.EntranceNumbers = element.entrance_list.count
@@ -511,6 +513,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         routeTracker.EntranceNetworkStatus[entranceKey] = entrance.network_status
                         routeTracker.EntranceVelocityScales[entranceKey] = entrance.scale
                         routeTracker.EntranceRouteVersion[entranceKey] = entrance.route_version
+                        routeTracker.setEntranceInnerWardInfo(key: entranceKey, sectorInfoInnermostWard: entrance.innermost_ward)
                         entranceOuterWards.append(entrance.outermost_ward_id)
                     }
                     stateManager.EntranceOuterWards = entranceOuterWards
@@ -527,8 +530,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         // Path-Pixel 버전 확인
         OlympusPathMatchingCalculator.shared.loadPathPixel(sector_id: sector_id, PathPixelVersion: OlympusPathMatchingCalculator.shared.PpVersion)
         
-        routeTracker.setEntranceInnerWardInfo()
-        buildingLevelChanger.setSectorInfoLevelChange()
+//        routeTracker.setEntranceInnerWardInfo()
+//        buildingLevelChanger.setSectorDRModeArea()
     }
     
     
@@ -2140,9 +2143,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             stackUserMaskPathTrajMatching(data: data)
             
             if !self.isDRMode {
-                self.isDRMode = buildingLevelChanger.checkInSectorLevelChange(fltResult: result, passedNodeInfo: OlympusPathMatchingCalculator.shared.currentPassedNodeInfo)
+                self.isDRMode = buildingLevelChanger.checkInSectorDRModeArea(fltResult: result, passedNodeInfo: OlympusPathMatchingCalculator.shared.currentPassedNodeInfo)
             } else {
-                self.isDRMode = buildingLevelChanger.checkOutSectorLevelChange(fltResult: result)
+                self.isDRMode = buildingLevelChanger.checkOutSectorDRModeArea(fltResult: result)
             }
             
             if (isStableMode) {

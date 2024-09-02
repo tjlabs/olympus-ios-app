@@ -4,18 +4,18 @@ let NRF_UUID_SERVICE: String          = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E";
 let NRF_UUID_CHAR_READ : String       = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E";
 let NRF_UUID_CHAR_WRITE: String       = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E";
 let NI_UUID_SERVICE: String           = "00001530-1212-efde-1523-785feabcd123";
-let TJLABS_UUID: String               = "0000FEAA-0000-1000-8000-00805f9b34fb";
+let TJLABS_WARD_UUID: String          = "0000FEAA-0000-1000-8000-00805f9b34fb";
 
 enum BLEScanOption: Int {
     case Foreground = 1
     case Background
 }
 
-let UUIDService = CBUUID(string: NRF_UUID_SERVICE)
-let UUIDRead    = CBUUID(string: NRF_UUID_CHAR_READ)
-let UUIDWrite   = CBUUID(string: NRF_UUID_CHAR_WRITE)
-let NIService   = CBUUID(string: NI_UUID_SERVICE)
-let digit: Double = pow(10, 2)
+let UUIDService    = CBUUID(string: NRF_UUID_SERVICE)
+let UUIDRead       = CBUUID(string: NRF_UUID_CHAR_READ)
+let UUIDWrite      = CBUUID(string: NRF_UUID_CHAR_WRITE)
+let NIService      = CBUUID(string: NI_UUID_SERVICE)
+let digit: Double  = pow(10, 2)
 
 class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     var centralManager: CBCentralManager!
@@ -49,7 +49,7 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
     
     var baseUUID: String = "-0000-1000-8000-00805f9b34fb"
     
-    let oneServiceUUID   = CBUUID(string: TJLABS_UUID)
+    let oneServiceUUID   = CBUUID(string: TJLABS_WARD_UUID)
     
     var bleDictionary = [String: [[Double]]]()
     var bleDiscoveredTime: Double = 0
@@ -142,28 +142,25 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
                         print(getLocalTimeString() + " , (Olympus) Error : BleManager \(error)")
                     }
                 }
+            } else if bleName.contains("NI-") {
+//                print(getLocalTimeString() + " , (Olympus) BLE : name = \(bleName) , rssi = \(RSSI.intValue) , uuid = \(peripheral.identifier.uuidString)")
             }
         }
     }
     
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         print("Failed to connect to \(peripheral).(\(error!.localizedDescription))")
-        
         self.connected = false
-        
         centralManager.cancelPeripheralConnection(peripheral)
     }
     
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        
         self.discoveredPeripheral.delegate = self
         self.connected = true
         
         var userInfo = [String:String]()
         userInfo["Identifier"] = peripheral.identifier.uuidString
-        
         NotificationCenter.default.post(name: .deviceConnected, object: nil, userInfo: userInfo)
-        
         discoveredPeripheral.discoverServices([UUIDService])
     }
     
@@ -171,7 +168,6 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         if let error = error {
             print("Error discovering services: \(error.localizedDescription)")
-            
             return
         }
         
@@ -189,7 +185,6 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
         
         for characteristic in (service.characteristics)! {
             if characteristic.uuid.isEqual(UUIDRead) {
-                
                 readCharacteristic = characteristic
                 if readCharacteristic!.isNotifying != true {
                     discoveredPeripheral.setNotifyValue(true, for: readCharacteristic!)
@@ -197,14 +192,10 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
                 }
             }
             if characteristic.uuid.isEqual(UUIDWrite) {
-                
                 writeCharacteristic = characteristic
-                
                 var userInfo = [String:String]()
                 userInfo["Identifier"] = peripheral.identifier.uuidString
-                
                 NotificationCenter.default.post(name: .deviceReady, object: nil, userInfo: userInfo)
-                
                 isDeviceReady = true
             }
             
@@ -236,7 +227,8 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
         }
         
         if bluetoothReady {
-            self.centralManager.scanForPeripherals(withServices: [oneServiceUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey : NSNumber(value: true as Bool)])
+//            self.centralManager.scanForPeripherals(withServices: [oneServiceUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey : NSNumber(value: true as Bool)])
+            self.centralManager.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey : NSNumber(value: true as Bool)])
             self.isScanning = true
             
             NotificationCenter.default.post(name: .startScan, object: nil)

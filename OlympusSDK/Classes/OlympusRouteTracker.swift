@@ -27,26 +27,31 @@ public class OlympusRouteTracker {
         self.currentEntranceLength = 0
     }
     
-    public func setEntranceInnerWardInfo() {
-        self.EntranceInnerWardID["COEX_B0_1"] = "TJ-00CB-00000320-0000"
-        self.EntranceInnerWardRSSI["COEX_B0_1"] = -80
-        self.EntranceInnerWardCoord["COEX_B0_1"] = [252, 70, 90]
+    public func setEntranceInnerWardInfo(key: String, sectorInfoInnermostWard: SectorInfoInnermostWard) {
+        self.EntranceInnerWardID[key] = sectorInfoInnermostWard.ward_id
+        self.EntranceInnerWardRSSI[key] = sectorInfoInnermostWard.ward_rssi
+        self.EntranceInnerWardCoord[key] = sectorInfoInnermostWard.ward_coord + sectorInfoInnermostWard.ward_direction
+        print(getLocalTimeString() + " , (Olympus) setEntranceInnerWardInfo : key = \(key) , ID = \(EntranceInnerWardID[key]) , RSSI = \(EntranceInnerWardRSSI[key]) , XYH = \(EntranceInnerWardCoord[key])")
         
-        self.EntranceInnerWardID["COEX_B0_2"] = "TJ-00CB-00000323-0000"
-        self.EntranceInnerWardRSSI["COEX_B0_2"] = -80
-        self.EntranceInnerWardCoord["COEX_B0_2"] = [250, 180, 90]
-        
-        self.EntranceInnerWardID["COEX_B0_3"] = "TJ-00CB-00000344-0000"
-        self.EntranceInnerWardRSSI["COEX_B0_3"] = -72
-        self.EntranceInnerWardCoord["COEX_B0_3"] = [291, 290, 90]
-        
-        self.EntranceInnerWardID["COEX_B0_4"] = "TJ-00CB-000002A4-0000"
-        self.EntranceInnerWardRSSI["COEX_B0_4"] = -80
-        self.EntranceInnerWardCoord["COEX_B0_4"] = [248, 442, 180]
-        
-        self.EntranceInnerWardID["COEX_B0_5"] = "TJ-00CB-000002B1-0000"
-        self.EntranceInnerWardRSSI["COEX_B0_5"] = -80
-        self.EntranceInnerWardCoord["COEX_B0_5"] = [59, 350, 270]
+//        self.EntranceInnerWardID["COEX_B0_1"] = "TJ-00CB-00000320-0000"
+//        self.EntranceInnerWardRSSI["COEX_B0_1"] = -80
+//        self.EntranceInnerWardCoord["COEX_B0_1"] = [252, 70, 90]
+//        
+//        self.EntranceInnerWardID["COEX_B0_2"] = "TJ-00CB-00000323-0000"
+//        self.EntranceInnerWardRSSI["COEX_B0_2"] = -80
+//        self.EntranceInnerWardCoord["COEX_B0_2"] = [250, 180, 90]
+//        
+//        self.EntranceInnerWardID["COEX_B0_3"] = "TJ-00CB-00000344-0000"
+//        self.EntranceInnerWardRSSI["COEX_B0_3"] = -72
+//        self.EntranceInnerWardCoord["COEX_B0_3"] = [291, 290, 90]
+//        
+//        self.EntranceInnerWardID["COEX_B0_4"] = "TJ-00CB-000002A4-0000"
+//        self.EntranceInnerWardRSSI["COEX_B0_4"] = -80
+//        self.EntranceInnerWardCoord["COEX_B0_4"] = [248, 442, 180]
+//        
+//        self.EntranceInnerWardID["COEX_B0_5"] = "TJ-00CB-000002B1-0000"
+//        self.EntranceInnerWardRSSI["COEX_B0_5"] = -80
+//        self.EntranceInnerWardCoord["COEX_B0_5"] = [59, 350, 270]
     }
 
     private func parseRoute(data: String) -> ([String], [[Double]]) {
@@ -64,8 +69,6 @@ public class OlympusRouteTracker {
                 entranceArray.append(entrance)
             }
         }
-        
-        
         return (entracneLevelArray, entranceArray)
     }
     
