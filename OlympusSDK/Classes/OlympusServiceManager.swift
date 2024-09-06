@@ -318,6 +318,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             self.user_id = user_id
                             let sectorInput = SectorInput(sector_id: sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM)
                             OlympusNetworkManager.shared.postUserSector(url: USER_SECTOR_URL, input: sectorInput, completion: { [self] statusCode, returnedString in
+                                print(getLocalTimeString() + " , (Olympus) Sector : code \(statusCode) , result = \(returnedString)")
                                 if (statusCode == 200) {
                                     let sectorInfoFromServer = jsonToSectorInfoFromServer(jsonString: returnedString)
                                     if (sectorInfoFromServer.0) {
@@ -498,12 +499,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 let entranceArea = element.geofence.entrance_area
                 let entranceMatcingArea = element.geofence.entrance_matching_area
                 let levelChangeArea = element.geofence.level_change_area
-                let drModeArea = element.geofence.dr_mode_area
+                let drModeAreas = element.geofence.dr_mode_areas
                 
                 if !entranceArea.isEmpty { OlympusPathMatchingCalculator.shared.EntranceArea[key] = entranceArea }
                 if !entranceMatcingArea.isEmpty { OlympusPathMatchingCalculator.shared.EntranceMatchingArea[key] = entranceMatcingArea }
                 if !levelChangeArea.isEmpty { OlympusPathMatchingCalculator.shared.LevelChangeArea[key] = levelChangeArea }
-                if !drModeArea.isEmpty { buildingLevelChanger.setSectorDRModeArea(building: buildingName, level: levelName, drModeAreaList: drModeArea) }
+                if !drModeAreas.isEmpty { buildingLevelChanger.setSectorDRModeArea(building: buildingName, level: levelName, drModeAreaList: drModeAreas) }
                 
                 if (levelName == "B0") {
                     routeTracker.EntranceNumbers = element.entrance_list.count
@@ -2145,7 +2146,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             if !self.isDRMode {
                 self.isDRMode = buildingLevelChanger.checkInSectorDRModeArea(fltResult: result, passedNodeInfo: OlympusPathMatchingCalculator.shared.currentPassedNodeInfo)
             } else {
-                self.isDRMode = buildingLevelChanger.checkOutSectorDRModeArea(fltResult: result)
+                self.isDRMode = buildingLevelChanger.checkOutSectorDRModeArea(fltResult: result, anchorNodeInfo: OlympusPathMatchingCalculator.shared.getCurrentAnchorNodeInfo())
             }
             
             if (isStableMode) {

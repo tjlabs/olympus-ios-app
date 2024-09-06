@@ -339,8 +339,8 @@ public class OlympusBuildingLevelChanger {
     
     public func setSectorDRModeArea(building: String, level: String, drModeAreaList: [SectorDRModeArea]) {
         for info in drModeAreaList {
-            let key = "\(building)_\(level)_\(info.area_number)"
-            self.sectorDRModeArea[key] = SectorDRModeArea(area_number: info.area_number, area_bounds: info.area_bounds, area_direction: info.area_direction, area_nodes: info.area_nodes)
+            let key = "\(building)_\(level)_\(info.number)"
+            self.sectorDRModeArea[key] = SectorDRModeArea(number: info.number, range: info.range, direction: info.direction, nodes: info.nodes)
             print(getLocalTimeString() + " , (Olympus) setSectorDRModeArea : key = \(key) , value = \(self.sectorDRModeArea[key])")
         }
 //        var area_number = 1
@@ -399,13 +399,13 @@ public class OlympusBuildingLevelChanger {
         for (key, value) in self.sectorDRModeArea {
             if key.contains(currentLevel) {
 //                print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (In) : coord = \(fltResult.x) , \(fltResult.y) , \(fltResult.absolute_heading)")
-                if (value.area_bounds[0] <= fltResult.x && fltResult.x <= value.area_bounds[2]) && (value.area_bounds[1] <= fltResult.y && fltResult.y <= value.area_bounds[3]) {
+                if (value.range[0] <= fltResult.x && fltResult.x <= value.range[2]) && (value.range[1] <= fltResult.y && fltResult.y <= value.range[3]) {
                     // 사용자 좌표가 영역 안에 존재
-                    if value.area_direction == fltResult.absolute_heading {
+                    if value.direction == fltResult.absolute_heading {
                         // 사용자 방향이 일치함
-                        for n in value.area_nodes {
+                        for n in value.nodes {
                             // passedNode와 매칭 검사
-                            if n.node_number == passedNodeInfo.nodeNumber {
+                            if n.number == passedNodeInfo.nodeNumber {
                                 // OSR 동작 시작
                                 // 방향 결정 "U" or "D" or "N"
                                 return true
@@ -422,7 +422,7 @@ public class OlympusBuildingLevelChanger {
         return false
     }
     
-    public func checkOutSectorDRModeArea(fltResult: FineLocationTrackingFromServer) -> Bool {
+    public func checkOutSectorDRModeArea(fltResult: FineLocationTrackingFromServer, anchorNodeInfo: PassedNodeInfo) -> Bool {
         if fltResult.level_name == "B0" {
             return true
         }
@@ -431,7 +431,8 @@ public class OlympusBuildingLevelChanger {
         for (key, value) in self.sectorDRModeArea {
             if key.contains(currentLevel) {
 //                print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (Out) : coord = \(fltResult.x) , \(fltResult.y) , \(fltResult.absolute_heading)")
-                if (value.area_bounds[0] <= fltResult.x && fltResult.x <= value.area_bounds[2]) && (value.area_bounds[1] <= fltResult.y && fltResult.y <= value.area_bounds[3]) {
+                if (value.range[0] <= anchorNodeInfo.nodeCoord[0] && anchorNodeInfo.nodeCoord[0] <= value.range[2]) && (value.range[1] <= anchorNodeInfo.nodeCoord[1] && anchorNodeInfo.nodeCoord[1] <= value.range[3]) {
+//                if (value.range[0] <= fltResult.x && fltResult.x <= value.range[2]) && (value.range[1] <= fltResult.y && fltResult.y <= value.range[3]) {
                     return true
                 } else {
                     return false

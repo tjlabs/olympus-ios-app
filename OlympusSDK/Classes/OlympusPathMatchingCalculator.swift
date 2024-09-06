@@ -1562,6 +1562,10 @@ public class OlympusPathMatchingCalculator {
         print(getLocalTimeString() + " , (Olympus) Node Find : Anchor Node Recover = \(self.anchorNode)")
     }
     
+    public func getCurrentAnchorNodeInfo() -> PassedNodeInfo {
+        return self.anchorNode
+    }
+    
     public func controlUVDforAccBias(unitDRInfo: UnitDRInfo) {
         self.unitDRInfoBuffer.append(unitDRInfo)
 //        if (self.unitDRInfoBuffer.count > 30) {
