@@ -2173,7 +2173,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 } else {
                     if self.isDRMode {
                         if(checkIsBadCase(userMaskBuffer: self.userMaskBuffer)) {
-                            self.phaseBreakInPhase4(fltResult: result, isUpdatePhaseBreakResult: false)
+                            self.phaseBreakInPhase4(fltResult: result, isUpdatePhaseBreakResult: true)
                         }
                     }
                 }

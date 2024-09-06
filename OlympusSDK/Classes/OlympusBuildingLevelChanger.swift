@@ -434,24 +434,26 @@ public class OlympusBuildingLevelChanger {
 //                if (value.range[0] <= anchorNodeInfo.nodeCoord[0] && anchorNodeInfo.nodeCoord[0] <= value.range[2]) && (value.range[1] <= anchorNodeInfo.nodeCoord[1] && anchorNodeInfo.nodeCoord[1] <= value.range[3]) {
                 if (value.range[0] <= fltResult.x && fltResult.x <= value.range[2]) && (value.range[1] <= fltResult.y && fltResult.y <= value.range[3]) {
                     isInArea = true
-                    if anchorNodeInfo.nodeCoord.isEmpty {
-                        return false
-                    } else {
-                        if (value.range[0] <= anchorNodeInfo.nodeCoord[0] && anchorNodeInfo.nodeCoord[0] <= value.range[2]) && (value.range[1] <= anchorNodeInfo.nodeCoord[1] && anchorNodeInfo.nodeCoord[1] <= value.range[3]) {
-                            isAnchorNodeInArea = true
-                        }
+                }
+                
+                if anchorNodeInfo.nodeCoord.isEmpty {
+                    return false
+                } else {
+                    if (value.range[0] <= anchorNodeInfo.nodeCoord[0] && anchorNodeInfo.nodeCoord[0] <= value.range[2]) && (value.range[1] <= anchorNodeInfo.nodeCoord[1] && anchorNodeInfo.nodeCoord[1] <= value.range[3]) {
+                        isAnchorNodeInArea = true
                     }
                 }
             }
         }
         
+        print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (Out) 1 : isInArea = \(isInArea) , isAnchorNodeInArea = \(isAnchorNodeInArea)")
         if !isInArea {
             if isAnchorNodeInArea {
                isInArea = true
             }
         }
         
-        print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (Out) : isInArea = \(isInArea) , isAnchorNodeInArea = \(isAnchorNodeInArea)")
+        print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (Out) 2 : isInArea = \(isInArea) , isAnchorNodeInArea = \(isAnchorNodeInArea)")
         
         return isInArea
     }
