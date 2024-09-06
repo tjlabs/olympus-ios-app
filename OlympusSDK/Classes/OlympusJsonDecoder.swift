@@ -5,11 +5,9 @@ public func jsonToSectorInfoFromServer(jsonString: String) -> (Bool, SectorInfoF
     if let jsonData = jsonString.data(using: .utf8) {
         do {
             let decodedData: SectorInfoFromServer = try JSONDecoder().decode(SectorInfoFromServer.self, from: jsonData)
-            
             return (true, decodedData)
         } catch {
             print("Error decoding JSON: \(error)")
-            
             return (false, result)
         }
     } else {
@@ -23,11 +21,9 @@ public func jsonToRcInfoFromServer(jsonString: String) -> (Bool, RcInfoFromServe
     if let jsonData = jsonString.data(using: .utf8) {
         do {
             let decodedData: RcInfoFromServer = try JSONDecoder().decode(RcInfoFromServer.self, from: jsonData)
-            
             return (true, decodedData)
         } catch {
             print("Error decoding JSON: \(error)")
-            
             return (false, result)
         }
     } else {

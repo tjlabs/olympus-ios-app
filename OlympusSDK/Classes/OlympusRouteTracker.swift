@@ -28,9 +28,9 @@ public class OlympusRouteTracker {
     }
     
     public func setEntranceInnerWardInfo(key: String, sectorInfoInnermostWard: SectorInfoInnermostWard) {
-        self.EntranceInnerWardID[key] = sectorInfoInnermostWard.ward_id
-        self.EntranceInnerWardRSSI[key] = sectorInfoInnermostWard.ward_rssi
-        self.EntranceInnerWardCoord[key] = sectorInfoInnermostWard.ward_coord + sectorInfoInnermostWard.ward_direction
+        self.EntranceInnerWardID[key] = sectorInfoInnermostWard.id
+        self.EntranceInnerWardRSSI[key] = Double(sectorInfoInnermostWard.rss)
+        self.EntranceInnerWardCoord[key] = sectorInfoInnermostWard.pos + sectorInfoInnermostWard.direction
         print(getLocalTimeString() + " , (Olympus) setEntranceInnerWardInfo : key = \(key) , ID = \(EntranceInnerWardID[key]) , RSSI = \(EntranceInnerWardRSSI[key]) , XYH = \(EntranceInnerWardCoord[key])")
         
 //        self.EntranceInnerWardID["COEX_B0_1"] = "TJ-00CB-00000320-0000"

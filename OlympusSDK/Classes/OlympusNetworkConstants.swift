@@ -2,7 +2,9 @@ let TIMEOUT_VALUE_PUT: Double = 5.0
 let TIMEOUT_VALUE_POST: Double = 5.0
 
 let USER_SERVER_VERSION = "2024-06-12"
-let CALC_SERVER_VERSION = "2024-08-30"  // 07-08
+let USER_SECTOR_SERVER_VERSION = "2024-09-03"
+let CALC_FLT_SERVER_VERSION = "2024-08-30"  // 07-08
+let CALC_OSR_SERVER_VERSION = "2024-08-30"
 let REC_SERVER_VERSION = "2024-04-19"
 let BLACK_LIST_URL = "https://ap-northeast-2.client.olympus.tjlabs.dev/black"
 
@@ -56,7 +58,7 @@ public func setServerURL(region: String) {
     USER_CARD_URL = USER_URL + "/" + USER_SERVER_VERSION + "/card"
     USER_ORDER_URL = USER_URL + "/" + USER_SERVER_VERSION + "/order"
     USER_SCALE_URL = USER_URL + "/" + USER_SERVER_VERSION + "/scale"
-    USER_SECTOR_URL = USER_URL + "/" + USER_SERVER_VERSION + "/sector"
+    USER_SECTOR_URL = USER_URL + "/" + USER_SECTOR_SERVER_VERSION + "/sector"
     USER_RC_URL = USER_URL + "/" + USER_SERVER_VERSION + "/rc"
     
     REC_RFD_URL = REC_URL + "/" + REC_SERVER_VERSION + "/rf"
@@ -65,6 +67,6 @@ public func setServerURL(region: String) {
     REC_RESULT_URL  = REC_URL + "/" + REC_SERVER_VERSION + "/mr"
     REC_REPORT_URL  = REC_URL + "/" + REC_SERVER_VERSION + "/mt"
     
-    CALC_OSR_URL = CALC_URL + "/" + CALC_SERVER_VERSION + "/osr"
-    CALC_FLT_URL = CALC_URL + "/" + CALC_SERVER_VERSION + "/flt"
+    CALC_OSR_URL = CALC_URL + "/" + CALC_OSR_SERVER_VERSION + "/osr"
+    CALC_FLT_URL = CALC_URL + "/" + CALC_FLT_SERVER_VERSION + "/flt"
 }

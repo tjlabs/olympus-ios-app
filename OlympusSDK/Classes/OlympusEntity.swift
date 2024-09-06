@@ -175,7 +175,7 @@ public struct SectorInfoGeofence: Codable {
     let entrance_area: [[Double]]
     let entrance_matching_area: [[Double]]
     let level_change_area: [[Double]]
-    let dr_mode_area: [SectorDRModeArea]
+    let dr_mode_areas: [SectorDRModeArea]
 }
 
 //public struct SectorInfoEntrance: Codable {
@@ -196,22 +196,22 @@ public struct SectorInfoEntrance: Codable {
 }
 
 public struct SectorInfoInnermostWard: Codable {
-    let ward_id: String
-    let ward_rssi: Double
-    let ward_coord: [Double]
-    let ward_direction: Double
+    let id: String
+    let rss: Double
+    let pos: [Double]
+    let direction: Double
 }
 
 public struct SectorDRModeArea: Codable {
-    let area_number: Int
-    let area_bounds: [Double] // xMin yMin xMax yMax
-    let area_direction: Double
-    let area_nodes: [DRModeAreaNode]
+    let number: Int
+    let range: [Double] // xMin yMin xMax yMax
+    let direction: Double
+    let nodes: [DRModeAreaNode]
 }
   
 public struct DRModeAreaNode: Codable {
-    let node_number: Int
-    let center_coord: [Double]
+    let number: Int
+    let center_pos: [Double]
     let direction_type: String
 }
     
