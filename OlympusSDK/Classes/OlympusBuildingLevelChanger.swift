@@ -341,64 +341,15 @@ public class OlympusBuildingLevelChanger {
         for info in drModeAreaList {
             let key = "\(building)_\(level)_\(info.number)"
             self.sectorDRModeArea[key] = SectorDRModeArea(number: info.number, range: info.range, direction: info.direction, nodes: info.nodes)
-            print(getLocalTimeString() + " , (Olympus) setSectorDRModeArea : key = \(key) , value = \(self.sectorDRModeArea[key])")
+//            print(getLocalTimeString() + " , (Olympus) setSectorDRModeArea : key = \(key) , value = \(self.sectorDRModeArea[key])")
         }
-//        var area_number = 1
-//        var area_bounds: [Double] = [230, 390, 260, 445]
-//        var area_direction: Double = 0
-//        var area_nodes = [DRModeAreaNode(node_number: 301, center_coord: [259, 420], direction_type: "D"), DRModeAreaNode(node_number: 8, center_coord: [240, 401], direction_type: "U")]
-//        
-//        var key = "COEX_B2_\(area_number)"
-//        self.sectorDRModeArea[key] = SectorDRModeArea(area_number: area_number, area_bounds: area_bounds, area_direction: area_direction, area_nodes: area_nodes)
-//        
-//        area_number = 1
-//        area_bounds = [230, 400, 260, 430]
-//        area_direction = 0
-//        area_nodes = [DRModeAreaNode(node_number: 205, center_coord: [257, 415], direction_type: "D"), DRModeAreaNode(node_number: 15, center_coord: [250, 402], direction_type: "U")]
-//        
-//        key = "COEX_B3_\(area_number)"
-//        self.sectorDRModeArea[key] = SectorDRModeArea(area_number: area_number, area_bounds: area_bounds, area_direction: area_direction, area_nodes: area_nodes)
-//        
-//        area_number = 1
-//        area_bounds = [206, 370, 262, 450]
-//        area_direction = 0
-//        area_nodes = [DRModeAreaNode(node_number: 205, center_coord: [257, 415], direction_type: "D"), DRModeAreaNode(node_number: 15, center_coord: [250, 402], direction_type: "U")]
-//        
-//        key = "COEX_B0_\(area_number)"
-//        self.sectorDRModeArea[key] = SectorDRModeArea(area_number: area_number, area_bounds: area_bounds, area_direction: area_direction, area_nodes: area_nodes)
     }
-    
-//    public func setSectorDRModeArea() {
-//        var area_number = 1
-//        var area_bounds: [Double] = [230, 390, 260, 445]
-//        var area_direction: Double = 0
-//        var area_nodes = [DRModeAreaNode(node_number: 301, center_coord: [259, 420], direction_type: "D"), DRModeAreaNode(node_number: 8, center_coord: [240, 401], direction_type: "U")]
-//        
-//        var key = "COEX_B2_\(area_number)"
-//        self.sectorDRModeArea[key] = SectorDRModeArea(area_number: area_number, area_bounds: area_bounds, area_direction: area_direction, area_nodes: area_nodes)
-//        
-//        area_number = 1
-//        area_bounds = [230, 400, 260, 430]
-//        area_direction = 0
-//        area_nodes = [DRModeAreaNode(node_number: 205, center_coord: [257, 415], direction_type: "D"), DRModeAreaNode(node_number: 15, center_coord: [250, 402], direction_type: "U")]
-//        
-//        key = "COEX_B3_\(area_number)"
-//        self.sectorDRModeArea[key] = SectorDRModeArea(area_number: area_number, area_bounds: area_bounds, area_direction: area_direction, area_nodes: area_nodes)
-//        
-//        area_number = 1
-//        area_bounds = [206, 370, 262, 450]
-//        area_direction = 0
-//        area_nodes = [DRModeAreaNode(node_number: 205, center_coord: [257, 415], direction_type: "D"), DRModeAreaNode(node_number: 15, center_coord: [250, 402], direction_type: "U")]
-//        
-//        key = "COEX_B0_\(area_number)"
-//        self.sectorDRModeArea[key] = SectorDRModeArea(area_number: area_number, area_bounds: area_bounds, area_direction: area_direction, area_nodes: area_nodes)
-//    }
     
     public func checkInSectorDRModeArea(fltResult: FineLocationTrackingFromServer, passedNodeInfo: PassedNodeInfo) -> Bool {
         let currentLevel = "_\(fltResult.level_name)_"
         for (key, value) in self.sectorDRModeArea {
             if key.contains(currentLevel) {
-                print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (In) : coord = \(fltResult.x) , \(fltResult.y) , \(fltResult.absolute_heading)")
+//                print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (In) : coord = \(fltResult.x) , \(fltResult.y) , \(fltResult.absolute_heading)")
                 if (value.range[0] <= fltResult.x && fltResult.x <= value.range[2]) && (value.range[1] <= fltResult.y && fltResult.y <= value.range[3]) {
                     // 사용자 좌표가 영역 안에 존재
                     if value.direction == fltResult.absolute_heading {
@@ -422,7 +373,7 @@ public class OlympusBuildingLevelChanger {
         if fltResult.level_name == "B0" {
             return true
         }
-        print(getLocalTimeString() + " , (Olympus) checkOutSectorDRModeArea : anchorNode // num = \(anchorNodeInfo.nodeNumber) , coord = \(anchorNodeInfo.nodeCoord)")
+//        print(getLocalTimeString() + " , (Olympus) checkOutSectorDRModeArea : anchorNode // num = \(anchorNodeInfo.nodeNumber) , coord = \(anchorNodeInfo.nodeCoord)")
         
         var isInArea: Bool = false
         var isAnchorNodeInArea: Bool = false
@@ -430,8 +381,7 @@ public class OlympusBuildingLevelChanger {
         let currentLevel = "_\(fltResult.level_name)_"
         for (key, value) in self.sectorDRModeArea {
             if key.contains(currentLevel) {
-                print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (Out) : coord = \(fltResult.x) , \(fltResult.y) , \(fltResult.absolute_heading)")
-//                if (value.range[0] <= anchorNodeInfo.nodeCoord[0] && anchorNodeInfo.nodeCoord[0] <= value.range[2]) && (value.range[1] <= anchorNodeInfo.nodeCoord[1] && anchorNodeInfo.nodeCoord[1] <= value.range[3]) {
+//                print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (Out) : coord = \(fltResult.x) , \(fltResult.y) , \(fltResult.absolute_heading)")
                 if (value.range[0] <= fltResult.x && fltResult.x <= value.range[2]) && (value.range[1] <= fltResult.y && fltResult.y <= value.range[3]) {
                     isInArea = true
                 }
@@ -446,14 +396,14 @@ public class OlympusBuildingLevelChanger {
             }
         }
         
-        print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (Out) 1 : isInArea = \(isInArea) , isAnchorNodeInArea = \(isAnchorNodeInArea)")
+//        print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (Out) 1 : isInArea = \(isInArea) , isAnchorNodeInArea = \(isAnchorNodeInArea)")
         if !isInArea {
             if isAnchorNodeInArea {
                isInArea = true
             }
         }
         
-        print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (Out) 2 : isInArea = \(isInArea) , isAnchorNodeInArea = \(isAnchorNodeInArea)")
+//        print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (Out) 2 : isInArea = \(isInArea) , isAnchorNodeInArea = \(isAnchorNodeInArea)")
         
         return isInArea
     }

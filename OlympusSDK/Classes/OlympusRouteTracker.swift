@@ -31,7 +31,7 @@ public class OlympusRouteTracker {
         self.EntranceInnerWardID[key] = sectorInfoInnermostWard.id
         self.EntranceInnerWardRSSI[key] = Double(sectorInfoInnermostWard.rss)
         self.EntranceInnerWardCoord[key] = sectorInfoInnermostWard.pos + sectorInfoInnermostWard.direction
-        print(getLocalTimeString() + " , (Olympus) setEntranceInnerWardInfo : key = \(key) , ID = \(EntranceInnerWardID[key]) , RSSI = \(EntranceInnerWardRSSI[key]) , XYH = \(EntranceInnerWardCoord[key])")
+//        print(getLocalTimeString() + " , (Olympus) setEntranceInnerWardInfo : key = \(key) , ID = \(EntranceInnerWardID[key]) , RSSI = \(EntranceInnerWardRSSI[key]) , XYH = \(EntranceInnerWardCoord[key])")
         
 //        self.EntranceInnerWardID["COEX_B0_1"] = "TJ-00CB-00000320-0000"
 //        self.EntranceInnerWardRSSI["COEX_B0_1"] = -80

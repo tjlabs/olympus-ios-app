@@ -163,11 +163,11 @@ class OlympusConstants {
     static let COUNT_FOR_PHASE_BREAK_IN_PHASE2: Int = 7
     static let HEADING_BUFFER_SIZE: Int = 5
     static let REQUIRED_PATH_TRAJ_MATCHING_INDEX: Int = 3 // 5
-    static let SECTION_STRAIGHT_ANGLE: Double = 5 // degree
+    static let SECTION_STRAIGHT_ANGLE: Double = 10 // degree
     static let SAME_COORD_THRESHOLD: Int = 4
     static let STRAIGHT_SAME_COORD_THRESHOLD: Int = 6
     static let REQUIRED_SECTION_STRAIGHT_LENGTH: Double = 8
-    static let REQUIRED_SECTION_REQUEST_LENGTH: Double = 25 //25
+    static let REQUIRED_SECTION_REQUEST_LENGTH: Double = 25 // 25
     static let PIXEL_LENGTH_TO_FIND_NODE: Double = 20
     
     // Path-Matching

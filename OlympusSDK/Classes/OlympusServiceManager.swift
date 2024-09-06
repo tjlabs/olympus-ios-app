@@ -1491,16 +1491,26 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 copiedResult.x = propagatedResult[0]
                                 copiedResult.y = propagatedResult[1]
                                 
-                                if (resultPhase.0 == OlympusConstants.PHASE_3 || resultPhase.0 == OlympusConstants.PHASE_6) {
+//                                if (resultPhase.0 == OlympusConstants.PHASE_3 || resultPhase.0 == OlympusConstants.PHASE_6) {
+//                                    sectionController.setInitialAnchorTailIndex(value: unitDRInfoIndex)
+//                                    if (inputTrajLength > OlympusConstants.USER_TRAJECTORY_LENGTH*0.4 && fltInput.phase != OlympusConstants.PHASE_1 && self.runMode == OlympusConstants.MODE_DR) {
+//                                        copiedResult.absolute_heading = propagatedResult[2]
+//                                    }
+//                                    let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: copiedResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+//                                    currentBuilding = updatedResult.building_name
+//                                    currentLevel = updatedResult.level_name
+//                                    makeTemporalResult(input: updatedResult, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
+//                                    KF.refreshTuResult(xyh: [copiedResult.x, copiedResult.y, copiedResult.absolute_heading], inputPhase: fltInput.phase, inputTrajLength: inputTrajLength, mode: runMode)
+//                                }
+                                
+                                if (resultPhase.0 == OlympusConstants.PHASE_6) {
                                     sectionController.setInitialAnchorTailIndex(value: unitDRInfoIndex)
-                                    if (inputTrajLength > OlympusConstants.USER_TRAJECTORY_LENGTH*0.4 && fltInput.phase != OlympusConstants.PHASE_1 && self.runMode == OlympusConstants.MODE_DR) {
-                                        copiedResult.absolute_heading = propagatedResult[2]
-                                    }
+                                    copiedResult.absolute_heading = propagatedResult[2]
+                                    
                                     let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: copiedResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
                                     currentBuilding = updatedResult.building_name
                                     currentLevel = updatedResult.level_name
                                     makeTemporalResult(input: updatedResult, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
-                                    
                                     KF.refreshTuResult(xyh: [copiedResult.x, copiedResult.y, copiedResult.absolute_heading], inputPhase: fltInput.phase, inputTrajLength: inputTrajLength, mode: runMode)
                                 }
                             }

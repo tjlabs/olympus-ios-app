@@ -603,16 +603,40 @@ public class OlympusKalmanFilter: NSObject {
             if let idx = uvdIndexBuffer.firstIndex(of: fltResult.index) {
                 print(getLocalTimeString() + " , (Olympus) MU : curIndex = \(unitDRInfoBuffer[unitDRInfoBuffer.count-1].index) // serverIndex = \(fltResult.index)")
                 var isNeedUvdPropagation: Bool = false
-                if (mode == OlympusConstants.MODE_PDR) {
-                    let propagationResult = propagateUsingUvd(unitDRInfoBuffer: unitDRInfoBuffer, fltResult: fltResult)
-                    if (propagationResult.0) {
-                        dx = propagationResult.1[0]
-                        dy = propagationResult.1[1]
-                        dh = propagationResult.1[2]
-                        isNeedUvdPropagation = true
-                    } else {
-                        isNeedUvdPropagation = false
-                    }
+//                if (mode == OlympusConstants.MODE_PDR) {
+//                    let propagationResult = propagateUsingUvd(unitDRInfoBuffer: unitDRInfoBuffer, fltResult: fltResult)
+//                    if (propagationResult.0) {
+//                        dx = propagationResult.1[0]
+//                        dy = propagationResult.1[1]
+//                        dh = propagationResult.1[2]
+//                        isNeedUvdPropagation = true
+//                    } else {
+//                        isNeedUvdPropagation = false
+//                    }
+//                } else {
+//                    isNeedUvdPropagation = false
+//                }
+//                
+//                if (!isNeedUvdPropagation) {
+//                    dx = tuResultNow.x - tuResultBuffer[idx][0]
+//                    dy = tuResultNow.y - tuResultBuffer[idx][1]
+//                    tuResultNow.absolute_heading = compensateHeading(heading: tuResultNow.absolute_heading)
+//                    let tuBufferHeading = compensateHeading(heading: tuResultBuffer[idx][2])
+//                    
+//                    if (isNeedCalDhFromUvd) {
+//                        dh = uvdHeadingBuffer[uvdHeadingBuffer.count-1] - uvdHeadingBuffer[idx]
+//                    } else {
+//                        dh = tuResultNow.absolute_heading - tuBufferHeading
+//                    }
+//                }
+//                print(getLocalTimeString() + " , (Olympus) MU : isNeedUvdPropagation = \(isNeedUvdPropagation) , dx = \(dx) // dy = \(dy) // dh = \(dh)")
+                
+                let propagationResult = propagateUsingUvd(unitDRInfoBuffer: unitDRInfoBuffer, fltResult: fltResult)
+                if (propagationResult.0) {
+                    dx = propagationResult.1[0]
+                    dy = propagationResult.1[1]
+                    dh = propagationResult.1[2]
+                    isNeedUvdPropagation = true
                 } else {
                     isNeedUvdPropagation = false
                 }
@@ -630,6 +654,7 @@ public class OlympusKalmanFilter: NSObject {
                     }
                 }
                 print(getLocalTimeString() + " , (Olympus) MU : isNeedUvdPropagation = \(isNeedUvdPropagation) , dx = \(dx) // dy = \(dy) // dh = \(dh)")
+                
                 self.usedUvdIndex = idx
                 self.isNeedUvdIndexBufferClear = true
             } else {
