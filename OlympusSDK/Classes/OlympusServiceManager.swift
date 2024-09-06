@@ -318,7 +318,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             self.user_id = user_id
                             let sectorInput = SectorInput(sector_id: sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM)
                             OlympusNetworkManager.shared.postUserSector(url: USER_SECTOR_URL, input: sectorInput, completion: { [self] statusCode, returnedString in
-                                print(getLocalTimeString() + " , (Olympus) Sector : code \(statusCode) , result = \(returnedString)")
                                 if (statusCode == 200) {
                                     let sectorInfoFromServer = jsonToSectorInfoFromServer(jsonString: returnedString)
                                     if (sectorInfoFromServer.0) {
@@ -867,8 +866,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         KF.updateTuResult(x: tuResult.x, y: tuResult.y)
                     }
                 }
-                currentTuResult = tuResult
+                let isNeedAnchorNodeUpdate = sectionController.checkIsNeedAnchorNodeUpdate(userVelocity: data)
+                if (isNeedAnchorNodeUpdate) {
+                    OlympusPathMatchingCalculator.shared.updateAnchorNode(fltResult: tuResult, pathType: pathType, sectionNumber: sectionController.getSectionNumber())
+                }
                 
+                currentTuResult = tuResult
                 KF.updateTuResultNow(result: currentTuResult)
                 KF.updateTuInformation(unitDRInfo: unitDRInfo)
                 makeTemporalResult(input: tuResult, isStableMode: true, mustInSameLink: mustInSameLink, updateType: updateType, pathMatchingType: .NARROW)
@@ -880,11 +883,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 displayOutput.trajectoryPm = KF.matchedTraj
                 // 임시
                 displayOutput.searchArea = OlympusPathMatchingCalculator.shared.pathTrajMatchingArea
-                
-                let isNeedAnchorNodeUpdate = sectionController.checkIsNeedAnchorNodeUpdate(userVelocity: data)
-                if (isNeedAnchorNodeUpdate) {
-                    OlympusPathMatchingCalculator.shared.updateAnchorNode(fltResult: tuResult, pathType: pathType, sectionNumber: sectionController.getSectionNumber())
-                }
 //                print(getLocalTimeString() + " , (Olympus) isDRMode : isNeedAnchorNodeUpdate = \(isNeedAnchorNodeUpdate)")
                 if (!isPhaseBreak) {
                     if !self.isDRMode {
