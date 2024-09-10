@@ -587,7 +587,7 @@ public class OlympusKalmanFilter: NSObject {
         return paddingValues
     }
     
-    public func preProcessForMeasurementUpdate(fltResult: FineLocationTrackingFromServer, unitDRInfoBuffer: [UnitDRInfo], mode: String, isNeedCalDhFromUvd: Bool) -> [Double] {
+    public func preProcessForMeasurementUpdate(fltResult: FineLocationTrackingFromServer, unitDRInfoBuffer: [UnitDRInfo], mode: String, isNeedCalDhFromUvd: Bool, isResultStraight: Bool) -> [Double] {
         let uvdIndexBuffer: [Int] = self.uvdIndexBuffer
         let uvdHeadingBuffer: [Double] = self.uvdHeadingBuffer
         let tuResultBuffer: [[Double]] = self.tuResultBuffer
@@ -602,46 +602,14 @@ public class OlympusKalmanFilter: NSObject {
         if (tuResultNow.mobile_time != 0 && tuResultWhenUvdPosted.mobile_time != 0) {
             if let idx = uvdIndexBuffer.firstIndex(of: fltResult.index) {
                 print(getLocalTimeString() + " , (Olympus) MU : curIndex = \(unitDRInfoBuffer[unitDRInfoBuffer.count-1].index) // serverIndex = \(fltResult.index)")
-                var isNeedUvdPropagation: Bool = false
-//                if (mode == OlympusConstants.MODE_PDR) {
-//                    let propagationResult = propagateUsingUvd(unitDRInfoBuffer: unitDRInfoBuffer, fltResult: fltResult)
-//                    if (propagationResult.0) {
-//                        dx = propagationResult.1[0]
-//                        dy = propagationResult.1[1]
-//                        dh = propagationResult.1[2]
-//                        isNeedUvdPropagation = true
-//                    } else {
-//                        isNeedUvdPropagation = false
-//                    }
-//                } else {
-//                    isNeedUvdPropagation = false
-//                }
-//                
-//                if (!isNeedUvdPropagation) {
-//                    dx = tuResultNow.x - tuResultBuffer[idx][0]
-//                    dy = tuResultNow.y - tuResultBuffer[idx][1]
-//                    tuResultNow.absolute_heading = compensateHeading(heading: tuResultNow.absolute_heading)
-//                    let tuBufferHeading = compensateHeading(heading: tuResultBuffer[idx][2])
-//                    
-//                    if (isNeedCalDhFromUvd) {
-//                        dh = uvdHeadingBuffer[uvdHeadingBuffer.count-1] - uvdHeadingBuffer[idx]
-//                    } else {
-//                        dh = tuResultNow.absolute_heading - tuBufferHeading
-//                    }
-//                }
-//                print(getLocalTimeString() + " , (Olympus) MU : isNeedUvdPropagation = \(isNeedUvdPropagation) , dx = \(dx) // dy = \(dy) // dh = \(dh)")
-                
-                let propagationResult = propagateUsingUvd(unitDRInfoBuffer: unitDRInfoBuffer, fltResult: fltResult)
-                if (propagationResult.0) {
+//                let isNeedUvdPropagation: Bool = isResultStraight ? false : true
+                let isNeedUvdPropagation: Bool = true
+                if (isNeedUvdPropagation) {
+                    let propagationResult = propagateUsingUvd(unitDRInfoBuffer: unitDRInfoBuffer, fltResult: fltResult)
                     dx = propagationResult.1[0]
                     dy = propagationResult.1[1]
                     dh = propagationResult.1[2]
-                    isNeedUvdPropagation = true
                 } else {
-                    isNeedUvdPropagation = false
-                }
-                
-                if (!isNeedUvdPropagation) {
                     dx = tuResultNow.x - tuResultBuffer[idx][0]
                     dy = tuResultNow.y - tuResultBuffer[idx][1]
                     tuResultNow.absolute_heading = compensateHeading(heading: tuResultNow.absolute_heading)
@@ -653,7 +621,7 @@ public class OlympusKalmanFilter: NSObject {
                         dh = tuResultNow.absolute_heading - tuBufferHeading
                     }
                 }
-                print(getLocalTimeString() + " , (Olympus) MU : isNeedUvdPropagation = \(isNeedUvdPropagation) , dx = \(dx) // dy = \(dy) // dh = \(dh)")
+                print(getLocalTimeString() + " , (Olympus) MU : isNeedUvdPropagation = \(isNeedUvdPropagation) , isResultStraight = \(isResultStraight) , dx = \(dx) // dy = \(dy) // dh = \(dh)")
                 
                 self.usedUvdIndex = idx
                 self.isNeedUvdIndexBufferClear = true
@@ -670,126 +638,139 @@ public class OlympusKalmanFilter: NSObject {
         return [dx, dy, dh]
     }
     
+    
     func measurementUpdate(fltResult: FineLocationTrackingFromServer, pmFltResult: FineLocationTrackingFromServer, propagatedPmFltResult: FineLocationTrackingFromServer, unitDRInfoBuffer: [UnitDRInfo], isPossibleHeadingCorrection: Bool, PADDING_VALUES: [Double], mode: String) -> FineLocationTrackingFromServer {
-        var updatedResult: FineLocationTrackingFromServer = propagatedPmFltResult
         
-        // Path-Matching propagatedPmFltResult
-        var isPmSuccess: Bool = false
-        var pmPropagatedPmFltResult = propagatedPmFltResult
-        if (mode == OlympusConstants.MODE_PDR) {
-            let pmResult = OlympusPathMatchingCalculator.shared.pathMatching(building: propagatedPmFltResult.building_name, level: propagatedPmFltResult.level_name, x: propagatedPmFltResult.x, y: propagatedPmFltResult.y, heading: propagatedPmFltResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 0, PADDING_VALUES: PADDING_VALUES)
-            isPmSuccess = pmResult.isSuccess
-            pmPropagatedPmFltResult.x = pmResult.xyhs[0]
-            pmPropagatedPmFltResult.y = pmResult.xyhs[1]
-            pmPropagatedPmFltResult.absolute_heading = pmResult.xyhs[2]
-        } else {
-            let pmResult = OlympusPathMatchingCalculator.shared.pathMatching(building: propagatedPmFltResult.building_name, level: propagatedPmFltResult.level_name, x: propagatedPmFltResult.x, y: propagatedPmFltResult.y, heading: propagatedPmFltResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, PADDING_VALUES: PADDING_VALUES)
-            isPmSuccess = pmResult.isSuccess
-            pmPropagatedPmFltResult.x = pmResult.xyhs[0]
-            pmPropagatedPmFltResult.y = pmResult.xyhs[1]
-            pmPropagatedPmFltResult.absolute_heading = pmResult.xyhs[2]
-        }
+        var updatedResult = propagatedPmFltResult
+        
+        // Consolidate Path-Matching logic to avoid redundancy
+        var pmResult = performPathMatching(fltResult: propagatedPmFltResult, PADDING_VALUES: PADDING_VALUES, mode: mode)
+        let isPmSuccess = pmResult.isSuccess
+        var pmPropagatedPmFltResult = updateResultWithPathMatching(pmResult: pmResult, propagatedResult: propagatedPmFltResult, useHeading: !isPossibleHeadingCorrection)
+        
         var tuHeading = compensateHeading(heading: tuResult.absolute_heading)
         
-        if (isPmSuccess) {
-            if (!isPossibleHeadingCorrection) {
-                pmPropagatedPmFltResult.absolute_heading = propagatedPmFltResult.absolute_heading
-            }
-        } else {
-            pmPropagatedPmFltResult.absolute_heading = propagatedPmFltResult.absolute_heading
-        }
+        // Adjust heading if necessary
+        adjustHeadingIfNeeded(&pmPropagatedPmFltResult, &tuHeading)
         
-        if (tuHeading >= 270 && (pmPropagatedPmFltResult.absolute_heading >= 0 && pmPropagatedPmFltResult.absolute_heading < 90)) {
-            pmPropagatedPmFltResult.absolute_heading = pmPropagatedPmFltResult.absolute_heading + 360
-        } else if (pmPropagatedPmFltResult.absolute_heading >= 270 && (tuHeading >= 0 && tuHeading < 90)) {
-            tuHeading = tuHeading + 360
-        }
+        // Kalman filter update
+        let muResult = applyKalmanFilter(tuResult: tuResult, pmResult: pmPropagatedPmFltResult)
         
-        var muResult = pmPropagatedPmFltResult
+        // Perform Path-Matching for updated result
+        pmResult = performPathMatching(fltResult: muResult, PADDING_VALUES: PADDING_VALUES, mode: mode)
+        let isPmMuSuccess = pmResult.isSuccess
+        var pmMuResult = updateResultWithPathMatching(pmResult: pmResult, propagatedResult: muResult, useHeading: !isPossibleHeadingCorrection)
         
-        kalmanK = kalmanP / (kalmanP + kalmanR)
-        headingKalmanK = headingKalmanP / (headingKalmanP + headingKalmanR)
-        
-        muResult.x = tuResult.x + kalmanK * (Double(pmPropagatedPmFltResult.x) - tuResult.x)
-        muResult.y = tuResult.y + kalmanK * (Double(pmPropagatedPmFltResult.y) - tuResult.y)
-        muResult.absolute_heading = compensateHeading(heading: tuHeading + headingKalmanK * (pmPropagatedPmFltResult.absolute_heading - tuHeading))
-
-        kalmanP -= kalmanK * kalmanP
-        headingKalmanP -= headingKalmanK * headingKalmanP
-        
-        var isPmMuSuccess: Bool = false
-        var pmMuResult = muResult
-        if (mode == OlympusConstants.MODE_PDR) {
-            let pmResult = OlympusPathMatchingCalculator.shared.pathMatching(building: muResult.building_name, level: muResult.level_name, x: muResult.x, y: muResult.y, heading: muResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 0, PADDING_VALUES: PADDING_VALUES)
-            isPmMuSuccess = pmResult.isSuccess
-            pmMuResult.x = pmResult.xyhs[0]
-            pmMuResult.y = pmResult.xyhs[1]
-            pmMuResult.absolute_heading = pmResult.xyhs[2]
-        } else {
-            let pmResult = OlympusPathMatchingCalculator.shared.pathMatching(building: muResult.building_name, level: muResult.level_name, x: muResult.x, y: muResult.y, heading: muResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, PADDING_VALUES: PADDING_VALUES)
-            isPmMuSuccess = pmResult.isSuccess
-            pmMuResult.x = pmResult.xyhs[0]
-            pmMuResult.y = pmResult.xyhs[1]
-            pmMuResult.absolute_heading = pmResult.xyhs[2]
-        }
-        
-        if (isPmMuSuccess) {
-            let diffX = tuResult.x - pmMuResult.x
-            let diffY = tuResult.y - pmMuResult.y
-            let diffXY = sqrt(diffX*diffX + diffY*diffY)
+        if isPmMuSuccess {
+            let diffXY = computeDiffXY(tuResult: tuResult, pmMuResult: pmMuResult)
+            let diffH = computeHeadingDifference(tuHeading: tuHeading, pmMuResult: pmMuResult)
             
-            var muHeading = pmMuResult.absolute_heading
-            if (tuHeading >= 270 && (muHeading >= 0 && muHeading < 90)) {
-                muHeading = muHeading + 360
-            } else if (muHeading >= 270 && (tuHeading >= 0 && tuHeading < 90)) {
-                tuHeading = tuHeading + 360
-            }
-            let diffH = abs(tuHeading-muHeading)
-            
-            if (diffXY > 30 || diffH > OlympusConstants.HEADING_RANGE) {
+            // Check threshold for differences
+            if diffXY > 30 || diffH > OlympusConstants.HEADING_RANGE {
                 let propagationResult = propagateUsingUvd(unitDRInfoBuffer: unitDRInfoBuffer, fltResult: pmFltResult)
-                let propagationValues: [Double] = propagationResult.1
-                
-                if (propagationResult.0) {
-                    var propagatedResult: [Double] = [pmFltResult.x+propagationValues[0] , pmFltResult.y+propagationValues[1], pmFltResult.absolute_heading+propagationValues[2]]
-                    if (mode == OlympusConstants.MODE_PDR) {
-                        let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: fltResult.building_name, level: fltResult.level_name, x: propagatedResult[0], y: propagatedResult[1], heading: propagatedResult[2], HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 0, PADDING_VALUES: PADDING_VALUES)
-                        propagatedResult = pathMatchingResult.xyhs
-                    } else {
-                        let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: fltResult.building_name, level: fltResult.level_name, x: propagatedResult[0], y: propagatedResult[1], heading: propagatedResult[2], HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, PADDING_VALUES: PADDING_VALUES)
-                        propagatedResult = pathMatchingResult.xyhs
-                    }
-                    updatedResult.x = propagatedResult[0]
-                    updatedResult.y = propagatedResult[1]
-                    updatedResult.absolute_heading = propagatedResult[2]
-                } else {
-                    updatedResult.x = tuResult.x
-                    updatedResult.y = tuResult.y
-                    updatedResult.absolute_heading = tuResult.absolute_heading
-                }
+                updateResultFromPropagation(&updatedResult, propagationResult: propagationResult, fltResult: fltResult, pmFltResult: pmFltResult, mode: mode, PADDING_VALUES: PADDING_VALUES)
                 backKalmanParam()
             } else {
-                if (!isPossibleHeadingCorrection && mode == OlympusConstants.MODE_DR) {
+                if !isPossibleHeadingCorrection && mode == OlympusConstants.MODE_DR {
                     pmMuResult.absolute_heading = tuResult.absolute_heading
                 }
                 updatedResult = pmMuResult
                 saveKalmanParam()
             }
         } else {
-            var pathType: Int = 1
-            if (mode == OlympusConstants.MODE_PDR) { pathType = 0 }
-            let pmResult = OlympusPathMatchingCalculator.shared.pathMatching(building: muResult.building_name, level: muResult.level_name, x: muResult.x, y: muResult.y, heading: muResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: pathType, PADDING_VALUES: PADDING_VALUES)
-            updatedResult.x = pmResult.xyhs[0]
-            updatedResult.y = pmResult.xyhs[1]
-            updatedResult.absolute_heading = pmResult.xyhs[2]
-            
+            // Fallback if path-matching is unsuccessful
+            let pmResult = fallbackPathMatching(muResult: muResult, PADDING_VALUES: PADDING_VALUES, mode: mode)
+            updateResultWithFallback(&updatedResult, pmResult: pmResult)
             backKalmanParam()
         }
         
         tuResult = updatedResult
-        
         return updatedResult
     }
+
+    // Helper function to perform path matching
+    private func performPathMatching(fltResult: FineLocationTrackingFromServer, PADDING_VALUES: [Double], mode: String) -> (isSuccess: Bool, xyhs: [Double], bestHeading: Double) {
+        let useHeading = mode != OlympusConstants.MODE_PDR
+        let pathType = useHeading ? 1 : 0
+        return OlympusPathMatchingCalculator.shared.pathMatching(building: fltResult.building_name, level: fltResult.level_name, x: fltResult.x, y: fltResult.y, heading: fltResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: useHeading, pathType: pathType, PADDING_VALUES: PADDING_VALUES)
+    }
+
+    // Update result with path-matching result
+    private func updateResultWithPathMatching(pmResult: (isSuccess: Bool, xyhs: [Double], bestHeading: Double), propagatedResult: FineLocationTrackingFromServer, useHeading: Bool) -> FineLocationTrackingFromServer {
+        var updatedResult = propagatedResult
+        updatedResult.x = pmResult.xyhs[0]
+        updatedResult.y = pmResult.xyhs[1]
+        if useHeading {
+            updatedResult.absolute_heading = pmResult.xyhs[2]
+        }
+        return updatedResult
+    }
+
+    // Adjust heading if needed
+    private func adjustHeadingIfNeeded(_ result: inout FineLocationTrackingFromServer, _ tuHeading: inout Double) {
+        if tuHeading >= 270 && result.absolute_heading < 90 {
+            result.absolute_heading += 360
+        } else if result.absolute_heading >= 270 && tuHeading < 90 {
+            tuHeading += 360
+        }
+    }
+
+    // Apply Kalman filter
+    private func applyKalmanFilter(tuResult: FineLocationTrackingFromServer, pmResult: FineLocationTrackingFromServer) -> FineLocationTrackingFromServer {
+        var muResult = pmResult
+        let kalmanK = kalmanP / (kalmanP + kalmanR)
+        let headingKalmanK = headingKalmanP / (headingKalmanP + headingKalmanR)
+        
+        muResult.x = tuResult.x + kalmanK * (pmResult.x - tuResult.x)
+        muResult.y = tuResult.y + kalmanK * (pmResult.y - tuResult.y)
+        muResult.absolute_heading = compensateHeading(heading: tuResult.absolute_heading + headingKalmanK * (pmResult.absolute_heading - tuResult.absolute_heading))
+        
+        kalmanP -= kalmanK * kalmanP
+        headingKalmanP -= headingKalmanK * headingKalmanP
+        
+        return muResult
+    }
+
+    // Compute XY difference
+    private func computeDiffXY(tuResult: FineLocationTrackingFromServer, pmMuResult: FineLocationTrackingFromServer) -> Double {
+        let diffX = tuResult.x - pmMuResult.x
+        let diffY = tuResult.y - pmMuResult.y
+        return sqrt(diffX * diffX + diffY * diffY)
+    }
+
+    // Compute heading difference
+    private func computeHeadingDifference(tuHeading: Double, pmMuResult: FineLocationTrackingFromServer) -> Double {
+        return abs(tuHeading - pmMuResult.absolute_heading)
+    }
+
+    // Update result from propagation
+    private func updateResultFromPropagation(_ updatedResult: inout FineLocationTrackingFromServer, propagationResult: (Bool, [Double]), fltResult: FineLocationTrackingFromServer, pmFltResult: FineLocationTrackingFromServer, mode: String, PADDING_VALUES: [Double]) {
+        if propagationResult.0 {
+            let propagatedResult = [pmFltResult.x + propagationResult.1[0], pmFltResult.y + propagationResult.1[1], pmFltResult.absolute_heading + propagationResult.1[2]]
+            let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: fltResult.building_name, level: fltResult.level_name, x: propagatedResult[0], y: propagatedResult[1], heading: propagatedResult[2], HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: mode != OlympusConstants.MODE_PDR, pathType: mode == OlympusConstants.MODE_PDR ? 0 : 1, PADDING_VALUES: PADDING_VALUES)
+            updatedResult.x = pathMatchingResult.xyhs[0]
+            updatedResult.y = pathMatchingResult.xyhs[1]
+            updatedResult.absolute_heading = pathMatchingResult.xyhs[2]
+        } else {
+            updatedResult.x = tuResult.x
+            updatedResult.y = tuResult.y
+            updatedResult.absolute_heading = tuResult.absolute_heading
+        }
+    }
+
+    // Fallback path matching if the previous one failed
+    private func fallbackPathMatching(muResult: FineLocationTrackingFromServer, PADDING_VALUES: [Double], mode: String) -> (isSuccess: Bool, xyhs: [Double], bestHeading: Double) {
+        let pathType = mode == OlympusConstants.MODE_PDR ? 0 : 1
+        return OlympusPathMatchingCalculator.shared.pathMatching(building: muResult.building_name, level: muResult.level_name, x: muResult.x, y: muResult.y, heading: muResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: pathType, PADDING_VALUES: PADDING_VALUES)
+    }
+
+    // Update result with fallback path matching
+    private func updateResultWithFallback(_ updatedResult: inout FineLocationTrackingFromServer, pmResult: (isSuccess: Bool, xyhs: [Double], bestHeading: Double)) {
+        updatedResult.x = pmResult.xyhs[0]
+        updatedResult.y = pmResult.xyhs[1]
+        updatedResult.absolute_heading = pmResult.xyhs[2]
+    }
+
     
     public func getPathTrajMatchingInfo() -> ([[Double]] , [[Double]]) {
         return (self.matchedTraj, self.inputTraj)
