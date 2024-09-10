@@ -1004,12 +1004,27 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                             let stableInfo = StableInfo(tail_index: nodeCandidatesInfo[0].matchedIndex, head_section_number: sectionController.getSectionNumber(), node_number_list: nodeNumberCandidates)
                                             
                                             if nodeNumberCandidates.count > 1 {
+//                                                var isFind: Bool = false
+//                                                var newNodeCandidatesInfo = [PassedNodeInfo]()
+//                                                for n in multipleNodeCandidates.nodeCandidatesInfo {
+//                                                    if n.nodeNumber == prevPassedNodeInfo.nodeNumber {
+//                                                        isFind = true
+//                                                    } else {
+//                                                        newNodeCandidatesInfo.append(n)
+//                                                    }
+//                                                }
+//                                                if !isFind {
+//                                                    processPhase5(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: inputNodeCandidates, prevNodeInfo: prevPassedNodeInfo)
+//                                                } else {
+//                                                    inputNodeCandidates.nodeCandidatesInfo = newNodeCandidatesInfo
+//                                                    processPhase6(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: inputNodeCandidates)
+//                                                }
                                                 processPhase5(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: inputNodeCandidates, prevNodeInfo: prevPassedNodeInfo)
                                             } else {
                                                 processPhase6(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: inputNodeCandidates)
                                             }
                                             
-                                        } else {
+                                        } else if !self.isInMapEnd {
                                             for item in nodeCandidatesInfo {
                                                 nodeNumberCandidates.append(item.nodeNumber)
                                             }
@@ -1639,6 +1654,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 currentBuilding = updatedResult.building_name
                                 currentLevel = updatedResult.level_name
                                 print(getLocalTimeString() + " , (Olympus) Process Phase 5 : muResult = \(muResult)")
+//                                OlympusPathMatchingCalculator.shared.updateAnchorNodeAfterRecovery(badCaseNodeInfo: inputNodeCandidateInfo, nodeNumber: fltResult.node_number)
                                 makeTemporalResult(input: updatedResult, isStableMode: false, mustInSameLink: false, updateType: .STABLE, pathMatchingType: .WIDE)
                             }
                         } else if (fltResult.x == 0 && fltResult.y == 0) {
