@@ -50,11 +50,16 @@ public func isResultHeadingStraight(unitDRInfoBuffer: [UnitDRInfo], fltResult: F
     let resultIndex = fltResult.index
     
     var matchedIndex: Int = -1
+    var headingBuffer = [Double]()
     
     for i in 0..<unitDRInfoBuffer.count {
         let drBufferIndex = unitDRInfoBuffer[i].index
         if (drBufferIndex == resultIndex) {
             matchedIndex = i
+        }
+        
+        if drBufferIndex >= resultIndex {
+            headingBuffer.append(compensateHeading(heading: unitDRInfoBuffer[i].heading))
         }
     }
     
@@ -68,12 +73,9 @@ public func isResultHeadingStraight(unitDRInfoBuffer: [UnitDRInfo], fltResult: F
             startHeading = unitDRInfoBuffer[matchedIndex-4].heading
             endHeading = unitDRInfoBuffer[matchedIndex].heading
         }
-        
-        if (abs(endHeading - startHeading) < 5.0) {
-            isStraight = true
-        } else {
-            isStraight = false
-        }
+        let headingStd = circularStandardDeviation(for: headingBuffer)
+        print(getLocalTimeString() + " , (Olympus) Heading Std : headingStd = \(headingStd) count = \(headingBuffer.count) , diffHeading = \(abs(endHeading - startHeading))")
+        isStraight = headingStd <= 2 ? true : false
     }
     
     return isStraight
@@ -135,20 +137,26 @@ public func propagateUsingUvd(unitDRInfoBuffer: [UnitDRInfo], fltResult: FineLoc
 public func isDrBufferStraight(unitDRInfoBuffer: [UnitDRInfo], numIndex: Int, condition: Double) -> (Bool, Double) {
     if (unitDRInfoBuffer.count >= numIndex) {
         let firstIndex = unitDRInfoBuffer.count-numIndex
+        var headingBuffer = [Double]()
+        for i in firstIndex..<unitDRInfoBuffer.count {
+            headingBuffer.append(compensateHeading(heading: unitDRInfoBuffer[i].heading))
+        }
         let firstHeading: Double = unitDRInfoBuffer[firstIndex].heading
         let lastHeading: Double = unitDRInfoBuffer[unitDRInfoBuffer.count-1].heading
         var diffHeading: Double = abs(lastHeading - firstHeading)
         if (diffHeading >= 270 && diffHeading < 360) {
             diffHeading = 360 - diffHeading
         }
+        let headingStd = circularStandardDeviation(for: headingBuffer)
         
-        if (diffHeading < condition) {
-            return (true, diffHeading)
+        print(getLocalTimeString() + " , (Olympus) isDrBufferStraight : diffHeading = \(diffHeading) // headingStd = \(headingStd)")
+        if headingStd <= 2 {
+            return (true, headingStd)
         } else {
-            return (false, diffHeading)
+            return (false, headingStd)
         }
     } else {
-        return (true, 360)
+        return (false, 360)
     }
 }
 
