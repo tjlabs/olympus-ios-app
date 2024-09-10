@@ -33,6 +33,8 @@ public class OlympusBuildingLevelChanger {
     public var preOutputMobileTime: Int = 0
     
     public var sectorDRModeArea = [String: SectorDRModeArea]()
+    public var currentDRModeArea = SectorDRModeArea(number: -1, range: [], direction: 0, nodes: [])
+    public var currentDRModeAreaNodeNumber: Int = -1
     
     var trajEditedObserver: Any!
     
@@ -49,6 +51,8 @@ public class OlympusBuildingLevelChanger {
         self.preOutputMobileTime = 0
         
         self.sectorDRModeArea = [String: SectorDRModeArea]()
+        self.currentDRModeArea = SectorDRModeArea(number: -1, range: [], direction: 0, nodes: [])
+        self.currentDRModeAreaNodeNumber = -1
     }
     
     func accumulateOsrDistance(unitLength: Double, isGetFirstResponse: Bool, mode: String, result: FineLocationTrackingResult) {
@@ -359,6 +363,8 @@ public class OlympusBuildingLevelChanger {
                             if n.number == passedNodeInfo.nodeNumber {
                                 // OSR 동작 시작
                                 // 방향 결정 "U" or "D" or "N"
+                                self.currentDRModeArea = value
+                                self.currentDRModeAreaNodeNumber = n.number
                                 return true
                             }
                         }
@@ -373,7 +379,6 @@ public class OlympusBuildingLevelChanger {
         if fltResult.level_name == "B0" {
             return true
         }
-//        print(getLocalTimeString() + " , (Olympus) checkOutSectorDRModeArea : anchorNode // num = \(anchorNodeInfo.nodeNumber) , coord = \(anchorNodeInfo.nodeCoord)")
         
         var isInArea: Bool = false
         var isAnchorNodeInArea: Bool = false
@@ -381,7 +386,6 @@ public class OlympusBuildingLevelChanger {
         let currentLevel = "_\(fltResult.level_name)_"
         for (key, value) in self.sectorDRModeArea {
             if key.contains(currentLevel) {
-//                print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (Out) : coord = \(fltResult.x) , \(fltResult.y) , \(fltResult.absolute_heading)")
                 if (value.range[0] <= fltResult.x && fltResult.x <= value.range[2]) && (value.range[1] <= fltResult.y && fltResult.y <= value.range[3]) {
                     isInArea = true
                 }
@@ -395,30 +399,17 @@ public class OlympusBuildingLevelChanger {
                 }
             }
         }
-        
-//        print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (Out) 1 : isInArea = \(isInArea) , isAnchorNodeInArea = \(isAnchorNodeInArea)")
+
         if !isInArea {
             if isAnchorNodeInArea {
                isInArea = true
+            } else {
+                self.currentDRModeArea = SectorDRModeArea(number: -1, range: [], direction: 0, nodes: [])
+                self.currentDRModeAreaNodeNumber = -1
             }
         }
         
-//        print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (Out) 2 : isInArea = \(isInArea) , isAnchorNodeInArea = \(isAnchorNodeInArea)")
-        
         return isInArea
-    }
-    
-    public func checkIsValidInLevelChange() {
-        // 이 코드는 OSR 동작과 함께 수행된다
-        
-        // 결정된 방향이 U or D 인경우
-        // if : Spot 결정 후 방향이 일치하는 경우
-        // else if : 일치하지 않는 경우
-        
-        
-        // 결정된 방향이 N인경우
-        // if : Spot이 결정 된 경우
-        // else : 아닌 경우
     }
     
     func notificationCenterAddObserver() {
