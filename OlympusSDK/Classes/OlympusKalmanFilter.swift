@@ -431,7 +431,7 @@ public class OlympusKalmanFilter: NSObject {
                 }
             }
         } else {
-            let drBufferStraightResult = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_HEADING_CORR_NUM_IDX, condition: 10.0)
+            let drBufferStraightResult = isDrBufferStraightCircularStd(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_HEADING_CORR_NUM_IDX, condition: 10.0)
 //            print(getLocalTimeString() + " , (Olympus) ErrorChecking 0-0 : index = \(unitDRInfoBuffer[unitDRInfoBuffer.count-1].index) , level_name = \(outputResult.level_name)")
             let isDrStraight: Bool = levelName == "B0" ? false : drBufferStraightResult.0
             let pathMatchingResult =  OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, PADDING_VALUES: PADDING_VALUES)
