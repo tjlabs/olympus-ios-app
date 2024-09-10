@@ -39,7 +39,7 @@ class OlympusConstants {
     static let PHASE_6: Int = 6
     static let PHASE_BECOME3_SCC: Double = 0.62
     static let PHASE_BREAK_SCC_PDR: Double = 0.45
-    static let PHASE_BREAK_SCC_DR: Double = 0.2
+    static let PHASE_BREAK_SCC_DR: Double = 0.3
     static let PHASE5_RECOVERY_SCC: Double = 0.5 // 0.55
     static let PHASE_BREAK_IN_PHASE2_SCC: Double = 0.26
     static let PHASE2_RESULT_USE_SCC: Double = 0.6
@@ -88,7 +88,7 @@ class OlympusConstants {
     static let DR_INFO_BUFFER_SIZE: Int = 60 // 30
     static let DR_BUFFER_SIZE_FOR_STRAIGHT: Int = 10 // COEX 12 // DS 6 // LG 10
     static let DR_BUFFER_SIZE_FOR_HEAD_STRAIGHT: Int = 3
-    static let DR_HEADING_CORR_NUM_IDX: Int = 5
+    static let DR_HEADING_CORR_NUM_IDX: Int = 10
     
     // SLEEP
     static let SLEEP_THRESHOLD: Double = 600 // seconds
@@ -168,6 +168,7 @@ class OlympusConstants {
     static let STRAIGHT_SAME_COORD_THRESHOLD: Int = 6
     static let REQUIRED_SECTION_STRAIGHT_LENGTH: Double = 8
     static let REQUIRED_SECTION_REQUEST_LENGTH: Double = 25 // 25
+    static let REQUIRED_SECTION_REQUEST_LENGTH_IN_DR: Double = 10
     static let PIXEL_LENGTH_TO_FIND_NODE: Double = 20
     
     // Path-Matching
