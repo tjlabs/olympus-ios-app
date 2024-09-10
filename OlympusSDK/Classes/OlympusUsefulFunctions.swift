@@ -134,7 +134,7 @@ public func propagateUsingUvd(unitDRInfoBuffer: [UnitDRInfo], fltResult: FineLoc
     return (isSuccess, propagationValues)
 }
 
-public func isDrBufferStraight(unitDRInfoBuffer: [UnitDRInfo], numIndex: Int, condition: Double) -> (Bool, Double) {
+public func isDrBufferStraightCircularStd(unitDRInfoBuffer: [UnitDRInfo], numIndex: Int, condition: Double) -> (Bool, Double) {
     if (unitDRInfoBuffer.count >= numIndex) {
         let firstIndex = unitDRInfoBuffer.count-numIndex
         var headingBuffer = [Double]()
@@ -149,11 +149,31 @@ public func isDrBufferStraight(unitDRInfoBuffer: [UnitDRInfo], numIndex: Int, co
         }
         let headingStd = circularStandardDeviation(for: headingBuffer)
         
-        print(getLocalTimeString() + " , (Olympus) isDrBufferStraight : diffHeading = \(diffHeading) // headingStd = \(headingStd)")
-        if headingStd <= 2 {
+//        print(getLocalTimeString() + " , (Olympus) isDrBufferStraight : diffHeading = \(diffHeading) // headingStd = \(headingStd)")
+        if headingStd <= 1 {
             return (true, headingStd)
         } else {
             return (false, headingStd)
+        }
+    } else {
+        return (false, 360)
+    }
+}
+
+public func isDrBufferStraight(unitDRInfoBuffer: [UnitDRInfo], numIndex: Int, condition: Double) -> (Bool, Double) {
+    if (unitDRInfoBuffer.count >= numIndex) {
+        let firstIndex = unitDRInfoBuffer.count-numIndex
+        let firstHeading: Double = unitDRInfoBuffer[firstIndex].heading
+        let lastHeading: Double = unitDRInfoBuffer[unitDRInfoBuffer.count-1].heading
+        var diffHeading: Double = abs(lastHeading - firstHeading)
+        if (diffHeading >= 270 && diffHeading < 360) {
+            diffHeading = 360 - diffHeading
+        }
+
+        if diffHeading <= condition {
+            return (true, diffHeading)
+        } else {
+            return (false, diffHeading)
         }
     } else {
         return (false, 360)
