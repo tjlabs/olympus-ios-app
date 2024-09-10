@@ -539,8 +539,7 @@ public class OlympusPathMatchingCalculator {
         var yCandidates = [Double]()
         var headingCandidates = [String]()
         var isPossibleNode: Bool = true
-//        print(getLocalTimeString() + " , (Olympus) ErrorChecking (2) : updateNodeAndLinkInfo // diffX = \(diffX) , diffY = \(diffY) , diffH = \(diffH) , updateType = \(updateType)")
-//        print(getLocalTimeString() + " , (Olympus) ErrorChecking (3) : updateNodeAndLinkInfo // linkDirections = \(linkDirections)")
+        
         let key: String = "\(building)_\(level)"
         if (true) {
             if (!(building.isEmpty) && !(level.isEmpty)) {
@@ -576,6 +575,8 @@ public class OlympusPathMatchingCalculator {
                                 } else {
                                     isPossibleNode = true
                                 }
+                            } else {
+                                isPossibleNode = true
                             }
                             
                             if (xPath == x && yPath == y) {
@@ -687,6 +688,8 @@ public class OlympusPathMatchingCalculator {
                                 } else {
                                     isPossibleNode = true
                                 }
+                            } else {
+                                isPossibleNode = true
                             }
                             
                             if (xPath >= xMin && xPath <= xMax) {
@@ -808,6 +811,8 @@ public class OlympusPathMatchingCalculator {
                                 } else {
                                     isPossibleNode = true
                                 }
+                            } else {
+                                isPossibleNode = true
                             }
                             
                             // XY 범위 안에 있는 값 중에 검사

@@ -385,6 +385,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             msg = localTime + " , (Olympus) Error : Invalid Service Name"
             return (isSuccess, msg)
         } else {
+            self.mode = mode
             if (service.contains(OlympusConstants.SERVICE_FLT)) {
                 self.service = service
                 unitDRInfo = UnitDRInfo()
@@ -788,7 +789,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             displayOutput.length = unitDRInfo.length
             displayOutput.velocity = unitDRInfo.velocity * 3.6
             displayOutput.indexTx = unitDRInfo.index
-//            print(getLocalTimeString() + " , (Olympus) DR Check : index = \(unitDRInfo.index)")
             // 임시
             
             stateManager.setVariblesWhenIsIndexChanged()
@@ -814,7 +814,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             stackUnitDRInfoForPhase4(isNeedClear: isNeedClearBuffer)
             self.unitDRInfoIndex = unitDRInfo.index
             
-            OlympusPathMatchingCalculator.shared.controlUVDforAccBias(unitDRInfo: unitDRInfo)
+//            OlympusPathMatchingCalculator.shared.controlUVDforAccBias(unitDRInfo: unitDRInfo)
+//            print(getLocalTimeString() + " , (Olympus) DR Check : unitDRInfo = \(unitDRInfo)")
             let data = UserVelocity(user_id: self.user_id, mobile_time: currentTime, index: unitDRInfo.index, length: unitUvdLength, heading: round(unitDRInfo.heading*100)/100, looking: unitDRInfo.lookingFlag)
             inputUserVelocity.append(data)
             
