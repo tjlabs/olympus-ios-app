@@ -698,6 +698,13 @@ public struct PassedNodeInfo {
     var userHeading: Double
 }
 
+public struct DRModeRequestInfo {
+    var trajectoryInfo: [TrajectoryInfo]
+    var stableInfo: StableInfo
+    var nodeCandidatesInfo: NodeCandidateInfo
+    var prevNodeInfo: PassedNodeInfo
+}
+
 // 임시
 public struct ServiceResult {
     public var isIndexChanged: Bool = false
