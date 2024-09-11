@@ -1593,6 +1593,7 @@ public class OlympusPathMatchingCalculator {
         let nodeCandidates = nodeCandidateInfo.nodeCandidatesInfo
         let inputNodeNumbers = nodeCandidates.map { $0.nodeNumber }
         
+        let anchorNodeNumber = nodeCandidates[0].nodeNumber
         let anchorNodes: [Int] = nodeCandidates.map { $0.nodeNumber }
         
         var passedNodeInfo = PassedNodeInfo(nodeNumber: -1, nodeCoord: [0, 0], nodeHeadings: [], matchedIndex: 0, userHeading: 0)
