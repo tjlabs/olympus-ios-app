@@ -1404,14 +1404,21 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //                                    KF.refreshTuResult(xyh: [copiedResult.x, copiedResult.y, copiedResult.absolute_heading], inputPhase: fltInput.phase, inputTrajLength: inputTrajLength, mode: runMode)
 //                                }
                                 
-                                if (resultPhase.0 == OlympusConstants.PHASE_6) {
+                                if (resultPhase.0 == OlympusConstants.PHASE_3) {
+                                    let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: copiedResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+                                    currentBuilding = updatedResult.building_name
+                                    currentLevel = updatedResult.level_name
+                                    self.isBuildingLevelChanged(newBuilding: updatedResult.building_name, newLevel: updatedResult.level_name, newRange: [], newDirection: [])
+                                } else if (resultPhase.0 == OlympusConstants.PHASE_6) {
                                     sectionController.setInitialAnchorTailIndex(value: unitDRInfoIndex)
                                     copiedResult.absolute_heading = propagatedResult[2]
                                     
                                     let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: copiedResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
                                     currentBuilding = updatedResult.building_name
                                     currentLevel = updatedResult.level_name
+                                    
                                     makeTemporalResult(input: updatedResult, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
+                                    self.isBuildingLevelChanged(newBuilding: updatedResult.building_name, newLevel: updatedResult.level_name, newRange: [], newDirection: [])
                                     KF.refreshTuResult(xyh: [copiedResult.x, copiedResult.y, copiedResult.absolute_heading], inputPhase: fltInput.phase, inputTrajLength: inputTrajLength, mode: runMode)
                                     
                                     if isPhaseBreak {
