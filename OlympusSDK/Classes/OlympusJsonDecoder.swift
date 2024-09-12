@@ -50,6 +50,24 @@ public func jsonToFineLocatoinTrackingResultFromServer(jsonString: String) -> (B
     
 }
 
+public func jsonToFineLocatoinTrackingResultFromServerList(jsonString: String) -> (Bool, FineLocationTrackingFromServerList) {
+    let result = FineLocationTrackingFromServerList(flt_outputs: [])
+    
+    if let jsonData = jsonString.data(using: .utf8) {
+        do {
+            let decodedData: FineLocationTrackingFromServerList = try JSONDecoder().decode(FineLocationTrackingFromServerList.self, from: jsonData)
+            
+            return (true, decodedData)
+        } catch {
+            print("Error decoding JSON: \(error)")
+            
+            return (false, result)
+        }
+    } else {
+        return (false, result)
+    }
+}
+
 public func jsonToOnSpotRecognitionResult(jsonString: String) -> (Bool, OnSpotRecognitionResult) {
     let result = OnSpotRecognitionResult.init()
     

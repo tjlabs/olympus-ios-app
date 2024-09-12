@@ -516,6 +516,10 @@ public struct FineLocationTrackingFromServer: Codable {
     }
 }
 
+public struct FineLocationTrackingFromServerList: Codable {
+    public var flt_outputs: [FineLocationTrackingFromServer]
+}
+
 // On Spot Recognition
 struct OnSpotRecognition: Encodable {
     var operating_system: String

@@ -73,6 +73,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     var sectionController = OlympusSectionController()
     var buildingLevelChanger = OlympusBuildingLevelChanger()
     var KF = OlympusKalmanFilter()
+    var ambiguitySolver = OlympusAmbiguitySolver()
     
     // ----- Data ----- //
     var inputReceivedForce: [ReceivedForce] = []
@@ -233,6 +234,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         stateManager.initialize(isStopService: isStopService)
         trajController.initialize()
         OlympusFileManager.shared.initalize()
+        ambiguitySolver.initialize()
         
         inputReceivedForce = []
         inputUserVelocity = []
@@ -1187,9 +1189,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 stateManager.setNetworkCount(value: 0)
             }
             if (statusCode == 200 && (phaseController.PHASE == OlympusConstants.PHASE_2)) {
-                let result = jsonToFineLocatoinTrackingResultFromServer(jsonString: returnedString)
-                let fltResult = result.1
-                if (result.0 && (fltResult.x != 0 || fltResult.y != 0)) {
+//                let result = jsonToFineLocatoinTrackingResultFromServer(jsonString: returnedString)
+//                let fltResult = result.1
+                let results = jsonToFineLocatoinTrackingResultFromServerList(jsonString: returnedString)
+                let result = results.1.flt_outputs
+                let fltResult = result.isEmpty ? FineLocationTrackingFromServer() : result[0]
+                if (results.0 && (fltResult.x != 0 || fltResult.y != 0)) {
                     trajController.updateTrajCompensationArray(result: fltResult)
                     if (fltResult.mobile_time > self.preServerResultMobileTime) {
                         print(getLocalTimeString() + " , (Olympus) Request Phase 2 : result = \(fltResult)")
@@ -1297,18 +1302,21 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         print(getLocalTimeString() + " , (Olympus) Request Phase 1 ~ 3 : \(input)")
         if (REGION_NAME != "Korea" && self.deviceModel == "iPhone SE (2nd generation)") { input.normalization_scale = 1.01 }
         OlympusNetworkManager.shared.postFLT(url: CALC_FLT_URL, input: input, userTraj: trajectoryInfo, searchInfo: searchInfo, completion: { [self] statusCode, returnedString, fltInput, inputTraj, inputSearchInfo in
-//            print("Code = \(statusCode) // Result = \(returnedString)")
+//            print(getLocalTimeString() + " , (Olympus) Phase 3 Result : \(statusCode) // \(returnedString)")
             if (!returnedString.contains("timed out")) { stateManager.setNetworkCount(value: 0) }
             if (statusCode == 200) {
-                let result = jsonToFineLocatoinTrackingResultFromServer(jsonString: returnedString)
-                let fltResult = result.1
-                if (result.0 && (fltResult.x != 0 || fltResult.y != 0)) {
+//                let result = jsonToFineLocatoinTrackingResultFromServer(jsonString: returnedString)
+//                let fltResult = result.1
+                let results = jsonToFineLocatoinTrackingResultFromServerList(jsonString: returnedString)
+                let result = results.1.flt_outputs
+                let fltResult = result.isEmpty ? FineLocationTrackingFromServer() : result[0]
+                if (results.0 && (fltResult.x != 0 || fltResult.y != 0)) {
                     // 임시
                     displayOutput.indexRx = fltResult.index
                     displayOutput.scc = fltResult.scc
                     // 임시
                     if (fltResult.mobile_time > self.preServerResultMobileTime) {
-                        print(getLocalTimeString() + " , (Olympus) Phase3 Result : \(fltResult)")
+//                        print(getLocalTimeString() + " , (Olympus) Phase3 Result : \(fltResult)")
                         // 임시
                         displayOutput.indexRx = fltResult.index
                         displayOutput.scc = fltResult.scc
@@ -1495,8 +1503,11 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         OlympusNetworkManager.shared.postStableFLT(url: CALC_FLT_URL, input: input, userTraj: trajectoryInfo, nodeCandidateInfo: nodeCandidatesInfo, completion: { [self] statusCode, returnedString, fltInput, inputTraj, inputNodeCandidatesInfo in
             if (!returnedString.contains("timed out")) { stateManager.setNetworkCount(value: 0) }
             if (statusCode == 200) {
-                let result = jsonToFineLocatoinTrackingResultFromServer(jsonString: returnedString)
-                let fltResult = result.1
+//                let result = jsonToFineLocatoinTrackingResultFromServer(jsonString: returnedString)
+//                let fltResult = result.1
+                let results = jsonToFineLocatoinTrackingResultFromServerList(jsonString: returnedString)
+                let result = results.1.flt_outputs
+                let fltResult = result.isEmpty ? FineLocationTrackingFromServer() : result[0]
                 print(getLocalTimeString() + " , (Olympus) Request Phase 4 : result = \(fltResult)")
                 trajController.updateTrajCompensationArray(result: fltResult)
                 trajController.setPastInfo(trajInfo: inputTraj, searchInfo: SearchInfo(), matchedDirection: fltResult.search_direction)
@@ -1603,8 +1614,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         OlympusNetworkManager.shared.postStableFLT(url: CALC_FLT_URL, input: input, userTraj: trajectoryInfo, nodeCandidateInfo: nodeCandidatesInfo, completion: { [self] statusCode, returnedString, fltInput, inputTraj, inputNodeCandidateInfo in
             if (!returnedString.contains("timed out")) { stateManager.setNetworkCount(value: 0) }
             if (statusCode == 200) {
-                let result = jsonToFineLocatoinTrackingResultFromServer(jsonString: returnedString)
-                let fltResult = result.1
+//                let result = jsonToFineLocatoinTrackingResultFromServer(jsonString: returnedString)
+//                let fltResult = result.1
+                let results = jsonToFineLocatoinTrackingResultFromServerList(jsonString: returnedString)
+                ambiguitySolver.selectResult(results: results.1)
+                let result = results.1.flt_outputs
+                let fltResult = result.isEmpty ? FineLocationTrackingFromServer() : result[0]
 //                print(getLocalTimeString() + " , (Olympus) Request Phase 5 : result = \(fltResult)")
                 trajController.updateTrajCompensationArray(result: fltResult)
                 trajController.setPastInfo(trajInfo: inputTraj, searchInfo: SearchInfo(), matchedDirection: fltResult.search_direction)
@@ -1706,8 +1721,11 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         OlympusNetworkManager.shared.postStableFLT(url: CALC_FLT_URL, input: input, userTraj: trajectoryInfo, nodeCandidateInfo: nodeCandidatesInfo, completion: { [self] statusCode, returnedString, fltInput, inputTraj, inputNodeCandidateInfo in
             if (!returnedString.contains("timed out")) { stateManager.setNetworkCount(value: 0) }
             if (statusCode == 200) {
-                let result = jsonToFineLocatoinTrackingResultFromServer(jsonString: returnedString)
-                let fltResult = result.1
+//                let result = jsonToFineLocatoinTrackingResultFromServer(jsonString: returnedString)
+//                let fltResult = result.1
+                let results = jsonToFineLocatoinTrackingResultFromServerList(jsonString: returnedString)
+                let result = results.1.flt_outputs
+                let fltResult = result.isEmpty ? FineLocationTrackingFromServer() : result[0]
 //                trajController.updateTrajCompensationArray(result: fltResult)
 //                trajController.setPastInfo(trajInfo: inputTraj, searchInfo: SearchInfo(), matchedDirection: fltResult.search_direction)
                 if (fltResult.index > indexPast) {
@@ -1743,8 +1761,11 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         OlympusNetworkManager.shared.postStableFLT(url: CALC_FLT_URL, input: input, userTraj: trajectoryInfo, nodeCandidateInfo: nodeCandidatesInfo, completion: { [self] statusCode, returnedString, fltInput, inputTraj, inputNodeCandidateInfo in
             if (!returnedString.contains("timed out")) { stateManager.setNetworkCount(value: 0) }
             if (statusCode == 200) {
-                let result = jsonToFineLocatoinTrackingResultFromServer(jsonString: returnedString)
-                let fltResult = result.1
+//                let result = jsonToFineLocatoinTrackingResultFromServer(jsonString: returnedString)
+//                let fltResult = result.1
+                let results = jsonToFineLocatoinTrackingResultFromServerList(jsonString: returnedString)
+                let result = results.1.flt_outputs
+                let fltResult = result.isEmpty ? FineLocationTrackingFromServer() : result[0]
                 print(getLocalTimeString() + " , (Olympus) Request Phase 6 : result = \(fltResult)")
                 trajController.updateTrajCompensationArray(result: fltResult)
                 trajController.setPastInfo(trajInfo: inputTraj, searchInfo: SearchInfo(), matchedDirection: fltResult.search_direction)
@@ -1862,8 +1883,11 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             OlympusNetworkManager.shared.postRecoveryFLT(url: CALC_FLT_URL, input: recoveryInput, userTraj: trajectoryInfo, nodeCandidateInfo: recoveryNodeCandidates, preFltResult: fltResult, completion: { [self] statusCode, returnedString, fltInput, inputTraj, inputNodeCandidateInfo, preFltResult in
                 if (!returnedString.contains("timed out")) { stateManager.setNetworkCount(value: 0) }
                 if (statusCode == 200) {
-                    let result = jsonToFineLocatoinTrackingResultFromServer(jsonString: returnedString)
-                    var fltResult = result.1
+//                    let result = jsonToFineLocatoinTrackingResultFromServer(jsonString: returnedString)
+//                    var fltResult = result.1
+                    let results = jsonToFineLocatoinTrackingResultFromServerList(jsonString: returnedString)
+                    let result = results.1.flt_outputs
+                    var fltResult = result.isEmpty ? FineLocationTrackingFromServer() : result[0]
                     print(getLocalTimeString() + " , (Olympus) Request Phase Recovery : result = \(fltResult)")
                     var isUsePreResult: Bool = false
                     if (fltResult.scc < preFltResult.scc) {
