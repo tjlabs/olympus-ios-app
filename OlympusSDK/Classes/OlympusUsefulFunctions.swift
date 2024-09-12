@@ -213,3 +213,21 @@ public func weightedAverageHeading(A: Double, B: Double, weightA: Double, weight
     
     return result_deg
 }
+
+public func getCombination(inputArray: [Int], targetNum: Int) -> [[Int]] {
+    var result = [[Int]]()
+    
+    func comb(index: Int, curComb: [Int]) {
+        if targetNum == curComb.count {
+            result.append(curComb)
+            return
+        } else {
+            for i in index..<inputArray.count {
+                comb(index: i+1, curComb: curComb + [inputArray[i]])
+            }
+        }
+    }
+    comb(index: 0, curComb: [])
+    
+    return result
+}
