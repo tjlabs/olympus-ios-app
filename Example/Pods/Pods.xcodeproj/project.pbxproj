@@ -654,6 +654,7 @@
 		B305FA9E2C33C30F00DBE807 /* OlympusUnitDRGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA9D2C33C30F00DBE807 /* OlympusUnitDRGenerator.swift */; };
 		B305FAA02C33C32000DBE807 /* OlympusUnitStatusEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA9F2C33C32000DBE807 /* OlympusUnitStatusEstimator.swift */; };
 		B330D4879E6DB962A4B765DC1701A245 /* GULNetworkInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = 780FC3DB00F7698B0FFBD671F56CA10E /* GULNetworkInternal.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		B36AE8602C92AAAA005B21A2 /* OlympusAmbiguitySolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36AE85F2C92AAAA005B21A2 /* OlympusAmbiguitySolver.swift */; };
 		B3BB5E602C365FDD00FD0CA4 /* OlympusBlacklistChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3BB5E5F2C365FDD00FD0CA4 /* OlympusBlacklistChecker.swift */; };
 		B3E91A918126C3D265E295A275A5AA83 /* FIRCLSReportAdapter.m in Sources */ = {isa = PBXBuildFile; fileRef = 40A01E180FDBA6E118BF5CEAEA9F0092 /* FIRCLSReportAdapter.m */; };
 		B4015BE1313094DACA3DBB86191C5030 /* CombinedHighlighter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EF83C3BB4E6D70C22C6957DC42117C0 /* CombinedHighlighter.swift */; };
@@ -2008,6 +2009,7 @@
 		B305FA9F2C33C32000DBE807 /* OlympusUnitStatusEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusUnitStatusEstimator.swift; path = OlympusSDK/Classes/OlympusUnitStatusEstimator.swift; sourceTree = "<group>"; };
 		B3185CDFA403B6AF270CF263D8F0CBA1 /* OlympusSDK-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "OlympusSDK-dummy.m"; sourceTree = "<group>"; };
 		B358537494260256AC3138BDA6251379 /* SessionsSubscriber.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SessionsSubscriber.swift; path = FirebaseSessions/Sources/Public/SessionsSubscriber.swift; sourceTree = "<group>"; };
+		B36AE85F2C92AAAA005B21A2 /* OlympusAmbiguitySolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusAmbiguitySolver.swift; path = OlympusSDK/Classes/OlympusAmbiguitySolver.swift; sourceTree = "<group>"; };
 		B378D1162026B0FF7989F1A754CC0CF5 /* FBLPromise+Reduce.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "FBLPromise+Reduce.h"; path = "Sources/FBLPromises/include/FBLPromise+Reduce.h"; sourceTree = "<group>"; };
 		B385554459445169926EAF96251B0449 /* FIRInstallationsIIDTokenStore.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = FIRInstallationsIIDTokenStore.m; path = FirebaseInstallations/Source/Library/IIDMigration/FIRInstallationsIIDTokenStore.m; sourceTree = "<group>"; };
 		B3BB5E5F2C365FDD00FD0CA4 /* OlympusBlacklistChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusBlacklistChecker.swift; path = OlympusSDK/Classes/OlympusBlacklistChecker.swift; sourceTree = "<group>"; };
@@ -2742,6 +2744,7 @@
 				B3BB5E5F2C365FDD00FD0CA4 /* OlympusBlacklistChecker.swift */,
 				B305FA9F2C33C32000DBE807 /* OlympusUnitStatusEstimator.swift */,
 				57481630A5F0C61563F6895DF305F4B9 /* OlympusKalmanFilter.swift */,
+				B36AE85F2C92AAAA005B21A2 /* OlympusAmbiguitySolver.swift */,
 				1780CAD74FDC0EC6B72139EE952B733E /* OlympusPathMatchingCalculator.swift */,
 				D8527BFA232AE64C95D5E00DF8D560B1 /* OlympusServiceManager.swift */,
 				7C70D580254D53EC9787BDF897D6257F /* Pod */,
@@ -5860,6 +5863,7 @@
 				B305FA6A2C33C0C100DBE807 /* JSONConverter.swift in Sources */,
 				40588B71D3048B5217511EBC1BB484F8 /* OlympusPathMatchingCalculator.swift in Sources */,
 				B305FA7C2C33C19E00DBE807 /* OlympusEntity.swift in Sources */,
+				B36AE8602C92AAAA005B21A2 /* OlympusAmbiguitySolver.swift in Sources */,
 				B305FA5A2C33BFEE00DBE807 /* OlympusRFDFunctions.swift in Sources */,
 				B3BB5E602C365FDD00FD0CA4 /* OlympusBlacklistChecker.swift in Sources */,
 				B305FA942C33C2B400DBE807 /* OlympusPacingDetectFunctions.swift in Sources */,
