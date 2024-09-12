@@ -646,7 +646,7 @@ public class OlympusKalmanFilter: NSObject {
         // Consolidate Path-Matching logic to avoid redundancy
         var pmResult = performPathMatching(fltResult: propagatedPmFltResult, PADDING_VALUES: PADDING_VALUES, mode: mode)
         let isPmSuccess = pmResult.isSuccess
-        var pmPropagatedPmFltResult = updateResultWithPathMatching(pmResult: pmResult, propagatedResult: propagatedPmFltResult, useHeading: !isPossibleHeadingCorrection)
+        var pmPropagatedPmFltResult = updateResultWithPathMatching(pmResult: pmResult, propagatedResult: propagatedPmFltResult, useHeading: isPossibleHeadingCorrection)
         
         var tuHeading = compensateHeading(heading: tuResult.absolute_heading)
         
@@ -659,7 +659,7 @@ public class OlympusKalmanFilter: NSObject {
         // Perform Path-Matching for updated result
         pmResult = performPathMatching(fltResult: muResult, PADDING_VALUES: PADDING_VALUES, mode: mode)
         let isPmMuSuccess = pmResult.isSuccess
-        var pmMuResult = updateResultWithPathMatching(pmResult: pmResult, propagatedResult: muResult, useHeading: !isPossibleHeadingCorrection)
+        var pmMuResult = updateResultWithPathMatching(pmResult: pmResult, propagatedResult: muResult, useHeading: isPossibleHeadingCorrection)
         
         if isPmMuSuccess {
             let diffXY = computeDiffXY(tuResult: tuResult, pmMuResult: pmMuResult)
