@@ -32,26 +32,6 @@ public class OlympusRouteTracker {
         self.EntranceInnerWardRSSI[key] = Double(sectorInfoInnermostWard.rss)
         self.EntranceInnerWardCoord[key] = sectorInfoInnermostWard.pos + sectorInfoInnermostWard.direction
 //        print(getLocalTimeString() + " , (Olympus) setEntranceInnerWardInfo : key = \(key) , ID = \(EntranceInnerWardID[key]) , RSSI = \(EntranceInnerWardRSSI[key]) , XYH = \(EntranceInnerWardCoord[key])")
-        
-//        self.EntranceInnerWardID["COEX_B0_1"] = "TJ-00CB-00000320-0000"
-//        self.EntranceInnerWardRSSI["COEX_B0_1"] = -80
-//        self.EntranceInnerWardCoord["COEX_B0_1"] = [252, 70, 90]
-//        
-//        self.EntranceInnerWardID["COEX_B0_2"] = "TJ-00CB-00000323-0000"
-//        self.EntranceInnerWardRSSI["COEX_B0_2"] = -80
-//        self.EntranceInnerWardCoord["COEX_B0_2"] = [250, 180, 90]
-//        
-//        self.EntranceInnerWardID["COEX_B0_3"] = "TJ-00CB-00000344-0000"
-//        self.EntranceInnerWardRSSI["COEX_B0_3"] = -72
-//        self.EntranceInnerWardCoord["COEX_B0_3"] = [291, 290, 90]
-//        
-//        self.EntranceInnerWardID["COEX_B0_4"] = "TJ-00CB-000002A4-0000"
-//        self.EntranceInnerWardRSSI["COEX_B0_4"] = -80
-//        self.EntranceInnerWardCoord["COEX_B0_4"] = [248, 442, 180]
-//        
-//        self.EntranceInnerWardID["COEX_B0_5"] = "TJ-00CB-000002B1-0000"
-//        self.EntranceInnerWardRSSI["COEX_B0_5"] = -80
-//        self.EntranceInnerWardCoord["COEX_B0_5"] = [59, 350, 270]
     }
 
     private func parseRoute(data: String) -> ([String], [[Double]]) {
@@ -312,6 +292,7 @@ public class OlympusRouteTracker {
                 if let thresholdRSSI = EntranceInnerWardRSSI[currentEntrance] {
                     if let wardCoord = EntranceInnerWardCoord[currentEntrance] {
                         let normalizedRSSI = (scannedRSSI - device_min_rss)*normalization_scale + standard_min_rss
+//                        print(getLocalTimeString() + " , (Olympus) Route Tracker : checkIsEntranceFinished // scannedRSSI [\(bleID) : Raw = \(scannedRSSI) : normalizedRSSI = \(normalizedRSSI) // thresholdRSSI = \(thresholdRSSI)]")
                         return normalizedRSSI >= thresholdRSSI ? (true, wardCoord) : (false, xyh)
                     } else {
                         return (false, xyh)
@@ -326,52 +307,6 @@ public class OlympusRouteTracker {
             return (false, xyh)
         }
     }
-    
-//    public func checkIsEntranceAnchor(bleData: [String: Double]) -> (Bool, [Double]) {
-//        let xyh: [Double] = [0, 0, 0]
-//        if (currentEntrance == "COEX_B0_1") {
-//            let bleID = "TJ-00CB-00000320-0000"
-//            if let bleRSSI = bleData[bleID] {
-//                print(getLocalTimeString() + " , (Olympus) Route Track : checkIsEntranceAnchor // \(currentEntrance) // RSSI = \(bleRSSI)")
-//                return bleRSSI >= -80 ? (true, [252, 70, 90]) : (false, xyh)
-//            } else {
-//                return (false, xyh)
-//            }
-//        } else if (currentEntrance == "COEX_B0_2") {
-//            let bleID = "TJ-00CB-00000323-0000"
-//            if let bleRSSI = bleData[bleID] {
-//                print(getLocalTimeString() + " , (Olympus) Route Track : checkIsEntranceAnchor // \(currentEntrance) // RSSI = \(bleRSSI)")
-//                return bleRSSI >= -80 ? (true, [250, 180, 90]) : (false, xyh)
-//            } else {
-//                return (false, xyh)
-//            }
-//        } else if (currentEntrance == "COEX_B0_3") {
-//            let bleID = "TJ-00CB-00000344-0000"
-//            if let bleRSSI = bleData[bleID] {
-//                print(getLocalTimeString() + " , (Olympus) Route Track : checkIsEntranceAnchor // \(currentEntrance) // RSSI = \(bleRSSI)")
-//                return bleRSSI >= -72 ? (true, [291, 290, 90]) : (false, xyh)
-//            } else {
-//                return (false, xyh)
-//            }
-//        } else if (currentEntrance == "COEX_B0_4") {
-//            let bleID = "TJ-00CB-000002A4-0000"
-//            if let bleRSSI = bleData[bleID] {
-//                print(getLocalTimeString() + " , (Olympus) Route Track : checkIsEntranceAnchor // \(currentEntrance) // RSSI = \(bleRSSI)")
-//                return bleRSSI >= -80 ? (true, [248, 442, 180]) : (false, xyh)
-//            } else {
-//                return (false, xyh)
-//            }
-//        } else if (currentEntrance == "COEX_B0_5") {
-//            let bleID = "TJ-00CB-000002B1-0000"
-//            if let bleRSSI = bleData[bleID] {
-//                print(getLocalTimeString() + " , (Olympus) Route Track : checkIsEntranceAnchor // \(currentEntrance) // RSSI = \(bleRSSI)")
-//                return bleRSSI >= -80 ? (true, [59, 350, 270]) : (false, xyh)
-//            } else {
-//                return (false, xyh)
-//            }
-//        }
-//        return (false, xyh)
-//    }
     
     public func findEntrance(result: FineLocationTrackingFromServer, entrance: Int) -> (Int, Int) {
         var entranceNumber: Int = 0
