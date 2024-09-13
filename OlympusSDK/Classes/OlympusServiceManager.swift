@@ -997,6 +997,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     //                                    print(getLocalTimeString() + " , (Olympus) Node Find : checkSectionChanged = \(isSectionChanged)")
                                         let multipleNodeCandidates = OlympusPathMatchingCalculator.shared.getMultipleAnchorNodeCandidates(fltResult: tuResult, pathType: 1)
                                         var prevPassedNodeInfo = OlympusPathMatchingCalculator.shared.getPreviousPassedNode(nodeCandidateInfo: multipleNodeCandidates)
+                                        
                                         if isSectionChanged {
     //                                        print(getLocalTimeString() + " , (Olympus) Node Find : multipleNodeCandidates = \(multipleNodeCandidates)")
                                             inputNodeCandidates = multipleNodeCandidates
@@ -1028,7 +1029,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                             } else {
                                                 processPhase6(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: inputNodeCandidates)
                                             }
-                                            
                                         } else if !self.isInMapEnd {
                                             for item in nodeCandidatesInfo {
                                                 nodeNumberCandidates.append(item.nodeNumber)
@@ -1512,7 +1512,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //                let fltResult = result.1
                 let results = jsonToFineLocatoinTrackingResultFromServerList(jsonString: returnedString)
                 let result = results.1.flt_outputs
-                let (useResult, fltResult) = ambiguitySolver.selectResult(result)
+                let (useResult, fltResult) = ambiguitySolver.selectResult(results: results.1)
                 print(getLocalTimeString() + " , (Olympus) Request Phase 4 : result = \(fltResult)")
                 trajController.updateTrajCompensationArray(result: fltResult)
                 trajController.setPastInfo(trajInfo: inputTraj, searchInfo: SearchInfo(), matchedDirection: fltResult.search_direction)
@@ -1629,7 +1629,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 let results = jsonToFineLocatoinTrackingResultFromServerList(jsonString: returnedString)
                 ambiguitySolver.selectResult(results: results.1)
                 let result = results.1.flt_outputs
-                let (useResult, fltResult) = ambiguitySolver.selectResult(result)
+                let (useResult, fltResult) = ambiguitySolver.selectResult(results: results.1)
 //                print(getLocalTimeString() + " , (Olympus) Request Phase 5 : result = \(fltResult)")
                 trajController.updateTrajCompensationArray(result: fltResult)
                 trajController.setPastInfo(trajInfo: inputTraj, searchInfo: SearchInfo(), matchedDirection: fltResult.search_direction)
@@ -1734,15 +1734,19 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //                let result = jsonToFineLocatoinTrackingResultFromServer(jsonString: returnedString)
 //                let fltResult = result.1
                 let results = jsonToFineLocatoinTrackingResultFromServerList(jsonString: returnedString)
-                let result = results.1.flt_outputs
-                let (useResult, fltResult) = ambiguitySolver.selectResult(result)
+                let (useResult, fltResult) = ambiguitySolver.selectResult(results: results.1)
+                
+                displayOutput.serverResult[0] = fltResult.x
+                displayOutput.serverResult[1] = fltResult.y
+                displayOutput.serverResult[2] = fltResult.absolute_heading
+                
 //                trajController.updateTrajCompensationArray(result: fltResult)
 //                trajController.setPastInfo(trajInfo: inputTraj, searchInfo: SearchInfo(), matchedDirection: fltResult.search_direction)
                 if (fltResult.index > indexPast && useResult) {
                     // 임시
-                    displayOutput.serverResult[0] = fltResult.x
-                    displayOutput.serverResult[1] = fltResult.y
-                    displayOutput.serverResult[2] = fltResult.absolute_heading
+//                    displayOutput.serverResult[0] = fltResult.x
+//                    displayOutput.serverResult[1] = fltResult.y
+//                    displayOutput.serverResult[2] = fltResult.absolute_heading
                     // 임시
                     indexPast = fltResult.index
                 }
@@ -1774,8 +1778,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //                let result = jsonToFineLocatoinTrackingResultFromServer(jsonString: returnedString)
 //                let fltResult = result.1
                 let results = jsonToFineLocatoinTrackingResultFromServerList(jsonString: returnedString)
-                 let result = results.1.flt_outputs
-                let (useResult, fltResult) = ambiguitySolver.selectResult(result)
+                let (useResult, fltResult) = ambiguitySolver.selectResult(results: results.1)
                 print(getLocalTimeString() + " , (Olympus) Request Phase 6 : result = \(fltResult)")
                 trajController.updateTrajCompensationArray(result: fltResult)
                 trajController.setPastInfo(trajInfo: inputTraj, searchInfo: SearchInfo(), matchedDirection: fltResult.search_direction)

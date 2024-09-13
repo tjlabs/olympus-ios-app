@@ -1,19 +1,19 @@
 import Foundation
 
 public class OlympusAmbiguitySolver {
-    var isAmbiguous = false
-    var ambiguousFltInput = FineLocationTracking(user_id: "", mobile_time: 0, sector_id: 0, operating_system: "", building_name: "", level_name_list: [], phase: 0, search_range: [], search_direction_list: [], normalization_scale: 0, device_min_rss: 0, sc_compensation_list: [], tail_index: -1, head_section_number: 0, node_number_list: [], node_index: 0, retry: false)
+    public var isAmbiguous = false
+    public var retryFltInput = FineLocationTracking(user_id: "", mobile_time: 0, sector_id: 0, operating_system: "", building_name: "", level_name_list: [], phase: 0, search_range: [], search_direction_list: [], normalization_scale: 0, device_min_rss: 0, sc_compensation_list: [], tail_index: -1, head_section_number: 0, node_number_list: [], node_index: 0, retry: false)
 
-    func initialize() {
+    public func initialize() {
         isAmbiguous = false
-        ambiguousFltInput = FineLocationTracking(user_id: "", mobile_time: 0, sector_id: 0, operating_system: "", building_name: "", level_name_list: [], phase: 0, search_range: [], search_direction_list: [], normalization_scale: 0, device_min_rss: 0, sc_compensation_list: [], tail_index: -1, head_section_number: 0, node_number_list: [], node_index: 0, retry: false)
+        retryFltInput = FineLocationTracking(user_id: "", mobile_time: 0, sector_id: 0, operating_system: "", building_name: "", level_name_list: [], phase: 0, search_range: [], search_direction_list: [], normalization_scale: 0, device_min_rss: 0, sc_compensation_list: [], tail_index: -1, head_section_number: 0, node_number_list: [], node_index: 0, retry: false)
     }
 
-    fun getIsAmbiguous() {
-        return isAmbiguous
+    public func getIsAmbiguous() -> Bool {
+        return self.isAmbiguous
     }
     
-    func selectResult(results: FineLocationTrackingFromServerList) -> (Bool, FineLocationTrackingFromServer) {
+    public func selectResult(results: FineLocationTrackingFromServerList) -> (Bool, FineLocationTrackingFromServer) {
         let fltOutputs = results.flt_outputs
         if fltOutputs.count == 1 {
             return (true, fltOutputs[0])
@@ -24,10 +24,11 @@ public class OlympusAmbiguitySolver {
 
             if firstFltOutput.scc != 0 {
                 let ratio = secondFltOutput.scc / firstFltOutput.scc
-                print(getLocalTimeString() + " , (Olympus) selectResult : 1st: \(firstFltOutput.scc) // 2nd: \(secondFltOutput.scc) // ratio: \(ratio)")
                 if ratio < OlympusConstants.OUTPUT_AMBIGUITY_RATIO {
+                    print(getLocalTimeString() + " , (Olympus) selectResult (Clear) : index = \(firstFltOutput.index) // 1st = \(firstFltOutput.scc) // 2nd = \(secondFltOutput.scc) // ratio = \(ratio)")
                     return (true, firstFltOutput)
                 } else {
+                    print(getLocalTimeString() + " , (Olympus) selectResult (Ambiguous) : index = \(firstFltOutput.index) // 1st = \(firstFltOutput.scc) // 2nd = \(secondFltOutput.scc) // ratio = \(ratio)")
                     return (false, FineLocationTrackingFromServer())
                 }
             } else {
