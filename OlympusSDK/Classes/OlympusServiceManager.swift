@@ -1619,7 +1619,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 let results = jsonToFineLocatoinTrackingResultFromServerList(jsonString: returnedString)
                 ambiguitySolver.selectResult(results: results.1)
                 let result = results.1.flt_outputs
-                let fltResult = result.isEmpty ? FineLocationTrackingFromServer() : result[0]
+                let fltResult = result.isEmpty ? FineLocationTrackingFromServer() : ambiguitySolver.selectBestResult(results: results.1)
 //                print(getLocalTimeString() + " , (Olympus) Request Phase 5 : result = \(fltResult)")
                 trajController.updateTrajCompensationArray(result: fltResult)
                 trajController.setPastInfo(trajInfo: inputTraj, searchInfo: SearchInfo(), matchedDirection: fltResult.search_direction)

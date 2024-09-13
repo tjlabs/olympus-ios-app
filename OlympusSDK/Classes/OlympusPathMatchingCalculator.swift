@@ -1645,14 +1645,21 @@ public class OlympusPathMatchingCalculator {
         let anchorNodes: [Int] = nodeCandidates.map { $0.nodeNumber }
         
         var passedNodeInfo = PassedNodeInfo(nodeNumber: -1, nodeCoord: [0, 0], nodeHeadings: [], matchedIndex: 0, userHeading: 0)
-        var prevNodeCandidates = [PassedNodeInfo]()
+//        var prevNodeCandidates = [PassedNodeInfo]()
+//        for i in 0..<nodeInfoBuffer.count {
+//            if !anchorNodes.contains(nodeInfoBuffer[i].nodeNumber) && nodeInfoBuffer[i].matchedIndex < anchorNodeInfo.matchedIndex {
+//                prevNodeCandidates.append(nodeInfoBuffer[i])
+//            }
+//        }
+//        if !prevNodeCandidates.isEmpty {
+//            passedNodeInfo = prevNodeCandidates[prevNodeCandidates.count-1]
+//        }
+        
         for i in 0..<nodeInfoBuffer.count {
-            if !anchorNodes.contains(nodeInfoBuffer[i].nodeNumber) && nodeInfoBuffer[i].matchedIndex < anchorNodeInfo.matchedIndex {
-                prevNodeCandidates.append(nodeInfoBuffer[i])
+            if anchorNodeInfo.nodeNumber == nodeInfoBuffer[i].nodeNumber {
+                break
             }
-        }
-        if !prevNodeCandidates.isEmpty {
-            passedNodeInfo = prevNodeCandidates[prevNodeCandidates.count-1]
+            passedNodeInfo = nodeInfoBuffer[i]
         }
         
         print(getLocalTimeString() + " , (Olympus) Node Find : prevPassedNodesNumbers = \(nodeNumbers)")
