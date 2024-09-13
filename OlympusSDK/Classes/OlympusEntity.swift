@@ -417,7 +417,7 @@ public struct CoarseLocationEstimationResult: Codable {
 }
 
 // Fine Location Tracking
-struct FineLocationTracking: Encodable {
+public struct FineLocationTracking: Encodable {
     var user_id: String
     var mobile_time: Int
     var sector_id: Int
