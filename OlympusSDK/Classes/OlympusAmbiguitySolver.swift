@@ -1,73 +1,37 @@
 import Foundation
 
 public class OlympusAmbiguitySolver {
-    
-    init() {
-        
-    }
-    
-    deinit {
+    var ambiguousFltInput = FineLocationTracking()
+    var isAmbiguous = false
 
+    func initialize() {
+        isAmbiguous = false
+        ambiguousFltInput = FineLocationTracking()
     }
-    
-    public func initialize() {
 
-    }
-    
-    public func selectBestResult(results: FineLocationTrackingFromServerList) -> FineLocationTrackingFromServer {
+
+    func selectResult(results: FineLocationTrackingFromServerList) -> (Bool, FineLocationTrackingFromServer) {
         let fltOutputs = results.flt_outputs
-        var highestSCC: Double = 0
-        
-        let sccArray: [Double] = fltOutputs.map { $0.scc }
-        print(getLocalTimeString() + " , (Olympus) selectBestResult : sccArray = \(sccArray)")
-        var resultToReturn: FineLocationTrackingFromServer = fltOutputs[0]
-        for result in fltOutputs {
-            if result.scc > highestSCC {
-                resultToReturn = result
-                highestSCC = result.scc
-            }
-        }
-        
-        print(getLocalTimeString() + " , (Olympus) selectBestResult : \(resultToReturn)")
-        return resultToReturn
-    }
-    
-//    public func selectResult(results: FineLocationTrackingFromServerList) {
-//        let fltOutputs = results.flt_outputs
-//        
-//        var indexArray = [Int](0..<fltOutputs.count)
-//        if indexArray.count > 1 {
-//            let sccArray: [Double] = fltOutputs.map { $0.scc }
-//            let targetNum = 2
-//            var ratioArray = [Double]()
-//            let indexCombination = getCombination(inputArray: indexArray, targetNum: targetNum)
-//            for indexes in indexCombination {
-//                let ratio = fltOutputs[indexes[0]].scc/fltOutputs[indexes[1]].scc
-//                ratioArray.append(ratio)
-//            }
-//            print(getLocalTimeString() + " , (Olympus) selectResult : sccArray = \(sccArray)")
-//            print(getLocalTimeString() + " , (Olympus) selectResult : ratioArray = \(ratioArray)")
-//        } else {
-//            
-//        }
-//    }
-    
-    public func selectResult(results: FineLocationTrackingFromServerList) {
-        let fltOutputs = results.flt_outputs.sorted { $0.scc > $1.scc }
-        let sccArray: [Double] = fltOutputs.map { $0.scc }
-        
-        if fltOutputs.count > 1 {
-            let ratio = fltOutputs[1].scc/fltOutputs[0].scc
-            
-            print(getLocalTimeString() + " , (Olympus) selectResult : sccArray = \(sccArray)")
-            print(getLocalTimeString() + " , (Olympus) selectResult : ratio = \(ratio)")
-            
-            if ratio < OlympusConstants.OUTPUT_AMBIGUITY_RATIO {
-                
+        if fltOutputs.count == 1 {
+            return (true, fltOutputs[0])
+        } else if (fltOUputs.count > 1) {
+            let sortedFltOutputs = fltOutputs.sorted(by: { $0.scc > $1.scc })
+            let firstFltOutput = sortedFltOutputs[0]
+            let secondFltOutput = sortedFltOutputs[1]
+
+            if firstFltOutput.scc != 0 {
+                let ratio = secondFltOutput.scc / firstFltOutput.scc
+                print("1st: \(firstFltOutput.scc) // 2nd: \(secondFltOutput.scc) // ratio: \(ratio)")
+                if ratio < 0.85 {
+                    return (true, firstFltOutput)
+                } else {
+                    return (false, FineLocationTrackingFromServer())
+                }
+            } else {
+                return (false, FineLocationTrackingFromServer())
             }
         } else {
-            
+            return (false, FineLocationTrackingFromServer())
         }
     }
-    
 }
