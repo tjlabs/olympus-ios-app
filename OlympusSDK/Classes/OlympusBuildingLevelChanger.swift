@@ -510,6 +510,7 @@ public class OlympusBuildingLevelChanger {
                         }
                     }
                     
+                    print(getLocalTimeString() + " , (Olympus) Run OSR : index = \(lastResult.index) // isUserInArea = \(isUserInArea) // isPassedNodeInArea = \(isPassedNodeInArea)")
                     if isUserInArea && isPassedNodeInArea {
                         return true
                     }
