@@ -978,7 +978,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             }
                         } else if (!isNeedPathTrajMatching.straight) {
                             // Phase 6 요청 보내야하는 상황이면 요쳥 보내기
-                            let isNeedRq = sectionController.checkIsNeedRequestFlt()
+//                            let isNeedRq = sectionController.checkIsNeedRequestFlt()
+                            let isNeedRq = sectionController.checkIsNeedRequestFlt(isAmbiguous: ambiguitySolver.getIsAmbiguous())
                             if (isNeedRq.0 && phaseController.PHASE == OlympusConstants.PHASE_6) {
                                 let goodCaseNodeCandidates = OlympusPathMatchingCalculator.shared.getAnchorNodeCandidatesForGoodCase(fltResult: tuResult, pathType: pathType)
                                 var inputNodeCandidates = goodCaseNodeCandidates
@@ -1628,6 +1629,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //                let fltResult = result.1
                 let results = jsonToFineLocatoinTrackingResultFromServerList(jsonString: returnedString)
                 let (useResult, fltResult) = ambiguitySolver.selectResult(results: results.1)
+                ambiguitySolver.setIsAmbiguous(value: !useResult)
+                ambiguitySolver.setRetryInput(input: fltInput)
+                    
 //                print(getLocalTimeString() + " , (Olympus) Request Phase 5 : result = \(fltResult)")
                 trajController.updateTrajCompensationArray(result: fltResult)
                 trajController.setPastInfo(trajInfo: inputTraj, searchInfo: SearchInfo(), matchedDirection: fltResult.search_direction)
@@ -1766,7 +1770,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //        displayOutput.indexTx = unitDRInfoIndex
         displayOutput.searchDirection = []
         var input = FineLocationTracking(user_id: self.user_id, mobile_time: currentTime, sector_id: self.sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM, building_name: self.currentBuilding, level_name_list: levelArray, phase: 6, search_range: [], search_direction_list: [], normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation_list: [1.01], tail_index: stableInfo.tail_index, head_section_number: stableInfo.head_section_number, node_number_list: stableInfo.node_number_list, node_index: 0, retry: false)
-        
+        ambiguitySolver.setIsAmbiguous(value: false)
         print(getLocalTimeString() + " , (Olympus) Request Phase 6 : input = \(input)")
         stateManager.setNetworkCount(value: stateManager.networkCount+1)
         if (REGION_NAME != "Korea" && self.deviceModel == "iPhone SE (2nd generation)") { input.normalization_scale = 1.01 }
@@ -2193,7 +2197,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //                print(getLocalTimeString() + " , (Olympus) Run OSR : index = \(unitDRInfoIndex) , rssi = \(bleData)")
 //            }
 //        }
-        buildingLevelChanger.estimateBuildingLevel(user_id: self.user_id, mode: self.runMode, phase: phaseController.PHASE, isGetFirstResponse: stateManager.isGetFirstResponse, networkStatus: self.networkStatus, result: self.olympusResult, currentBuilding: self.currentBuilding, currentLevel: self.currentLevel, currentEntrance: routeTracker.currentEntrance)
+        
+//        buildingLevelChanger.estimateBuildingLevel(user_id: self.user_id, mode: self.runMode, phase: phaseController.PHASE, isGetFirstResponse: stateManager.isGetFirstResponse, networkStatus: self.networkStatus, result: self.olympusResult, currentBuilding: self.currentBuilding, currentLevel: self.currentLevel, currentEntrance: routeTracker.currentEntrance)
+        buildingLevelChanger.extendedEstimateBuildingLevel(user_id: self.user_id, mode: self.runMode, phase: phaseController.PHASE, isGetFirstResponse: stateManager.isGetFirstResponse, networkStatus: self.networkStatus, isDRMode: self.isDRMode, passedNodes: OlympusPathMatchingCalculator.shared.getPassedNodeInfoBuffer(), result: self.olympusResult, currentBuilding: self.currentBuilding, currentLevel: self.currentLevel, currentEntrance: routeTracker.currentEntrance)
     }
     
     private func controlMode() {
@@ -2451,7 +2457,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 phaseBreakResult = fltResult
             }
         }
-//        OlympusPathMatchingCalculator.shared.initPassedNodeInfo()
+        ambiguitySolver.setIsAmbiguous(value: false)
         trajController.setIsNeedTrajCheck(flag: true)
         NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_1])
         isInRecoveryProcess = false

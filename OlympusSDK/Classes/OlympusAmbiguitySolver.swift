@@ -9,6 +9,14 @@ public class OlympusAmbiguitySolver {
         retryFltInput = FineLocationTracking(user_id: "", mobile_time: 0, sector_id: 0, operating_system: "", building_name: "", level_name_list: [], phase: 0, search_range: [], search_direction_list: [], normalization_scale: 0, device_min_rss: 0, sc_compensation_list: [], tail_index: -1, head_section_number: 0, node_number_list: [], node_index: 0, retry: false)
     }
 
+    public func setIsAmbiguous(value: Bool) {
+        self.isAmbiguous = value
+    }
+    
+    public func setRetryInput(input: FineLocationTracking) {
+        self.retryFltInput = input
+    }
+    
     public func getIsAmbiguous() -> Bool {
         return self.isAmbiguous
     }
