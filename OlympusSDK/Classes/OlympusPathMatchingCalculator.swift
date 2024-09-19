@@ -965,6 +965,10 @@ public class OlympusPathMatchingCalculator {
         }
     }
     
+    public func getPassedNodeInfoBuffer() -> [PassedNodeInfo] {
+        return self.passedNodeInfoBuffer
+    }
+    
     public func getPaddingValues(mode: String, isPhaseBreak: Bool, PADDING_VALUE: Double) -> [Double] {
         var paddingValues: [Double] = [0, 0, 0, 0]
         

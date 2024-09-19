@@ -425,4 +425,98 @@ public class OlympusBuildingLevelChanger {
             self.isDetermineSpot = false
         }
     }
+    
+    func extendedEstimateBuildingLevel(user_id: String, mode: String, phase: Int, isGetFirstResponse: Bool, networkStatus: Bool, isDRMode: Bool, passedNodes: [PassedNodeInfo], result: FineLocationTrackingResult, currentBuilding: String, currentLevel: String, currentEntrance: String) {
+        let currentTime = getCurrentTimeInMilliseconds()
+        var isRunOsr: Bool = true
+        if (isGetFirstResponse && networkStatus) {
+            if (mode != OlympusConstants.MODE_PDR) {
+                if (phase >= OlympusConstants.PHASE_4) {
+                    isRunOsr = self.checkIsPossibleRunOSR(result: result, isDRMode: isDRMode, passedNodes: passedNodes, mode: mode)
+                }
+                
+                if (isRunOsr) {
+                    let input = OnSpotRecognition(operating_system: OlympusConstants.OPERATING_SYSTEM, user_id: user_id, mobile_time: currentTime, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), standard_min_rss: Int(OlympusConstants.STANDARD_MIN_RSS))
+                    print(getLocalTimeString() + " , (Olympus) Run OSR : input = \(input)")
+                    OlympusNetworkManager.shared.postOSR(url: CALC_OSR_URL, input: input, completion: { [self] statusCode, returnedString in
+//                        print(getLocalTimeString() + " , (Olympus) Run OSR : result = \(returnedString)")
+                        if (statusCode == 200) {
+                            let result = jsonToOnSpotRecognitionResult(jsonString: returnedString)
+                            let decodedOsr = result.1
+                            if (result.0 && decodedOsr.building_name != "" && decodedOsr.level_name != "") {
+                                let isOnSpot = isOnSpotRecognition(result: decodedOsr, level: currentLevel)
+//                                print(getLocalTimeString() + " , (Olympus) Run OSR : isOnSpot = \(isOnSpot)")
+                                if (isOnSpot.isOn) {
+                                    let levelDestination = isOnSpot.levelDestination + isOnSpot.levelDirection
+                                    determineSpotDetect(result: decodedOsr, lastSpotId: self.lastSpotId, levelDestination: levelDestination, currentBuilding: currentBuilding, currentLevel: currentLevel, currentEntrance: currentEntrance, currentTime: currentTime)
+                                }
+                            }
+                        }
+                    })
+                }
+            }
+        } else {
+            self.travelingOsrDistance = 0
+        }
+    }
+    
+    func checkIsPossibleRunOSR(result: FineLocationTrackingResult, isDRMode: Bool, passedNodes: [PassedNodeInfo], mode: String) -> Bool {
+        if (mode == OlympusConstants.MODE_PDR) {
+            return false
+        }
+        
+        let lastResult = result
+        
+        let buildingName = lastResult.building_name
+        let levelName = removeLevelDirectionString(levelName: result.level_name)
+
+        let key = "\(buildingName)_\(levelName)"
+        guard let levelChangeArea: [[Double]] = OlympusPathMatchingCalculator.shared.LevelChangeArea[key] else {
+            return false
+        }
+        
+        for i in 0..<levelChangeArea.count {
+            var isUserInArea: Bool = false
+            var isPassedNodeInArea: Bool = false
+            
+            if (!levelChangeArea[i].isEmpty) {
+                let xMin = levelChangeArea[i][0]
+                let yMin = levelChangeArea[i][1]
+                let xMax = levelChangeArea[i][2]
+                let yMax = levelChangeArea[i][3]
+                
+                if isDRMode {
+                    // Check Current XY
+                    if (lastResult.x >= xMin && lastResult.x <= xMax && lastResult.y >= yMin && lastResult.y <= yMax) {
+                        return true
+                    }
+                } else {
+                    // Check Current XY
+                    if (lastResult.x >= xMin && lastResult.x <= xMax && lastResult.y >= yMin && lastResult.y <= yMax) {
+                        isUserInArea = true
+                    }
+                    
+                    // Check PassedNode XY
+                    if passedNodes.count < 2 {
+                        return false
+                    } else {
+                        let firstPassedNodeCoord = passedNodes[passedNodes.count-1].nodeCoord
+                        let secondPassedNodeCoord = passedNodes[passedNodes.count-2].nodeCoord
+                        
+                        if (firstPassedNodeCoord[0] >= xMin && firstPassedNodeCoord[0] <= xMax && firstPassedNodeCoord[1] >= yMin && firstPassedNodeCoord[1] <= yMax) {
+                            if (secondPassedNodeCoord[0] >= xMin && secondPassedNodeCoord[0] <= xMax && secondPassedNodeCoord[1] >= yMin && secondPassedNodeCoord[1] <= yMax) {
+                                isPassedNodeInArea = true
+                            }
+                        }
+                    }
+                    
+                    if isUserInArea && isPassedNodeInArea {
+                        return true
+                    }
+                }
+            }
+        }
+        
+        return false
+    }
 }
