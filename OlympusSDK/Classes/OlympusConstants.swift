@@ -39,7 +39,7 @@ class OlympusConstants {
     static let PHASE_6: Int = 6
     static let PHASE_BECOME3_SCC: Double = 0.62
     static let PHASE_BREAK_SCC_PDR: Double = 0.45
-    static let PHASE_BREAK_SCC_DR: Double = 0.3
+    static let PHASE_BREAK_SCC_DR: Double = 0.45
     static let PHASE5_RECOVERY_SCC: Double = 0.5 // 0.55
     static let PHASE_BREAK_IN_PHASE2_SCC: Double = 0.26
     static let PHASE2_RESULT_USE_SCC: Double = 0.6
@@ -65,6 +65,7 @@ class OlympusConstants {
     
     // RFD //
     static var BLE_VALID_TIME: Double = 1000 // miliseconds
+    static var BLE_VALID_TIME_INT: Int = 500 // miliseconds
 //    static var BLE_VALID_TIME: Double = 1500 // miliseconds
     static let RFD_INTERVAL: TimeInterval = 1/2 //second
     static var RFD_INPUT_NUM: Int = 4
@@ -133,7 +134,7 @@ class OlympusConstants {
     static let OUTPUT_DISTANCE_SETTING: Double = 1
     static let SEND_INTERVAL_SECOND: Double = 1 / VELOCITY_QUEUE_SIZE
     static let VELOCITY_MIN: Double = 4
-    static let VELOCITY_MAX: Double = 20
+    static let VELOCITY_MAX: Double = 18
     static let RF_SC_THRESHOLD_DR: Double = 0.67
     
     static let AMP_THRESHOLD: Double = 0.18
