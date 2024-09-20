@@ -605,8 +605,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         let localTime: String = getLocalTimeString()
         if (isSimulationMode) {
             stateManager.updateTimeForInit()
-            let validTime = OlympusConstants.BLE_VALID_TIME
-            let currentTime = getCurrentTimeInMilliseconds() - (Int(validTime)/2)
+            let validTime = OlympusConstants.BLE_VALID_TIME_INT
+            let currentTime = getCurrentTimeInMilliseconds() - validTime
             
             if (bleLineCount < simulationBleData.count-1) {
                 let bleData = simulationBleData[bleLineCount]
@@ -674,11 +674,11 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             stateManager.checkBleOff(bluetoothReady: bleManager.bluetoothReady, bleLastScannedTime: bleManager.bleLastScannedTime)
             stateManager.updateTimeForInit()
             
-            let validTime = OlympusConstants.BLE_VALID_TIME
-            let currentTime = getCurrentTimeInMilliseconds() - (Int(validTime)/2)
+            let validTime = OlympusConstants.BLE_VALID_TIME_INT
+            let currentTime = getCurrentTimeInMilliseconds() - validTime
             let bleDictionary: [String: [[Double]]]? = bleManager.bleDictionary
             if let bleData = bleDictionary {
-                let trimmedResult = OlympusRFDFunctions.shared.trimBleData(bleInput: bleData, nowTime: getCurrentTimeInMillisecondsDouble(), validTime: validTime)
+                let trimmedResult = OlympusRFDFunctions.shared.trimBleData(bleInput: bleData, nowTime: getCurrentTimeInMillisecondsDouble(), validTime: Double(validTime))
                 switch trimmedResult {
                 case .success(let trimmedData):
                     self.bleAvg = OlympusRFDFunctions.shared.avgBleData(bleDictionary: trimmedData)
@@ -1618,7 +1618,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         stateManager.setNetworkCount(value: stateManager.networkCount+1)
        
         if (ambiguitySolver.getIsAmbiguous() && ambiguitySolver.retryFltInput.head_section_number == input.head_section_number) {
-            input = ambiguitySolver.retryFltInput
+            input = ambiguitySolver.getRetryInput()
         }
        
         if (REGION_NAME != "Korea" && self.deviceModel == "iPhone SE (2nd generation)") { input.normalization_scale = 1.01 }
@@ -1704,6 +1704,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         phaseBreakInPhase4(fltResult: fltResult, isUpdatePhaseBreakResult: true)
                     }
                     indexPast = fltResult.index
+                } else if !useResult {
+                    // Phase Break
+                    let bestResult = ambiguitySolver.selectBestResult(results: results.1)
+                    if bestResult.scc < OlympusConstants.PHASE_BREAK_SCC_DR {
+                        phaseBreakInPhase4(fltResult: bestResult, isUpdatePhaseBreakResult: true)
+                    }
                 }
                 preServerResultMobileTime = fltResult.mobile_time
                 self.isInRecoveryProcess = false

@@ -21,6 +21,11 @@ public class OlympusAmbiguitySolver {
         return self.isAmbiguous
     }
     
+    public func getRetryInput() -> FineLocationTracking {
+        self.retryFltInput.mobile_time = getCurrentTimeInMilliseconds()
+        return self.retryFltInput
+    }
+    
     public func selectResult(results: FineLocationTrackingFromServerList) -> (Bool, FineLocationTrackingFromServer) {
         let fltOutputs = results.flt_outputs
         if fltOutputs.count == 1 {
