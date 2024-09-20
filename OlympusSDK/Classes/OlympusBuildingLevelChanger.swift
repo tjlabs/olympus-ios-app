@@ -17,8 +17,8 @@ public class OlympusBuildingLevelChanger {
         observers = observers.filter { $0 !== observer }
     }
     
-    private func notifyObservers(building: String, level: String, range: [Int], direction: [Int]) {
-        observers.forEach { $0.isBuildingLevelChanged(newBuilding: building, newLevel: level, newRange: range, newDirection: direction)}
+    private func notifyObservers(building: String, level: String, range: [Int], direction: [Int], coord: [Double]) {
+        observers.forEach { $0.isBuildingLevelChanged(newBuilding: building, newLevel: level, newRange: range, newDirection: direction, newCoord: coord)}
     }
     
     public var isDetermineSpot: Bool = false
@@ -89,7 +89,7 @@ public class OlympusBuildingLevelChanger {
 //                                print(getLocalTimeString() + " , (Olympus) Run OSR : isOnSpot = \(isOnSpot)")
                                 if (isOnSpot.isOn) {
                                     let levelDestination = isOnSpot.levelDestination + isOnSpot.levelDirection
-                                    determineSpotDetect(result: decodedOsr, lastSpotId: self.lastSpotId, levelDestination: levelDestination, currentBuilding: currentBuilding, currentLevel: currentLevel, currentEntrance: currentEntrance, currentTime: currentTime)
+                                    determineSpotDetect(result: decodedOsr, lastSpotId: self.lastSpotId, levelDestination: levelDestination, currentBuilding: currentBuilding, currentLevel: currentLevel, currentEntrance: currentEntrance, currentTime: currentTime, spotCoord: [])
                                 }
                             }
                         }
@@ -101,7 +101,7 @@ public class OlympusBuildingLevelChanger {
         }
     }
     
-    func determineSpotDetect(result: OnSpotRecognitionResult, lastSpotId: Int, levelDestination: String, currentBuilding: String, currentLevel: String, currentEntrance: String, currentTime: Int) {
+    func determineSpotDetect(result: OnSpotRecognitionResult, lastSpotId: Int, levelDestination: String, currentBuilding: String, currentLevel: String, currentEntrance: String, currentTime: Int, spotCoord: [Double]) {
         var spotDistance = result.spot_distance
         if (spotDistance == 0) {
             spotDistance = OlympusConstants.DEFAULT_SPOT_DISTANCE
@@ -132,7 +132,7 @@ public class OlympusBuildingLevelChanger {
                     self.buildingLevelChangedTime = currentTime
 //                    print(getLocalTimeString() + " , (Olympus) Run OSR (1) : levelDestination = \(levelDestination)")
 //                    print(getLocalTimeString() + " , (Olympus) Run OSR (1) : phase2Range = \(phase2Range) // phase2Direction = \(phase2Direction)")
-                    self.notifyObservers(building: result.building_name, level: levelDestination, range: self.phase2Range, direction: self.phase2Direction)
+                    self.notifyObservers(building: result.building_name, level: levelDestination, range: self.phase2Range, direction: self.phase2Direction, coord: spotCoord)
                     self.isDetermineSpot = true
                     self.spotCutIndex = self.determineSpotCutIndex(entranceString: currentEntrance)
                 }
@@ -159,7 +159,7 @@ public class OlympusBuildingLevelChanger {
                         self.buildingLevelChangedTime = currentTime
 //                        print(getLocalTimeString() + " , (Olympus) Run OSR (2) : levelDestination = \(levelDestination)")
 //                        print(getLocalTimeString() + " , (Olympus) Run OSR (2) : phase2Range = \(phase2Range) // phase2Direction = \(phase2Direction)")
-                        self.notifyObservers(building: result.building_name, level: levelDestination, range: self.phase2Range, direction: self.phase2Direction)
+                        self.notifyObservers(building: result.building_name, level: levelDestination, range: self.phase2Range, direction: self.phase2Direction, coord: spotCoord)
                         self.isDetermineSpot = true
                         self.spotCutIndex = self.determineSpotCutIndex(entranceString: currentEntrance)
                     }
@@ -441,14 +441,15 @@ public class OlympusBuildingLevelChanger {
                     OlympusNetworkManager.shared.postOSR(url: CALC_OSR_URL, input: input, completion: { [self] statusCode, returnedString in
 //                        print(getLocalTimeString() + " , (Olympus) Run OSR : result = \(returnedString)")
                         if (statusCode == 200) {
-                            let result = jsonToOnSpotRecognitionResult(jsonString: returnedString)
-                            let decodedOsr = result.1
-                            if (result.0 && decodedOsr.building_name != "" && decodedOsr.level_name != "") {
+                            let osrResult = jsonToOnSpotRecognitionResult(jsonString: returnedString)
+                            let decodedOsr = osrResult.1
+                            if (osrResult.0 && decodedOsr.building_name != "" && decodedOsr.level_name != "") {
                                 let isOnSpot = isOnSpotRecognition(result: decodedOsr, level: currentLevel)
 //                                print(getLocalTimeString() + " , (Olympus) Run OSR : isOnSpot = \(isOnSpot)")
                                 if (isOnSpot.isOn) {
                                     let levelDestination = isOnSpot.levelDestination + isOnSpot.levelDirection
-                                    determineSpotDetect(result: decodedOsr, lastSpotId: self.lastSpotId, levelDestination: levelDestination, currentBuilding: currentBuilding, currentLevel: currentLevel, currentEntrance: currentEntrance, currentTime: currentTime)
+                                    let spotCoord = isDRMode ? [] : getSectorDRModeAreaSpotCoord(fltResult: result, levelDirection: levelDestination)
+                                    determineSpotDetect(result: decodedOsr, lastSpotId: self.lastSpotId, levelDestination: levelDestination, currentBuilding: currentBuilding, currentLevel: currentLevel, currentEntrance: currentEntrance, currentTime: currentTime, spotCoord: spotCoord)
                                 }
                             }
                         }
@@ -519,5 +520,33 @@ public class OlympusBuildingLevelChanger {
         }
         
         return false
+    }
+    
+    private func getSectorDRModeAreaSpotCoord(fltResult: FineLocationTrackingResult, levelDirection: String) -> [Double] {
+        let userDirectionType = levelDirection.contains("_D") ? "U" : "D"
+        
+        var spotCoord = [Double]()
+        var minDistance: Double = Double(Int.max)
+        
+        // OSR이 동작하면 이 위치로 옮겨줌
+        let currentBuildingLevel = "\(fltResult.building_name)_\(fltResult.level_name)_"
+        for (key, value) in self.sectorDRModeArea {
+            if key.contains(currentBuildingLevel) {
+                let nodes = value.nodes
+                for n in nodes {
+                    if n.direction_type == userDirectionType {
+                        let centerPos = n.center_pos
+                        let diffX = fltResult.x - centerPos[0]
+                        let diffY = fltResult.y - centerPos[1]
+                        let distance = sqrt(diffX*diffX + diffY*diffY)
+                        if distance < minDistance {
+                            minDistance = distance
+                            spotCoord = centerPos
+                        }
+                    }
+                }
+            }
+        }
+        return spotCoord
     }
 }

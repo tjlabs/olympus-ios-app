@@ -212,13 +212,20 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         self.reporting(input: newValue)
     }
     
-    func isBuildingLevelChanged(newBuilding: String, newLevel: String, newRange: [Int], newDirection: [Int]) {
-        print(getLocalTimeString() + " , (Olympus) Building Level Changed : \(currentLevel) -> \(newLevel)")
+    func isBuildingLevelChanged(newBuilding: String, newLevel: String, newRange: [Int], newDirection: [Int], newCoord: [Double]) {
+        print(getLocalTimeString() + " , (Olympus) Building Level Changed : \(currentLevel) -> \(newLevel) // spotCoord = \(newCoord)")
         self.currentBuilding = newBuilding
         self.currentLevel = newLevel
         KF.updateTuBuildingLevel(building: newBuilding, level: newLevel)
+        if !newCoord.isEmpty {
+            KF.updateTuResult(x: newCoord[0], y: newCoord[1])
+        }
+        
         self.phase2Range = newRange
         self.phase2Direction = newDirection
+        
+        ambiguitySolver.setIsAmbiguous(value: false)
+        OlympusPathMatchingCalculator.shared.initPassedNodeInfo()
     }
     
     private func initialize(isStopService: Bool) {
@@ -873,6 +880,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         KF.updateTuResult(x: tuResult.x, y: tuResult.y)
                     }
                 }
+//                print(getLocalTimeString() + " , (Olympus) Check Map End : isInNode = \(OlympusPathMatchingCalculator.shared.isInNode) , isInMapEnd = \(isInMapEnd)")
                 let isNeedAnchorNodeUpdate = sectionController.checkIsNeedAnchorNodeUpdate(userVelocity: data)
                 if (isNeedAnchorNodeUpdate) {
                     OlympusPathMatchingCalculator.shared.updateAnchorNode(fltResult: tuResult, pathType: pathType, sectionNumber: sectionController.getSectionNumber())
@@ -1422,7 +1430,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                     let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: copiedResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
                                     currentBuilding = updatedResult.building_name
                                     currentLevel = updatedResult.level_name
-                                    self.isBuildingLevelChanged(newBuilding: updatedResult.building_name, newLevel: updatedResult.level_name, newRange: [], newDirection: [])
+                                    self.isBuildingLevelChanged(newBuilding: updatedResult.building_name, newLevel: updatedResult.level_name, newRange: [], newDirection: [], newCoord: [])
                                 } else if (resultPhase.0 == OlympusConstants.PHASE_6) {
                                     sectionController.setInitialAnchorTailIndex(value: unitDRInfoIndex)
                                     copiedResult.absolute_heading = propagatedResult[2]
@@ -1432,7 +1440,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                     currentLevel = updatedResult.level_name
                                     
                                     makeTemporalResult(input: updatedResult, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
-                                    self.isBuildingLevelChanged(newBuilding: updatedResult.building_name, newLevel: updatedResult.level_name, newRange: [], newDirection: [])
+                                    self.isBuildingLevelChanged(newBuilding: updatedResult.building_name, newLevel: updatedResult.level_name, newRange: [], newDirection: [], newCoord: [])
                                     KF.refreshTuResult(xyh: [copiedResult.x, copiedResult.y, copiedResult.absolute_heading], inputPhase: fltInput.phase, inputTrajLength: inputTrajLength, mode: runMode)
                                     
                                     if isPhaseBreak {
@@ -1704,7 +1712,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         phaseBreakInPhase4(fltResult: fltResult, isUpdatePhaseBreakResult: true)
                     }
                     indexPast = fltResult.index
-                } else if !useResult {
+                } else if !useResult && !results.1.flt_outputs.isEmpty {
                     // Phase Break
                     let bestResult = ambiguitySolver.selectBestResult(results: results.1)
                     if bestResult.scc < OlympusConstants.PHASE_BREAK_SCC_DR {
@@ -2342,7 +2350,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     private func checkIsBadCase(userMaskBuffer: [UserMask]) -> Bool {
         var isBadCase: Bool = false
         
-        let th = OlympusConstants.SAME_COORD_THRESHOLD*2
+        let th = OlympusConstants.SAME_COORD_THRESHOLD*6
         
         if userMaskBuffer.count >= th {
             var diffX: Int = 0
