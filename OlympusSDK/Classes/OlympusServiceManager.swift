@@ -219,6 +219,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         KF.updateTuBuildingLevel(building: newBuilding, level: newLevel)
         if !newCoord.isEmpty {
             KF.updateTuResult(x: newCoord[0], y: newCoord[1])
+            KF.setLinkInfo(coord: newCoord, directions: OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: newBuilding, level: newLevel, x: newCoord[0], y: newCoord[1], PADDING_VALUE: 0.0, mode: self.runMode))
         }
         
         self.phase2Range = newRange
@@ -226,6 +227,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         
         ambiguitySolver.setIsAmbiguous(value: false)
         OlympusPathMatchingCalculator.shared.initPassedNodeInfo()
+        sectionController.setInitialAnchorTailIndex(value: unitDRInfoIndex)
     }
     
     private func initialize(isStopService: Bool) {
@@ -1003,7 +1005,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                         }
                                     } else {
                                         let isSectionChanged = isNeedRq.1
-    //                                    print(getLocalTimeString() + " , (Olympus) Node Find : checkSectionChanged = \(isSectionChanged)")
+                                        print(getLocalTimeString() + " , (Olympus) Node Find : checkSectionChanged = \(isSectionChanged) // isAmbiguious = \(ambiguitySolver.getIsAmbiguous())")
                                         let multipleNodeCandidates = OlympusPathMatchingCalculator.shared.getMultipleAnchorNodeCandidates(fltResult: tuResult, pathType: 1)
                                         var prevPassedNodeInfo = OlympusPathMatchingCalculator.shared.getPreviousPassedNode(nodeCandidateInfo: multipleNodeCandidates)
                                         
@@ -1046,7 +1048,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                             
                                             if (ambiguitySolver.getIsAmbiguous()){
                                                 processPhase5(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: inputNodeCandidates, prevNodeInfo: prevPassedNodeInfo)
-                                            }else {
+                                            } else {
                                                 processPhase6(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: inputNodeCandidates)
                                             }
                                         }
@@ -2099,6 +2101,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 }
             }
             
+            print(getLocalTimeString() + " , (Olympus) ErrorChecking : index = \(result.index) // mustInSameLink = \(mustInSameLink) // isStableMode = \(isStableMode) // isPhaseBreak = \(isPhaseBreak) // linkDir = \(KF.linkDirections) // linkCoord = \(KF.linkCoord)")
             if (mustInSameLink && levelName != "B0") {
                 let directions = KF.linkDirections
                 let linkCoord = KF.linkCoord
@@ -2129,7 +2132,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 let diffX = result.x - temporalResult.x
                 let diffY = result.y - temporalResult.y
                 let diffNorm = sqrt(diffX*diffX + diffY*diffY)
-//                print(getLocalTimeString() + " , (Olympus) ErrorChecking 1 : diffNorm = \(diffNorm)")
+                print(getLocalTimeString() + " , (Olympus) ErrorChecking : diffNorm = \(diffNorm)")
                 if diffNorm >= 2 {
                     currentTuResult.x = result.x
                     currentTuResult.y = result.y
