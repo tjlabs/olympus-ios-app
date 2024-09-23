@@ -26,7 +26,7 @@ public class OlympusAmbiguitySolver {
         return self.retryFltInput
     }
     
-    public func selectResult(results: FineLocationTrackingFromServerList) -> (Bool, FineLocationTrackingFromServer) {
+    public func selectResult(results: FineLocationTrackingFromServerList, nodeCandidatesInfo: NodeCandidateInfo) -> (Bool, FineLocationTrackingFromServer) {
         let fltOutputs = results.flt_outputs
         if fltOutputs.count == 1 {
             return (true, fltOutputs[0])
@@ -41,8 +41,20 @@ public class OlympusAmbiguitySolver {
                     print(getLocalTimeString() + " , (Olympus) selectResult (Clear) : index = \(firstFltOutput.index) // 1st = \(firstFltOutput.scc) // 2nd = \(secondFltOutput.scc) // ratio = \(ratio)")
                     return (true, firstFltOutput)
                 } else {
-                    print(getLocalTimeString() + " , (Olympus) selectResult (Ambiguous) : index = \(firstFltOutput.index) // 1st = \(firstFltOutput.scc) // 2nd = \(secondFltOutput.scc) // ratio = \(ratio)")
-                    return (false, FineLocationTrackingFromServer())
+                    if nodeCandidatesInfo.nodeCandidatesInfo.isEmpty {
+                        print(getLocalTimeString() + " , (Olympus) selectResult (Ambiguous) nodeCandidatesInfo Empty : index = \(firstFltOutput.index) // 1st = \(firstFltOutput.scc) // 2nd = \(secondFltOutput.scc) // ratio = \(ratio)")
+                        return (false, FineLocationTrackingFromServer())
+                    } else {
+                        print(getLocalTimeString() + " , (Olympus) selectResult (Ambiguous) : index = \(firstFltOutput.index) // 1st = \(firstFltOutput.scc) // 2nd = \(secondFltOutput.scc) // ratio = \(ratio)")
+                        let inputNodeNumber = nodeCandidatesInfo.nodeCandidatesInfo[0].nodeNumber
+                        for output in fltOutputs {
+                            if inputNodeNumber == output.node_number {
+                                print(getLocalTimeString() + " , (Olympus) selectResult (Ambiguous & Select) : index = \(firstFltOutput.index) // output = \(output)")
+                                return (false, output)
+                            }
+                        }
+                        return (false, FineLocationTrackingFromServer())
+                    }
                 }
             } else {
                 return (false, FineLocationTrackingFromServer())
