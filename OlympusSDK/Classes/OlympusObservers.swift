@@ -20,7 +20,7 @@ protocol StateTrackingObserver: AnyObject {
 }
 
 protocol BuildingLevelChangeObserver: AnyObject {
-    func isBuildingLevelChanged(newBuilding: String, newLevel: String, newRange: [Int], newDirection: [Int], newCoord: [Double])
+    func isBuildingLevelChanged(newBuilding: String, newLevel: String, newCoord: [Double])
 }
 
 public protocol Observable {

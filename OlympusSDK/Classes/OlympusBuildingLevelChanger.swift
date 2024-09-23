@@ -17,8 +17,8 @@ public class OlympusBuildingLevelChanger {
         observers = observers.filter { $0 !== observer }
     }
     
-    private func notifyObservers(building: String, level: String, range: [Int], direction: [Int], coord: [Double]) {
-        observers.forEach { $0.isBuildingLevelChanged(newBuilding: building, newLevel: level, newRange: range, newDirection: direction, newCoord: coord)}
+    private func notifyObservers(building: String, level: String, coord: [Double]) {
+        observers.forEach { $0.isBuildingLevelChanged(newBuilding: building, newLevel: level, newCoord: coord)}
     }
     
     public var isDetermineSpot: Bool = false
@@ -28,8 +28,6 @@ public class OlympusBuildingLevelChanger {
     public var spotCutIndex: Int = 0
     public var buildingLevelChangedTime: Int = 0
     public var buildingsAndLevels = [String:[String]]()
-    public var phase2Range: [Int] = []
-    public var phase2Direction: [Int] = []
     public var preOutputMobileTime: Int = 0
     
     public var sectorDRModeArea = [String: SectorDRModeArea]()
@@ -46,8 +44,6 @@ public class OlympusBuildingLevelChanger {
         self.spotCutIndex = 0
         self.buildingLevelChangedTime = 0
         self.buildingsAndLevels = [String:[String]]()
-        self.phase2Range = []
-        self.phase2Direction = []
         self.preOutputMobileTime = 0
         
         self.sectorDRModeArea = [String: SectorDRModeArea]()
@@ -119,20 +115,12 @@ public class OlympusBuildingLevelChanger {
             if (result.building_name != currentBuilding || resultLevelName != currentLevel) {
                 if ((result.mobile_time - self.buildingLevelChangedTime) > TIME_CONDITION) {
                     // Building Level 이 바뀐지 7초 이상 지남 -> 서버 결과를 이용해 바뀌어야 한다고 판단
-                    self.phase2Range = result.spot_range
-                    if (levelDestination.contains("_D")) {
-                        self.phase2Direction = result.spot_direction_up
-                    } else {
-                        self.phase2Direction = result.spot_direction_down
-                    }
                     
                     self.currentSpot = result.spot_id
                     self.lastSpotId = result.spot_id
                     self.travelingOsrDistance = 0
                     self.buildingLevelChangedTime = currentTime
-//                    print(getLocalTimeString() + " , (Olympus) Run OSR (1) : levelDestination = \(levelDestination)")
-//                    print(getLocalTimeString() + " , (Olympus) Run OSR (1) : phase2Range = \(phase2Range) // phase2Direction = \(phase2Direction)")
-                    self.notifyObservers(building: result.building_name, level: levelDestination, range: self.phase2Range, direction: self.phase2Direction, coord: spotCoord)
+                    self.notifyObservers(building: result.building_name, level: levelDestination, coord: spotCoord)
                     self.isDetermineSpot = true
                     self.spotCutIndex = self.determineSpotCutIndex(entranceString: currentEntrance)
                 }
@@ -146,20 +134,12 @@ public class OlympusBuildingLevelChanger {
                 if (result.building_name != currentBuilding || resultLevelName != currentLevel) {
                     if ((result.mobile_time - self.buildingLevelChangedTime) > TIME_CONDITION) {
                         // Building Level 이 바뀐지 7초 이상 지남 -> 서버 결과를 이용해 바뀌어야 한다고 판단
-                        self.phase2Range = result.spot_range
-                        if (levelDestination.contains("_D")) {
-                            self.phase2Direction = result.spot_direction_up
-                        } else {
-                            self.phase2Direction = result.spot_direction_down
-                        }
                         
                         self.currentSpot = result.spot_id
                         self.lastSpotId = result.spot_id
                         self.travelingOsrDistance = 0
                         self.buildingLevelChangedTime = currentTime
-//                        print(getLocalTimeString() + " , (Olympus) Run OSR (2) : levelDestination = \(levelDestination)")
-//                        print(getLocalTimeString() + " , (Olympus) Run OSR (2) : phase2Range = \(phase2Range) // phase2Direction = \(phase2Direction)")
-                        self.notifyObservers(building: result.building_name, level: levelDestination, range: self.phase2Range, direction: self.phase2Direction, coord: spotCoord)
+                        self.notifyObservers(building: result.building_name, level: levelDestination, coord: spotCoord)
                         self.isDetermineSpot = true
                         self.spotCutIndex = self.determineSpotCutIndex(entranceString: currentEntrance)
                     }
@@ -511,7 +491,7 @@ public class OlympusBuildingLevelChanger {
                         }
                     }
                     
-                    print(getLocalTimeString() + " , (Olympus) Run OSR : index = \(lastResult.index) // isUserInArea = \(isUserInArea) // isPassedNodeInArea = \(isPassedNodeInArea)")
+//                    print(getLocalTimeString() + " , (Olympus) Run OSR : index = \(lastResult.index) // isUserInArea = \(isUserInArea) // isPassedNodeInArea = \(isPassedNodeInArea)")
                     if isUserInArea && isPassedNodeInArea {
                         return true
                     }

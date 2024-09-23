@@ -883,17 +883,6 @@ public class OlympusTrajectoryController {
         return searchInfo
     }
     
-//    public func controlPhase2SearchRange(searchInfo: SearchInfo, trajLength: Double) -> SearchInfo {
-//        var result = searchInfo
-//        self.phase2ReqCount += 1
-//        if (self.phase2ReqCount > 2) {
-//            let expandRange: Int = Int((trajLength - OlympusConstants.REQUIRED_LENGTH_PHASE2)/2)
-//            result.searchRange = [result.searchRange[0]-expandRange, result.searchRange[1]-expandRange, result.searchRange[2]+expandRange, result.searchRange[3]+expandRange]
-//        }
-//
-//        return result
-//    }
-    
     public func extractSectionWithLeastChange(inputArray: [Double], requiredSize: Int) -> [Double] {
         var resultArray = [Double]()
         guard inputArray.count > requiredSize else {
