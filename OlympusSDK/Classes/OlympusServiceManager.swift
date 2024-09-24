@@ -218,6 +218,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         if !newCoord.isEmpty {
             KF.updateTuResult(x: newCoord[0], y: newCoord[1])
             KF.setLinkInfo(coord: newCoord, directions: OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: newBuilding, level: newLevel, x: newCoord[0], y: newCoord[1], PADDING_VALUE: 0.0, mode: self.runMode))
+            OlympusPathMatchingCalculator.shared.setBuildingLevelChangedCoord(coord: newCoord)
         }
         
         ambiguitySolver.setIsAmbiguous(value: false)
@@ -2058,6 +2059,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     drModeRequestInfo = DRModeRequestInfo(trajectoryInfo: [], stableInfo: StableInfo(tail_index: -1, head_section_number: 0, node_number_list: []), nodeCandidatesInfo: NodeCandidateInfo(isPhaseBreak: false, nodeCandidatesInfo: []), prevNodeInfo: PassedNodeInfo(nodeNumber: -1, nodeCoord: [], nodeHeadings: [], matchedIndex: 0, userHeading: 0))
                 }
             }
+            print(getLocalTimeString() + " , (Olympus) setSectorDRModeArea : index = \(resultIndex) // isDRMode = \(self.isDRMode)")
             
             if (isStableMode) {
                 if (stableModeInitFlag) {

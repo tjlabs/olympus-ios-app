@@ -28,7 +28,8 @@ public class OlympusPathMatchingCalculator {
     var unitDRInfoBuffer = [UnitDRInfo]()
     var isNeedClearUVDBuffer: Bool = false
     var distFromNode: Double = -1
-
+    var buildingLevelChangedCoord = [Double]()
+    
     var linkCoord: [Double] = [0, 0]
     var linkDirections = [Double]()
     var isInNode: Bool = false
@@ -59,7 +60,8 @@ public class OlympusPathMatchingCalculator {
         self.unitDRInfoBuffer = [UnitDRInfo]()
         self.isNeedClearUVDBuffer = false
         self.distFromNode = -1
-
+        self.buildingLevelChangedCoord = [Double]()
+        
         self.linkCoord = [0, 0]
         self.linkDirections = [Double]()
         self.isInNode = false
@@ -1218,7 +1220,14 @@ public class OlympusPathMatchingCalculator {
     }
     
     public func getCurrentAnchorNodeInfo() -> PassedNodeInfo {
+        if self.anchorNode.nodeCoord.isEmpty {
+            self.anchorNode.nodeCoord = self.buildingLevelChangedCoord
+        }
         return self.anchorNode
+    }
+    
+    public func setBuildingLevelChangedCoord(coord: [Double]) {
+        self.buildingLevelChangedCoord = coord
     }
     
     public func controlUVDforAccBias(unitDRInfo: UnitDRInfo) {
