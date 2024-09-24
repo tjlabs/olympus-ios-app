@@ -874,7 +874,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         tuResult.y = self.temporalResult.y
                         KF.updateTuResult(x: tuResult.x, y: tuResult.y)
                     }
+                } else {
+                    self.isInMapEnd = false
                 }
+                
 //                print(getLocalTimeString() + " , (Olympus) Check Map End : isInNode = \(OlympusPathMatchingCalculator.shared.isInNode) , isInMapEnd = \(isInMapEnd)")
                 let isNeedAnchorNodeUpdate = sectionController.checkIsNeedAnchorNodeUpdate(userVelocity: data)
                 if (isNeedAnchorNodeUpdate) {
@@ -1011,21 +1014,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                             let stableInfo = StableInfo(tail_index: nodeCandidatesInfo[0].matchedIndex, head_section_number: sectionController.getSectionNumber(), node_number_list: nodeNumberCandidates)
                                             
                                             if nodeNumberCandidates.count > 1 {
-//                                                var isFind: Bool = false
-//                                                var newNodeCandidatesInfo = [PassedNodeInfo]()
-//                                                for n in multipleNodeCandidates.nodeCandidatesInfo {
-//                                                    if n.nodeNumber == prevPassedNodeInfo.nodeNumber {
-//                                                        isFind = true
-//                                                    } else {
-//                                                        newNodeCandidatesInfo.append(n)
-//                                                    }
-//                                                }
-//                                                if !isFind {
-//                                                    processPhase5(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: inputNodeCandidates, prevNodeInfo: prevPassedNodeInfo)
-//                                                } else {
-//                                                    inputNodeCandidates.nodeCandidatesInfo = newNodeCandidatesInfo
-//                                                    processPhase6(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: inputNodeCandidates)
-//                                                }
                                                 if prevPassedNodeInfo.nodeNumber == -1 {
                                                     prevPassedNodeInfo.matchedIndex = sectionController.getAnchorTailIndex()
                                                 }
@@ -1143,26 +1131,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
         
         if ((self.unitDRInfoIndex % RQ_IDX) == 0 && !stateManager.isBackground) {
-//            if (phaseController.PHASE == OlympusConstants.PHASE_2 && !isStartRouteTrack) {
-//                let phase2Trajectory = trajectoryInfo
-//                let searchInfo = trajController.makeSearchInfoInPhase2(trajectoryInfo: phase2Trajectory, unitDRInfoBuffer: unitDRInfoBuffer, phase2Range: phase2Range, phase2Direction: phase2Direction)
-//                if (searchInfo.trajType == .DR_RQ_IN_PHASE2) {
-//                    processPhase2(currentTime: currentTime, mode: mode, trajectoryInfo: phase2Trajectory, searchInfo: searchInfo)
-//                }
-//            } else if (phaseController.PHASE == OlympusConstants.PHASE_1 || phaseController.PHASE == OlympusConstants.PHASE_3) {
-//                // Phase 1 ~ 3
-//                let phase3Trajectory = trajectoryInfo
-//                let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase3Trajectory, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, isKF: KF.isRunning, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult, LENGTH_THRESHOLD: USER_TRAJECTORY_LENGTH)
-//                let displaySearchType: Int = trajTypeConverter(trajType: searchInfo.trajType)
-//                displayOutput.searchArea = searchInfo.searchArea
-//                displayOutput.searchType = displaySearchType
-//                displayOutput.userTrajectory = searchInfo.trajShape
-//                displayOutput.trajectoryStartCoord = searchInfo.trajStartCoord
-//                if (!isStartRouteTrack || isPhaseBreakInRouteTrack) {
-//                    processPhase3(currentTime: currentTime, mode: mode, trajectoryInfo: phase3Trajectory, searchInfo: searchInfo)
-//                }
-//            }
-            
             if (phaseController.PHASE == OlympusConstants.PHASE_1 || phaseController.PHASE == OlympusConstants.PHASE_3) {
                // Phase 1 ~ 3
                let phase3Trajectory = trajectoryInfo
