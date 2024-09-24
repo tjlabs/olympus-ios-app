@@ -65,25 +65,6 @@ public class OlympusSectionController {
         return isNeedUpdate
     }
     
-//    public func checkIsNeedRequestFlt() -> (Bool, Bool) {
-//        var isNeedRequest: Bool = false
-//        var isSectionChanged: Bool = false
-//        if (uvdSectionLength >= OlympusConstants.REQUIRED_SECTION_REQUEST_LENGTH) {
-//            if (requestSectionNumber != sectionNumber) {
-//                requestSectionNumber = sectionNumber
-//                sameSectionCount = 2
-//                isNeedRequest = true
-//                isSectionChanged = true
-//            } else {
-//                if (uvdSectionLength >= (OlympusConstants.REQUIRED_SECTION_REQUEST_LENGTH*Double(sameSectionCount))) {
-//                    sameSectionCount += 1
-//                    isNeedRequest = true
-//                }
-//            }
-//        }
-//        return (isNeedRequest, isSectionChanged)
-//    }
-    
     public func checkIsNeedRequestFlt(isAmbiguous: Bool) -> (Bool, Bool) {
         var isNeedRequest: Bool = false
         var isSectionChanged: Bool = false

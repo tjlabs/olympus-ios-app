@@ -145,41 +145,6 @@ public class OlympusPathMatchingCalculator {
                     }
                     roadHeading.append(headingValues)
                 }
-                
-//                roadType.append(Int(Double(lineData[0])!))
-//                roadNode.append(Int(Double(lineData[1])!))
-//                roadX.append(Double(lineData[2])!)
-//                roadY.append(Double(lineData[3])!)
-//                roadScale.append(Double(lineData[4])!)
-//                
-//                let pattern = "\\[[^\\]]+\\]"
-//                guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else {
-//                    print("Invalid regular expression pattern")
-//                    exit(1)
-//                }
-//                let matches = regex.matches(in: lineString, options: [], range: NSRange(location: 0, length: lineString.utf16.count))
-//                let matchedStrings = matches.map { match -> String in
-//                    let range = Range(match.range, in: lineString)!
-//                    return String(lineString[range])
-//                }
-//                
-//                var headingValues = ""
-//                if (!matchedStrings.isEmpty) {
-//                    let headingListString = matchedStrings[0]
-//                    let headingArray = headingListString
-//                        .replacingOccurrences(of: "[", with: "")
-//                        .replacingOccurrences(of: "]", with: "")
-//                        .components(separatedBy: ",")
-//                        .compactMap { Double($0.trimmingCharacters(in: .whitespaces)) }
-//                    
-//                    for j in 0..<headingArray.count {
-//                        headingValues.append(String(headingArray[j]))
-//                        if (j < (headingArray.count-1)) {
-//                            headingValues.append(",")
-//                        }
-//                    }
-//                }
-//                roadHeading.append(headingValues)
             }
         }
         road = [roadX, roadY]
