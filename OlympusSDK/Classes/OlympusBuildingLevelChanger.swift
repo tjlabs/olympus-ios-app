@@ -308,6 +308,7 @@ public class OlympusBuildingLevelChanger {
                                 // 방향 결정 "U" or "D" or "N"
                                 self.currentDRModeArea = value
                                 self.currentDRModeAreaNodeNumber = n.number
+                                print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (In) : coord = \(fltResult.x) , \(fltResult.y) , \(fltResult.absolute_heading)")
                                 return true
                             }
                         }
@@ -334,6 +335,7 @@ public class OlympusBuildingLevelChanger {
                 }
                 
                 if anchorNodeInfo.nodeCoord.isEmpty {
+                    print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (Out) : anchorNodeInfo is empty")
                     return false
                 } else {
                     if (value.range[0] <= anchorNodeInfo.nodeCoord[0] && anchorNodeInfo.nodeCoord[0] <= value.range[2]) && (value.range[1] <= anchorNodeInfo.nodeCoord[1] && anchorNodeInfo.nodeCoord[1] <= value.range[3]) {
@@ -347,6 +349,7 @@ public class OlympusBuildingLevelChanger {
             if isAnchorNodeInArea {
                isInArea = true
             } else {
+                print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (Out) : Normal")
                 self.currentDRModeArea = SectorDRModeArea(number: -1, range: [], direction: 0, nodes: [])
                 self.currentDRModeAreaNodeNumber = -1
             }
