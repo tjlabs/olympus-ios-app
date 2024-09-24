@@ -873,8 +873,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         tuResult.x = self.temporalResult.x
                         tuResult.y = self.temporalResult.y
                         KF.updateTuResult(x: tuResult.x, y: tuResult.y)
+                        self.isInMapEnd = false
                     }
                 }
+                
 //                print(getLocalTimeString() + " , (Olympus) Check Map End : isInNode = \(OlympusPathMatchingCalculator.shared.isInNode) , isInMapEnd = \(isInMapEnd)")
                 let isNeedAnchorNodeUpdate = sectionController.checkIsNeedAnchorNodeUpdate(userVelocity: data)
                 if (isNeedAnchorNodeUpdate) {
@@ -998,7 +1000,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                         }
                                     } else {
                                         let isSectionChanged = isNeedRq.1
-                                        print(getLocalTimeString() + " , (Olympus) Node Find : checkSectionChanged = \(isSectionChanged) // isAmbiguious = \(ambiguitySolver.getIsAmbiguous())")
+                                        print(getLocalTimeString() + " , (Olympus) Node Find : checkSectionChanged = \(isSectionChanged) // isAmbiguious = \(ambiguitySolver.getIsAmbiguous()) // isInMapEnd = \(isInMapEnd)")
                                         let multipleNodeCandidates = OlympusPathMatchingCalculator.shared.getMultipleAnchorNodeCandidates(fltResult: tuResult, pathType: 1)
                                         var prevPassedNodeInfo = OlympusPathMatchingCalculator.shared.getPreviousPassedNode(nodeCandidateInfo: multipleNodeCandidates)
                                         
@@ -1011,21 +1013,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                             let stableInfo = StableInfo(tail_index: nodeCandidatesInfo[0].matchedIndex, head_section_number: sectionController.getSectionNumber(), node_number_list: nodeNumberCandidates)
                                             
                                             if nodeNumberCandidates.count > 1 {
-//                                                var isFind: Bool = false
-//                                                var newNodeCandidatesInfo = [PassedNodeInfo]()
-//                                                for n in multipleNodeCandidates.nodeCandidatesInfo {
-//                                                    if n.nodeNumber == prevPassedNodeInfo.nodeNumber {
-//                                                        isFind = true
-//                                                    } else {
-//                                                        newNodeCandidatesInfo.append(n)
-//                                                    }
-//                                                }
-//                                                if !isFind {
-//                                                    processPhase5(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: inputNodeCandidates, prevNodeInfo: prevPassedNodeInfo)
-//                                                } else {
-//                                                    inputNodeCandidates.nodeCandidatesInfo = newNodeCandidatesInfo
-//                                                    processPhase6(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: inputNodeCandidates)
-//                                                }
                                                 if prevPassedNodeInfo.nodeNumber == -1 {
                                                     prevPassedNodeInfo.matchedIndex = sectionController.getAnchorTailIndex()
                                                 }
