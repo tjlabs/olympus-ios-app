@@ -139,6 +139,7 @@ class OlympusConstants {
     
     static let AMP_THRESHOLD: Double = 0.18
     static let TIME_THRESHOLD: Double = 100.0
+    static let STOP_TIME_THRESHOLD: Double = 2000
     static let STEP_VALID_TIME: Double = 1000
     static let RF_SC_THRESHOLD_PDR: Double = 0.55
     
