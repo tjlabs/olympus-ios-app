@@ -99,16 +99,14 @@ class CardViewController: UIViewController, Observer {
     override func viewDidLoad() {
         super.viewDidLoad()
         headingImage = headingImage?.resize(newWidth: 20)
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg_eval10.csv", sensorFileName: "sensor_lg_eval10.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_lg_debug02.csv", sensorFileName: "sensor_lg_debug02.csv")
-        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_05_0910.csv", sensorFileName: "sensor_coex_05_0910.csv")
+
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_05_0910.csv", sensorFileName: "sensor_coex_05_0910.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_parking_02_0910.csv", sensorFileName: "sensor_coex_parking_02_0910.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_02_02_0910.csv", sensorFileName: "sensor_coex_02_02_0910.csv")
-        
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_pdr_01_0910.csv", sensorFileName: "sensor_coex_pdr_01_0910.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex05.csv", sensorFileName: "sensor_coex05.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_dr1.csv", sensorFileName: "sensor_dr1.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "pg_test03_ble.csv", sensorFileName: "pg_test03_sensor.csv")
+        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_01_0924.csv", sensorFileName: "sensor_coex_01_0924.csv")
         
         // collect
 //        isCollect = true

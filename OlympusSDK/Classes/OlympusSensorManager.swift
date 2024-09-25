@@ -218,6 +218,10 @@ public class OlympusSensorManager: NSObject, CLLocationManagerDelegate {
         return (isSuccess, message)
     }
     
+    public func getCollecttData() -> OlympusCollectData {
+        return self.collectData
+    }
+    
     public func setRunMode(mode: String) {
         self.runMode = mode
     }

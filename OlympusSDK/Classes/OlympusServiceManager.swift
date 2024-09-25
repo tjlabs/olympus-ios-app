@@ -678,7 +678,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             
             let validTime = OlympusConstants.BLE_VALID_TIME_INT
             let currentTime = getCurrentTimeInMilliseconds() - validTime
-            let bleDictionary: [String: [[Double]]]? = bleManager.bleDictionary
+            let bleDictionary: [String: [[Double]]]? = bleManager.getBLEData()
             if let bleData = bleDictionary {
                 let trimmedResult = OlympusRFDFunctions.shared.trimBleData(bleInput: bleData, nowTime: getCurrentTimeInMillisecondsDouble(), validTime: Double(validTime))
                 switch trimmedResult {
@@ -2732,11 +2732,11 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     @objc func collectTimerUpdate() {
         let currentTime = getCurrentTimeInMilliseconds()
         
-        var collectData = sensorManager.collectData
+        var collectData = sensorManager.getCollecttData()
         collectData.time = currentTime
         
         let validTime = OlympusConstants.BLE_VALID_TIME
-        let bleDictionary: [String: [[Double]]]? = bleManager.bleDictionary
+        let bleDictionary: [String: [[Double]]]? = bleManager.getBLEData()
         if let bleData = bleDictionary {
             let trimmedResult = OlympusRFDFunctions.shared.trimBleData(bleInput: bleData, nowTime: getCurrentTimeInMillisecondsDouble(), validTime: validTime)
             switch trimmedResult {
@@ -2753,18 +2753,21 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         
         if (isStartCollect) {
             unitDRInfo = unitDRGenerator.generateDRInfo(sensorData: sensorManager.sensorData)
+            collectData.isIndexChanged = false
+            if (unitDRInfo.isIndexChanged) {
+                collectData.isIndexChanged = unitDRInfo.isIndexChanged
+                collectData.index = unitDRInfo.index
+                collectData.length = unitDRInfo.length
+                collectData.heading = unitDRInfo.heading
+                collectData.lookingFlag = unitDRInfo.lookingFlag
+            }
+            
+            self.collectData = collectData
+            OlympusFileManager.shared.writeCollectData(data: collectData)
         }
-        
-        collectData.isIndexChanged = false
-        if (unitDRInfo.isIndexChanged) {
-            collectData.isIndexChanged = unitDRInfo.isIndexChanged
-            collectData.index = unitDRInfo.index
-            collectData.length = unitDRInfo.length
-            collectData.heading = unitDRInfo.heading
-            collectData.lookingFlag = unitDRInfo.lookingFlag
-        }
-        
-        self.collectData = collectData
-        OlympusFileManager.shared.writeCollectData(data: collectData)
+    }
+    
+    public func getCollectData() -> OlympusCollectData {
+        return self.collectData
     }
 }

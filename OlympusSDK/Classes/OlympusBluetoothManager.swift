@@ -284,6 +284,10 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
         return nil
     }
     
+    public func getBLEData() -> [String: [[Double]]]() {
+        return self.bleDictionary
+    }
+    
     func URLPrefixFromByte(schemeID: UInt8) -> String? {
         switch schemeID {
         case 0x00:
