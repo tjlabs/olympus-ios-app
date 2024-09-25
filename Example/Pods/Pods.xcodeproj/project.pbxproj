@@ -655,6 +655,8 @@
 		B305FAA02C33C32000DBE807 /* OlympusUnitStatusEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B305FA9F2C33C32000DBE807 /* OlympusUnitStatusEstimator.swift */; };
 		B330D4879E6DB962A4B765DC1701A245 /* GULNetworkInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = 780FC3DB00F7698B0FFBD671F56CA10E /* GULNetworkInternal.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		B36AE8602C92AAAA005B21A2 /* OlympusAmbiguitySolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36AE85F2C92AAAA005B21A2 /* OlympusAmbiguitySolver.swift */; };
+		B36AE8622CA3E2D0005B21A2 /* OlympusStopDectector.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36AE8612CA3E2D0005B21A2 /* OlympusStopDectector.swift */; };
+		B36AE8642CA3E444005B21A2 /* OlympusStopPeakValleyDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36AE8632CA3E444005B21A2 /* OlympusStopPeakValleyDetector.swift */; };
 		B3BB5E602C365FDD00FD0CA4 /* OlympusBlacklistChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3BB5E5F2C365FDD00FD0CA4 /* OlympusBlacklistChecker.swift */; };
 		B3E91A918126C3D265E295A275A5AA83 /* FIRCLSReportAdapter.m in Sources */ = {isa = PBXBuildFile; fileRef = 40A01E180FDBA6E118BF5CEAEA9F0092 /* FIRCLSReportAdapter.m */; };
 		B4015BE1313094DACA3DBB86191C5030 /* CombinedHighlighter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EF83C3BB4E6D70C22C6957DC42117C0 /* CombinedHighlighter.swift */; };
@@ -2010,6 +2012,8 @@
 		B3185CDFA403B6AF270CF263D8F0CBA1 /* OlympusSDK-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "OlympusSDK-dummy.m"; sourceTree = "<group>"; };
 		B358537494260256AC3138BDA6251379 /* SessionsSubscriber.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SessionsSubscriber.swift; path = FirebaseSessions/Sources/Public/SessionsSubscriber.swift; sourceTree = "<group>"; };
 		B36AE85F2C92AAAA005B21A2 /* OlympusAmbiguitySolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusAmbiguitySolver.swift; path = OlympusSDK/Classes/OlympusAmbiguitySolver.swift; sourceTree = "<group>"; };
+		B36AE8612CA3E2D0005B21A2 /* OlympusStopDectector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusStopDectector.swift; path = OlympusSDK/Classes/OlympusStopDectector.swift; sourceTree = "<group>"; };
+		B36AE8632CA3E444005B21A2 /* OlympusStopPeakValleyDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusStopPeakValleyDetector.swift; path = OlympusSDK/Classes/OlympusStopPeakValleyDetector.swift; sourceTree = "<group>"; };
 		B378D1162026B0FF7989F1A754CC0CF5 /* FBLPromise+Reduce.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "FBLPromise+Reduce.h"; path = "Sources/FBLPromises/include/FBLPromise+Reduce.h"; sourceTree = "<group>"; };
 		B385554459445169926EAF96251B0449 /* FIRInstallationsIIDTokenStore.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = FIRInstallationsIIDTokenStore.m; path = FirebaseInstallations/Source/Library/IIDMigration/FIRInstallationsIIDTokenStore.m; sourceTree = "<group>"; };
 		B3BB5E5F2C365FDD00FD0CA4 /* OlympusBlacklistChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusBlacklistChecker.swift; path = OlympusSDK/Classes/OlympusBlacklistChecker.swift; sourceTree = "<group>"; };
@@ -2738,10 +2742,12 @@
 				B305FA932C33C2B400DBE807 /* OlympusPacingDetectFunctions.swift */,
 				B305FA952C33C2C600DBE807 /* OlympusPDRDistanceEstimator.swift */,
 				B305FA972C33C2D800DBE807 /* OlympusPeakValleyDetector.swift */,
+				B36AE8612CA3E2D0005B21A2 /* OlympusStopDectector.swift */,
 				B305FA992C33C2EB00DBE807 /* OlympusStepLengthEstimator.swift */,
 				B305FA9B2C33C2FC00DBE807 /* OlympusUnitAttitudeEstimator.swift */,
 				B305FA9D2C33C30F00DBE807 /* OlympusUnitDRGenerator.swift */,
 				B3BB5E5F2C365FDD00FD0CA4 /* OlympusBlacklistChecker.swift */,
+				B36AE8632CA3E444005B21A2 /* OlympusStopPeakValleyDetector.swift */,
 				B305FA9F2C33C32000DBE807 /* OlympusUnitStatusEstimator.swift */,
 				57481630A5F0C61563F6895DF305F4B9 /* OlympusKalmanFilter.swift */,
 				B36AE85F2C92AAAA005B21A2 /* OlympusAmbiguitySolver.swift */,
@@ -5856,6 +5862,7 @@
 				B305FA902C33C28D00DBE807 /* OlympusDRDistanceEstimator.swift in Sources */,
 				AAD2DC6FE93CAAFDFE4E2F8848C64F01 /* OlympusKalmanFilter.swift in Sources */,
 				B305FA9A2C33C2EB00DBE807 /* OlympusStepLengthEstimator.swift in Sources */,
+				B36AE8622CA3E2D0005B21A2 /* OlympusStopDectector.swift in Sources */,
 				B305FA8C2C33C26500DBE807 /* OlympusNetworkConstants.swift in Sources */,
 				B305FA6E2C33C0F100DBE807 /* OlympusBuildingLevelChanger.swift in Sources */,
 				B305FA642C33C05F00DBE807 /* StringExtension.swift in Sources */,
@@ -5878,6 +5885,7 @@
 				B305FA982C33C2D800DBE807 /* OlympusPeakValleyDetector.swift in Sources */,
 				B305FA682C33C09C00DBE807 /* OlympusFileDownloader.swift in Sources */,
 				B305FA742C33C12D00DBE807 /* OlympusSectionController.swift in Sources */,
+				B36AE8642CA3E444005B21A2 /* OlympusStopPeakValleyDetector.swift in Sources */,
 				B305FA962C33C2C600DBE807 /* OlympusPDRDistanceEstimator.swift in Sources */,
 				B305FA622C33C05300DBE807 /* NotificationExtension.swift in Sources */,
 				B305FA842C33C20A00DBE807 /* DeviceModel.swift in Sources */,

@@ -1520,7 +1520,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     let resultPhase = phaseController.controlPhase(serverResultArray: serverResultBuffer, drBuffer: unitDRInfoBuffer, UVD_INTERVAL: UVD_INPUT_NUM, TRAJ_LENGTH: USER_TRAJECTORY_LENGTH, INDEX_THRESHOLD: RQ_IDX, inputPhase: fltInput.phase, inputTrajType: TrajType.DR_UNKNOWN, mode: runMode, isVenusMode: stateManager.isVenusMode)
                     
                     // 임시
-                    displayOutput.phase = String(resultPhase.0)
+                    displayOutput.phase = useResult ? String(resultPhase.0) : String(OlympusConstants.PHASE_5)
                     displayOutput.indexRx = fltResult.index
                     displayOutput.scc = fltResult.scc
                     displayOutput.resultDirection = fltResult.search_direction
