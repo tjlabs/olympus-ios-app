@@ -284,7 +284,7 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
         return nil
     }
     
-    public func getBLEData() -> [String: [[Double]]]() {
+    public func getBLEData() -> [String: [[Double]]] {
         return self.bleDictionary
     }
     
