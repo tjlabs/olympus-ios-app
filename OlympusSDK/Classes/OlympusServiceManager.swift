@@ -867,7 +867,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     mustInSameLink = false
                 } else if (OlympusPathMatchingCalculator.shared.isInNode) {
                     mustInSameLink = false
-                    // 길 끝에 있는지 확인해야 한다
+//                    // 길 끝에 있는지 확인해야 한다
                     self.isInMapEnd = OlympusPathMatchingCalculator.shared.checkIsInMapEnd(resultStandard: self.temporalResult, tuResult: tuResult, pathType: pathType)
                     if (self.isInMapEnd) {
                         tuResult.x = self.temporalResult.x
@@ -878,8 +878,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     self.isInMapEnd = false
                 }
                 
-//                print(getLocalTimeString() + " , (Olympus) Check Map End : isInNode = \(OlympusPathMatchingCalculator.shared.isInNode) , isInMapEnd = \(isInMapEnd)")
-                let isNeedAnchorNodeUpdate = sectionController.checkIsNeedAnchorNodeUpdate(userVelocity: data)
+                print(getLocalTimeString() + " , (Olympus) Check Map End : isInNode = \(OlympusPathMatchingCalculator.shared.isInNode) , isInMapEnd = \(isInMapEnd)")
+//                let isNeedAnchorNodeUpdate = sectionController.checkIsNeedAnchorNodeUpdate(userVelocity: data)
+                let isNeedAnchorNodeUpdate = sectionController.extendedCheckIsNeedAnchorNodeUpdate(userVelocity: data, userHeading: self.temporalResult.absolute_heading)
                 if (isNeedAnchorNodeUpdate) {
                     OlympusPathMatchingCalculator.shared.updateAnchorNode(fltResult: tuResult, pathType: pathType, sectionNumber: sectionController.getSectionNumber())
                 }
@@ -1022,15 +1023,18 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                                 processPhase6(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: inputNodeCandidates)
                                             }
                                         } else if !self.isInMapEnd {
-                                            for item in nodeCandidatesInfo {
-                                                nodeNumberCandidates.append(item.nodeNumber)
-                                            }
-                                            let stableInfo = StableInfo(tail_index: nodeCandidatesInfo[0].matchedIndex, head_section_number: sectionController.getSectionNumber(), node_number_list: nodeNumberCandidates)
-                                            
-                                            if (ambiguitySolver.getIsAmbiguous()){
-                                                processPhase5(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: inputNodeCandidates, prevNodeInfo: prevPassedNodeInfo)
-                                            } else {
-                                                processPhase6(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: inputNodeCandidates)
+                                            let reCheckMapEnd = OlympusPathMatchingCalculator.shared.checkIsInMapEnd(resultStandard: self.temporalResult, tuResult: tuResult, pathType: pathType)
+                                            if !reCheckMapEnd {
+                                                for item in nodeCandidatesInfo {
+                                                    nodeNumberCandidates.append(item.nodeNumber)
+                                                }
+                                                let stableInfo = StableInfo(tail_index: nodeCandidatesInfo[0].matchedIndex, head_section_number: sectionController.getSectionNumber(), node_number_list: nodeNumberCandidates)
+                                                
+                                                if (ambiguitySolver.getIsAmbiguous()){
+                                                    processPhase5(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: inputNodeCandidates, prevNodeInfo: prevPassedNodeInfo)
+                                                } else {
+                                                    processPhase6(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: inputNodeCandidates)
+                                                }
                                             }
                                         }
                                     }
@@ -1126,6 +1130,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_6])
                 displayOutput.phase = String(phaseController.PHASE)
                 displayOutput.indexRx = unitDRInfoIndex
+                sectionController.setSectionUserHeading(value: lastServerResult.absolute_heading)
                 KF.activateKalmanFilter(fltResult: lastServerResult)
             }
         }
@@ -1309,6 +1314,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                     
                                     makeTemporalResult(input: updatedResult, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
                                     self.isBuildingLevelChanged(newBuilding: updatedResult.building_name, newLevel: updatedResult.level_name, newCoord: [])
+                                    sectionController.setSectionUserHeading(value: updatedResult.absolute_heading)
                                     KF.refreshTuResult(xyh: [copiedResult.x, copiedResult.y, copiedResult.absolute_heading], inputPhase: fltInput.phase, inputTrajLength: inputTrajLength, mode: runMode)
                                     
                                     if isPhaseBreak {
@@ -1345,6 +1351,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 currentLevel = updatedResult.level_name
                                 curTemporalResultHeading = updatedResult.absolute_heading
                                 makeTemporalResult(input: updatedResult, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
+                                sectionController.setSectionUserHeading(value: updatedResult.absolute_heading)
                                 KF.activateKalmanFilter(fltResult: updatedResult)
                             } else {
                                 // KF is not running && Phase 1 ~ 3

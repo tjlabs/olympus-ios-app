@@ -19,6 +19,8 @@ public class OlympusSectionController {
     var requestSectionNumberInDRMode: Int = 0
     var sameSectionCountInDRMode: Int = 1
     
+    var preUserHeading: Double = 0
+    
     public func initialize() {
         self.uvdForSection = []
         self.uvdSectionHeadings = []
@@ -34,6 +36,47 @@ public class OlympusSectionController {
         self.sameSectionCount = 2
         self.requestSectionNumberInDRMode = 0
         self.sameSectionCountInDRMode = 1
+    }
+    
+    public func setSectionUserHeading(value: Double) {
+        self.preUserHeading = value
+    }
+    
+    public func extendedCheckIsNeedAnchorNodeUpdate(userVelocity: UserVelocity, userHeading: Double) -> Bool {
+        var isNeedUpdate: Bool = false
+        
+        uvdForSection.append(userVelocity)
+        uvdSectionLength += userVelocity.length
+        uvdSectionHeadings.append(compensateHeading(heading: userVelocity.heading))
+        
+        var diffHeading = compensateHeading(heading: userHeading - preUserHeading)
+        if diffHeading > 270 {
+            diffHeading = 360 - diffHeading
+        }
+        self.preUserHeading = userHeading
+        
+        let straightAngle: Double = OlympusConstants.SECTION_STRAIGHT_ANGLE
+        let circularStandardDeviationAll = circularStandardDeviation(for: uvdSectionHeadings)
+        
+        if (diffHeading == 0) && (circularStandardDeviationAll <= straightAngle) {
+            // 섹션 유지중
+            if (uvdSectionLength >= OlympusConstants.REQUIRED_SECTION_STRAIGHT_LENGTH) {
+                if (anchorSectionNumber != sectionNumber) {
+                    anchorSectionNumber = sectionNumber
+                    isNeedUpdate = true
+                }
+            }
+        } else {
+            // 섹션 변화
+            sectionNumber += 1
+            uvdForSection = []
+            uvdSectionLength = 0
+            uvdSectionHeadings = []
+            userStraightIndexes = []
+            print(getLocalTimeString() + " , (Olympus) Section : section changed at \(userVelocity.index) index")
+        }
+        
+        return isNeedUpdate
     }
     
     public func checkIsNeedAnchorNodeUpdate(userVelocity: UserVelocity) -> Bool {
