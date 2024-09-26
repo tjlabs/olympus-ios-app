@@ -106,7 +106,7 @@ class CardViewController: UIViewController, Observer {
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_pdr_01_0910.csv", sensorFileName: "sensor_coex_pdr_01_0910.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex05.csv", sensorFileName: "sensor_coex05.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_dr1.csv", sensorFileName: "sensor_dr1.csv")
-        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_03_0924.csv", sensorFileName: "sensor_coex_03_0924.csv")
+        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_02_0924.csv", sensorFileName: "sensor_coex_02_0924.csv")
         
         // collect
 //        isCollect = true

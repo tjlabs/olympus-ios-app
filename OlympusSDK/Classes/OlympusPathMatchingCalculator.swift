@@ -1062,7 +1062,7 @@ public class OlympusPathMatchingCalculator {
                 let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: resultForEndCheck.building_name, level: resultForEndCheck.level_name, x: resultForEndCheck.x, y: resultForEndCheck.y, heading: resultForEndCheck.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: pathType, PADDING_VALUES: [0, 0, 0, 0])
                 if !pathMatchingResult.isSuccess {
                     isInMapEnd = true
-                    print(getLocalTimeString() + " , (Olympus) Check Map End (1) : isInMapEnd = \(isInMapEnd)")
+//                    print(getLocalTimeString() + " , (Olympus) Check Map End (1) : isInMapEnd = \(isInMapEnd)")
                 }
             } else {
                 var checkValues = [[Double]]()
@@ -1093,7 +1093,6 @@ public class OlympusPathMatchingCalculator {
                 }
                 if failCount == checkValues.count {
                     isInMapEnd = true
-//                    print(getLocalTimeString() + " , (Olympus) Check Map End (2) : isInMapEnd = \(isInMapEnd)")
                 }
             }
             
