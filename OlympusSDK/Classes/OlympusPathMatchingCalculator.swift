@@ -1095,20 +1095,6 @@ public class OlympusPathMatchingCalculator {
                     isInMapEnd = true
                 }
             }
-            
-//            print(getLocalTimeString() + " , (Olympus) Check Map End : diffHeading = \(diffHeading)")
-//            if let minIndex = diffHeading.firstIndex(of: diffHeading.min()!) {
-//                bestHeading = coordHeadings[minIndex]
-//            }
-//            print(getLocalTimeString() + " , (Olympus) Check Map End : bestHeading = \(bestHeading)")
-//            var resultForEndCheck = resultStandard
-//            resultForEndCheck.x += cos(bestHeading*OlympusConstants.D2R)
-//            resultForEndCheck.y += sin(bestHeading*OlympusConstants.D2R)
-//            let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: resultForEndCheck.building_name, level: resultForEndCheck.level_name, x: resultForEndCheck.x, y: resultForEndCheck.y, heading: resultForEndCheck.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: pathType, PADDING_VALUES: [0, 0, 0, 0])
-//            if !pathMatchingResult.isSuccess {
-//                isInMapEnd = true
-//                print(getLocalTimeString() + " , (Olympus) Check Map End : isInMapEnd = \(isInMapEnd)")
-//            }
         }
         
         return isInMapEnd
