@@ -1047,6 +1047,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         if buildingLevelChanger.currentDRModeAreaNodeNumber == OlympusPathMatchingCalculator.shared.anchorNode.nodeNumber {
                             if !self.isDRModeRqInfoSaved {
                                 self.isDRModeRqInfoSaved = true
+                                ambiguitySolver.setIsAmbiguousInDRMode(value: true)
                                 let goodCaseNodeCandidates = OlympusPathMatchingCalculator.shared.getAnchorNodeCandidatesForGoodCase(fltResult: tuResult, pathType: pathType)
                                 var inputNodeCandidates = goodCaseNodeCandidates
                                 let nodeCandidatesInfo = goodCaseNodeCandidates.nodeCandidatesInfo
@@ -1065,11 +1066,17 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 drModeRequestInfo = DRModeRequestInfo(trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: inputNodeCandidates, prevNodeInfo: prevPassedNodeInfo)
                                 sectionController.setDRModeRequestSectionNumber()
                             }
-
-                            let isNeedRqInDRMode = sectionController.checkIsNeedRequestFltInDRMode()
-                            if isNeedRqInDRMode.0 {
-                                processPhase5InDRMode(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: drModeRequestInfo.trajectoryInfo, stableInfo: drModeRequestInfo.stableInfo, nodeCandidatesInfo: drModeRequestInfo.nodeCandidatesInfo, prevNodeInfo: drModeRequestInfo.prevNodeInfo)
+                            
+                            if ambiguitySolver.isAmbiguousInDRMode {
+                                let isNeedRqInDRMode = sectionController.checkIsNeedRequestFltInDRMode()
+                                if isNeedRqInDRMode.0 {
+                                    processPhase5InDRMode(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: drModeRequestInfo.trajectoryInfo, stableInfo: drModeRequestInfo.stableInfo, nodeCandidatesInfo: drModeRequestInfo.nodeCandidatesInfo, prevNodeInfo: drModeRequestInfo.prevNodeInfo)
+                                }
                             }
+//                            let isNeedRqInDRMode = sectionController.checkIsNeedRequestFltInDRMode()
+//                            if isNeedRqInDRMode.0 {
+//                                processPhase5InDRMode(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: drModeRequestInfo.trajectoryInfo, stableInfo: drModeRequestInfo.stableInfo, nodeCandidatesInfo: drModeRequestInfo.nodeCandidatesInfo, prevNodeInfo: drModeRequestInfo.prevNodeInfo)
+//                            }
                         }
                     }
                 }
@@ -1221,13 +1228,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         if (resultPhase.1) {
                             trajController.setIsNeedTrajCheck(flag: true)
                         }
-                        
-//                        if (resultPhase.0 == OlympusConstants.PHASE_6 && isPhaseBreak) {
-//                            KF.resetKalmanR()
-//                            PADDING_VALUE = OlympusConstants.PADDING_VALUE_SMALL
-//                            userMaskSendCount = 0
-//                            isPhaseBreak = false
-//                        }
                         
                         let buildingName = fltResult.building_name
                         let levelName = fltResult.level_name
@@ -1537,7 +1537,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         // Phase Break
                         let bestResult = ambiguitySolver.selectBestResult(results: results.1)
                         if bestResult.scc < OlympusConstants.PHASE_BREAK_SCC_DR {
-                            displayOutput.phase = "1"
                             phaseBreakInPhase4(fltResult: bestResult, isUpdatePhaseBreakResult: true)
                         }
                     }
@@ -1627,10 +1626,93 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 let results = jsonToFineLocatoinTrackingResultFromServerList(jsonString: returnedString)
                 let (useResult, fltResult) = ambiguitySolver.selectResult(results: results.1, nodeCandidatesInfo: inputNodeCandidatesInfo)
                 
-                displayOutput.serverResult[0] = fltResult.x
-                displayOutput.serverResult[1] = fltResult.y
-                displayOutput.serverResult[2] = fltResult.absolute_heading
-                if (fltResult.index > indexPast && useResult) {
+                trajController.updateTrajCompensationArray(result: fltResult)
+                trajController.setPastInfo(trajInfo: inputTraj, searchInfo: SearchInfo(), matchedDirection: fltResult.search_direction)
+                if (fltResult.index > indexPast) {
+                    // 임시
+                    displayOutput.serverResult[0] = fltResult.x
+                    displayOutput.serverResult[1] = fltResult.y
+                    displayOutput.serverResult[2] = fltResult.absolute_heading
+                    // 임시
+                    
+                    if useResult {
+                        ambiguitySolver.setIsAmbiguousInDRMode(value: false)
+                        stackServerResult(serverResult: fltResult)
+                        let resultPhase = phaseController.controlPhase(serverResultArray: serverResultBuffer, drBuffer: unitDRInfoBuffer, UVD_INTERVAL: UVD_INPUT_NUM, TRAJ_LENGTH: USER_TRAJECTORY_LENGTH, INDEX_THRESHOLD: RQ_IDX, inputPhase: fltInput.phase, inputTrajType: TrajType.DR_UNKNOWN, mode: runMode, isVenusMode: stateManager.isVenusMode)
+                        
+                        // 임시
+                        displayOutput.phase = String(OlympusConstants.PHASE_6)
+                        displayOutput.indexRx = fltResult.index
+                        displayOutput.scc = fltResult.scc
+                        displayOutput.resultDirection = fltResult.search_direction
+                        // 임시
+                        
+                        let inputNodeNumber = nodeCandidatesInfo.nodeCandidatesInfo[0].nodeNumber
+                        if fltResult.node_number != inputNodeNumber {
+                            // 결과가 현재 진행하는 길 위에 있지 않아서 결과를 옮겨야함
+                            if (KF.isRunning && resultPhase.0 == OlympusConstants.PHASE_6) {
+                                if (!(fltResult.x == 0 && fltResult.y == 0) && !buildingLevelChanger.isDetermineSpot && phaseController.PHASE != OlympusConstants.PHASE_2) {
+                                    scCompensation = fltResult.sc_compensation
+                                    unitDRGenerator.setScCompensation(value: fltResult.sc_compensation)
+                                    if (isPhaseBreak) {
+                                        KF.resetKalmanR()
+                                        PADDING_VALUE = OlympusConstants.PADDING_VALUE_SMALL
+                                        userMaskSendCount = 0
+                                        isPhaseBreak = false
+                                    }
+                                    
+                                    var pmFltRsult = fltResult
+                                    var propagatedPmFltRsult = fltResult
+                                    if (KF.muFlag) {
+                                        let isNeedCalDhFromUvd: Bool = false
+                                        let isResultStraight = isResultHeadingStraight(unitDRInfoBuffer: unitDRInfoBuffer, fltResult: fltResult)
+                                        if (runMode == OlympusConstants.MODE_PDR) {
+                                            let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: fltResult.building_name, level: fltResult.level_name, x: fltResult.x, y: fltResult.y, heading: fltResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: isResultStraight, pathType: 0, PADDING_VALUES: paddingValues)
+                                            pmFltRsult.x = pathMatchingResult.xyhs[0]
+                                            pmFltRsult.y = pathMatchingResult.xyhs[1]
+                                            pmFltRsult.absolute_heading = pathMatchingResult.xyhs[2]
+                                        } else {
+                                            let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: fltResult.building_name, level: fltResult.level_name, x: fltResult.x, y: fltResult.y, heading: fltResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, PADDING_VALUES: paddingValues)
+                                            pmFltRsult.x = pathMatchingResult.xyhs[0]
+                                            pmFltRsult.y = pathMatchingResult.xyhs[1]
+                                        }
+                                        
+                                        let dxdydh = KF.preProcessForMeasurementUpdate(fltResult: pmFltRsult, unitDRInfoBuffer: unitDRInfoBuffer, mode: runMode, isNeedCalDhFromUvd: isNeedCalDhFromUvd, isResultStraight: isResultStraight)
+                                        propagatedPmFltRsult.x = pmFltRsult.x + dxdydh[0]
+                                        propagatedPmFltRsult.y = pmFltRsult.y + dxdydh[1]
+                                        if (isPossibleHeadingCorrection) {
+                                            propagatedPmFltRsult.absolute_heading = pmFltRsult.absolute_heading + dxdydh[2]
+                                        } else {
+                                            propagatedPmFltRsult.absolute_heading = propagatedPmFltRsult.absolute_heading + dxdydh[2]
+                                        }
+                                        propagatedPmFltRsult.absolute_heading = compensateHeading(heading: propagatedPmFltRsult.absolute_heading)
+                                        
+                                        let muResult = KF.measurementUpdate(fltResult: fltResult, pmFltResult: pmFltRsult, propagatedPmFltResult: propagatedPmFltRsult, unitDRInfoBuffer: unitDRInfoBuffer, isPossibleHeadingCorrection: isPossibleHeadingCorrection, PADDING_VALUES: PADDING_VALUES, mode: runMode)
+                                        let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: muResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+                                        currentBuilding = updatedResult.building_name
+                                        currentLevel = updatedResult.level_name
+                                        print(getLocalTimeString() + " , (Olympus) Process Phase 5 in DRMode : muResult = \(muResult)")
+                                        OlympusPathMatchingCalculator.shared.updateAnchorNodeAfterRecovery(badCaseNodeInfo: inputNodeCandidatesInfo, nodeNumber: fltResult.node_number)
+                                        makeTemporalResult(input: updatedResult, isStableMode: false, mustInSameLink: false, updateType: .STABLE, pathMatchingType: .WIDE)
+                                    }
+                                } else if (fltResult.x == 0 && fltResult.y == 0) {
+                                    phaseBreakInPhase4(fltResult: fltResult, isUpdatePhaseBreakResult: false)
+                                }
+                            } else {
+                                phaseBreakInPhase4(fltResult: fltResult, isUpdatePhaseBreakResult: true)
+                            }
+                        } else {
+                            displayOutput.phase = String(OlympusConstants.PHASE_6) + " // Correct"
+                        }
+                    } else {
+                        if !results.1.flt_outputs.isEmpty {
+                            // Phase Break
+                            let bestResult = ambiguitySolver.selectBestResult(results: results.1)
+                            if bestResult.scc < OlympusConstants.PHASE_BREAK_SCC_DR {
+                                phaseBreakInPhase4(fltResult: bestResult, isUpdatePhaseBreakResult: true)
+                            }
+                        }
+                    }
                     indexPast = fltResult.index
                 }
                 preServerResultMobileTime = fltResult.mobile_time
@@ -2326,6 +2408,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     }
     
     private func phaseBreakInPhase4(fltResult: FineLocationTrackingFromServer, isUpdatePhaseBreakResult: Bool) {
+        displayOutput.phase = "1"
         if (KF.isRunning) {
             KF.minimizeKalmanR()
             PADDING_VALUE = OlympusConstants.PADDING_VALUE_LARGE
@@ -2334,6 +2417,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             }
         }
         ambiguitySolver.setIsAmbiguous(value: false)
+        ambiguitySolver.setIsAmbiguousInDRMode(value: false)
         trajController.setIsNeedTrajCheck(flag: true)
         NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_1])
         isInRecoveryProcess = false
