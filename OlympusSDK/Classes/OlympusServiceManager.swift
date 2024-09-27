@@ -852,7 +852,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             if (KF.isRunning && KF.tuFlag && !self.isInRecoveryProcess) {
                 var pathType: Int = 1
                 if (runMode == OlympusConstants.MODE_PDR) { pathType = 0 }
-//                print(getLocalTimeString() + " , (Olympus) Path-Matching : Check Bad Case : isNeedPathTrajMatching = \(isNeedPathTrajMatching) // index = \(unitDRInfoIndex)")
+                print(getLocalTimeString() + " , (Olympus) Path-Matching : Check Bad Case : isNeedPathTrajMatching = \(isNeedPathTrajMatching) // index = \(unitDRInfoIndex)")
                 let kfTimeUpdate = KF.timeUpdate(currentTime: currentTime, recentResult: olympusResult, length: unitUvdLength, diffHeading: diffHeading, isPossibleHeadingCorrection: isPossibleHeadingCorrection, unitDRInfoBuffer: unitDRInfoBuffer, userMaskBuffer: userMaskBufferPathTrajMatching, isNeedPathTrajMatching: isNeedPathTrajMatching, PADDING_VALUES: PADDING_VALUES, mode: runMode)
                 var tuResult = kfTimeUpdate.0
                 let isDidPathTrajMatching: Bool = kfTimeUpdate.1
@@ -863,6 +863,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 if (isDidPathTrajMatching) {
                     let pathTrajMatchingNode: PassedNodeInfo = KF.getPathTrajMatchingNode()
                     OlympusPathMatchingCalculator.shared.updateAnchorNodeAfterPathTrajMatching(nodeInfo: pathTrajMatchingNode, sectionNumber: sectionController.getSectionNumber())
+                    print(getLocalTimeString() + " , (Olympus) Path-Matching : Result After Path Traj Matching // xyh = [\(tuResult.x) , \(tuResult.y) , \(tuResult.absolute_heading)]")
                     updateType = .PATH_TRAJ_MATCHING
                     mustInSameLink = false
                 } else if (OlympusPathMatchingCalculator.shared.isInNode) {
@@ -992,8 +993,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 var inputNodeCandidates = goodCaseNodeCandidates
                                 let nodeCandidatesInfo = goodCaseNodeCandidates.nodeCandidatesInfo
                                 if (nodeCandidatesInfo.isEmpty) {
-                                    let stableInfo = StableInfo(tail_index: sectionController.getAnchorTailIndex(), head_section_number: sectionController.sectionNumber, node_number_list: [])
-                                    processPhase6(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: goodCaseNodeCandidates)
+                                    let reCheckMapEnd = OlympusPathMatchingCalculator.shared.checkIsInMapEnd(resultStandard: self.temporalResult, tuResult: tuResult, pathType: pathType)
+                                    print(getLocalTimeString() + " , (Olympus) Check Map End : reCheckMapEnd (1) = \(reCheckMapEnd)")
+                                    if !reCheckMapEnd {
+                                        let stableInfo = StableInfo(tail_index: sectionController.getAnchorTailIndex(), head_section_number: sectionController.sectionNumber, node_number_list: [])
+                                        processPhase6(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: goodCaseNodeCandidates)
+                                    }
                                 } else {
                                     var nodeNumberCandidates = [Int]()
                                     if runMode == OlympusConstants.MODE_PDR {
@@ -1024,6 +1029,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                             }
                                         } else if !self.isInMapEnd {
                                             let reCheckMapEnd = OlympusPathMatchingCalculator.shared.checkIsInMapEnd(resultStandard: self.temporalResult, tuResult: tuResult, pathType: pathType)
+                                            print(getLocalTimeString() + " , (Olympus) Check Map End : reCheckMapEnd (2) = \(reCheckMapEnd)")
                                             if !reCheckMapEnd {
                                                 for item in nodeCandidatesInfo {
                                                     nodeNumberCandidates.append(item.nodeNumber)
@@ -2000,6 +2006,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //                    }
                 }
                 let correctResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, HEADING_RANGE: headingRange, isUseHeading: isUseHeading, pathType: 0, PADDING_VALUES: paddings)
+                print(getLocalTimeString() + " , (Olympus) Path-Matching : correctResult (before) // xyh = [\(result.x) , \(result.y) , \(result.absolute_heading)]")
+                print(getLocalTimeString() + " , (Olympus) Path-Matching : correctResult // isUseHeading = \(isUseHeading) // headingRange = \(headingRange) // paddings = \(paddings)")
+                print(getLocalTimeString() + " , (Olympus) Path-Matching : correctResult (after) // success = \(correctResult.isSuccess) // xyh = [\(correctResult.xyhs[0]) , \(correctResult.xyhs[1]) , \(correctResult.xyhs[2])]")
+                
                 if (correctResult.isSuccess) {
                     result.x = correctResult.xyhs[0]
                     result.y = correctResult.xyhs[1]
