@@ -76,11 +76,11 @@ public class OlympusDRDistanceEstimator: NSObject {
         // ACC X, Y, Z, Norm Smoothing
         // Use y, z, norm variance (2sec)
         
-        if isStopDetect {
-            self.stopDetectTime = time
-            print(getLocalTimeString() + " , (Olympus) DRDistanceEstimator : index = \(index) // isStopDetect = \(isStopDetect)")
-        }
-        let diffStopDetectTime = time - self.stopDetectTime
+//        if isStopDetect {
+//            self.stopDetectTime = time
+//            print(getLocalTimeString() + " , (Olympus) DRDistanceEstimator : index = \(index) // isStopDetect = \(isStopDetect)")
+//        }
+//        let diffStopDetectTime = time - self.stopDetectTime
         
         let acc = sensorData.acc
         let gyro = sensorData.gyro
@@ -184,7 +184,6 @@ public class OlympusDRDistanceEstimator: NSObject {
         if (turnScale > 0.87) {
             turnScale = 1.0
         }
-//        print(getLocalTimeString() + " , (Olympus) Turn Scale : ver1 =  \(exp(-navGyroZSmoothing/1.6)) // ver2 = \(exp(-navGyroZSmoothing/2.1)) ")
         
         var velocityInput = velocitySmoothing
         if velocityInput < OlympusConstants.VELOCITY_MIN {
@@ -194,16 +193,14 @@ public class OlympusDRDistanceEstimator: NSObject {
         }
         
         let rflowScale: Double = calRflowVelocityScale(rflowForVelocity: self.rflowForVelocity, isSufficientForVelocity: self.isSufficientRfdVelocityBuffer)
-//        var velocityInputScale = velocityInput*self.velocityScale*self.entranceVelocityScale
         
-        let velocityStop = velocityInput*self.velocityScale*self.entranceVelocityScale*0.5
+//        let velocityStop = velocityInput*self.velocityScale*self.entranceVelocityScale*0.5
         let velocityNotStop = velocityInput*self.velocityScale*self.entranceVelocityScale
-        var velocityInputScale = diffStopDetectTime < 1000 ? velocityStop : velocityNotStop
-        if diffStopDetectTime < 1000 {
-            print(getLocalTimeString() + " , (Olympus) DRDistanceEstimator : index = \(index) // diffStopDetectTime = \(diffStopDetectTime) // velocityStop = \(velocityStop) // velocityNotStop = \(velocityNotStop)")
-        }
+        var velocityInputScale = velocityNotStop
+//        if diffStopDetectTime < 1000 {
+//            print(getLocalTimeString() + " , (Olympus) DRDistanceEstimator : index = \(index) // diffStopDetectTime = \(diffStopDetectTime) // velocityStop = \(velocityStop) // velocityNotStop = \(velocityNotStop)")
+//        }
         
-//        var velocityInputScale = velocityInput*self.entranceVelocityScale
         if velocityInputScale < OlympusConstants.VELOCITY_MIN {
             velocityInputScale = 0
             if (self.isSufficientRfdBuffer && self.rflow < 0.5) {
@@ -218,7 +215,6 @@ public class OlympusDRDistanceEstimator: NSObject {
         }
         
         let delT = self.preTime == 0 ? 1/OlympusConstants.SAMPLE_HZ : (time-self.preTime)*1e-3
-//        let accBias = 1.65
         velocityAcc += (accMovingDirection + self.biasSmoothing)*delT
         velocityAcc = velocityAcc < 0 ? 0 : velocityAcc
         
@@ -228,18 +224,13 @@ public class OlympusDRDistanceEstimator: NSObject {
         
         let velocityMps = (velocityInputScale/3.6)*turnScale
         let velocityCombine = (velocityMps*0.7) + (velocityAcc*0.3)
-//        print(getLocalTimeString() + " , (Olympus) DRDistanceEstimator : index = \(index) // vMag = \(velocityMps) // vAcc = \(velocityAcc) // accBiasSmoothed = \(self.biasSmoothing) // isPossibleUseBias = \(isPossibleUseBias)")
         let velocityFinal = isPossibleUseBias ? velocityCombine : velocityMps
         
         finalUnitResult.isIndexChanged = false
         finalUnitResult.velocity = velocityFinal
         
         distance += velocityMps*delT
-        
-//        distance += velocityFinal*delT
-//        distance += velocityCombine*delT
         if (distance > Double(OlympusConstants.OUTPUT_DISTANCE_SETTING)) {
-//            print(getLocalTimeString() + " , (Olympus) DRDistanceEstimator : index = \(index) // vMag = \(velocityMps) // vAcc = \(velocityAcc) // vCombine = \(velocityCombine) // isPossibleUseBias = \(isPossibleUseBias)")
             index += 1
             finalUnitResult.length = distance
             finalUnitResult.index = index
