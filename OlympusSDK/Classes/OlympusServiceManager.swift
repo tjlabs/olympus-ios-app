@@ -1600,6 +1600,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         phaseBreakInPhase4(fltResult: fltResult, isUpdatePhaseBreakResult: true)
                     }
                     indexPast = fltResult.index
+                } else {
+                    if (fltResult.x == 0 && fltResult.y == 0) {
+                        phaseBreakInPhase4(fltResult: fltResult, isUpdatePhaseBreakResult: false)
+                    }
                 }
                 preServerResultMobileTime = fltResult.mobile_time
                 self.isInRecoveryProcess = false
@@ -1720,6 +1724,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         }
                     }
                     indexPast = fltResult.index
+                } else {
+                    if (fltResult.x == 0 && fltResult.y == 0) {
+                        phaseBreakInPhase4(fltResult: fltResult, isUpdatePhaseBreakResult: false)
+                    }
                 }
                 preServerResultMobileTime = fltResult.mobile_time
             }
@@ -1828,6 +1836,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         phaseBreakInPhase4(fltResult: fltResult, isUpdatePhaseBreakResult: true)
                     }
                     indexPast = fltResult.index
+                } else {
+                    if (fltResult.x == 0 && fltResult.y == 0) {
+                        phaseBreakInPhase4(fltResult: fltResult, isUpdatePhaseBreakResult: false)
+                    }
                 }
                 preServerResultMobileTime = fltResult.mobile_time
                 self.isInRecoveryProcess = false
