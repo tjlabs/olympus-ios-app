@@ -170,7 +170,6 @@ public class OlympusKalmanFilter: NSObject {
         outputResult.absolute_heading = updatedHeading
         var pathTrajMatchingHeading: Double = updatedHeading
         
-//        print(getLocalTimeString() + " , (Olympus) ErrorChecking 0-1 : index = \(unitDRInfoBuffer[unitDRInfoBuffer.count-1].index) , x = \(outputResult.x) , y = \(outputResult.y) , h = \(outputResult.absolute_heading)")
         if (mode == OlympusConstants.MODE_PDR) {
             // PDR
             let currentUvdIndex = unitDRInfoBuffer[unitDRInfoBuffer.count-1].index

@@ -1032,7 +1032,7 @@ public class OlympusPathMatchingCalculator {
         let tuHeading = resultStandard.absolute_heading
         
         if !coordHeadings.isEmpty {
-//            print(getLocalTimeString() + " , (Olympus) Check Map End : Index = \(tuResult.index)")
+            print(getLocalTimeString() + " , (Olympus) Check Map End : Index = \(resultStandard.index) // xyh = [\(resultStandard.x), \(resultStandard.y), \(resultStandard.absolute_heading)]")
 //            print(getLocalTimeString() + " , (Olympus) Check Map End : resultStandard = \(resultStandard)")
 //            print(getLocalTimeString() + " , (Olympus) Check Map End : coordHeadings = \(coordHeadings)")
 //            print(getLocalTimeString() + " , (Olympus) Check Map End : tuHeading = \(tuHeading)")
@@ -1086,11 +1086,14 @@ public class OlympusPathMatchingCalculator {
                 for v in checkValues {
                     let xToCheck = resultStandard.x + v[0]
                     let yToCheck = resultStandard.y + v[1]
+                    print(getLocalTimeString() + " , (Olympus) Check Map End : Index = \(tuResult.index) // xyToCheck = [\(xToCheck), \(yToCheck)]")
                     let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: resultStandard.building_name, level: resultStandard.level_name, x: xToCheck, y: yToCheck, heading: resultStandard.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: pathType, PADDING_VALUES: [0, 0, 0, 0])
                     if !pathMatchingResult.isSuccess {
+                        print(getLocalTimeString() + " , (Olympus) Check Map End : isSuccess = \(pathMatchingResult.isSuccess)")
                         failCount += 1
                     }
                 }
+                print(getLocalTimeString() + " , (Olympus) Check Map End : failCount = \(failCount) // checkValues.count = \( checkValues.count)")
                 if failCount == checkValues.count {
                     isInMapEnd = true
                 }
