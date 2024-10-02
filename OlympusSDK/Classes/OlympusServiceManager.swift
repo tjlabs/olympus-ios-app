@@ -622,6 +622,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         print(getLocalTimeString() + " , (Olympus) Start Route Tracker : Network Bad Entrance Result = \(enterInNetworkBadEntrance.1)")
                         stateManager.setIsGetFirstResponse(isGetFirstResponse: true)
                         let isOn = routeTracker.startRouteTracking(result: enterInNetworkBadEntrance.1, isStartRouteTrack: self.isStartRouteTrack)
+                        stackServerResult(serverResult: enterInNetworkBadEntrance.1)
                         makeTemporalResult(input: enterInNetworkBadEntrance.1, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
                         unitDRGenerator.setIsStartRouteTrack(isStartRoutTrack: isOn.0)
                         isStartRouteTrack = isOn.0
@@ -690,6 +691,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         if (enterInNetworkBadEntrance.0) {
                             stateManager.setIsGetFirstResponse(isGetFirstResponse: true)
                             let isOn = routeTracker.startRouteTracking(result: enterInNetworkBadEntrance.1, isStartRouteTrack: self.isStartRouteTrack)
+                            stackServerResult(serverResult: enterInNetworkBadEntrance.1)
                             makeTemporalResult(input: enterInNetworkBadEntrance.1, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
                             unitDRGenerator.setIsStartRouteTrack(isStartRoutTrack: isOn.0)
                             isStartRouteTrack = isOn.0
@@ -1079,10 +1081,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                     processPhase5InDRMode(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: drModeRequestInfo.trajectoryInfo, stableInfo: drModeRequestInfo.stableInfo, nodeCandidatesInfo: drModeRequestInfo.nodeCandidatesInfo, prevNodeInfo: drModeRequestInfo.prevNodeInfo)
                                 }
                             }
-//                            let isNeedRqInDRMode = sectionController.checkIsNeedRequestFltInDRMode()
-//                            if isNeedRqInDRMode.0 {
-//                                processPhase5InDRMode(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: drModeRequestInfo.trajectoryInfo, stableInfo: drModeRequestInfo.stableInfo, nodeCandidatesInfo: drModeRequestInfo.nodeCandidatesInfo, prevNodeInfo: drModeRequestInfo.prevNodeInfo)
-//                            }
                         }
                     }
                 }
@@ -1727,10 +1725,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         }
                     }
                     indexPast = fltResult.index
-                } else {
-                    if (fltResult.x == 0 && fltResult.y == 0) {
-                        phaseBreakInPhase4(fltResult: fltResult, isUpdatePhaseBreakResult: false)
-                    }
                 }
                 preServerResultMobileTime = fltResult.mobile_time
             }
@@ -2021,9 +2015,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //                    }
                 }
                 let correctedResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, HEADING_RANGE: headingRange, isUseHeading: isUseHeading, pathType: 0, PADDING_VALUES: paddings)
-                print(getLocalTimeString() + " , (Olympus) Path-Matching : correctedResult (before) // xyh = [\(result.x) , \(result.y) , \(result.absolute_heading)]")
+                print(getLocalTimeString() + " , (Olympus) Path-Matching : correctedResult (before) // level = \(levelName) , xyh = [\(result.x) , \(result.y) , \(result.absolute_heading)]")
                 print(getLocalTimeString() + " , (Olympus) Path-Matching : correctedResult // isUseHeading = \(isUseHeading) // headingRange = \(headingRange) // pathMatchingType = \(pathMatchingType) // paddings = \(paddings)")
-                print(getLocalTimeString() + " , (Olympus) Path-Matching : correctedResult (after) // success = \(correctedResult.isSuccess) // xyh = [\(correctedResult.xyhs[0]) , \(correctedResult.xyhs[1]) , \(correctedResult.xyhs[2])]")
+                print(getLocalTimeString() + " , (Olympus) Path-Matching : correctedResult (after) // success = \(correctedResult.isSuccess) // level = \(result.level_name) , xyh = [\(correctedResult.xyhs[0]) , \(correctedResult.xyhs[1]) , \(correctedResult.xyhs[2])]")
                 
                 if (correctedResult.isSuccess) {
                     result.x = correctedResult.xyhs[0]
