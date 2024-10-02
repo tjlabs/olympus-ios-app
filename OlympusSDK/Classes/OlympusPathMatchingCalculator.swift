@@ -153,18 +153,21 @@ public class OlympusPathMatchingCalculator {
         return (roadType, roadNode, road, roadScale, roadHeading)
     }
     
-    public func savePathPixelLocalUrl(key: String, url: String) {
-        print(getLocalTimeString() + " , (Olympus) Save \(key) Path-Pixel Local URL : \(url)")
-        
-        do {
-            let key: String = "OlympusPathPixelLocalUrl_\(key)"
-            UserDefaults.standard.set(url, forKey: key)
+    public func savePathPixelLocalUrl(key: String, url: URL?) {
+        if let urlToSave = url {
+            print(getLocalTimeString() + " , (Olympus) Save \(key) Path-Pixel Local URL : \(urlToSave)")
+            do {
+                let key: String = "OlympusPathPixelLocalUrl_\(key)"
+                UserDefaults.standard.set(url, forKey: key)
+            }
+        } else {
+            print(getLocalTimeString() + " , (Olympus) Error : Save \(key) Path-Pixel Local URL")
         }
     }
     
-    public func loadPathPixelLocalUrl(key: String) -> (Bool, String?) {
+    public func loadPathPixelLocalUrl(key: String) -> (Bool, URL?) {
         let keyPpLocalUrl: String = "OlympusPathPixelLocalUrl_\(key)"
-        if let loadedPpLocalUrl: String = UserDefaults.standard.object(forKey: keyPpLocalUrl) as? String {
+        if let loadedPpLocalUrl: URL = UserDefaults.standard.object(forKey: keyPpLocalUrl) as? URL {
             return (true, loadedPpLocalUrl)
         } else {
             return (false, nil)
@@ -189,10 +192,20 @@ public class OlympusPathMatchingCalculator {
                     let ppLocalUrl = loadPathPixelLocalUrl(key: key)
                     if (ppLocalUrl.0) {
                         do {
-                            let contents = ppLocalUrl.1!
-                            ( PpType[key], PpNode[key], PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
-                            PpIsLoaded[key] = true
+                            if let loadedURL: URL = ppLocalUrl.1 {
+                                let contents = try String(contentsOf: loadedURL)
+                                ( PpType[key], PpNode[key], PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
+                                PpIsLoaded[key] = true
+                            }
+                        } catch {
+                            print(getLocalTimeString() + " , (Olympus) Error : Reading Path-Pixel File \(key)")
                         }
+//                        do {
+//                            let contents = ppLocalUrl.1!
+//                            ( PpType[key], PpNode[key], PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
+//                            PpIsLoaded[key] = true
+//                        }
+                        
                     } else {
                         // 첫 시작과 동일하게 다운로드 받아오기
                         let building_n_level = key.split(separator: "_")
@@ -204,7 +217,7 @@ public class OlympusPathMatchingCalculator {
                                     let contents = try String(contentsOf: url!)
                                     ( PpType[key], PpNode[key],PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
                                     savePathPixelVersion(key: key, ppVersion: value)
-                                    savePathPixelLocalUrl(key: key, url: contents)
+                                    savePathPixelLocalUrl(key: key, url: url)
                                     PpIsLoaded[key] = true
                                 } catch {
                                     PpIsLoaded[key] = false
@@ -227,7 +240,7 @@ public class OlympusPathMatchingCalculator {
                                 let contents = try String(contentsOf: url!)
                                 ( PpType[key], PpNode[key], PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
                                 savePathPixelVersion(key: key, ppVersion: value)
-                                savePathPixelLocalUrl(key: key, url: contents)
+                                savePathPixelLocalUrl(key: key, url: url)
                                 PpIsLoaded[key] = true
                             } catch {
                                 PpIsLoaded[key] = false
@@ -251,7 +264,7 @@ public class OlympusPathMatchingCalculator {
                                 print(key)
                                 ( PpType[key], PpNode[key], PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
                                 savePathPixelVersion(key: key, ppVersion: value)
-                                savePathPixelLocalUrl(key: key, url: contents)
+                                savePathPixelLocalUrl(key: key, url: url)
                                 PpIsLoaded[key] = true
                             } catch {
                                 PpIsLoaded[key] = false
@@ -818,8 +831,6 @@ public class OlympusPathMatchingCalculator {
                                             controlPassedNodeInfoForMulti(passedNodeInfo: PassedNodeInfo(nodeNumber: self.passedNode, nodeCoord: self.passedNodeCoord, nodeHeadings: self.passedNodeHeadings, matchedIndex: self.passedNodeMatchedIndex, userHeading: currentResultHeading))
                                         } else {
                                             self.isInNode = false
-//                                            self.linkCoord = [xPath, yPath]
-//                                            self.linkDirections = ppHeadingValues
                                         }
                                     }
                                 }
@@ -1843,8 +1854,36 @@ public class OlympusPathMatchingCalculator {
                                     return (false, matchedNode, matchedNodeHeadings)
                                 } else {
                                     matchedNodeHeadings = ppHeadingValues
+                                    if ppHeadingValues.contains(fltResult.absolute_heading) {
+                                        return (false, node, matchedNodeHeadings)
+                                    } else {
+                                        let userHeading = fltResult.absolute_heading
+                                        var diffHeading = [Double]()
+                                        for mapHeading in matchedNodeHeadings {
+                                            var diffValue: Double = 0
+                                            if (userHeading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
+                                                diffValue = abs(userHeading - (mapHeading+360))
+                                            } else if (mapHeading > 270 && (userHeading >= 0 && userHeading < 90)) {
+                                                diffValue = abs(mapHeading - (userHeading+360))
+                                            } else {
+                                                diffValue = abs(userHeading - mapHeading)
+                                            }
+                                            diffHeading.append(diffValue)
+                                        }
+                                        
+                                        if let minHeading = diffHeading.min() {
+                                            if minHeading < OlympusConstants.HEADING_RANGE-10 {
+                                                return (false, node, matchedNodeHeadings)
+                                            } else {
+                                                return (false, matchedNode, matchedNodeHeadings)
+                                            }
+                                        } else {
+                                            return (false, matchedNode, matchedNodeHeadings)
+                                        }
+                                    }
+//                                    matchedNodeHeadings = ppHeadingValues
 //                                    print(getLocalTimeString() + " , (Olympus) Node Find : findStartNode (Process) headingArray = \(headingArray) // headingData = \(headingData) // ppHeadingValues = \(ppHeadingValues)")
-                                    return (false, node, matchedNodeHeadings)
+//                                    return (false, node, matchedNodeHeadings)
                                 }
                             }
                         }

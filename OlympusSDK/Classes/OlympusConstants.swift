@@ -176,9 +176,9 @@ class OlympusConstants {
     
     // Path-Matching
     static let HEADING_RANGE: Double = 46
-    static var PADDING_VALUE: Double = 10
-    static var PADDING_VALUE_SMALL: Double = 10
-    static var PADDING_VALUE_LARGE: Double = 10
+    static var PADDING_VALUE: Double = 15
+    static var PADDING_VALUE_SMALL: Double = 15
+    static var PADDING_VALUE_LARGE: Double = 20
     static var PADDING_VALUES: [Double] = [10, 10, 10, 10]
     
     public func setSectorInfoConstants(sector_info: SectorInfo) {

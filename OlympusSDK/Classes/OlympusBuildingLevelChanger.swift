@@ -296,7 +296,7 @@ public class OlympusBuildingLevelChanger {
         let currentLevel = "_\(fltResult.level_name)_"
         for (key, value) in self.sectorDRModeArea {
             if key.contains(currentLevel) {
-//                print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (In) : coord = \(fltResult.x) , \(fltResult.y) , \(fltResult.absolute_heading)")
+                print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (In) : coord = \(fltResult.x) , \(fltResult.y) , \(fltResult.absolute_heading)")
                 if (value.range[0] <= fltResult.x && fltResult.x <= value.range[2]) && (value.range[1] <= fltResult.y && fltResult.y <= value.range[3]) {
                     // 사용자 좌표가 영역 안에 존재
                     if value.direction == fltResult.absolute_heading {
@@ -356,6 +356,20 @@ public class OlympusBuildingLevelChanger {
         }
         
         return isInArea
+    }
+    
+    public func checkCoordInSectorDRModeArea(fltResult: FineLocationTrackingFromServer) -> Bool {
+        let currentLevel = "_\(fltResult.level_name)_"
+        for (key, value) in self.sectorDRModeArea {
+            if key.contains(currentLevel) {
+                print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (In) : coord = \(fltResult.x) , \(fltResult.y) , \(fltResult.absolute_heading)")
+                if (value.range[0] <= fltResult.x && fltResult.x <= value.range[2]) && (value.range[1] <= fltResult.y && fltResult.y <= value.range[3]) {
+                    // 사용자 좌표가 영역 안에 존재
+                    return true
+                }
+            }
+        }
+        return false
     }
     
     func notificationCenterAddObserver() {
@@ -457,7 +471,7 @@ public class OlympusBuildingLevelChanger {
                         }
                     }
                     
-//                    print(getLocalTimeString() + " , (Olympus) Run OSR : index = \(lastResult.index) // isUserInArea = \(isUserInArea) // isPassedNodeInArea = \(isPassedNodeInArea)")
+                    print(getLocalTimeString() + " , (Olympus) Run OSR : index = \(lastResult.index) // isUserInArea = \(isUserInArea) // isPassedNodeInArea = \(isPassedNodeInArea)")
                     if isUserInArea && isPassedNodeInArea {
                         return true
                     }
