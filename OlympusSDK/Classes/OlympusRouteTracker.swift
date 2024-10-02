@@ -52,18 +52,22 @@ public class OlympusRouteTracker {
         return (entracneLevelArray, entranceArray)
     }
     
-    public func saveEntranceRouteLocalUrl(key: String, url: String) {
-        print(getLocalTimeString() + " , (Olympus) Save \(key) Entrance Route Local URL : \(url)")
-        
-        do {
-            let key: String = "OlympusEntranceRouteLocalUrl_\(key)"
-            UserDefaults.standard.set(url, forKey: key)
+    public func saveEntranceRouteLocalUrl(key: String, url: URL?) {
+        if let urlToSave = url {
+            print(getLocalTimeString() + " , (Olympus) Save \(key) Entrance Route Local URL : \(urlToSave)")
+            
+            do {
+                let key: String = "OlympusEntranceRouteLocalUrl_\(key)"
+                UserDefaults.standard.set(url, forKey: key)
+            }
+        } else {
+            print(getLocalTimeString() + " , (Olympus) Error : Save \(key) Entrance Route Local URL")
         }
     }
     
-    public func loadEntranceRouteLocalUrl(key: String) -> (Bool, String?) {
+    public func loadEntranceRouteLocalUrl(key: String) -> (Bool, URL?) {
         let keyEntranceRouteUrl: String = "OlympusEntranceRouteLocalUrl_\(key)"
-        if let loadedEntranceRouteUrl: String = UserDefaults.standard.object(forKey: keyEntranceRouteUrl) as? String {
+        if let loadedEntranceRouteUrl: URL = UserDefaults.standard.object(forKey: keyEntranceRouteUrl) as? URL {
             return (true, loadedEntranceRouteUrl)
         } else {
             return (false, nil)
@@ -88,11 +92,15 @@ public class OlympusRouteTracker {
                     let routeLocalUrl = loadEntranceRouteLocalUrl(key: key)
                     if (routeLocalUrl.0) {
                         do {
-                            let contents = routeLocalUrl.1!
-                            let parsedData = self.parseRoute(data: contents)
-                            self.EntranceRouteLevel[key] = parsedData.0
-                            self.EntranceRouteCoord[key] = parsedData.1
-                            self.EntranceIsLoaded[key] = true
+                            if let loadedURL: URL = routeLocalUrl.1 {
+                                let contents = try String(contentsOf: loadedURL)
+                                let parsedData = self.parseRoute(data: contents)
+                                self.EntranceRouteLevel[key] = parsedData.0
+                                self.EntranceRouteCoord[key] = parsedData.1
+                                self.EntranceIsLoaded[key] = true
+                            }
+                        } catch {
+                            print(getLocalTimeString() + " , (Olympus) Error : Reading Entrance Route File \(key)")
                         }
                     } else {
                         // 첫 시작과 동일하게 다운로드 받아오기
@@ -107,7 +115,7 @@ public class OlympusRouteTracker {
                                     EntranceRouteLevel[key] = parsedData.0
                                     EntranceRouteCoord[key] = parsedData.1
                                     saveEntranceRouteVersion(key: key, routeVersion: value)
-                                    saveEntranceRouteLocalUrl(key: key, url: contents)
+                                    saveEntranceRouteLocalUrl(key: key, url: url)
                                     EntranceIsLoaded[key] = true
                                 } catch {
                                     EntranceIsLoaded[key] = false
@@ -132,7 +140,7 @@ public class OlympusRouteTracker {
                                 EntranceRouteLevel[key] = parsedData.0
                                 EntranceRouteCoord[key] = parsedData.1
                                 saveEntranceRouteVersion(key: key, routeVersion: value)
-                                saveEntranceRouteLocalUrl(key: key, url: contents)
+                                saveEntranceRouteLocalUrl(key: key, url: url)
                                 EntranceIsLoaded[key] = true
                             } catch {
                                 EntranceIsLoaded[key] = false
@@ -156,7 +164,7 @@ public class OlympusRouteTracker {
                             EntranceRouteLevel[key] = parsedData.0
                             EntranceRouteCoord[key] = parsedData.1
                             saveEntranceRouteVersion(key: key, routeVersion: value)
-                            saveEntranceRouteLocalUrl(key: key, url: contents)
+                            saveEntranceRouteLocalUrl(key: key, url: url)
                             EntranceIsLoaded[key] = true
                         } catch {
                             EntranceIsLoaded[key] = false
@@ -211,7 +219,7 @@ public class OlympusRouteTracker {
 //        print(getLocalTimeString() + " , (Olympus) Route Track : currentEntranceIndex = \(currentEntranceIndex) // currentEntranceLength = \(currentEntranceLength)")
         if (currentEntranceIndex < (currentEntranceLength-1)) {
             self.currentEntranceIndex += 1
-//            print(getLocalTimeString() + " , (Olympus) Route Track : temporalResult = \(temporalResult)")
+            print(getLocalTimeString() + " , (Olympus) Route Tracker : temporalResult = \(temporalResult)")
             
             if (isVenusMode) {
                 print(localTime + " , (Olympus) Entrance Route Tracker : Finish (BLE Only Mode)")
@@ -225,7 +233,7 @@ public class OlympusRouteTracker {
                 if (result.level_name != "B0") {
                     let curLevel = removeLevelDirectionString(levelName: currentLevel)
                     if (isKF && (curLevel == result.level_name)) {
-                        print(localTime + " , (Olympus) Entrance Route Tracker : Finish (Enter Phase5)")
+                        print(localTime + " , (Olympus) Entrance Route Tracker : Finish (Enter Phase6)")
                         isRouteTrackFinished = true
                         finishType = .STABLE
                         self.indexAfterRouteTrack = 0
@@ -292,7 +300,7 @@ public class OlympusRouteTracker {
                 if let thresholdRSSI = EntranceInnerWardRSSI[currentEntrance] {
                     if let wardCoord = EntranceInnerWardCoord[currentEntrance] {
                         let normalizedRSSI = (scannedRSSI - device_min_rss)*normalization_scale + standard_min_rss
-//                        print(getLocalTimeString() + " , (Olympus) Route Tracker : checkIsEntranceFinished // scannedRSSI [\(bleID) : Raw = \(scannedRSSI) : normalizedRSSI = \(normalizedRSSI) // thresholdRSSI = \(thresholdRSSI)]")
+                        print(getLocalTimeString() + " , (Olympus) Route Tracker : checkIsEntranceFinished // scannedRSSI [\(bleID) : Raw = \(scannedRSSI) : normalizedRSSI = \(normalizedRSSI) // thresholdRSSI = \(thresholdRSSI)]")
                         return normalizedRSSI >= thresholdRSSI ? (true, wardCoord) : (false, xyh)
                     } else {
                         return (false, xyh)
