@@ -216,6 +216,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         self.currentLevel = newLevel
         KF.updateTuBuildingLevel(building: newBuilding, level: newLevel)
         if !newCoord.isEmpty {
+            self.setTemporalResult(coord: newCoord)
+            self.isDRMode = true
             KF.updateTuResult(x: newCoord[0], y: newCoord[1])
             KF.setLinkInfo(coord: newCoord, directions: OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: newBuilding, level: newLevel, x: newCoord[0], y: newCoord[1], PADDING_VALUE: 0.0, mode: self.runMode))
             OlympusPathMatchingCalculator.shared.setBuildingLevelChangedCoord(coord: newCoord)
@@ -1052,7 +1054,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     } else {
                         print(getLocalTimeString() + " , (Olympus) isDRMode : index = \(unitDRInfoIndex) // DR Mode Anchor = \(buildingLevelChanger.currentDRModeAreaNodeNumber) , Current Anchor = \(OlympusPathMatchingCalculator.shared.anchorNode.nodeNumber)")
                         // DR 모드인 경우 위치 요청을 지속적으로 보내면서 확실히 그 영역에 진입했는지를 확인한다
-                        if buildingLevelChanger.currentDRModeAreaNodeNumber == OlympusPathMatchingCalculator.shared.anchorNode.nodeNumber {
+                        if buildingLevelChanger.currentDRModeAreaNodeNumber == OlympusPathMatchingCalculator.shared.anchorNode.nodeNumber && buildingLevelChanger.currentDRModeAreaNodeNumber != -1 {
                             if !self.isDRModeRqInfoSaved {
                                 self.isDRModeRqInfoSaved = true
                                 ambiguitySolver.setIsAmbiguousInDRMode(value: true)
@@ -2178,6 +2180,14 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             self.preTemporalResult = result
             self.preTemporalResultHeading = temporalResultHeading
         }
+    }
+    
+    private func setTemporalResult(coord: [Double]) {
+        self.temporalResult.x = coord[0]
+        self.temporalResult.y = coord[1]
+        
+        self.preTemporalResult.x = coord[0]
+        self.preTemporalResult.y = coord[1]
     }
     
     @objc func osrTimerUpdate() {
