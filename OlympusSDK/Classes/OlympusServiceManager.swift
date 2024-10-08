@@ -884,7 +884,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 }
                 
                 print(getLocalTimeString() + " , (Olympus) Check Map End : isInNode = \(OlympusPathMatchingCalculator.shared.isInNode) , isInMapEnd = \(isInMapEnd)")
-//                let isNeedAnchorNodeUpdate = sectionController.checkIsNeedAnchorNodeUpdate(userVelocity: data)
                 let isNeedAnchorNodeUpdate = sectionController.extendedCheckIsNeedAnchorNodeUpdate(userVelocity: data, userHeading: self.temporalResult.absolute_heading)
                 if (isNeedAnchorNodeUpdate) {
                     OlympusPathMatchingCalculator.shared.updateAnchorNode(fltResult: tuResult, pathType: pathType, sectionNumber: sectionController.getSectionNumber())
@@ -1094,8 +1093,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             if (isStartRouteTrack) {
                 let routeTrackResult = routeTracker.getRouteTrackResult(temporalResult: self.temporalResult, currentLevel: currentLevel, isVenusMode: stateManager.isVenusMode, isKF: KF.isRunning, isPhaseBreakInRouteTrack: isPhaseBreakInRouteTrack)
                 if (routeTrackResult.isRouteTrackFinished) {
-                    isStartRouteTrack = false
+                    unitDRGenerator.setRouteTrackFinishedTime(value: getCurrentTimeInMillisecondsDouble())
                     unitDRGenerator.setIsStartRouteTrack(isStartRoutTrack: false)
+                    isStartRouteTrack = false
                     isPhaseBreakInRouteTrack = false
                     if (routeTrackResult.1 != RouteTrackFinishType.STABLE) {
                         self.temporalResult = self.routeTrackResult
@@ -1132,8 +1132,17 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         if (!stateManager.isBackground && isStartRouteTrack) {
             let isCorrelation = routeTracker.checkIsEntranceFinished(bleData: self.bleAvg, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: OlympusConstants.DEVICE_MIN_RSSI, standard_min_rss: OlympusConstants.STANDARD_MIN_RSS)
             if isCorrelation.0 {
+                unitDRGenerator.setRouteTrackFinishedTime(value: getCurrentTimeInMillisecondsDouble())
+                
                 let correlationInfo = isCorrelation.1
                 var lastServerResult = serverResultBuffer[serverResultBuffer.count-1]
+                
+                unitDRGenerator.setIsStartRouteTrack(isStartRoutTrack: false)
+                isStartRouteTrack = false
+                isPhaseBreakInRouteTrack = false
+                networkStatus = true
+                
+                self.currentBuilding = lastServerResult.building_name
                 self.currentLevel = routeTracker.getRouteTrackEndLevel()
                 lastServerResult.level_name = routeTracker.getRouteTrackEndLevel()
                 lastServerResult.x = correlationInfo[0]
@@ -1141,6 +1150,13 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 lastServerResult.absolute_heading = correlationInfo[2]
                 
                 print(getLocalTimeString() + " , (Olympus) Route Tracker : correlationInfo = \(correlationInfo)")
+                
+                let newCoord: [Double] = [lastServerResult.x, lastServerResult.y]
+                self.setTemporalResult(coord: newCoord)
+                KF.updateTuResult(x: newCoord[0], y: newCoord[1])
+                KF.setLinkInfo(coord: newCoord, directions: OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: lastServerResult.building_name, level: lastServerResult.level_name, x: newCoord[0], y: newCoord[1], PADDING_VALUE: 0.0, mode: self.runMode))
+                OlympusPathMatchingCalculator.shared.setBuildingLevelChangedCoord(coord: newCoord)
+                
                 makeTemporalResult(input: lastServerResult, isStableMode: false, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
                 NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_6])
                 displayOutput.phase = String(phaseController.PHASE)
@@ -2103,7 +2119,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 let diffX = result.x - temporalResult.x
                 let diffY = result.y - temporalResult.y
                 let diffNorm = sqrt(diffX*diffX + diffY*diffY)
-//                print(getLocalTimeString() + " , (Olympus) ErrorChecking : diffNorm = \(diffNorm)")
                 if diffNorm >= 2 {
                     currentTuResult.x = result.x
                     currentTuResult.y = result.y

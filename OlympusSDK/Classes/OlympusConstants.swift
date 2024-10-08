@@ -173,6 +173,7 @@ class OlympusConstants {
     static let REQUIRED_SECTION_REQUEST_LENGTH_IN_DR: Double = 10
     static let PIXEL_LENGTH_TO_FIND_NODE: Double = 20
     static let OUTPUT_AMBIGUITY_RATIO: Double = 0.88
+    static let MODE_CHANGE_TIME_AFTER_ROUTE_TRACK: Double = 30*1000 // 30 seconds
     
     // Path-Matching
     static let HEADING_RANGE: Double = 46
