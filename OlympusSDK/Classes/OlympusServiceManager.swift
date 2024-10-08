@@ -529,6 +529,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         routeTracker.EntranceRouteVersion[entranceKey] = entrance.route_version
                         routeTracker.setEntranceInnerWardInfo(key: entranceKey, sectorInfoInnermostWard: entrance.innermost_ward)
                         entranceOuterWards.append(entrance.outermost_ward_id)
+                        print(getLocalTimeString() + " , (Olympus) Sector Info : Entrance \(entranceKey) Velocity Scale = \(entrance.scale)")
                     }
                     stateManager.EntranceOuterWards = entranceOuterWards
                 }
@@ -833,7 +834,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             let isInEntranceLevel = stateManager.checkInEntranceLevel(result: self.olympusResult, isStartRouteTrack: self.isStartRouteTrack)
             unitDRGenerator.setIsInEntranceLevel(flag: isInEntranceLevel)
             let entrancaeVelocityScale: Double = routeTracker.getEntranceVelocityScale(isGetFirstResponse: stateManager.isGetFirstResponse, isStartRouteTrack: self.isStartRouteTrack)
-//            unitDRGenerator.setEntranceVelocityScale(scale: entrancaeVelocityScale)
+            unitDRGenerator.setEntranceVelocityScale(scale: entrancaeVelocityScale)
             let numBleChannels = OlympusRFDFunctions.shared.checkBleChannelNum(bleAvg: self.bleAvg)
             trajController.checkTrajectoryInfo(isPhaseBreak: self.isPhaseBreak, isBecomeForeground: stateManager.isBecomeForeground, isGetFirstResponse: stateManager.isGetFirstResponse, timeForInit: stateManager.timeForInit, LENGTH_THRESHOLD: USER_TRAJECTORY_LENGTH)
             let trajectoryInfo = trajController.getTrajectoryInfo(unitDRInfo: unitDRInfo, unitLength: unitUvdLength, olympusResult: self.olympusResult, isKF: KF.isRunning, tuResult: timeUpdateResult, isPmSuccess: false, numBleChannels: numBleChannels, mode: self.runMode, isDetermineSpot: buildingLevelChanger.isDetermineSpot, spotCutIndex: buildingLevelChanger.spotCutIndex, LENGTH_THRESHOLD: USER_TRAJECTORY_LENGTH)
@@ -863,6 +864,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 var updateType: UpdateNodeLinkType = .NONE
                 var mustInSameLink: Bool = true
                 let isNeedRqPhase4: Bool = kfTimeUpdate.2
+                
+                let pathMatchingArea = OlympusPathMatchingCalculator.shared.checkInEntranceMatchingArea(x: tuResult.x, y: tuResult.y, building: tuResult.building_name, level: tuResult.level_name)
+                print(getLocalTimeString() + " , (Olympus) Check Map End : pathMatchingArea = \(pathMatchingArea.0)")
+                
                 // Path-Traj 매칭 했으면 anchor node 업데이트하는 과정 필요
                 if (isDidPathTrajMatching) {
                     let pathTrajMatchingNode: PassedNodeInfo = KF.getPathTrajMatchingNode()
@@ -870,7 +875,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     print(getLocalTimeString() + " , (Olympus) Path-Matching : Result After Path Traj Matching // xyh = [\(tuResult.x) , \(tuResult.y) , \(tuResult.absolute_heading)]")
                     updateType = .PATH_TRAJ_MATCHING
                     mustInSameLink = false
-                } else if (OlympusPathMatchingCalculator.shared.isInNode) {
+                } else if (OlympusPathMatchingCalculator.shared.isInNode || pathMatchingArea.0) {
                     mustInSameLink = false
 //                    // 길 끝에 있는지 확인해야 한다
                     self.isInMapEnd = OlympusPathMatchingCalculator.shared.checkIsInMapEnd(resultStandard: self.temporalResult, tuResult: tuResult, pathType: pathType)
@@ -1093,6 +1098,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             if (isStartRouteTrack) {
                 let routeTrackResult = routeTracker.getRouteTrackResult(temporalResult: self.temporalResult, currentLevel: currentLevel, isVenusMode: stateManager.isVenusMode, isKF: KF.isRunning, isPhaseBreakInRouteTrack: isPhaseBreakInRouteTrack)
                 if (routeTrackResult.isRouteTrackFinished) {
+                    buildingLevelChanger.setBuildingLevelChangedTime(value: getCurrentTimeInMilliseconds())
                     unitDRGenerator.setRouteTrackFinishedTime(value: getCurrentTimeInMillisecondsDouble())
                     unitDRGenerator.setIsStartRouteTrack(isStartRoutTrack: false)
                     isStartRouteTrack = false
@@ -1101,8 +1107,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         self.temporalResult = self.routeTrackResult
                     }
                     networkStatus = true
-                    
-//                    let coordHeadings = OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: routeTrackResult.2.building_name, level: routeTrackResult.2.level_name, x: self.routeTrackResult.x, y: self.routeTrackResult.y, PADDING_VALUE: <#T##Double#>, mode: <#T##String#>)
                     self.currentBuilding = routeTrackResult.2.building_name
                     self.currentLevel = routeTrackResult.2.level_name
                 } else {
@@ -1132,6 +1136,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         if (!stateManager.isBackground && isStartRouteTrack) {
             let isCorrelation = routeTracker.checkIsEntranceFinished(bleData: self.bleAvg, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: OlympusConstants.DEVICE_MIN_RSSI, standard_min_rss: OlympusConstants.STANDARD_MIN_RSS)
             if isCorrelation.0 {
+                buildingLevelChanger.setBuildingLevelChangedTime(value: getCurrentTimeInMilliseconds())
                 unitDRGenerator.setRouteTrackFinishedTime(value: getCurrentTimeInMillisecondsDouble())
                 
                 let correlationInfo = isCorrelation.1

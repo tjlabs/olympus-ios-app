@@ -246,7 +246,7 @@ public class OlympusBuildingLevelChanger {
         return cutIndex
     }
     
-    private func setBuildingLevelChangedTime(value: Int) {
+    public func setBuildingLevelChangedTime(value: Int) {
         self.buildingLevelChangedTime = value
     }
     
