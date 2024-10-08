@@ -2137,6 +2137,11 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 self.displayOutput.isPmSuccess = false
                 if (KF.isRunning) {
                     result = self.preTemporalResult
+                    let correctedResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: pathTypeForNodeAndLink, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
+                    if correctedResult.isSuccess {
+                        result.x = correctedResult.xyhs[0]
+                        result.y = correctedResult.xyhs[1]
+                    }
                 }
             } else {
                 self.displayOutput.isPmSuccess = true
@@ -2200,6 +2205,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             self.temporalResult = result
             self.preTemporalResult = result
             self.preTemporalResultHeading = temporalResultHeading
+            KF.updateTuResult(x: result.x, y: result.y)
+            KF.updateTuResultNow(result: result)
         }
     }
     
