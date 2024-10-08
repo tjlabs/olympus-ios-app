@@ -219,7 +219,7 @@ public class OlympusRouteTracker {
 //        print(getLocalTimeString() + " , (Olympus) Route Track : currentEntranceIndex = \(currentEntranceIndex) // currentEntranceLength = \(currentEntranceLength)")
         if (currentEntranceIndex < (currentEntranceLength-1)) {
             self.currentEntranceIndex += 1
-            print(getLocalTimeString() + " , (Olympus) Route Tracker : temporalResult = \(temporalResult)")
+            print(getLocalTimeString() + " , (Olympus) Route Tracker : result = \(result)")
             
             if (isVenusMode) {
                 print(localTime + " , (Olympus) Entrance Route Tracker : Finish (BLE Only Mode)")

@@ -45,6 +45,7 @@ public class OlympusKalmanFilter: NSObject {
     var tuResultWhenUvdPosted = FineLocationTrackingFromServer()
     
     public var isRunning: Bool = false
+    private let queue = DispatchQueue(label: "setLinkInfo")
     
     override init() { }
     
@@ -98,8 +99,14 @@ public class OlympusKalmanFilter: NSObject {
     }
     
     public func setLinkInfo(coord: [Double], directions: [Double]) {
-        self.linkCoord = coord
-        self.linkDirections = directions
+//        self.linkCoord = coord
+//        self.linkDirections = directions
+        
+        queue.async { [weak self] in
+            guard let self = self else { return }
+            self.linkCoord = coord
+            self.linkDirections = directions
+        }
     }
     
     public func refreshTuResult(xyh: [Double], inputPhase: Int, inputTrajLength: Double, mode: String) {

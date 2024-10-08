@@ -1390,8 +1390,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 makeTemporalResult(input: updatedResult, isStableMode: false, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
                             }
                         }
-                        self.preServerResultMobileTime = fltResult.mobile_time
+//                        self.preServerResultMobileTime = fltResult.mobile_time
                     }
+                    self.preServerResultMobileTime = fltResult.mobile_time
                 } else {
                     trajController.setIsNeedTrajCheck(flag: true)
                     NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_1])

@@ -962,7 +962,7 @@ public class OlympusPathMatchingCalculator {
 //        print(getLocalTimeString() + " , (Olympus) linkDirections = \(linkDirections)")
         var isDefault: Bool = true
         if directions.count == 2 {
-            var xyLimitValue: Double = 20
+            var xyLimitValue: Double = 30
             if (mode == OlympusConstants.MODE_PDR) {
                 xyLimitValue = xyLimitValue - 5
             }
@@ -1045,7 +1045,6 @@ public class OlympusPathMatchingCalculator {
         
         if !coordHeadings.isEmpty {
             print(getLocalTimeString() + " , (Olympus) Check Map End : Index = \(resultStandard.index) // xyh = [\(resultStandard.x), \(resultStandard.y), \(resultStandard.absolute_heading)]")
-//            print(getLocalTimeString() + " , (Olympus) Check Map End : resultStandard = \(resultStandard)")
             print(getLocalTimeString() + " , (Olympus) Check Map End : coordHeadings = \(coordHeadings)")
             print(getLocalTimeString() + " , (Olympus) Check Map End : tuHeading = \(tuHeading)")
             var diffHeading = [Double]()
