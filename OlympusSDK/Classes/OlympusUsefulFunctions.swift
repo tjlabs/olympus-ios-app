@@ -74,7 +74,7 @@ public func isResultHeadingStraight(unitDRInfoBuffer: [UnitDRInfo], fltResult: F
             endHeading = unitDRInfoBuffer[matchedIndex].heading
         }
         let headingStd = circularStandardDeviation(for: headingBuffer)
-        print(getLocalTimeString() + " , (Olympus) Heading Std : headingStd = \(headingStd) count = \(headingBuffer.count) , diffHeading = \(abs(endHeading - startHeading))")
+//        print(getLocalTimeString() + " , (Olympus) Heading Std : headingStd = \(headingStd) count = \(headingBuffer.count) , diffHeading = \(abs(endHeading - startHeading))")
         isStraight = headingStd <= 2 ? true : false
     }
     

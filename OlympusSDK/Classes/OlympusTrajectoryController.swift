@@ -778,7 +778,7 @@ public class OlympusTrajectoryController {
                 }
             }
         } else {
-            print(getLocalTimeString() + " , (Olympus) Warnings : Traj is Empty")
+//            print(getLocalTimeString() + " , (Olympus) Warnings : Traj is Empty")
         }
         
         if searchInfo.searchDirection.isEmpty {

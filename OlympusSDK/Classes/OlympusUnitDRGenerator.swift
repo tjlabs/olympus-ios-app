@@ -147,7 +147,7 @@ public class OlympusUnitDRGenerator: NSObject {
                     self.isPdrMode = false
                     self.lastModeChangedTime = currentTime
                 } else if diffRouteTrackTime > 0 && diffRouteTrackTime < OlympusConstants.MODE_CHANGE_TIME_AFTER_ROUTE_TRACK {
-                    print(getLocalTimeString() + " , (Olympus) Mode Change : cannot change mode // diffRouteTrackTime = \(diffRouteTrackTime)")
+//                    print(getLocalTimeString() + " , (Olympus) Mode Change : cannot change mode // diffRouteTrackTime = \(diffRouteTrackTime)")
                     self.isPdrMode = false
                     self.lastModeChangedTime = currentTime
                 }
