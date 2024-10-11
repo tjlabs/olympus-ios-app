@@ -712,9 +712,6 @@ public class OlympusTrajectoryController {
                 }
             } else {
                 // DR
-                print(getLocalTimeString() + " , (Olympus) SearchInfo : ---------------------------------------")
-                print(getLocalTimeString() + " , (Olympus) SearchInfo : phaseBreak = \(isPhaseBreak)")
-                print(getLocalTimeString() + " , (Olympus) SearchInfo : PHASE = \(PHASE)")
                 if (PHASE != 2 && PHASE < 4) {
                     searchInfo.tailIndex = trajectoryInfo[0].index
                     
@@ -728,13 +725,11 @@ public class OlympusTrajectoryController {
                     searchInfo.searchRange = searchRange.map { Int($0) }
                 
                     let ppHeadings = OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: userBuilding, level: userLevel, x: userX, y: userY, PADDING_VALUE: PADDING_VALUE, mode: mode)
-                    print(getLocalTimeString() + " , (Olympus) SearchInfo : ppHeadings = \(ppHeadings)")
                     var searchHeadings: [Double] = []
                     if (trajLength <= 30) {
                         searchHeadings = ppHeadings
                     } else {
                         let headingLeastChangeSection = extractSectionWithLeastChange(inputArray: uvdRawHeading, requiredSize: 7)
-                        print(getLocalTimeString() + " , (Olympus) SearchInfo : headingLeastChangeSection = \(headingLeastChangeSection)")
                         if (headingLeastChangeSection.isEmpty) {
                             let diffHeadingHeadTail = abs(uvdRawHeading[uvdRawHeading.count-1] - uvdRawHeading[0])
                             if (diffHeadingHeadTail < 5) {
@@ -754,10 +749,8 @@ public class OlympusTrajectoryController {
                                 searchHeadings.append(compensateHeading(heading: ppHeading - headingForCompensation))
                             }
                         }
-//                        print(getLocalTimeString() + " , (Olympus) SearchInfo : searchHeadings = \(searchHeadings)")
                     }
                     let uniqueSearchHeadings = Array(Set(searchHeadings))
-//                    print(getLocalTimeString() + " , (Olympus) SearchInfo : uniqueSearchHeadings = \(uniqueSearchHeadings)")
                     searchInfo.searchDirection = uniqueSearchHeadings.map { Int($0) }
                     
                     let headInfo = trajectoryInfo[trajectoryInfo.count-1]
@@ -779,11 +772,9 @@ public class OlympusTrajectoryController {
                         trajectoryFromHead.append(xyFromHead)
                     }
 
-                    // 임시
                     searchInfo.searchArea = getSearchCoordinates(areaMinMax: searchRange, interval: 1.0)
                     searchInfo.trajShape = trajectoryFromHead
                     searchInfo.trajStartCoord = [headInfo.userX, headInfo.userY]
-//                    print(getLocalTimeString() + " , (Olympus) SearchInfo : searchDirection = \(searchInfo.searchDirection)")
                 }
             }
         } else {

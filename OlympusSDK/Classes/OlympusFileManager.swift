@@ -27,15 +27,6 @@ public class OlympusFileManager {
         sector_id = 0
         deviceModel = "Unknown"
         osVersion = 0
-        
-//        sensorFileUrl = nil
-//        bleFileUrl = nil
-//        sensorData = [OlympusSensorData]()
-//        bleTime = [Int]()
-//        bleData = [[String: Double]]()
-
-//        collectFileUrl = nil
-//        collectData = [OlympusCollectData]()
     }
     
     public func setRegion(region: String) {
@@ -163,14 +154,6 @@ public class OlympusFileManager {
         var loadedSenorData = [OlympusSensorData]()
         
         if let exportDir: URL = self.createExportDirectory() {
-//            let bleFileName = "ble_check2.csv"
-//            let sensorFileName = "sensor_check2.csv"
-//            let bleFileName = "ble_ds04.csv"
-//            let sensorFileName = "sensor_ds04.csv"
-//            let bleFileName = "ble_lg01.csv"
-//            let sensorFileName = "sensor_lg01.csv"
-//            let bleFileName = "ble_coex02.csv"
-//            let sensorFileName = "sensor_coex02.csv"
             let bleFileName = bleFile
             let sensorFileName = sensorFile
             

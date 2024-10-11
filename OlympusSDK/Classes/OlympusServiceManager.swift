@@ -1102,6 +1102,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     self.currentLevel = routeTrackResult.2.level_name
                 } else {
                     self.routeTrackResult = routeTrackResult.2
+                    self.routeTrackResult.index = self.unitDRInfoIndex
                 }
             }
             
@@ -1213,14 +1214,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         //        displayOutput.indexTx = unitDRInfoIndex
         var input = FineLocationTracking(user_id: self.user_id, mobile_time: currentTime, sector_id: self.sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM, building_name: self.currentBuilding, level_name_list: levelArray, phase: phaseController.PHASE, search_range: searchInfo.searchRange, search_direction_list: searchInfo.searchDirection, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation_list: [1.0], tail_index: searchInfo.tailIndex, head_section_number: 0, node_number_list: [], node_index: 0, retry: false)
         stateManager.setNetworkCount(value: stateManager.networkCount+1)
-        print(getLocalTimeString() + " , (Olympus) Request Phase 1 ~ 3 : \(input)")
+//        print(getLocalTimeString() + " , (Olympus) Request Phase 1 ~ 3 : \(input)")
         if (REGION_NAME != "Korea" && self.deviceModel == "iPhone SE (2nd generation)") { input.normalization_scale = 1.01 }
         OlympusNetworkManager.shared.postFLT(url: CALC_FLT_URL, input: input, userTraj: trajectoryInfo, searchInfo: searchInfo, completion: { [self] statusCode, returnedString, fltInput, inputTraj, inputSearchInfo in
-            print(getLocalTimeString() + " , (Olympus) Phase 3 Result : \(statusCode) // \(returnedString)")
+//            print(getLocalTimeString() + " , (Olympus) Phase 3 Result : \(statusCode) // \(returnedString)")
             if (!returnedString.contains("timed out")) { stateManager.setNetworkCount(value: 0) }
             if (statusCode == 200) {
-                //                let result = jsonToFineLocatoinTrackingResultFromServer(jsonString: returnedString)
-                //                let fltResult = result.1
                 let results = jsonToFineLocatoinTrackingResultFromServerList(jsonString: returnedString)
                 let result = results.1.flt_outputs
                 let fltResult = result.isEmpty ? FineLocationTrackingFromServer() : result[0]
@@ -1230,7 +1229,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     displayOutput.scc = fltResult.scc
                     // 임시
                     if (fltResult.mobile_time > self.preServerResultMobileTime) {
-                        //                        print(getLocalTimeString() + " , (Olympus) Phase3 Result : \(fltResult)")
                         // 임시
                         displayOutput.indexRx = fltResult.index
                         displayOutput.scc = fltResult.scc
@@ -1306,18 +1304,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 }
                                 copiedResult.x = propagatedResult[0]
                                 copiedResult.y = propagatedResult[1]
-                                
-                                //                                if (resultPhase.0 == OlympusConstants.PHASE_3 || resultPhase.0 == OlympusConstants.PHASE_6) {
-                                //                                    sectionController.setInitialAnchorTailIndex(value: unitDRInfoIndex)
-                                //                                    if (inputTrajLength > OlympusConstants.USER_TRAJECTORY_LENGTH*0.4 && fltInput.phase != OlympusConstants.PHASE_1 && self.runMode == OlympusConstants.MODE_DR) {
-                                //                                        copiedResult.absolute_heading = propagatedResult[2]
-                                //                                    }
-                                //                                    let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: copiedResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
-                                //                                    currentBuilding = updatedResult.building_name
-                                //                                    currentLevel = updatedResult.level_name
-                                //                                    makeTemporalResult(input: updatedResult, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
-                                //                                    KF.refreshTuResult(xyh: [copiedResult.x, copiedResult.y, copiedResult.absolute_heading], inputPhase: fltInput.phase, inputTrajLength: inputTrajLength, mode: runMode)
-                                //                                }
                                 
                                 if (resultPhase.0 == OlympusConstants.PHASE_3) {
                                     let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: copiedResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
@@ -1405,7 +1391,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             levelArray = buildingLevelChanger.makeLevelChangeArray(buildingName: self.currentBuilding, levelName: self.currentLevel, buildingLevel: buildingLevelChanger.buildingsAndLevels)
         }
         displayOutput.phase = String(OlympusConstants.PHASE_4)
-        //        displayOutput.indexTx = unitDRInfoIndex
         displayOutput.searchDirection = []
         var input = FineLocationTracking(user_id: self.user_id, mobile_time: currentTime, sector_id: self.sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM, building_name: self.currentBuilding, level_name_list: levelArray, phase: 4, search_range: [], search_direction_list: search_direction_list, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation_list: [1.01], tail_index: stableInfo.tail_index, head_section_number: stableInfo.head_section_number, node_number_list: stableInfo.node_number_list, node_index: node_index, retry: false)
         stateManager.setNetworkCount(value: stateManager.networkCount+1)
@@ -1413,8 +1398,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         OlympusNetworkManager.shared.postStableFLT(url: CALC_FLT_URL, input: input, userTraj: trajectoryInfo, nodeCandidateInfo: nodeCandidatesInfo, completion: { [self] statusCode, returnedString, fltInput, inputTraj, inputNodeCandidatesInfo in
             if (!returnedString.contains("timed out")) { stateManager.setNetworkCount(value: 0) }
             if (statusCode == 200) {
-                //                let result = jsonToFineLocatoinTrackingResultFromServer(jsonString: returnedString)
-                //                let fltResult = result.1
                 let results = jsonToFineLocatoinTrackingResultFromServerList(jsonString: returnedString)
                 let result = results.1.flt_outputs
                 let (useResult, fltResult) = ambiguitySolver.selectResult(results: results.1, nodeCandidatesInfo: inputNodeCandidatesInfo)
@@ -1422,12 +1405,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 trajController.updateTrajCompensationArray(result: fltResult)
                 trajController.setPastInfo(trajInfo: inputTraj, searchInfo: SearchInfo(), matchedDirection: fltResult.search_direction)
                 if (fltResult.index > indexPast && useResult) {
-                    // 임시
-                    //                    displayOutput.serverResult[0] = fltResult.x
-                    //                    displayOutput.serverResult[1] = fltResult.y
-                    //                    displayOutput.serverResult[2] = fltResult.absolute_heading
-                    // 임시
-                    
                     stackServerResult(serverResult: fltResult)
                     let resultPhase = phaseController.controlPhase(serverResultArray: serverResultBuffer, drBuffer: unitDRInfoBuffer, UVD_INTERVAL: UVD_INPUT_NUM, TRAJ_LENGTH: USER_TRAJECTORY_LENGTH, INDEX_THRESHOLD: RQ_IDX, inputPhase: fltInput.phase, inputTrajType: TrajType.DR_UNKNOWN, mode: runMode, isVenusMode: stateManager.isVenusMode)
                     // 임시
@@ -1576,7 +1553,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             
                             var pmFltRsult = fltResult
                             var propagatedPmFltRsult = fltResult
-                            //                            unitDRGenerator.calAccBias(unitDRInfoBuffer: OlympusPathMatchingCalculator.shared.getUnitDRInfoBuffer(), resultIndex: fltResult.index, scCompensation: fltResult.sc_compensation)
+//                            unitDRGenerator.calAccBias(unitDRInfoBuffer: OlympusPathMatchingCalculator.shared.getUnitDRInfoBuffer(), resultIndex: fltResult.index, scCompensation: fltResult.sc_compensation)
                             if (KF.muFlag) {
                                 let isNeedCalDhFromUvd: Bool = false
                                 let isResultStraight = isResultHeadingStraight(unitDRInfoBuffer: unitDRInfoBuffer, fltResult: fltResult)
@@ -1756,7 +1733,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             levelArray = buildingLevelChanger.makeLevelChangeArray(buildingName: self.currentBuilding, levelName: self.currentLevel, buildingLevel: buildingLevelChanger.buildingsAndLevels)
         }
         displayOutput.phase = String(OlympusConstants.PHASE_6)
-        //        displayOutput.indexTx = unitDRInfoIndex
         displayOutput.searchDirection = []
         var input = FineLocationTracking(user_id: self.user_id, mobile_time: currentTime, sector_id: self.sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM, building_name: self.currentBuilding, level_name_list: levelArray, phase: 6, search_range: [], search_direction_list: [], normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation_list: [1.01], tail_index: stableInfo.tail_index, head_section_number: stableInfo.head_section_number, node_number_list: stableInfo.node_number_list, node_index: 0, retry: false)
         ambiguitySolver.setIsAmbiguous(value: false)
@@ -1766,8 +1742,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         OlympusNetworkManager.shared.postStableFLT(url: CALC_FLT_URL, input: input, userTraj: trajectoryInfo, nodeCandidateInfo: nodeCandidatesInfo, completion: { [self] statusCode, returnedString, fltInput, inputTraj, inputNodeCandidatesInfo in
             if (!returnedString.contains("timed out")) { stateManager.setNetworkCount(value: 0) }
             if (statusCode == 200) {
-                //                let result = jsonToFineLocatoinTrackingResultFromServer(jsonString: returnedString)
-                //                let fltResult = result.1
                 let results = jsonToFineLocatoinTrackingResultFromServerList(jsonString: returnedString)
                 let (useResult, fltResult) = ambiguitySolver.selectResult(results: results.1, nodeCandidatesInfo: inputNodeCandidatesInfo)
                 print(getLocalTimeString() + " , (Olympus) Request Phase 6 : result = \(fltResult)")
@@ -1806,8 +1780,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             } else {
                                 var pmFltRsult = fltResult
                                 var propagatedPmFltRsult = fltResult
-                                //                                unitDRGenerator.calAccBias(unitDRInfoBuffer: OlympusPathMatchingCalculator.shared.getUnitDRInfoBuffer(), resultIndex: fltResult.index, scCompensation: fltResult.sc_compensation)
-                                //                                let scVelocityResult = OlympusPathMatchingCalculator.shared.calScVelocity(resultIndex: fltResult.index, scCompensation: fltResult.sc_compensation)
+//                                unitDRGenerator.calAccBias(unitDRInfoBuffer: OlympusPathMatchingCalculator.shared.getUnitDRInfoBuffer(), resultIndex: fltResult.index, scCompensation: fltResult.sc_compensation)
+//                                let scVelocityResult = OlympusPathMatchingCalculator.shared.calScVelocity(resultIndex: fltResult.index, scCompensation: fltResult.sc_compensation)
                                 if (KF.muFlag) {
                                     let isNeedCalDhFromUvd: Bool = false
                                     let isResultStraight = isResultHeadingStraight(unitDRInfoBuffer: unitDRInfoBuffer, fltResult: fltResult)
@@ -1876,7 +1850,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             phaseBreakInPhase4(fltResult: fltResult, isUpdatePhaseBreakResult: false)
         } else {
             displayOutput.phase = "\(OlympusConstants.PHASE_6) // Recovery"
-            //            displayOutput.indexTx = unitDRInfoIndex
             displayOutput.searchDirection = []
             stateManager.setNetworkCount(value: stateManager.networkCount+1)
             
@@ -1891,8 +1864,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             OlympusNetworkManager.shared.postRecoveryFLT(url: CALC_FLT_URL, input: recoveryInput, userTraj: trajectoryInfo, nodeCandidateInfo: recoveryNodeCandidates, preFltResult: fltResult, completion: { [self] statusCode, returnedString, fltInput, inputTraj, inputNodeCandidateInfo, preFltResult in
                 if (!returnedString.contains("timed out")) { stateManager.setNetworkCount(value: 0) }
                 if (statusCode == 200) {
-                    //                    let result = jsonToFineLocatoinTrackingResultFromServer(jsonString: returnedString)
-                    //                    var fltResult = result.1
                     let results = jsonToFineLocatoinTrackingResultFromServerList(jsonString: returnedString)
                     let result = results.1.flt_outputs
                     var fltResult = result.isEmpty ? FineLocationTrackingFromServer() : result[0]
@@ -2039,9 +2010,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 if (pathMatchingType == .NARROW) {
                     isUseHeading = true
                     headingRange -= 10
-//                    for i in 0..<paddings.count {
-//                        paddings[i] = paddings[i]/2
-//                    }
                 }
                 let correctedResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, HEADING_RANGE: headingRange, isUseHeading: isUseHeading, pathType: 0, PADDING_VALUES: paddings)
                 print(getLocalTimeString() + " , (Olympus) Path-Matching : correctedResult (before) // level = \(levelName) , xyh = [\(result.x) , \(result.y) , \(result.absolute_heading)]")
@@ -2097,8 +2065,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     isPmFailed = true
                 }
             }
-            
-//            print(getLocalTimeString() + " , (Olympus) ErrorChecking : index = \(result.index) // mustInSameLink = \(mustInSameLink) // isStableMode = \(isStableMode) // isPhaseBreak = \(isPhaseBreak) // linkDir = \(KF.linkDirections) // linkCoord = \(KF.linkCoord)")
             print(getLocalTimeString() + " , (Olympus) Path-Matching : index = \(result.index) // linkDir = \(KF.linkDirections) // linkCoord = \(KF.linkCoord)")
             if (mustInSameLink && levelName != "B0") {
                 let directions = KF.linkDirections
@@ -2153,7 +2119,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             }
             
             if (KF.isRunning) {
-//                print(getLocalTimeString() + " , (Olympus) Node Find : passedNode // resultIndex = \(resultIndex) // updateType = \(updateType)")
                 OlympusPathMatchingCalculator.shared.updateNodeAndLinkInfo(uvdIndex: resultIndex, currentResult: result, currentResultHeading: self.curTemporalResultHeading, pastResult: preTemporalResult, pastResultHeading: preTemporalResultHeading, pathType: pathTypeForNodeAndLink, updateType: updateType)
                 KF.setLinkInfo(coord: OlympusPathMatchingCalculator.shared.linkCoord, directions: OlympusPathMatchingCalculator.shared.linkDirections)
                 self.paddingValues = OlympusPathMatchingCalculator.shared.getPaddingValues(mode: runMode, isPhaseBreak: isPhaseBreak, PADDING_VALUE: PADDING_VALUE)
@@ -2171,7 +2136,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     drModeRequestInfo = DRModeRequestInfo(trajectoryInfo: [], stableInfo: StableInfo(tail_index: -1, head_section_number: 0, node_number_list: []), nodeCandidatesInfo: NodeCandidateInfo(isPhaseBreak: false, nodeCandidatesInfo: []), prevNodeInfo: PassedNodeInfo(nodeNumber: -1, nodeCoord: [], nodeHeadings: [], matchedIndex: 0, userHeading: 0))
                 }
             }
-            print(getLocalTimeString() + " , (Olympus) setSectorDRModeArea : index = \(resultIndex) // isDRMode = \(self.isDRMode)")
+//            print(getLocalTimeString() + " , (Olympus) setSectorDRModeArea : index = \(resultIndex) // isDRMode = \(self.isDRMode)")
             
             if (isStableMode) {
                 if (stableModeInitFlag) {

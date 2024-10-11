@@ -133,7 +133,6 @@ public class OlympusPhaseController {
         // Conditions //
         var sccCondition: Double = 0.5
         var isPoolChannel: Bool = false
-//        let indexCondition: Int = Int(Double(UVD_INTERVAL)*1.5)
         let indexCondition: Int = Int(Double(INDEX_THRESHOLD)*2)
         if (inputPhase == OlympusConstants.PHASE_2) {
             sccCondition = 0.5
@@ -156,10 +155,10 @@ public class OlympusPhaseController {
             if (currentResult.scc < sccCondition) {
                 return phase
             } else if (previousResult.index == 0 || currentResult.index == 0) {
-                print(getLocalTimeString() + " , (Olympus) Check Phase3->6: preIndex = \(previousResult.index) // curIndex = \(currentResult.index)")
+//                print(getLocalTimeString() + " , (Olympus) Check Phase3->6: preIndex = \(previousResult.index) // curIndex = \(currentResult.index)")
                 return phase
             } else if (currentResult.cumulative_length < OlympusConstants.STABLE_ENTER_LENGTH) {
-                print(getLocalTimeString() + " , (Olympus) Check Phase3->6 : cumulative_length = \(currentResult.cumulative_length) // STABLE_ENTER_LENGTH = \(OlympusConstants.STABLE_ENTER_LENGTH)")
+//                print(getLocalTimeString() + " , (Olympus) Check Phase3->6 : cumulative_length = \(currentResult.cumulative_length) // STABLE_ENTER_LENGTH = \(OlympusConstants.STABLE_ENTER_LENGTH)")
                 return phase
             } else if (inputTrajType == .PDR_IN_PHASE3_NO_MAJOR_DIR) {
                 return phase
@@ -171,10 +170,10 @@ public class OlympusPhaseController {
                     return phase
                 } else {
                     if (currentResult.index - previousResult.index) > indexCondition {
-                        print(getLocalTimeString() + " , (Olympus) Check Phase3->6 : preIndex = \(previousResult.index) // curIndex = \(currentResult.index) // indexCondition = \(indexCondition)")
+//                        print(getLocalTimeString() + " , (Olympus) Check Phase3->6 : preIndex = \(previousResult.index) // curIndex = \(currentResult.index) // indexCondition = \(indexCondition)")
                         return phase
                     } else if (currentResult.index <= previousResult.index) {
-                        print(getLocalTimeString() + " , (Olympus) Check Phase3->6 : cur <= pre // preIndex = \(previousResult.index) // curIndex = \(currentResult.index)")
+//                        print(getLocalTimeString() + " , (Olympus) Check Phase3->6 : cur <= pre // preIndex = \(previousResult.index) // curIndex = \(currentResult.index)")
                         return phase
                     } else {
                         var drBufferStartIndex: Int = 0

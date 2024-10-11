@@ -73,7 +73,7 @@ public class OlympusSectionController {
             uvdSectionLength = 0
             uvdSectionHeadings = []
             userStraightIndexes = []
-            print(getLocalTimeString() + " , (Olympus) Section : section changed at \(userVelocity.index) index")
+//            print(getLocalTimeString() + " , (Olympus) Section : section changed at \(userVelocity.index) index")
         }
         
         return isNeedUpdate
@@ -131,7 +131,7 @@ public class OlympusSectionController {
     public func checkIsNeedRequestFltInDRMode() -> (Bool, Bool) {
         var isNeedRequest: Bool = false
         var isSectionChanged: Bool = false
-        print(getLocalTimeString() + " , (Olympus) isDRMode : Section Length = \(uvdSectionLength)")
+//        print(getLocalTimeString() + " , (Olympus) isDRMode : Section Length = \(uvdSectionLength)")
         if (uvdSectionLength >= OlympusConstants.REQUIRED_SECTION_REQUEST_LENGTH_IN_DR) {
             if (requestSectionNumberInDRMode != sectionNumber) {
                 requestSectionNumberInDRMode = sectionNumber
@@ -145,7 +145,7 @@ public class OlympusSectionController {
                 }
             }
         }
-        print(getLocalTimeString() + " , (Olympus) isDRMode : \(requestSectionNumberInDRMode) , \(sectionNumber) // isNeedRequest = \(isNeedRequest)")
+//        print(getLocalTimeString() + " , (Olympus) isDRMode : \(requestSectionNumberInDRMode) , \(sectionNumber) // isNeedRequest = \(isNeedRequest)")
         return (isNeedRequest, isSectionChanged)
     }
     
@@ -163,6 +163,6 @@ public class OlympusSectionController {
     
     public func setDRModeRequestSectionNumber() {
         self.requestSectionNumberInDRMode = self.sectionNumber
-        print(getLocalTimeString() + " , (Olympus) isDRMode : setDRModeRequestSectionNumber = \(self.requestSectionNumberInDRMode)")
+//        print(getLocalTimeString() + " , (Olympus) isDRMode : setDRModeRequestSectionNumber = \(self.requestSectionNumberInDRMode)")
     }
 }

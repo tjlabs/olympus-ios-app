@@ -41,20 +41,36 @@ public class OlympusStopPeakValleyDetector: NSObject {
     
     public var lastPeakValley: PeakValleyStruct = PeakValleyStruct(type: Type.PEAK, timestamp: Double.greatestFiniteMagnitude, pvValue: Double.leastNormalMagnitude)
     
+//    public func findLocalPeakValley(queue: LinkedList<TimestampDouble>) -> PeakValleyStruct {
+//        if (isLocalPeak(data: queue)) {
+//            let timestamp = queue.node(at: 1)!.value.timestamp
+//            let valuestamp = queue.node(at: 1)!.value.valuestamp
+//            
+//            return PeakValleyStruct(type: Type.PEAK, timestamp: timestamp, pvValue: valuestamp)
+//        } else if (isLocalValley(data: queue)) {
+//            let timestamp = queue.node(at: 1)!.value.timestamp
+//            let valuestamp = queue.node(at: 1)!.value.valuestamp
+//            
+//            return PeakValleyStruct(type: Type.VALLEY, timestamp: timestamp, pvValue: valuestamp)
+//        } else {
+//            return PeakValleyStruct()
+//        }
+//    }
+    
     public func findLocalPeakValley(queue: LinkedList<TimestampDouble>) -> PeakValleyStruct {
-        if (isLocalPeak(data: queue)) {
-            let timestamp = queue.node(at: 1)!.value.timestamp
-            let valuestamp = queue.node(at: 1)!.value.valuestamp
-            
-            return PeakValleyStruct(type: Type.PEAK, timestamp: timestamp, pvValue: valuestamp)
-        } else if (isLocalValley(data: queue)) {
-            let timestamp = queue.node(at: 1)!.value.timestamp
-            let valuestamp = queue.node(at: 1)!.value.valuestamp
-            
-            return PeakValleyStruct(type: Type.VALLEY, timestamp: timestamp, pvValue: valuestamp)
-        } else {
+        guard queue.count > 1 else {
             return PeakValleyStruct()
         }
+
+        if let node = queue.node(at: 1) {
+            if isLocalPeak(data: queue) {
+                return PeakValleyStruct(type: .PEAK, timestamp: node.value.timestamp, pvValue: node.value.valuestamp)
+            } else if isLocalValley(data: queue) {
+                return PeakValleyStruct(type: .VALLEY, timestamp: node.value.timestamp, pvValue: node.value.valuestamp)
+            }
+        }
+        
+        return PeakValleyStruct()
     }
     
     public func isLocalPeak(data: LinkedList<TimestampDouble>) -> Bool {

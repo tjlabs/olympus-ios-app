@@ -204,7 +204,7 @@ public class OlympusDRDistanceEstimator: NSObject {
         if velocityInputScale < OlympusConstants.VELOCITY_MIN {
             velocityInputScale = 0
             if (self.isSufficientRfdBuffer && self.rflow < 0.4) {
-                print(getLocalTimeString() + " , (Olympus) DRDistanceEstimator : rflow = \(rflow) // velocityInputScale = \(velocityInputScale) ")
+//                print(getLocalTimeString() + " , (Olympus) DRDistanceEstimator : rflow = \(rflow) // velocityInputScale = \(velocityInputScale) ")
                 velocityInputScale = OlympusConstants.VELOCITY_MAX*rflowScale
             }
         } else if velocityInputScale > OlympusConstants.VELOCITY_MAX {

@@ -166,11 +166,8 @@ public class OlympusRssCompensator {
             }
             
             if (isScaleConverged) {
-//                print(getLocalTimeString() + " , (Olympus) RSS Compensator : setNormalizationScale // normalizationScale = \(self.normalizationScale)")
                 OlympusConstants().setNormalizationScale(cur: self.normalizationScale, pre: self.preNormalizationScale)
             }
-//            print(getLocalTimeString() + " , (Olympus) RSS Compensator : setNormalizationScale // normalizationScale = \(self.normalizationScale)")
-//            OlympusConstants().setNormalizationScale(cur: self.normalizationScale, pre: self.preNormalizationScale)
         }
     }
     

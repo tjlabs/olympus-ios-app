@@ -31,7 +31,6 @@ public class OlympusRouteTracker {
         self.EntranceInnerWardID[key] = sectorInfoInnermostWard.id
         self.EntranceInnerWardRSSI[key] = Double(sectorInfoInnermostWard.rss)
         self.EntranceInnerWardCoord[key] = sectorInfoInnermostWard.pos + sectorInfoInnermostWard.direction
-//        print(getLocalTimeString() + " , (Olympus) setEntranceInnerWardInfo : key = \(key) , ID = \(EntranceInnerWardID[key]) , RSSI = \(EntranceInnerWardRSSI[key]) , XYH = \(EntranceInnerWardCoord[key])")
     }
 
     private func parseRoute(data: String) -> ([String], [[Double]]) {
@@ -216,10 +215,9 @@ public class OlympusRouteTracker {
         var result = temporalResult
         let localTime = getLocalTimeString()
         result = routeTrackEntrance(temporalResult: temporalResult, currentEntranceIndex: currentEntranceIndex)
-//        print(getLocalTimeString() + " , (Olympus) Route Track : currentEntranceIndex = \(currentEntranceIndex) // currentEntranceLength = \(currentEntranceLength)")
         if (currentEntranceIndex < (currentEntranceLength-1)) {
             self.currentEntranceIndex += 1
-            print(getLocalTimeString() + " , (Olympus) Route Tracker : result = \(result)")
+//            print(getLocalTimeString() + " , (Olympus) Route Tracker : result = \(result)")
             
             if (isVenusMode) {
                 print(localTime + " , (Olympus) Entrance Route Tracker : Finish (BLE Only Mode)")
@@ -300,7 +298,7 @@ public class OlympusRouteTracker {
                 if let thresholdRSSI = EntranceInnerWardRSSI[currentEntrance] {
                     if let wardCoord = EntranceInnerWardCoord[currentEntrance] {
                         let normalizedRSSI = (scannedRSSI - device_min_rss)*normalization_scale + standard_min_rss
-                        print(getLocalTimeString() + " , (Olympus) Route Tracker : checkIsEntranceFinished // scannedRSSI [\(bleID) : Raw = \(scannedRSSI) : normalizedRSSI = \(normalizedRSSI) // thresholdRSSI = \(thresholdRSSI)]")
+//                        print(getLocalTimeString() + " , (Olympus) Route Tracker : checkIsEntranceFinished // scannedRSSI [\(bleID) : Raw = \(scannedRSSI) : normalizedRSSI = \(normalizedRSSI) // thresholdRSSI = \(thresholdRSSI)]")
                         return normalizedRSSI >= thresholdRSSI ? (true, wardCoord) : (false, xyh)
                     } else {
                         return (false, xyh)
