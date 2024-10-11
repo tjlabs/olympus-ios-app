@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
-    public static let sdkVersion: String = "0.0.30"
+    public static let sdkVersion: String = "0.0.31"
     var isSimulationMode: Bool = false
     var bleFileName: String = ""
     var sensorFileName: String = ""
@@ -445,11 +445,11 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         self.sensorFileName = sensorFileName
         
         if (self.isSimulationMode) {
+            print(getLocalTimeString() + " , (Olympus) Simulation Mode : flag = \(self.isSimulationMode)")
             let result = OlympusFileManager.shared.loadFilesForSimulation(bleFile: self.bleFileName, sensorFile: self.sensorFileName)
             simulationBleData = result.0
             simulationSensorData = result.1
         }
-        print(getLocalTimeString() + " , (Olympus) Simulation Mode : flag = \(self.isSimulationMode)")
     }
     
     public func stopService() -> (Bool, String) {
