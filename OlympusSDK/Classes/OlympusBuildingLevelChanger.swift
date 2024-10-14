@@ -250,7 +250,7 @@ public class OlympusBuildingLevelChanger {
         self.buildingLevelChangedTime = value
     }
     
-    public func updateBuildingAndLevel(fltResult: FineLocationTrackingFromServer, currentBuilding: String, currentLevel: String) -> FineLocationTrackingFromServer{
+    public func updateBuildingAndLevel(fltResult: FineLocationTrackingFromServer, currentBuilding: String, currentLevel: String) -> FineLocationTrackingFromServer {
         var result = fltResult
         
         let currentTime = getCurrentTimeInMilliseconds()

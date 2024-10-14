@@ -27,6 +27,13 @@ public class OlympusFileManager {
         sector_id = 0
         deviceModel = "Unknown"
         osVersion = 0
+        
+        sensorData = [OlympusSensorData]()
+        bleTime = [Int]()
+        bleData = [[String: Double]]()
+        
+        collectFileUrl = nil
+        collectData = [OlympusCollectData]()
     }
     
     public func setRegion(region: String) {
