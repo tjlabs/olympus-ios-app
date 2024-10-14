@@ -31,6 +31,7 @@ var REC_UVD_URL = ""
 var REC_UMD_URL = ""
 var REC_RESULT_URL = ""
 var REC_REPORT_URL = ""
+var REC_RC_URL = ""
 
 var CALC_OSR_URL = ""
 var CALC_FLT_URL = ""
@@ -66,6 +67,7 @@ public func setServerURL(region: String) {
     REC_UMD_URL = REC_URL + "/" + REC_SERVER_VERSION + "/um"
     REC_RESULT_URL  = REC_URL + "/" + REC_SERVER_VERSION + "/mr"
     REC_REPORT_URL  = REC_URL + "/" + REC_SERVER_VERSION + "/mt"
+    REC_RC_URL = REC_URL + "/" + REC_SERVER_VERSION + "/rc"
     
     CALC_OSR_URL = CALC_URL + "/" + CALC_OSR_SERVER_VERSION + "/osr"
     CALC_FLT_URL = CALC_URL + "/" + CALC_FLT_SERVER_VERSION + "/flt"

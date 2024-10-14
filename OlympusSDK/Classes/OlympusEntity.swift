@@ -259,6 +259,12 @@ public struct RcInfoFromServer: Codable {
     let rss_compensations: [RcInfo]
 }
 
+public struct RcInfoSave: Codable {
+    let sector_id: Int
+    let device_model: String
+    let os_version: Int
+    let normalization_scale: Double
+}
 // ---------------- RC ---------------- //
 
 // ---------------- REC DATA ---------------- //

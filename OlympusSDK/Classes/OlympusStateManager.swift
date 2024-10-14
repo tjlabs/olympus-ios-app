@@ -26,6 +26,7 @@ public class OlympusStateManager: NSObject {
     
     public func initialize(isStopService: Bool) {
         self.lastScannedEntranceOuterWardTime = 0
+        self.isGetFirstResponse = false
         self.isIndoor = false
         self.isBleOff = false
         self.isBackground = false
@@ -137,6 +138,7 @@ public class OlympusStateManager: NSObject {
     public func checkOutdoorBleEmpty(lastBleDiscoveredTime: Double, olympusResult: FineLocationTrackingResult) {
         let currentTime = getCurrentTimeInMillisecondsDouble()
         
+        print(getLocalTimeString() + " , (Olympus) Outdoor Check : time = \(currentTime - lastBleDiscoveredTime) // timeEmptyRF = \(self.timeEmptyRF)")
         if (currentTime - lastBleDiscoveredTime > OlympusConstants.BLE_VALID_TIME && lastBleDiscoveredTime != 0) {
             self.timeEmptyRF += OlympusConstants.RFD_INTERVAL
         } else {
