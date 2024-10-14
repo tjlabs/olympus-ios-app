@@ -20,7 +20,7 @@ public class OlympusStateManager: NSObject {
     }
     
     private func notifyObservers(state: Int) {
-        print("State : \(state)")
+        print(getLocalTimeString() + " , (Olympus) Information : state = \(state)")
         observers.forEach { $0.isStateDidChange(newValue: state) }
     }
     
@@ -137,8 +137,7 @@ public class OlympusStateManager: NSObject {
     
     public func checkOutdoorBleEmpty(lastBleDiscoveredTime: Double, olympusResult: FineLocationTrackingResult) {
         let currentTime = getCurrentTimeInMillisecondsDouble()
-        
-        print(getLocalTimeString() + " , (Olympus) Outdoor Check : time = \(currentTime - lastBleDiscoveredTime) // timeEmptyRF = \(self.timeEmptyRF)")
+//        print(getLocalTimeString() + " , (Olympus) checkOutdoorBleEmpty : dTime = \(currentTime - lastBleDiscoveredTime) // timeEmptyRF = \(timeEmptyRF)")
         if (currentTime - lastBleDiscoveredTime > OlympusConstants.BLE_VALID_TIME && lastBleDiscoveredTime != 0) {
             self.timeEmptyRF += OlympusConstants.RFD_INTERVAL
         } else {

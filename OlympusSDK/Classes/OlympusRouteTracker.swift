@@ -353,10 +353,10 @@ public class OlympusRouteTracker {
                 column2Max = max(column2Max, value)
             }
 
-            let xMin = column1Min - 5
-            let xMax = column1Max + 5
-            let yMin = column2Min - 5
-            let yMax = column2Max + 5
+            let xMin = column1Min - 20
+            let xMax = column1Max + 20
+            let yMin = column2Min - 20
+            let yMax = column2Max + 20
 
             if (coordX >= xMin && coordX <= xMax) {
                 if (coordY >= yMin && coordY <= yMax) {

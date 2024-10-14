@@ -41,6 +41,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 self.pastReportTime = getCurrentTimeInMillisecondsDouble()
                 self.pastReportFlag = input
             }
+            self.postReport(report: input)
             observer.report(flag: input)
         }
     }
@@ -212,7 +213,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     }
     
     func isBuildingLevelChanged(newBuilding: String, newLevel: String, newCoord: [Double]) {
-        print(getLocalTimeString() + " , (Olympus) Building Level Changed : \(currentLevel) -> \(newLevel)")
+//        print(getLocalTimeString() + " , (Olympus) Building Level Changed : \(currentLevel) -> \(newLevel)")
         self.currentBuilding = newBuilding
         self.currentLevel = newLevel
         KF.updateTuBuildingLevel(building: newBuilding, level: newLevel)
@@ -343,8 +344,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                             if (isSuccess) {
                                                 rssCompensator.setIsScaleLoaded(flag: isSuccess)
                                                 OlympusConstants().setNormalizationScale(cur: loadedParam, pre: loadedParam)
-                                                print(getLocalTimeString() + " , (Olympus) Scale cur : \(OlympusConstants.NORMALIZATION_SCALE)")
-                                                print(getLocalTimeString() + " , (Olympus) Scale pre : \(OlympusConstants.PRE_NORMALIZATION_SCALE)")
+                                                print(getLocalTimeString() + " , (Olympus) Scale : \(OlympusConstants.NORMALIZATION_SCALE), \(OlympusConstants.PRE_NORMALIZATION_SCALE)")
                                                 
                                                 if (!bleManager.bluetoothReady) {
                                                     let msg: String = getLocalTimeString() + " , (Olympus) Error : Bluetooth is not enabled"
@@ -1968,7 +1968,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         // Run every 0.2s
         let validInfo = checkSolutionValidity(reportFlag: self.pastReportFlag, reportTime: self.pastReportTime, isIndoor: stateManager.isIndoor)
         if (isStartRouteTrack) {
-            olympusResult = temporalToOlympus(fromServer: routeTrackResult, phase: 3, velocity: olympusVelocity, mode: runMode, ble_only_position: stateManager.isVenusMode, isIndoor: stateManager.isIndoor, validity: validInfo.0, validity_flag: validInfo.1)
+            olympusResult = temporalToOlympus(fromServer: routeTrackResult, phase: 4, velocity: olympusVelocity, mode: runMode, ble_only_position: stateManager.isVenusMode, isIndoor: stateManager.isIndoor, validity: validInfo.0, validity_flag: validInfo.1)
         } else {
             olympusResult = temporalToOlympus(fromServer: temporalResult, phase: phaseController.PHASE, velocity: olympusVelocity, mode: runMode, ble_only_position: stateManager.isVenusMode, isIndoor: stateManager.isIndoor, validity: validInfo.0, validity_flag: validInfo.1)
         }

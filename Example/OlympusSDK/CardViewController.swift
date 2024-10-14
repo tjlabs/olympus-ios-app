@@ -51,7 +51,7 @@ class CardViewController: UIViewController, Observer {
                 self.coordToDisplay.isIndoor = result.isIndoor
                 
 //                let diffTime = result.mobile_time - self.preServiceTime
-                print(getLocalTimeString() + " , (VC) : index = \(result.index) // isIndoor = \(result.isIndoor)")
+//                print(getLocalTimeString() + " , (VC) : index = \(result.index) // isIndoor = \(result.isIndoor)")
                 self.preServiceTime = result.mobile_time
             }
         }
