@@ -20,7 +20,8 @@ extension Notification.Name {
     public static let trajEditedBecomeForground       = Notification.Name("olympusDidTrajEditedBecomeForeground")
     public static let trajEditedAfterOsr              = Notification.Name("olympusDidTrajEditedBecomeForeground")
     
-    public static let sectorImagesUpdated             = Notification.Name("sectorImagesUpdated")
+    public static let sectorImagesUpdated             = Notification.Name("olympusSectorImagesUpdated")
+    public static let sectorPathPixelUpdated          = Notification.Name("olympusSectorPathPixelUpdated")
     
     public static let phaseChanged                    = Notification.Name("olmypusPhaseChanged")
     

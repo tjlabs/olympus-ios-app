@@ -201,6 +201,7 @@ public class OlympusPathMatchingCalculator {
                             if let loadedURL: URL = ppLocalUrl.1 {
                                 let contents = try String(contentsOf: loadedURL)
                                 ( PpType[key], PpNode[key], PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
+                                NotificationCenter.default.post(name: .sectorPathPixelUpdated, object: nil, userInfo: ["pathPixelKey": key])
                                 PpIsLoaded[key] = true
                             }
                         } catch {
@@ -217,6 +218,7 @@ public class OlympusPathMatchingCalculator {
                                 do {
                                     let contents = try String(contentsOf: url!)
                                     ( PpType[key], PpNode[key],PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
+                                    NotificationCenter.default.post(name: .sectorPathPixelUpdated, object: nil, userInfo: ["pathPixelKey": key])
                                     savePathPixelVersion(key: key, ppVersion: value)
                                     savePathPixelLocalUrl(key: key, url: url)
                                     PpIsLoaded[key] = true
@@ -240,6 +242,7 @@ public class OlympusPathMatchingCalculator {
                             do {
                                 let contents = try String(contentsOf: url!)
                                 ( PpType[key], PpNode[key], PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
+                                NotificationCenter.default.post(name: .sectorPathPixelUpdated, object: nil, userInfo: ["pathPixelKey": key])
                                 savePathPixelVersion(key: key, ppVersion: value)
                                 savePathPixelLocalUrl(key: key, url: url)
                                 PpIsLoaded[key] = true
@@ -264,6 +267,7 @@ public class OlympusPathMatchingCalculator {
                                 let contents = try String(contentsOf: url!)
                                 print(key)
                                 ( PpType[key], PpNode[key], PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
+                                NotificationCenter.default.post(name: .sectorPathPixelUpdated, object: nil, userInfo: ["pathPixelKey": key])
                                 savePathPixelVersion(key: key, ppVersion: value)
                                 savePathPixelLocalUrl(key: key, url: url)
                                 PpIsLoaded[key] = true

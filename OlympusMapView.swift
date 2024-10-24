@@ -14,16 +14,20 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
     private var buildingsCollectionViewHeightConstraint: NSLayoutConstraint!
     private var levelsCollectionViewHeightConstraint: NSLayoutConstraint!
     
+    private var isPpHidden = false
+    
     public override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
         observeImageUpdates()
+        observePathPixelUpdates()
     }
     
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         setupView()
         observeImageUpdates()
+        observePathPixelUpdates()
     }
     
     deinit {
@@ -107,6 +111,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         levelsCollectionView.reloadData()
         adjustCollectionViewHeights()
         updateMapImageView()
+        updatePathPixel()
     }
     
     private func adjustCollectionViewHeights() {
@@ -128,9 +133,19 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         if let images = OlympusMapManager.shared.sectorImages[imageKey], let image = images.first {
             mapImageView.image = image
             let scaledSize = calculateAspectFitImageSize(for: image, in: mapImageView)
-            print("(Phoenix) MapView : Scaled width = \(scaledSize.width), Scaled height = \(scaledSize.height)")
+            print(getLocalTimeString() + " , (Olympus) MapView : Scaled width = \(scaledSize.width), Scaled height = \(scaledSize.height)")
         } else {
             mapImageView.image = nil
+        }
+    }
+    
+    private func updatePathPixel() {
+        if !self.isPpHidden {
+            guard let selectedBuilding = selectedBuilding, let selectedLevel = selectedLevel else { return }
+            let pathPixelKey = "\(OlympusMapManager.shared.sector_id)_\(selectedBuilding)_\(selectedLevel)"
+            if let ppCood = OlympusPathMatchingCalculator.shared.PpCoord[pathPixelKey] {
+                
+            }
         }
     }
 
@@ -216,12 +231,14 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             levelsCollectionView.reloadData()
             adjustCollectionViewHeights()
             updateMapImageView()
+            updatePathPixel()
         } else if collectionView == levelsCollectionView {
             let selectedLevelName = levelData[indexPath.row]
             self.selectedLevel = selectedLevelName
             
             levelsCollectionView.reloadData()
             updateMapImageView()
+            updatePathPixel()
         }
     }
     
@@ -239,11 +256,25 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         }
     }
     
+    private func observePathPixelUpdates() {
+        NotificationCenter.default.addObserver(self, selector: #selector(pathPixelUpdated(_:)), name: .sectorPathPixelUpdated, object: nil)
+    }
+
+    @objc private func pathPixelUpdated(_ notification: Notification) {
+        print(getLocalTimeString() + " , (Olympus) MapView : getNotification \(notification)")
+        guard let userInfo = notification.userInfo, let pathPixelKey = userInfo["pathPixelKey"] as? String else { return }
+        if let selectedBuilding = selectedBuilding, let selectedLevel = selectedLevel {
+            let expectedPpKey = "\(OlympusMapManager.shared.sector_id)_\(selectedBuilding)_\(selectedLevel)"
+            if pathPixelKey == expectedPpKey {
+                updatePathPixel()
+            }
+        }
+    }
+    
     func calculateAspectFitImageSize(for image: UIImage, in imageView: UIImageView) -> CGSize {
         let imageSize = image.size
         let imageViewSize = imageView.bounds.size
-        print("(Phoenix) MapView : imageView width = \(imageViewSize.width), imageView height = \(imageViewSize.height)")
-        
+//        print(getLocalTimeString() + " , (Olympus) MapView : imageView width = \(imageViewSize.width), imageView height = \(imageViewSize.height)")
         let widthRatio = imageViewSize.width / imageSize.width
         let heightRatio = imageViewSize.height / imageSize.height
         
@@ -254,5 +285,4 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         
         return CGSize(width: scaledWidth, height: scaledHeight)
     }
-
 }
