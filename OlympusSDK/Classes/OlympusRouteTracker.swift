@@ -53,8 +53,7 @@ public class OlympusRouteTracker {
     
     public func saveEntranceRouteLocalUrl(key: String, url: URL?) {
         if let urlToSave = url {
-            print(getLocalTimeString() + " , (Olympus) Save \(key) Entrance Route Local URL : \(urlToSave)")
-            
+//            print(getLocalTimeString() + " , (Olympus) Save \(key) Entrance Route Local URL : \(urlToSave)")
             do {
                 let key: String = "OlympusEntranceRouteLocalUrl_\(key)"
                 UserDefaults.standard.set(url, forKey: key)
@@ -103,8 +102,8 @@ public class OlympusRouteTracker {
                         }
                     } else {
                         // 첫 시작과 동일하게 다운로드 받아오기
-                        let building_level_entrance = key.split(separator: "_")
-                        let routeUrl: String = CSV_URL + "/entrance-route/\(sector_id)/\(building_level_entrance[0])/\(building_level_entrance[1])/\(building_level_entrance[2])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
+                        let sector_building_level = key.split(separator: "_")
+                        let routeUrl: String = CSV_URL + "/entrance-route/\(sector_id)/\(sector_building_level[1])/\(sector_building_level[2])/\(sector_building_level[3])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
                         let urlComponents = URLComponents(string: routeUrl)
                         OlympusFileDownloader.shared.downloadCSVFile(from: (urlComponents?.url)!, fname: key, completion: { [self] url, error in
                             if error == nil {
@@ -128,8 +127,8 @@ public class OlympusRouteTracker {
                 } else {
                     // 만약 버전이 다르면 다운로드 받아오기
                     // 첫 시작과 동일하게 다운로드 받아오기
-                    let building_level_entrance = key.split(separator: "_")
-                    let routeUrl: String = CSV_URL + "/entrance-route/\(sector_id)/\(building_level_entrance[0])/\(building_level_entrance[1])/\(building_level_entrance[2])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
+                    let sector_building_level = key.split(separator: "_")
+                    let routeUrl: String = CSV_URL + "/entrance-route/\(sector_id)/\(sector_building_level[1])/\(sector_building_level[2])/\(sector_building_level[3])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
                     let urlComponents = URLComponents(string: routeUrl)
                     OlympusFileDownloader.shared.downloadCSVFile(from: (urlComponents?.url)!, fname: key, completion: { [self] url, error in
                         if error == nil {
@@ -152,8 +151,8 @@ public class OlympusRouteTracker {
                 }
             } else {
                 // 첫 시작이면 다운로드 받아오기
-                let building_level_entrance = key.split(separator: "_")
-                let routeUrl: String = CSV_URL + "/entrance-route/\(sector_id)/\(building_level_entrance[0])/\(building_level_entrance[1])/\(building_level_entrance[2])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
+                let sector_building_level = key.split(separator: "_")
+                let routeUrl: String = CSV_URL + "/entrance-route/\(sector_id)/\(sector_building_level[1])/\(sector_building_level[2])/\(sector_building_level[3])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
                 let urlComponents = URLComponents(string: routeUrl)
                 OlympusFileDownloader.shared.downloadCSVFile(from: (urlComponents?.url)!, fname: key, completion: { [self] url, error in
                     if error == nil {

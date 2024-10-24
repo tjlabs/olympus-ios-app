@@ -334,8 +334,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     OlympusNetworkManager.shared.postUserLogin(url: USER_LOGIN_URL, input: loginInput, completion: { [self] statusCode, returnedString in
                         if (statusCode == 200) {
                             self.user_id = user_id
-                            let sectorInput = SectorInput(sector_id: sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM)
-                            OlympusNetworkManager.shared.postUserSector(url: USER_SECTOR_URL, input: sectorInput, completion: { [self] statusCode, returnedString in
+//                            let sectorInput = SectorInput(sector_id: sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM)
+                            OlympusMapManager.shared.loadSectorInfo(sector_id: sector_id, completion: { [self] statusCode, returnedString in
+//                            OlympusNetworkManager.shared.postUserSector(url: USER_SECTOR_URL, input: sectorInput, completion: { [self] statusCode, returnedString in
                                 if (statusCode == 200) {
                                     let sectorInfoFromServer = jsonToSectorInfoFromServer(jsonString: returnedString)
                                     if (sectorInfoFromServer.0) {
@@ -517,7 +518,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             }
             
             if !levelName.contains("_D") {
-                let key = "\(buildingName)_\(levelName)"
+                let key = "\(sector_id)_\(buildingName)_\(levelName)"
                 let entranceArea = element.geofence.entrance_area
                 let entranceMatcingArea = element.geofence.entrance_matching_area
                 let levelChangeArea = element.geofence.level_change_area
@@ -1003,7 +1004,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //                                    print(getLocalTimeString() + " , (Olympus) Check Map End : reCheckMapEnd (1) = \(reCheckMapEnd)")
                                     if !reCheckMapEnd {
                                         let stableInfo = StableInfo(tail_index: sectionController.getAnchorTailIndex(), head_section_number: sectionController.sectionNumber, node_number_list: [])
-//                                        processPhase6(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: goodCaseNodeCandidates)
+                                        processPhase6(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: goodCaseNodeCandidates)
                                     }
                                 } else {
                                     var nodeNumberCandidates = [Int]()
@@ -1028,9 +1029,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                                 if prevPassedNodeInfo.nodeNumber == -1 {
                                                     prevPassedNodeInfo.matchedIndex = sectionController.getAnchorTailIndex()
                                                 }
-//                                                processPhase5(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: inputNodeCandidates, prevNodeInfo: prevPassedNodeInfo)
+                                                processPhase5(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: inputNodeCandidates, prevNodeInfo: prevPassedNodeInfo)
                                             } else {
-//                                                processPhase6(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: inputNodeCandidates)
+                                                processPhase6(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: inputNodeCandidates)
                                             }
                                         } else if !self.isInMapEnd {
                                             let reCheckMapEnd = OlympusPathMatchingCalculator.shared.checkIsInMapEnd(resultStandard: self.temporalResult, tuResult: tuResult, pathType: pathType)
@@ -1041,9 +1042,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                                 let stableInfo = StableInfo(tail_index: nodeCandidatesInfo[0].matchedIndex, head_section_number: sectionController.getSectionNumber(), node_number_list: nodeNumberCandidates)
                                                 
                                                 if (ambiguitySolver.getIsAmbiguous()){
-//                                                    processPhase5(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: inputNodeCandidates, prevNodeInfo: prevPassedNodeInfo)
+                                                    processPhase5(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: inputNodeCandidates, prevNodeInfo: prevPassedNodeInfo)
                                                 } else {
-//                                                    processPhase6(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: inputNodeCandidates)
+                                                    processPhase6(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: trajectoryInfo, stableInfo: stableInfo, nodeCandidatesInfo: inputNodeCandidates)
                                                 }
                                             }
                                         }
@@ -1080,7 +1081,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             if ambiguitySolver.isAmbiguousInDRMode {
                                 let isNeedRqInDRMode = sectionController.checkIsNeedRequestFltInDRMode()
                                 if isNeedRqInDRMode.0 {
-//                                    processPhase5InDRMode(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: drModeRequestInfo.trajectoryInfo, stableInfo: drModeRequestInfo.stableInfo, nodeCandidatesInfo: drModeRequestInfo.nodeCandidatesInfo, prevNodeInfo: drModeRequestInfo.prevNodeInfo)
+                                    processPhase5InDRMode(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: drModeRequestInfo.trajectoryInfo, stableInfo: drModeRequestInfo.stableInfo, nodeCandidatesInfo: drModeRequestInfo.nodeCandidatesInfo, prevNodeInfo: drModeRequestInfo.prevNodeInfo)
                                 }
                             }
                         }

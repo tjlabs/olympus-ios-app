@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="06h-Gn-30p">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23094" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="06h-Gn-30p">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22684"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23084"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -342,6 +342,36 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="8W2-Ok-9BA" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="803.81679389312978" y="-92.253521126760575"/>
+        </scene>
+        <!--Map View Controller-->
+        <scene sceneID="KYc-qL-pzd">
+            <objects>
+                <viewController storyboardIdentifier="MapViewController" id="kee-Cs-4e6" customClass="MapViewController" customModule="OlympusSDK_Example" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Sbh-Jg-4L9">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="I8e-k9-KZS">
+                                <rect key="frame" x="0.0" y="0.0" width="393" height="602"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            </view>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="BUA-kR-pKV"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="BUA-kR-pKV" firstAttribute="trailing" secondItem="I8e-k9-KZS" secondAttribute="trailing" id="Red-1p-zKj"/>
+                            <constraint firstItem="I8e-k9-KZS" firstAttribute="top" secondItem="Sbh-Jg-4L9" secondAttribute="top" id="feL-Qp-Hzf"/>
+                            <constraint firstItem="I8e-k9-KZS" firstAttribute="leading" secondItem="BUA-kR-pKV" secondAttribute="leading" id="goM-oJ-g3f"/>
+                            <constraint firstAttribute="bottom" secondItem="I8e-k9-KZS" secondAttribute="bottom" constant="250" id="hqS-DU-lJO"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="mainView" destination="I8e-k9-KZS" id="6Nz-TO-MYh"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="veo-UJ-8sG" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1591.6030534351144" y="-92.253521126760575"/>
         </scene>
     </scenes>
     <resources>

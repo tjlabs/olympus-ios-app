@@ -57,6 +57,12 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         self.navigationController?.pushViewController(cardVC, animated: true)
     }
     
+    func goToMapViewController(userId: String) {
+        guard let mapVC = self.storyboard?.instantiateViewController(withIdentifier: "MapViewController") as? MapViewController else { return }
+        mapVC.userId = userId
+        self.navigationController?.pushViewController(mapVC, animated: true)
+    }
+    
     @IBAction func tapSaveUserIdButton(_ sender: UIButton) {
         UIView.animate(withDuration: 0.2, delay: 0.0, options: .curveLinear, animations: {
         }) { (success) in
@@ -113,7 +119,8 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         NetworkManager.shared.postUserLogin(url: USER_LOGIN_URL, input: loginInfo, completion: { statusCode, returnedString in
             if (statusCode == 200) {
                 print(getLocalTimeString() + " , (InnerLabs) Success : User Login")
-                self.goToCardViewController(region: "Korea", userId: self.userId)
+//                self.goToCardViewController(region: "Korea", userId: self.userId)
+                self.goToMapViewController(userId: self.userId)
             } else {
                 print(getLocalTimeString() + " , (InnerLabs) Fail : User Login \(statusCode)")
                 print(returnedString)

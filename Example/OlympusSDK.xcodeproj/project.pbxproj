@@ -25,6 +25,7 @@
 		B31439802BAD439E002C072F /* UIViewControllerExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B314397F2BAD439E002C072F /* UIViewControllerExtension.swift */; };
 		B31439832BAD5A27002C072F /* ColorPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31439822BAD5A27002C072F /* ColorPalette.swift */; };
 		B31439872BAD5B76002C072F /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B31439862BAD5B76002C072F /* Colors.xcassets */; };
+		B335370D2CC8919900468A95 /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B335370C2CC8919900468A95 /* MapViewController.swift */; };
 		B3787E4A2BD209C400D5EEBC /* ImageCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3787E492BD209C400D5EEBC /* ImageCacheManager.swift */; };
 		B3787E4C2BD20C4D00D5EEBC /* UIImageExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3787E4B2BD20C4D00D5EEBC /* UIImageExtension.swift */; };
 		B3787E592BDA47BE00D5EEBC /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B3787E582BDA47BE00D5EEBC /* GoogleService-Info.plist */; };
@@ -79,6 +80,7 @@
 		B314397F2BAD439E002C072F /* UIViewControllerExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewControllerExtension.swift; sourceTree = "<group>"; };
 		B31439822BAD5A27002C072F /* ColorPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPalette.swift; sourceTree = "<group>"; };
 		B31439862BAD5B76002C072F /* Colors.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Colors.xcassets; sourceTree = "<group>"; };
+		B335370C2CC8919900468A95 /* MapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
 		B3787E492BD209C400D5EEBC /* ImageCacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCacheManager.swift; sourceTree = "<group>"; };
 		B3787E4B2BD20C4D00D5EEBC /* UIImageExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageExtension.swift; sourceTree = "<group>"; };
 		B3787E582BDA47BE00D5EEBC /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
@@ -222,6 +224,7 @@
 			children = (
 				607FACD71AFB9204008FA782 /* LoginViewController.swift */,
 				B3A7A5532BBBCAE200561897 /* CardViewController.swift */,
+				B335370C2CC8919900468A95 /* MapViewController.swift */,
 			);
 			name = ViewControllers;
 			sourceTree = "<group>";
@@ -509,6 +512,7 @@
 				B3787E4A2BD209C400D5EEBC /* ImageCacheManager.swift in Sources */,
 				B3787E4C2BD20C4D00D5EEBC /* UIImageExtension.swift in Sources */,
 				B31439802BAD439E002C072F /* UIViewControllerExtension.swift in Sources */,
+				B335370D2CC8919900468A95 /* MapViewController.swift in Sources */,
 				B3A7A55C2BBBD0FE00561897 /* NetworkManager.swift in Sources */,
 				B314397A2BAD434B002C072F /* UITextFieldExtension.swift in Sources */,
 				B31439762BAD431B002C072F /* UIColorExtension.swift in Sources */,

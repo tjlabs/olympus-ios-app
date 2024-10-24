@@ -155,7 +155,7 @@ public class OlympusPathMatchingCalculator {
     
     public func savePathPixelLocalUrl(key: String, url: URL?) {
         if let urlToSave = url {
-            print(getLocalTimeString() + " , (Olympus) Save \(key) Path-Pixel Local URL : \(urlToSave)")
+//            print(getLocalTimeString() + " , (Olympus) Save \(key) Path-Pixel Local URL : \(urlToSave)")
             do {
                 let key: String = "OlympusPathPixelLocalUrl_\(key)"
                 UserDefaults.standard.set(url, forKey: key)
@@ -200,16 +200,11 @@ public class OlympusPathMatchingCalculator {
                         } catch {
                             print(getLocalTimeString() + " , (Olympus) Error : Reading Path-Pixel File \(key)")
                         }
-//                        do {
-//                            let contents = ppLocalUrl.1!
-//                            ( PpType[key], PpNode[key], PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
-//                            PpIsLoaded[key] = true
-//                        }
                         
                     } else {
                         // 첫 시작과 동일하게 다운로드 받아오기
-                        let building_n_level = key.split(separator: "_")
-                        let ppUrl: String = CSV_URL + "/path-pixel/\(sector_id)/\(building_n_level[0])/\(building_n_level[1])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
+                        let sector_building_level = key.split(separator: "_")
+                        let ppUrl: String = CSV_URL + "/path-pixel/\(sector_id)/\(sector_building_level[1])/\(sector_building_level[2])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
                         let urlComponents = URLComponents(string: ppUrl)
                         OlympusFileDownloader.shared.downloadCSVFile(from: (urlComponents?.url)!, fname: key, completion: { [self] url, error in
                             if error == nil {
@@ -231,8 +226,8 @@ public class OlympusPathMatchingCalculator {
                 } else {
                     // 만약 버전이 다르면 다운로드 받아오기
                     // 첫 시작과 동일하게 다운로드 받아오기
-                    let building_n_level = key.split(separator: "_")
-                    let ppUrl: String = CSV_URL + "/path-pixel/\(sector_id)/\(building_n_level[0])/\(building_n_level[1])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
+                    let sector_building_level = key.split(separator: "_")
+                    let ppUrl: String = CSV_URL + "/path-pixel/\(sector_id)/\(sector_building_level[1])/\(sector_building_level[2])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
                     let urlComponents = URLComponents(string: ppUrl)
                     OlympusFileDownloader.shared.downloadCSVFile(from: (urlComponents?.url)!, fname: key, completion: { [self] url, error in
                         if error == nil {
@@ -254,8 +249,8 @@ public class OlympusPathMatchingCalculator {
             } else {
                 // 첫 시작이면 다운로드 받아오기
                 if (!value.isEmpty) {
-                    let building_n_level = key.split(separator: "_")
-                    let ppUrl: String = CSV_URL + "/path-pixel/\(sector_id)/\(building_n_level[0])/\(building_n_level[1])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
+                    let sector_building_level = key.split(separator: "_")
+                    let ppUrl: String = CSV_URL + "/path-pixel/\(sector_id)/\(sector_building_level[1])/\(sector_building_level[2])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
                     let urlComponents = URLComponents(string: ppUrl)
                     OlympusFileDownloader.shared.downloadCSVFile(from: (urlComponents?.url)!, fname: key, completion: { [self] url, error in
                         if error == nil {
