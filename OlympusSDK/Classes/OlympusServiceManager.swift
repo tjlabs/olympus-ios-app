@@ -334,6 +334,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     OlympusNetworkManager.shared.postUserLogin(url: USER_LOGIN_URL, input: loginInput, completion: { [self] statusCode, returnedString in
                         if (statusCode == 200) {
                             self.user_id = user_id
+                            OlympusPathMatchingCalculator.shared.setSectorID(sector_id: sector_id)
+                            routeTracker.setSectorID(sector_id: sector_id)
 //                            let sectorInput = SectorInput(sector_id: sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM)
                             OlympusMapManager.shared.loadSectorInfo(sector_id: sector_id, completion: { [self] statusCode, returnedString in
 //                            OlympusNetworkManager.shared.postUserSector(url: USER_SECTOR_URL, input: sectorInput, completion: { [self] statusCode, returnedString in

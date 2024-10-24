@@ -1,6 +1,7 @@
 public class OlympusPathMatchingCalculator {
     static var shared = OlympusPathMatchingCalculator()
     
+    private var sector_id: Int = -1
     public var PpVersion = [String: String]()
     public var PpType = [String: [Int]]()
     public var PpNode = [String: [Int]]()
@@ -47,6 +48,7 @@ public class OlympusPathMatchingCalculator {
     }
     
     public func initialize() {
+        self.sector_id = -1
         self.passedNode = -1
         self.passedNodeMatchedIndex = -1
         self.passedNodeCoord = [0, 0]
@@ -85,6 +87,10 @@ public class OlympusPathMatchingCalculator {
         self.linkCoord = [0, 0]
         self.linkDirections = [Double]()
         self.isInNode = false
+    }
+    
+    public func setSectorID(sector_id: Int) {
+        self.sector_id = sector_id
     }
     
     public func parseRoad(data: String) -> ([Int], [Int], [[Double]], [Double], [String] ) {
@@ -280,7 +286,7 @@ public class OlympusPathMatchingCalculator {
         var bestHeading = heading
 
         let levelCopy = removeLevelDirectionString(levelName: level)
-        let key = "\(building)_\(levelCopy)"
+        let key = "\(self.sector_id)_\(building)_\(levelCopy)"
 
         guard !building.isEmpty, !level.isEmpty,
               let mainType = self.PpType[key],
@@ -411,7 +417,7 @@ public class OlympusPathMatchingCalculator {
         let buildingName = building
         let levelName = removeLevelDirectionString(levelName: level)
         
-        let key = "\(buildingName)_\(levelName)"
+        let key = "\(self.sector_id)_\(buildingName)_\(levelName)"
         guard let entranceMatchingArea: [[Double]] = self.EntranceMatchingArea[key] else {
             return (false, area)
         }
@@ -438,7 +444,7 @@ public class OlympusPathMatchingCalculator {
     public func getPathMatchingHeadings(building: String, level: String, x: Double, y: Double, PADDING_VALUE: Double, mode: String) -> [Double] {
         var headings: [Double] = []
         let levelCopy: String = removeLevelDirectionString(levelName: level)
-        let key: String = "\(building)_\(levelCopy)"
+        let key: String = "\(self.sector_id)_\(building)_\(levelCopy)"
         
         if (!(building.isEmpty) && !(level.isEmpty)) {
             guard let mainType: [Int] = self.PpType[key] else {
@@ -516,7 +522,7 @@ public class OlympusPathMatchingCalculator {
         var headingCandidates = [String]()
         var isPossibleNode: Bool = true
         
-        let key: String = "\(building)_\(level)"
+        let key: String = "\(self.sector_id)_\(building)_\(level)"
         if (true) {
             if (!(building.isEmpty) && !(level.isEmpty)) {
                 guard let mainType: [Int] = self.PpType[key] else { return }
@@ -1748,7 +1754,7 @@ public class OlympusPathMatchingCalculator {
         let levelCopy: String = removeLevelDirectionString(levelName: level)
         let x = coordToCheck[0]
         let y = coordToCheck[1]
-        let key: String = "\(building)_\(levelCopy)"
+        let key: String = "\(self.sector_id)_\(building)_\(levelCopy)"
         
         if (!(building.isEmpty) && !(level.isEmpty)) {
             guard let mainRoad: [[Double]] = self.PpCoord[key] else { return false }
@@ -1774,7 +1780,7 @@ public class OlympusPathMatchingCalculator {
         let levelCopy: String = removeLevelDirectionString(levelName: level)
         let x = coordToCheck[0]
         let y = coordToCheck[1]
-        let key: String = "\(building)_\(levelCopy)"
+        let key: String = "\(self.sector_id)_\(building)_\(levelCopy)"
         
         let isPpEndPoint: Bool = true
         let matchedNode: Int = -1
@@ -1864,7 +1870,7 @@ public class OlympusPathMatchingCalculator {
         let building = fltResult.building_name
         let level = fltResult.level_name
         let levelCopy: String = removeLevelDirectionString(levelName: level)
-        let key: String = "\(building)_\(levelCopy)"
+        let key: String = "\(self.sector_id)_\(building)_\(levelCopy)"
         
         let isPpEndPoint: Bool = true
         var nodeCandidates = [PassedNodeInfo]()

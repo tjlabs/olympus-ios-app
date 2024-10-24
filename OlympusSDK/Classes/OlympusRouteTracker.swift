@@ -2,6 +2,8 @@
 public class OlympusRouteTracker {
     init() { }
     
+    private var sector_id: Int = -1
+    
     public var EntranceRouteVersion = [String: String]()
     public var EntranceRouteLevel = [String: [String]]()
     public var EntranceRouteCoord = [String: [[Double]]]()
@@ -20,11 +22,16 @@ public class OlympusRouteTracker {
     var currentEntranceLength: Int = 0
     
     public func initialize() {
+        self.sector_id = -1
         self.indexAfterRouteTrack = 0
         self.entranceVelocityScale = 1.0
         self.currentEntrance = ""
         self.currentEntranceIndex = 0
         self.currentEntranceLength = 0
+    }
+    
+    public func setSectorID(sector_id: Int) {
+        self.sector_id = sector_id
     }
     
     public func setEntranceInnerWardInfo(key: String, sectorInfoInnermostWard: SectorInfoInnermostWard) {
@@ -186,7 +193,7 @@ public class OlympusRouteTracker {
                     let buildingName = result.building_name
                     let levelName = removeLevelDirectionString(levelName: result.level_name)
                     
-                    let entranceKey: String = "\(buildingName)_\(levelName)_\(entranceResult.0)"
+                    let entranceKey: String = "\(self.sector_id)_\(buildingName)_\(levelName)_\(entranceResult.0)"
                     if let velocityScale: Double = self.EntranceVelocityScales[entranceKey] {
                         self.entranceVelocityScale = velocityScale
                     } else {
@@ -328,7 +335,7 @@ public class OlympusRouteTracker {
         if (levelName == "B0") {
             let number = entrance+1
             
-            let key = "\(buildingName)_\(levelName)_\(number)"
+            let key = "\(self.sector_id)_\(buildingName)_\(levelName)_\(number)"
             
             guard let entranceCoord: [[Double]] = EntranceRouteCoord[key] else {
                 return (entranceNumber, entranceLength)
