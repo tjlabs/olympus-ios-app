@@ -63,8 +63,7 @@ public class OlympusMapManager {
         }
         OlympusPathMatchingCalculator.shared.loadPathPixel(sector_id: sector_id, PathPixelVersion: OlympusPathMatchingCalculator.shared.PpVersion)
         // 임시
-        infoBuildingLevel["Test"] = ["1F", "2F", "3F"]
-        
+//        infoBuildingLevel["Test"] = ["1F", "2F", "3F"]
         return infoBuildingLevel
     }
 
@@ -78,7 +77,7 @@ public class OlympusMapManager {
             return 0
         }
         
-        return floorValue(lhs) < floorValue(rhs)
+        return floorValue(lhs) > floorValue(rhs)
     }
     
     private func setSectorBuildingLevel(sector_id: Int, infoBuildingLevel: [String: [String]]) {

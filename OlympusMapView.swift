@@ -18,6 +18,9 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
     
     private var isPpHidden = false
     
+    private var preXyh = [Double]()
+    private let userCoordTag = 999
+    
     public override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
@@ -37,7 +40,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
     }
 
     private func setupView() {
-        backgroundColor = .blue
+//        backgroundColor = .blue
         setupMapImageView()
         setupCollectionViews()
     }
@@ -130,23 +133,24 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
     
     private func updateMapImageView() {
         guard let selectedBuilding = selectedBuilding, let selectedLevel = selectedLevel else { return }
-        let imageKey = "image_\(OlympusMapManager.shared.sector_id)_\(selectedBuilding)_\(selectedLevel)"
         
+        let pathPixelKey = "\(OlympusMapManager.shared.sector_id)_\(selectedBuilding)_\(selectedLevel)"
+        let imageKey = "image_" + pathPixelKey
+
         if let images = OlympusMapManager.shared.sectorImages[imageKey], let image = images.first {
             mapImageView.image = image
-            let scaledSize = calculateAspectFitImageSize(for: image, in: mapImageView)
-//            print(getLocalTimeString() + " , (Olympus) MapView : Scaled width = \(scaledSize.width), Scaled height = \(scaledSize.height)")
+            mapScaleOffset[pathPixelKey].map { _ in } ?? updatePathPixel()
         } else {
             mapImageView.image = nil
         }
     }
     
     private func updatePathPixel() {
-        if !self.isPpHidden {
-            guard let selectedBuilding = selectedBuilding, let selectedLevel = selectedLevel else { return }
-            let pathPixelKey = "\(OlympusMapManager.shared.sector_id)_\(selectedBuilding)_\(selectedLevel)"
-            if let ppCoord = OlympusPathMatchingCalculator.shared.PpCoord[pathPixelKey] {
-                calMapScaleOffset(ppCoord: ppCoord)
+        guard let selectedBuilding = selectedBuilding, let selectedLevel = selectedLevel else { return }
+        let pathPixelKey = "\(OlympusMapManager.shared.sector_id)_\(selectedBuilding)_\(selectedLevel)"
+        if let ppCoord = OlympusPathMatchingCalculator.shared.PpCoord[pathPixelKey] {
+            calMapScaleOffset(ppCoord: ppCoord)
+            if !self.isPpHidden {
                 plotPathPixels(ppCoord: ppCoord)
             }
         }
@@ -154,7 +158,10 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
     
     private func calMapScaleOffset(ppCoord: [[Double]]) {
         DispatchQueue.main.async { [self] in
-            guard let image = mapImageView.image else { return }
+            guard let image = mapImageView.image else {
+//                print(getLocalTimeString() + " , (Olympus) MapView : image is not loaded")
+                return
+            }
             
             let imageSize = image.size
             let imageViewSize = mapImageView.bounds.size
@@ -163,10 +170,16 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             let xCoords = ppCoord[0]
             let yCoords = ppCoord[1]
             
-            guard let minX = xCoords.min(),
-                  let maxX = xCoords.max(),
-                  let minY = yCoords.min(),
-                  let maxY = yCoords.max() else { return }
+//            guard let minX = xCoords.min(),
+//                  let maxX = xCoords.max(),
+//                  let minY = yCoords.min(),
+//                  let maxY = yCoords.max() else { return }
+            
+            // COEX PP Min Max : 6, 294, 3, 469
+            let minX: Double = -48
+            let maxX: Double = 286
+            let minY: Double = -10
+            let maxY: Double = 530
             
             let ppWidth: Double = maxX - minX
             let ppHeight: Double = maxY - minY
@@ -174,28 +187,25 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             let scaleX = scaledSize.width / ppWidth
             let scaleY = scaledSize.height / ppHeight
             
-    //        let offsetX = (scaledSize.width - ppWidth * scaleX) / 2.0
-    //        let offsetY = (scaledSize.height - ppHeight * scaleY) / 2.0
+//            let offsetX = (scaledSize.width - ppWidth * scaleX) / 2.0
+//            let offsetY = (scaledSize.height - ppHeight * scaleY) / 2.0
             let offsetX = minX
             let offsetY = minY
             
             let key = "\(OlympusMapManager.shared.sector_id)_\(selectedBuilding ?? "")_\(selectedLevel ?? "")"
-            mapScaleOffset[key] = [scaleX, scaleY, offsetX, offsetY]
+            mapScaleOffset[key] = [scaleX, scaleY, offsetX, offsetY, scaledSize.width, scaledSize.height]
             
-            print(getLocalTimeString() + " (Olympus) MapView : \(key) // Path-Pixel Min and Max = [\(minX), \(maxX), \(minY), \(maxY)]")
-            print(getLocalTimeString() + " (Olympus) MapView : \(key) // Calculated Scale and Offset = [\(scaleX), \(scaleY), \(offsetX), \(offsetY)]")
+            print(getLocalTimeString() + " , (Olympus) MapView : \(key) // Path-Pixel Min and Max = [\(minX), \(maxX), \(minY), \(maxY)]")
+            print(getLocalTimeString() + " , (Olympus) MapView : \(key) // Calculated Scale and Offset = [\(scaleX), \(scaleY), \(offsetX), \(offsetY)]")
         }
     }
 
     private func plotPathPixels(ppCoord: [[Double]]) {
         DispatchQueue.main.async { [self] in
-//            print(getLocalTimeString() + " , (Olympus) MapView : ppCoord = \(ppCoord)")
             mapImageView.subviews.forEach { $0.removeFromSuperview() }
-            guard let image = mapImageView.image else { return }
-            
             let key = "\(OlympusMapManager.shared.sector_id)_\(selectedBuilding ?? "")_\(selectedLevel ?? "")"
-            guard let scaleOffsetValues = mapScaleOffset[key], scaleOffsetValues.count == 4 else {
-                print(getLocalTimeString() + " (Olympus) MapView : Scale and Offset not found for key \(key)")
+            guard let scaleOffsetValues = mapScaleOffset[key], scaleOffsetValues.count == 6 else {
+//                print(getLocalTimeString() + " , (Olympus) MapView : Scale and Offset not found for key \(key)")
                 return
             }
             
@@ -204,7 +214,6 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             let offsetX = scaleOffsetValues[2]
             let offsetY = scaleOffsetValues[3]
             
-            
             var scaledXY = [[Double]]()
             for i in 0..<ppCoord[0].count {
                 let x = ppCoord[0][i]
@@ -212,18 +221,59 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
                 
                 let transformedX = (x-offsetX)*scaleX
                 let transformedY = (y-offsetY)*scaleY
+                
+                let rotatedX = transformedX
+                let rotatedY = scaleOffsetValues[5] - transformedY
                 scaledXY.append([transformedX, transformedY])
                 
-                let pointView = UIView(frame: CGRect(x: transformedX - 2.5, y: transformedY - 2.5, width: 5, height: 5))
-                pointView.backgroundColor = .red
+                let pointView = UIView(frame: CGRect(x: rotatedX - 2.5, y: rotatedY - 2.5, width: 3, height: 3))
+                pointView.backgroundColor = .systemYellow
                 pointView.layer.cornerRadius = 2.5
                 mapImageView.addSubview(pointView)
             }
-//            print(getLocalTimeString() + " , (Olympus) MapView : scaledXY = \(scaledXY)")
         }
     }
 
+    private func plotUserCoord(xyh: [Double]) {
+        DispatchQueue.main.async { [self] in
+            if preXyh == xyh {
+                print(getLocalTimeString() + " , (Olympus) plotUserCoord : sameCoord [\(preXyh) == \(xyh)]")
+                return
+            }
+            print(getLocalTimeString() + " , (Olympus) plotUserCoord : updateCoord [\(xyh)]")
+            
+            let key = "\(OlympusMapManager.shared.sector_id)_\(selectedBuilding ?? "")_\(selectedLevel ?? "")"
+            guard let scaleOffsetValues = mapScaleOffset[key], scaleOffsetValues.count == 6 else {
+                return
+            }
 
+            let scaleX = scaleOffsetValues[0]
+            let scaleY = scaleOffsetValues[1]
+            let offsetX = scaleOffsetValues[2]
+            let offsetY = scaleOffsetValues[3]
+
+            let x = xyh[0]
+            let y = xyh[1]
+            
+            let transformedX = (x - offsetX) * scaleX
+            let transformedY = (y - offsetY) * scaleY
+            
+            let rotatedX = transformedX
+            let rotatedY = scaleOffsetValues[5] - transformedY
+            
+            if let existingPointView = mapImageView.viewWithTag(userCoordTag) {
+                existingPointView.removeFromSuperview()
+            }
+            
+            let pointView = UIView(frame: CGRect(x: rotatedX - 2.5, y: rotatedY - 2.5, width: 18, height: 18))
+            pointView.backgroundColor = .systemRed
+            pointView.layer.cornerRadius = 10
+            pointView.tag = userCoordTag
+            mapImageView.addSubview(pointView)
+
+            self.preXyh = xyh
+        }
+    }
 
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if collectionView == buildingsCollectionView {
@@ -340,6 +390,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         guard let userInfo = notification.userInfo, let pathPixelKey = userInfo["pathPixelKey"] as? String else { return }
         if let selectedBuilding = selectedBuilding, let selectedLevel = selectedLevel {
             let expectedPpKey = "\(OlympusMapManager.shared.sector_id)_\(selectedBuilding)_\(selectedLevel)"
+//            print(getLocalTimeString() + " , (Olympus) MapView : pathPixelUpdated // expectedPpKey = \(expectedPpKey) , pathPixelKey = \(pathPixelKey)")
             if pathPixelKey == expectedPpKey {
                 updatePathPixel()
             }
@@ -359,5 +410,28 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         let scaledHeight = imageSize.height * scaleFactor
         
         return CGSize(width: scaledWidth, height: scaledHeight)
+    }
+    
+    public func updateResultInMap(result: FineLocationTrackingResult) {
+        let newBuilding = result.building_name
+        let newLevel = result.level_name
+        
+        let buildingChanged = selectedBuilding != newBuilding
+        let levelChanged = selectedLevel != newLevel
+        
+        DispatchQueue.main.async { [self] in
+            if buildingChanged || levelChanged {
+                selectedBuilding = newBuilding
+                selectedLevel = newLevel
+                
+                buildingsCollectionView.reloadData()
+                levelsCollectionView.reloadData()
+                adjustCollectionViewHeights()
+                
+                updateMapImageView()
+                updatePathPixel()
+            }
+            self.plotUserCoord(xyh: [result.x, result.y, result.absolute_heading])
+        }
     }
 }

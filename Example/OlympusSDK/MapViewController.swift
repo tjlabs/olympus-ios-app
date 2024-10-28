@@ -2,8 +2,9 @@ import UIKit
 import OlympusSDK
 
 class MapViewController: UIViewController, Observer {
+    
     func update(result: OlympusSDK.FineLocationTrackingResult) {
-        // qwer
+        self.mapView.updateResultInMap(result: result)
     }
     
     func report(flag: Int) {
@@ -23,7 +24,7 @@ class MapViewController: UIViewController, Observer {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(false)
-//        navigationController?.isNavigationBarHidden = true
+        navigationController?.isNavigationBarHidden = true
     }
     
     override func viewDidLoad() {
@@ -41,6 +42,7 @@ class MapViewController: UIViewController, Observer {
     
     private func startOlympus() {
         let uniqueId = makeUniqueId(uuid: self.userId)
+        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_04_01_1007.csv", sensorFileName: "sensor_coex_04_01_1007.csv")
         
         serviceManager.addObserver(self)
         serviceManager.startService(user_id: uniqueId, region: "Korea", sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
