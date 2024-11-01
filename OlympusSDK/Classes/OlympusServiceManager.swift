@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
-    public static let sdkVersion: String = "0.1.2"
+    public static let sdkVersion: String = "0.1.4"
     var isSimulationMode: Bool = false
     var bleFileName: String = ""
     var sensorFileName: String = ""
@@ -213,7 +213,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     }
     
     func isBuildingLevelChanged(newBuilding: String, newLevel: String, newCoord: [Double]) {
-//        print(getLocalTimeString() + " , (Olympus) Building Level Changed : \(currentLevel) -> \(newLevel)")
+        print(getLocalTimeString() + " , (Olympus) Building Level Changed : \(currentLevel) -> \(newLevel)")
         self.currentBuilding = newBuilding
         self.currentLevel = newLevel
         KF.updateTuBuildingLevel(building: newBuilding, level: newLevel)
@@ -224,6 +224,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             KF.updateTuResult(x: newCoord[0], y: newCoord[1])
             KF.setLinkInfo(coord: newCoord, directions: OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: newBuilding, level: newLevel, x: newCoord[0], y: newCoord[1], PADDING_VALUE: 0.0, mode: self.runMode))
             OlympusPathMatchingCalculator.shared.setBuildingLevelChangedCoord(coord: newCoord)
+        } else {
+            OlympusPathMatchingCalculator.shared.setBuildingLevelChangedCoord(coord: [self.olympusResult.x, self.olympusResult.y])
         }
         
         ambiguitySolver.setIsAmbiguous(value: false)
@@ -265,7 +267,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         currentLevel = ""
         indexPast = 0
         
-        isStartComplete = false
         isPhaseBreak = false
         isPhaseBreakInRouteTrack = false
         networkStatus = true
@@ -300,6 +301,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         isInMapEnd = false
         
         if isStopService {
+            isStartComplete = false
             isSaveMobileResult = false
             temporalResult =  FineLocationTrackingFromServer()
             preTemporalResult = FineLocationTrackingFromServer()
@@ -335,6 +337,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         if (statusCode == 200) {
                             self.user_id = user_id
                             OlympusPathMatchingCalculator.shared.setSectorID(sector_id: sector_id)
+                            buildingLevelChanger.setSectorID(sector_id: sector_id)
                             routeTracker.setSectorID(sector_id: sector_id)
 //                            let sectorInput = SectorInput(sector_id: sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM)
                             OlympusMapManager.shared.loadSectorInfo(sector_id: sector_id, completion: { [self] statusCode, returnedString in
@@ -545,6 +548,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     }
                     stateManager.EntranceOuterWards = entranceOuterWards
                 }
+                
                 if (!element.path_pixel_version.isEmpty) {
                     OlympusPathMatchingCalculator.shared.PpVersion[key] = element.path_pixel_version
                     print(getLocalTimeString() + " , (Olympus) Sector Info : \(key) PP Version = \(element.path_pixel_version)")

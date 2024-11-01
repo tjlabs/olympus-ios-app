@@ -1,5 +1,5 @@
 import Foundation
-
+import UIKit
 
 public class OlympusBlacklistChecker: Observation {
     public static let shared = OlympusBlacklistChecker()

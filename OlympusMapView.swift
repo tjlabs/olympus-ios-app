@@ -237,10 +237,10 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
     private func plotUserCoord(xyh: [Double]) {
         DispatchQueue.main.async { [self] in
             if preXyh == xyh {
-                print(getLocalTimeString() + " , (Olympus) plotUserCoord : sameCoord [\(preXyh) == \(xyh)]")
+//                print(getLocalTimeString() + " , (Olympus) plotUserCoord : sameCoord [\(preXyh) == \(xyh)]")
                 return
             }
-            print(getLocalTimeString() + " , (Olympus) plotUserCoord : updateCoord [\(xyh)]")
+//            print(getLocalTimeString() + " , (Olympus) plotUserCoord : updateCoord [\(xyh)]")
             
             let key = "\(OlympusMapManager.shared.sector_id)_\(selectedBuilding ?? "")_\(selectedLevel ?? "")"
             guard let scaleOffsetValues = mapScaleOffset[key], scaleOffsetValues.count == 6 else {
@@ -265,9 +265,10 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
                 existingPointView.removeFromSuperview()
             }
             
-            let pointView = UIView(frame: CGRect(x: rotatedX - 2.5, y: rotatedY - 2.5, width: 18, height: 18))
+            let coordWidthHeight: [Double] = [14, 14]
+            let pointView = UIView(frame: CGRect(x: rotatedX - coordWidthHeight[0]/2, y: rotatedY - coordWidthHeight[1]/2, width: coordWidthHeight[0], height: coordWidthHeight[1]))
             pointView.backgroundColor = .systemRed
-            pointView.layer.cornerRadius = 10
+            pointView.layer.cornerRadius = 8
             pointView.tag = userCoordTag
             mapImageView.addSubview(pointView)
 
