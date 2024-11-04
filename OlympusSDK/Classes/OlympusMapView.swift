@@ -176,9 +176,19 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
 //                  let maxY = yCoords.max() else { return }
             
             // COEX PP Min Max : 6, 294, 3, 469
-            let minX: Double = -48
-            let maxX: Double = 286
-            let minY: Double = -10
+//            let minX: Double = -48
+//            let maxX: Double = 286
+//            let minY: Double = -10
+//            let maxY: Double = 530
+            
+//            let minX: Double = -50.5
+//            let maxX: Double = 282
+//            let minY: Double = -8
+//            let maxY: Double = 530
+            
+            let minX: Double = -54.5
+            let maxX: Double = 277.8
+            let minY: Double = -8
             let maxY: Double = 530
             
             let ppWidth: Double = maxX - minX
@@ -195,8 +205,8 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             let key = "\(OlympusMapManager.shared.sector_id)_\(selectedBuilding ?? "")_\(selectedLevel ?? "")"
             mapScaleOffset[key] = [scaleX, scaleY, offsetX, offsetY, scaledSize.width, scaledSize.height]
             
-            print(getLocalTimeString() + " , (Olympus) MapView : \(key) // Path-Pixel Min and Max = [\(minX), \(maxX), \(minY), \(maxY)]")
-            print(getLocalTimeString() + " , (Olympus) MapView : \(key) // Calculated Scale and Offset = [\(scaleX), \(scaleY), \(offsetX), \(offsetY)]")
+//            print(getLocalTimeString() + " , (Olympus) MapView : \(key) // Path-Pixel Min and Max = [\(minX), \(maxX), \(minY), \(maxY)]")
+//            print(getLocalTimeString() + " , (Olympus) MapView : \(key) // Calculated Scale and Offset = [\(scaleX), \(scaleY), \(offsetX), \(offsetY)]")
         }
     }
 
@@ -208,18 +218,25 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
 //                print(getLocalTimeString() + " , (Olympus) MapView : Scale and Offset not found for key \(key)")
                 return
             }
+//            print(getLocalTimeString() + " , (Olympus) MapView : \(key) // scaleOffsetValues = \(scaleOffsetValues)")
             
             let scaleX = scaleOffsetValues[0]
             let scaleY = scaleOffsetValues[1]
             let offsetX = scaleOffsetValues[2]
             let offsetY = scaleOffsetValues[3]
             
+            let tempOffsetX = abs(mapImageView.bounds.width - (scaleX*mapImageView.bounds.width))
+            let offsetXByScale = scaleX < 1.0 ? (tempOffsetX/2) : -(tempOffsetX/2)
+            
+//            print(getLocalTimeString() + " , (Olympus) MapView : mapImageView.bounds.width = \(mapImageView.bounds.width) // scaleOffsetValues[4] = \(scaleOffsetValues[4])")
+//            print(getLocalTimeString() + " , (Olympus) MapView : offsetXByScale = \(offsetXByScale)")
+            
             var scaledXY = [[Double]]()
             for i in 0..<ppCoord[0].count {
                 let x = ppCoord[0][i]
                 let y = ppCoord[1][i]
                 
-                let transformedX = (x-offsetX)*scaleX
+                let transformedX = (x-offsetX)*scaleX + offsetXByScale
                 let transformedY = (y-offsetY)*scaleY
                 
                 let rotatedX = transformedX

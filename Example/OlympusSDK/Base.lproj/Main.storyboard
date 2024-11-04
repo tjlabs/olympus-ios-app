@@ -352,21 +352,48 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="I8e-k9-KZS">
-                                <rect key="frame" x="0.0" y="0.0" width="393" height="602"/>
+                                <rect key="frame" x="0.0" y="120" width="393" height="532"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="uP5-wN-hrd">
+                                <rect key="frame" x="0.0" y="0.0" width="393" height="120"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rrg-CT-VZt">
+                                        <rect key="frame" x="10" y="50" width="60" height="60"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="60" id="E12-8U-SmI"/>
+                                            <constraint firstAttribute="height" constant="60" id="RBi-8e-jkR"/>
+                                        </constraints>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="plain" image="image_back"/>
+                                        <connections>
+                                            <action selector="tapBackButton:" destination="kee-Cs-4e6" eventType="touchUpInside" id="jzb-mb-1Li"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <color key="backgroundColor" systemColor="systemCyanColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="120" id="CBH-Eg-0Ds"/>
+                                    <constraint firstItem="rrg-CT-VZt" firstAttribute="leading" secondItem="uP5-wN-hrd" secondAttribute="leading" constant="10" id="Jfa-UD-qwM"/>
+                                    <constraint firstAttribute="bottom" secondItem="rrg-CT-VZt" secondAttribute="bottom" constant="10" id="gzh-Qg-xTf"/>
+                                </constraints>
                             </view>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="BUA-kR-pKV"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
+                            <constraint firstItem="uP5-wN-hrd" firstAttribute="top" secondItem="Sbh-Jg-4L9" secondAttribute="top" id="85d-Lw-cxk"/>
+                            <constraint firstItem="I8e-k9-KZS" firstAttribute="top" secondItem="uP5-wN-hrd" secondAttribute="bottom" id="EF3-sd-KEV"/>
+                            <constraint firstItem="uP5-wN-hrd" firstAttribute="trailing" secondItem="BUA-kR-pKV" secondAttribute="trailing" id="N2Z-bd-Zll"/>
                             <constraint firstItem="BUA-kR-pKV" firstAttribute="trailing" secondItem="I8e-k9-KZS" secondAttribute="trailing" id="Red-1p-zKj"/>
-                            <constraint firstItem="I8e-k9-KZS" firstAttribute="top" secondItem="Sbh-Jg-4L9" secondAttribute="top" id="feL-Qp-Hzf"/>
                             <constraint firstItem="I8e-k9-KZS" firstAttribute="leading" secondItem="BUA-kR-pKV" secondAttribute="leading" id="goM-oJ-g3f"/>
-                            <constraint firstAttribute="bottom" secondItem="I8e-k9-KZS" secondAttribute="bottom" constant="250" id="hqS-DU-lJO"/>
+                            <constraint firstAttribute="bottom" secondItem="I8e-k9-KZS" secondAttribute="bottom" constant="200" id="hqS-DU-lJO"/>
+                            <constraint firstItem="uP5-wN-hrd" firstAttribute="leading" secondItem="BUA-kR-pKV" secondAttribute="leading" id="orE-EX-9ji"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="mainView" destination="I8e-k9-KZS" id="6Nz-TO-MYh"/>
+                        <outlet property="topView" destination="uP5-wN-hrd" id="tQz-Kd-pc0"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="veo-UJ-8sG" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -377,6 +404,7 @@
     <resources>
         <image name="checked_box" width="24.666666030883789" height="25.333333969116211"/>
         <image name="field_login" width="349.33334350585938" height="58.333332061767578"/>
+        <image name="image_back" width="29" height="29"/>
         <image name="image_login" width="349.33334350585938" height="58.333332061767578"/>
         <image name="unchecked_box" width="24.666666030883789" height="25.333333969116211"/>
         <namedColor name="red1">

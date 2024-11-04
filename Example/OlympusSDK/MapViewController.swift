@@ -11,6 +11,7 @@ class MapViewController: UIViewController, Observer {
         // qwer
     }
     
+    @IBOutlet weak var topView: UIView!
     @IBOutlet weak var mainView: UIView!
     let mapView = OlympusMapView()
     
@@ -79,6 +80,11 @@ class MapViewController: UIViewController, Observer {
         let currentTime: Int = getCurrentTimeInMilliseconds()
         let unique_id: String = "\(uuid)_\(currentTime)"
         return unique_id
+    }
+    
+    @IBAction func tapBackButton(_ sender: UIButton) {
+        serviceManager.removeObserver(self)
+        self.navigationController?.popViewController(animated: true)
     }
 }
 
