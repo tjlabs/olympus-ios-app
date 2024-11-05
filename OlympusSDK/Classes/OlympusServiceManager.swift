@@ -213,7 +213,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     }
     
     func isBuildingLevelChanged(newBuilding: String, newLevel: String, newCoord: [Double]) {
-        print(getLocalTimeString() + " , (Olympus) Building Level Changed : \(currentLevel) -> \(newLevel)")
+//        print(getLocalTimeString() + " , (Olympus) Building Level Changed : \(currentLevel) -> \(newLevel)")
         self.currentBuilding = newBuilding
         self.currentLevel = newLevel
         KF.updateTuBuildingLevel(building: newBuilding, level: newLevel)
@@ -638,8 +638,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 if (!stateManager.isGetFirstResponse) {
                     let enterInNetworkBadEntrance = stateManager.checkEnterInNetworkBadEntrance(bleAvg: self.bleAvg)
                     if (enterInNetworkBadEntrance.0) {
-                        print(getLocalTimeString() + " , (Olympus) Start Route Tracker : Network Bad Entrance")
-                        print(getLocalTimeString() + " , (Olympus) Start Route Tracker : Network Bad Entrance Result = \(enterInNetworkBadEntrance.1)")
+//                        print(getLocalTimeString() + " , (Olympus) Start Route Tracker : Network Bad Entrance")
+//                        print(getLocalTimeString() + " , (Olympus) Start Route Tracker : Network Bad Entrance Result = \(enterInNetworkBadEntrance.1)")
                         stateManager.setIsGetFirstResponse(isGetFirstResponse: true)
                         let isOn = routeTracker.startRouteTracking(result: enterInNetworkBadEntrance.1, isStartRouteTrack: self.isStartRouteTrack)
                         stackServerResult(serverResult: enterInNetworkBadEntrance.1)
@@ -674,6 +674,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 bleLineCount += 1
             } else {
                 self.bleAvg = [String: Double]()
+                
+                // Connect Simulation
 //                if stateManager.timeForInit >= OlympusConstants.TIME_INIT_THRESHOLD+1 && !stateManager.isIndoor {
 //                    self.bleLineCount = 0
 //                    self.sensorLineCount = 0
@@ -2197,7 +2199,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     }
     
     @objc func osrTimerUpdate() {
-        buildingLevelChanger.estimateBuildingLevel(user_id: self.user_id, mode: self.runMode, phase: phaseController.PHASE, isGetFirstResponse: stateManager.isGetFirstResponse, networkStatus: self.networkStatus, isDRMode: self.isDRMode, passedNodes: OlympusPathMatchingCalculator.shared.getPassedNodeInfoBuffer(), result: self.olympusResult, currentBuilding: self.currentBuilding, currentLevel: self.currentLevel, currentEntrance: routeTracker.currentEntrance)
+        if !isStartRouteTrack {
+            buildingLevelChanger.estimateBuildingLevel(user_id: self.user_id, mode: self.runMode, phase: phaseController.PHASE, isGetFirstResponse: stateManager.isGetFirstResponse, networkStatus: self.networkStatus, isDRMode: self.isDRMode, passedNodes: OlympusPathMatchingCalculator.shared.getPassedNodeInfoBuffer(), result: self.olympusResult, currentBuilding: self.currentBuilding, currentLevel: self.currentLevel, currentEntrance: routeTracker.currentEntrance)
+        }
     }
     
     private func controlMode() {

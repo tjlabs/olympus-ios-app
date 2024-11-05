@@ -15,6 +15,8 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
     private var levelsCollectionViewHeightConstraint: NSLayoutConstraint!
     
     private var mapScaleOffset = [String: [Double]]()
+    private var currentScale: CGFloat = 1.0
+    private var translationOffset: CGPoint = .zero
     
     private var isPpHidden = false
     
@@ -26,6 +28,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         setupView()
         observeImageUpdates()
         observePathPixelUpdates()
+        addGestures()
     }
     
     required init?(coder: NSCoder) {
@@ -33,10 +36,53 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         setupView()
         observeImageUpdates()
         observePathPixelUpdates()
+        addGestures()
     }
     
     deinit {
         NotificationCenter.default.removeObserver(self)
+    }
+    
+    private func addGestures() {
+        addPinchGesture()
+        addPanGesture()
+    }
+    
+    private func addPinchGesture() {
+        let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(handlePinchGesture(_:)))
+        self.addGestureRecognizer(pinchGesture)
+    }
+    
+    private func addPanGesture() {
+        let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(_:)))
+        self.addGestureRecognizer(panGesture)
+    }
+    
+    @objc private func handlePinchGesture(_ sender: UIPinchGestureRecognizer) {
+        if sender.state == .changed {
+            let scale = sender.scale
+            mapImageView.transform = mapImageView.transform.scaledBy(x: scale, y: scale)
+            currentScale = scale
+            sender.scale = 1.0
+        } else if sender.state == .ended {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                    self?.updatePathPixel()
+            }
+        }
+    }
+    
+    @objc private func handlePanGesture(_ sender: UIPanGestureRecognizer) {
+        let translation = sender.translation(in: self)
+        if sender.state == .changed {
+            mapImageView.transform = mapImageView.transform.translatedBy(x: translation.x, y: translation.y)
+            translationOffset.x = translation.x
+            translationOffset.y = translation.y
+            sender.setTranslation(.zero, in: self)
+        } else if sender.state == .ended {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                    self?.updatePathPixel()
+            }
+        }
     }
 
     private func setupView() {
@@ -236,8 +282,11 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
                 let x = ppCoord[0][i]
                 let y = ppCoord[1][i]
                 
-                let transformedX = (x-offsetX)*scaleX + offsetXByScale
-                let transformedY = (y-offsetY)*scaleY
+//                let transformedX = (x - offsetX)*scaleX + offsetXByScale
+//                let transformedY = (y - offsetY)*scaleY
+                
+                let transformedX = ((x - offsetX)*scaleX)*currentScale + offsetXByScale + translationOffset.x
+                let transformedY = ((y - offsetY)*scaleY)*currentScale + translationOffset.y
                 
                 let rotatedX = transformedX
                 let rotatedY = scaleOffsetValues[5] - transformedY
@@ -268,11 +317,14 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             let scaleY = scaleOffsetValues[1]
             let offsetX = scaleOffsetValues[2]
             let offsetY = scaleOffsetValues[3]
-
+            
+            let tempOffsetX = abs(mapImageView.bounds.width - (scaleX*mapImageView.bounds.width))
+            let offsetXByScale = scaleX < 1.0 ? (tempOffsetX/2) : -(tempOffsetX/2)
+            
             let x = xyh[0]
             let y = xyh[1]
             
-            let transformedX = (x - offsetX) * scaleX
+            let transformedX = (x - offsetX) * scaleX  + offsetXByScale
             let transformedY = (y - offsetY) * scaleY
             
             let rotatedX = transformedX

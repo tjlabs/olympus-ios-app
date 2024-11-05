@@ -312,7 +312,7 @@ public class OlympusBuildingLevelChanger {
                                 // 방향 결정 "U" or "D" or "N"
                                 self.currentDRModeArea = value
                                 self.currentDRModeAreaNodeNumber = n.number
-                                print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (In) : index = \(fltResult.index) // coord = \(fltResult.x) , \(fltResult.y) , \(fltResult.absolute_heading) // return true")
+//                                print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (In) : index = \(fltResult.index) // coord = \(fltResult.x) , \(fltResult.y) , \(fltResult.absolute_heading) // return true")
                                 return true
                             }
                         }
@@ -339,7 +339,7 @@ public class OlympusBuildingLevelChanger {
                 }
                 
                 if anchorNodeInfo.nodeCoord.isEmpty {
-                    print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (Out) : anchorNodeInfo is empty")
+//                    print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (Out) : anchorNodeInfo is empty")
                     return false
                 } else {
                     if (value.range[0] <= anchorNodeInfo.nodeCoord[0] && anchorNodeInfo.nodeCoord[0] <= value.range[2]) && (value.range[1] <= anchorNodeInfo.nodeCoord[1] && anchorNodeInfo.nodeCoord[1] <= value.range[3]) {
@@ -353,7 +353,7 @@ public class OlympusBuildingLevelChanger {
             if isAnchorNodeInArea {
                isInArea = true
             } else {
-                print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (Out) : Normal")
+//                print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (Out) : Normal")
                 self.currentDRModeArea = SectorDRModeArea(number: -1, range: [], direction: 0, nodes: [])
                 self.currentDRModeAreaNodeNumber = -1
             }
@@ -366,7 +366,7 @@ public class OlympusBuildingLevelChanger {
         let currentLevel = "_\(fltResult.level_name)_"
         for (key, value) in self.sectorDRModeArea {
             if key.contains(currentLevel) && key.contains("\(self.sector_id)_") {
-                print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (In) : coord = \(fltResult.x) , \(fltResult.y) , \(fltResult.absolute_heading)")
+//                print(getLocalTimeString() + " , (Olympus) isInSectorLevelChange (In) : coord = \(fltResult.x) , \(fltResult.y) , \(fltResult.absolute_heading)")
                 if (value.range[0] <= fltResult.x && fltResult.x <= value.range[2]) && (value.range[1] <= fltResult.y && fltResult.y <= value.range[3]) {
                     // 사용자 좌표가 영역 안에 존재
                     return true
