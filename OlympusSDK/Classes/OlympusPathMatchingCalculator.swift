@@ -48,7 +48,6 @@ public class OlympusPathMatchingCalculator {
     }
     
     public func initialize() {
-        self.sector_id = -1
         self.passedNode = -1
         self.passedNodeMatchedIndex = -1
         self.passedNodeCoord = [0, 0]

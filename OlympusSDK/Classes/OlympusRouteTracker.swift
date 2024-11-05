@@ -22,7 +22,6 @@ public class OlympusRouteTracker {
     var currentEntranceLength: Int = 0
     
     public func initialize() {
-        self.sector_id = -1
         self.indexAfterRouteTrack = 0
         self.entranceVelocityScale = 1.0
         self.currentEntrance = ""
@@ -223,7 +222,7 @@ public class OlympusRouteTracker {
         result = routeTrackEntrance(temporalResult: temporalResult, currentEntranceIndex: currentEntranceIndex)
         if (currentEntranceIndex < (currentEntranceLength-1)) {
             self.currentEntranceIndex += 1
-//            print(getLocalTimeString() + " , (Olympus) Route Tracker : result = \(result)")
+//            print(getLocalTimeString() + " , (Olympus) Route Tracker : \(result.level_name), \(result.x), \(result.y), \(result.absolute_heading)")
             
             if (isVenusMode) {
                 print(localTime + " , (Olympus) Entrance Route Tracker : Finish (BLE Only Mode)")
