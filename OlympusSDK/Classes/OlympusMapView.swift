@@ -2,6 +2,11 @@ import UIKit
 
 public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
+    enum MapMode {
+        case MAP_ONLY
+        case UPDATE_USER
+    }
+    
     private var mapImageView = UIImageView()
     private var buildingsCollectionView: UICollectionView!
     private var levelsCollectionView: UICollectionView!
@@ -23,12 +28,14 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
     private var preXyh = [Double]()
     private let userCoordTag = 999
     
+    private var mode: MapMode = .MAP_ONLY
+    
     public override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
         observeImageUpdates()
         observePathPixelUpdates()
-        addGestures()
+//        addGestures()
     }
     
     required init?(coder: NSCoder) {
@@ -36,7 +43,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         setupView()
         observeImageUpdates()
         observePathPixelUpdates()
-        addGestures()
+//        addGestures()
     }
     
     deinit {
@@ -58,15 +65,21 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         self.addGestureRecognizer(panGesture)
     }
     
+    private func addTouchGesture() {
+        let touchGesture = UIPanGestureRecognizer(target: self, action: #selector(handleTouchGesture(_:)))
+        self.addGestureRecognizer(touchGesture)
+    }
+    
     @objc private func handlePinchGesture(_ sender: UIPinchGestureRecognizer) {
         if sender.state == .changed {
             let scale = sender.scale
             mapImageView.transform = mapImageView.transform.scaledBy(x: scale, y: scale)
             currentScale = scale
             sender.scale = 1.0
+            print(getLocalTimeString() + " , (Olympus) MapView : currentScale = \(currentScale)")
         } else if sender.state == .ended {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-                    self?.updatePathPixel()
+                self?.updatePathPixel()
             }
         }
     }
@@ -80,13 +93,17 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             sender.setTranslation(.zero, in: self)
         } else if sender.state == .ended {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-                    self?.updatePathPixel()
+                self?.updatePathPixel()
             }
         }
     }
+    
+    @objc private func handleTouchGesture(_ sender: UITapGestureRecognizer) {
+        let touchPoint = sender.location(in: self.mapImageView)
+        print(getLocalTimeString() + " , (Olympus) MapView : Touch \(touchPoint)")
+    }
 
     private func setupView() {
-//        backgroundColor = .blue
         setupMapImageView()
         setupCollectionViews()
     }
@@ -282,11 +299,10 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
                 let x = ppCoord[0][i]
                 let y = ppCoord[1][i]
                 
-//                let transformedX = (x - offsetX)*scaleX + offsetXByScale
-//                let transformedY = (y - offsetY)*scaleY
-                
-                let transformedX = ((x - offsetX)*scaleX)*currentScale + offsetXByScale + translationOffset.x
-                let transformedY = ((y - offsetY)*scaleY)*currentScale + translationOffset.y
+//                let transformedX = ((x - offsetX)*scaleX)*currentScale + offsetXByScale + translationOffset.x
+//                let transformedY = ((y - offsetY)*scaleY)*currentScale + translationOffset.y
+                let transformedX = ((x - offsetX)*scaleX) + offsetXByScale
+                let transformedY = ((y - offsetY)*scaleY)
                 
                 let rotatedX = transformedX
                 let rotatedY = scaleOffsetValues[5] - transformedY
@@ -324,8 +340,8 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             let x = xyh[0]
             let y = xyh[1]
             
-            let transformedX = (x - offsetX) * scaleX  + offsetXByScale
-            let transformedY = (y - offsetY) * scaleY
+            let transformedX = ((x - offsetX)*scaleX) + offsetXByScale
+            let transformedY = ((y - offsetY)*scaleY)
             
             let rotatedX = transformedX
             let rotatedY = scaleOffsetValues[5] - transformedY
@@ -344,6 +360,70 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             self.preXyh = xyh
         }
     }
+    
+//    private func plotUserCoord(xyh: [Double]) {
+//        DispatchQueue.main.async { [self] in
+//            if preXyh == xyh {
+//                return
+//            }
+//            
+//            let key = "\(OlympusMapManager.shared.sector_id)_\(selectedBuilding ?? "")_\(selectedLevel ?? "")"
+//            guard let scaleOffsetValues = mapScaleOffset[key], scaleOffsetValues.count == 6 else {
+//                return
+//            }
+//
+//            let scaleX = scaleOffsetValues[0]
+//            let scaleY = scaleOffsetValues[1]
+//            let offsetX = scaleOffsetValues[2]
+//            let offsetY = scaleOffsetValues[3]
+//            
+//            let tempOffsetX = abs(mapImageView.bounds.width - (scaleX * mapImageView.bounds.width))
+//            let offsetXByScale = scaleX < 1.0 ? (tempOffsetX / 2) : -(tempOffsetX / 2)
+//            
+//            let x = xyh[0]
+//            let y = xyh[1]
+//            
+//            // Calculate transformed coordinates of the target point
+//            let transformedX = ((x - offsetX) * scaleX) + offsetXByScale
+//            let transformedY = ((y - offsetY) * scaleY)
+//            
+//            let rotatedX = transformedX
+//            let rotatedY = scaleOffsetValues[5] - transformedY
+//            
+//            // Remove any existing user coordinate point
+//            if let existingPointView = mapImageView.viewWithTag(userCoordTag) {
+//                existingPointView.removeFromSuperview()
+//            }
+//            
+//            // Create the user coordinate point at the specified location
+//            let coordSize: CGFloat = 14
+//            let pointView = UIView(frame: CGRect(x: rotatedX - coordSize / 2, y: rotatedY - coordSize / 2, width: coordSize, height: coordSize))
+//            pointView.backgroundColor = .systemRed
+//            pointView.layer.cornerRadius = coordSize / 2
+//            pointView.tag = userCoordTag
+//            mapImageView.addSubview(pointView)
+//
+//            // Apply a scaling transform to mapImageView
+//            let scaleFactor: CGFloat = 2.0
+//            
+//            mapImageView.transform = CGAffineTransform.identity
+//            mapImageView.transform = CGAffineTransform(scaleX: scaleFactor, y: scaleFactor)
+//
+//            // Calculate offset to center `pointView` within OlympusMapView
+//            let centeredX = (self.mapImageView.bounds.width / 2) - (rotatedX * scaleFactor)
+//            let centeredY = (self.mapImageView.bounds.height / 2) - (rotatedY * scaleFactor)
+//            
+////            print(getLocalTimeString() + " , (Olympus) MapView : Rotated = \(rotatedX),\(rotatedY) // Transformed = \(transformedX),\(transformedY) // Center = \(centeredX),\(centeredY)")
+//            DispatchQueue.main.async {
+//                UIView.animate(withDuration: 0.5, delay: 0, options: UIView.AnimationOptions.curveEaseOut, animations: {
+//                    self.mapImageView.center = CGPoint(x: rotatedX, y: rotatedY)
+//                }, completion: nil)
+//            }
+//
+//            self.preXyh = xyh
+//        }
+//    }
+
 
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if collectionView == buildingsCollectionView {
@@ -438,6 +518,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         }
     }
     
+    // MARK: - Building & Level Images
     private func observeImageUpdates() {
         NotificationCenter.default.addObserver(self, selector: #selector(imageUpdated(_:)), name: .sectorImagesUpdated, object: nil)
     }
@@ -452,10 +533,10 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         }
     }
     
+    // MARK: - Building & Level Path-Pixels
     private func observePathPixelUpdates() {
         NotificationCenter.default.addObserver(self, selector: #selector(pathPixelUpdated(_:)), name: .sectorPathPixelUpdated, object: nil)
     }
-
     @objc private func pathPixelUpdated(_ notification: Notification) {
         guard let userInfo = notification.userInfo, let pathPixelKey = userInfo["pathPixelKey"] as? String else { return }
         if let selectedBuilding = selectedBuilding, let selectedLevel = selectedLevel {
