@@ -1,6 +1,6 @@
 import UIKit
 
-public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UIScrollViewDelegate {
     
     enum MapMode {
         case MAP_ONLY
@@ -18,6 +18,8 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
     private let cellSpacing: CGFloat = 1.0
     private var buildingsCollectionViewHeightConstraint: NSLayoutConstraint!
     private var levelsCollectionViewHeightConstraint: NSLayoutConstraint!
+    
+    private let scrollView = UIScrollView()
     
     private var mapScaleOffset = [String: [Double]]()
     private var currentScale: CGFloat = 1.0
@@ -109,11 +111,26 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
     }
     
     private func setupMapImageView() {
+        // Configure scrollView
+        scrollView.frame = self.bounds
+        scrollView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        scrollView.minimumZoomScale = 1.0
+        scrollView.maximumZoomScale = 5.0
+        scrollView.delegate = self
+        addSubview(scrollView)
+        
+        // Configure mapImageView and add it to scrollView
         mapImageView.contentMode = .scaleAspectFit
         mapImageView.backgroundColor = .clear
-        mapImageView.frame = self.bounds
+        mapImageView.frame = scrollView.bounds
         mapImageView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        addSubview(mapImageView)
+        scrollView.addSubview(mapImageView)
+        
+//        mapImageView.contentMode = .scaleAspectFit
+//        mapImageView.backgroundColor = .clear
+//        mapImageView.frame = self.bounds
+//        mapImageView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+//        addSubview(mapImageView)
     }
     
     private func setupCollectionViews() {
@@ -361,68 +378,61 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         }
     }
     
-//    private func plotUserCoord(xyh: [Double]) {
-//        DispatchQueue.main.async { [self] in
-//            if preXyh == xyh {
-//                return
-//            }
-//            
-//            let key = "\(OlympusMapManager.shared.sector_id)_\(selectedBuilding ?? "")_\(selectedLevel ?? "")"
-//            guard let scaleOffsetValues = mapScaleOffset[key], scaleOffsetValues.count == 6 else {
-//                return
-//            }
-//
-//            let scaleX = scaleOffsetValues[0]
-//            let scaleY = scaleOffsetValues[1]
-//            let offsetX = scaleOffsetValues[2]
-//            let offsetY = scaleOffsetValues[3]
-//            
-//            let tempOffsetX = abs(mapImageView.bounds.width - (scaleX * mapImageView.bounds.width))
-//            let offsetXByScale = scaleX < 1.0 ? (tempOffsetX / 2) : -(tempOffsetX / 2)
-//            
-//            let x = xyh[0]
-//            let y = xyh[1]
-//            
-//            // Calculate transformed coordinates of the target point
-//            let transformedX = ((x - offsetX) * scaleX) + offsetXByScale
-//            let transformedY = ((y - offsetY) * scaleY)
-//            
-//            let rotatedX = transformedX
-//            let rotatedY = scaleOffsetValues[5] - transformedY
-//            
-//            // Remove any existing user coordinate point
-//            if let existingPointView = mapImageView.viewWithTag(userCoordTag) {
-//                existingPointView.removeFromSuperview()
-//            }
-//            
-//            // Create the user coordinate point at the specified location
-//            let coordSize: CGFloat = 14
-//            let pointView = UIView(frame: CGRect(x: rotatedX - coordSize / 2, y: rotatedY - coordSize / 2, width: coordSize, height: coordSize))
-//            pointView.backgroundColor = .systemRed
-//            pointView.layer.cornerRadius = coordSize / 2
-//            pointView.tag = userCoordTag
-//            mapImageView.addSubview(pointView)
-//
-//            // Apply a scaling transform to mapImageView
-//            let scaleFactor: CGFloat = 2.0
-//            
-//            mapImageView.transform = CGAffineTransform.identity
-//            mapImageView.transform = CGAffineTransform(scaleX: scaleFactor, y: scaleFactor)
-//
-//            // Calculate offset to center `pointView` within OlympusMapView
-//            let centeredX = (self.mapImageView.bounds.width / 2) - (rotatedX * scaleFactor)
-//            let centeredY = (self.mapImageView.bounds.height / 2) - (rotatedY * scaleFactor)
-//            
-////            print(getLocalTimeString() + " , (Olympus) MapView : Rotated = \(rotatedX),\(rotatedY) // Transformed = \(transformedX),\(transformedY) // Center = \(centeredX),\(centeredY)")
-//            DispatchQueue.main.async {
-//                UIView.animate(withDuration: 0.5, delay: 0, options: UIView.AnimationOptions.curveEaseOut, animations: {
-//                    self.mapImageView.center = CGPoint(x: rotatedX, y: rotatedY)
-//                }, completion: nil)
-//            }
-//
-//            self.preXyh = xyh
-//        }
-//    }
+    private func plotScaleUpUserCoord(xyh: [Double]) {
+        DispatchQueue.main.async { [self] in
+            if preXyh == xyh {
+                return
+            }
+            
+            let key = "\(OlympusMapManager.shared.sector_id)_\(selectedBuilding ?? "")_\(selectedLevel ?? "")"
+            guard let scaleOffsetValues = mapScaleOffset[key], scaleOffsetValues.count == 6 else {
+                return
+            }
+
+            let scaleX = scaleOffsetValues[0]
+            let scaleY = scaleOffsetValues[1]
+            let offsetX = scaleOffsetValues[2]
+            let offsetY = scaleOffsetValues[3]
+            
+            let tempOffsetX = abs(mapImageView.bounds.width - (scaleX * mapImageView.bounds.width))
+            let offsetXByScale = scaleX < 1.0 ? (tempOffsetX / 2) : -(tempOffsetX / 2)
+            
+            let x = xyh[0]
+            let y = xyh[1]
+            
+            // Calculate transformed coordinates of the target point
+            let transformedX = ((x - offsetX) * scaleX) + offsetXByScale
+            let transformedY = ((y - offsetY) * scaleY)
+            
+            let rotatedX = transformedX
+            let rotatedY = scaleOffsetValues[5] - transformedY
+            
+            // Remove any existing user coordinate point
+            if let existingPointView = mapImageView.viewWithTag(userCoordTag) {
+                existingPointView.removeFromSuperview()
+            }
+            
+            // Create the user coordinate point at the specified location
+            let coordSize: CGFloat = 14
+            let pointView = UIView(frame: CGRect(x: rotatedX - coordSize / 2, y: rotatedY - coordSize / 2, width: coordSize, height: coordSize))
+            pointView.backgroundColor = .systemRed
+            pointView.layer.cornerRadius = coordSize / 2
+            pointView.tag = userCoordTag
+            mapImageView.addSubview(pointView)
+
+            // Set the scroll view's zoom scale
+            let scaleFactor: CGFloat = 2.0
+            scrollView.setZoomScale(scaleFactor, animated: true)
+
+            // Center `pointView` within the scroll view
+            let centeredX = rotatedX * scaleFactor - scrollView.bounds.width / 2
+            let centeredY = rotatedY * scaleFactor - scrollView.bounds.height / 2
+            scrollView.setContentOffset(CGPoint(x: centeredX, y: centeredY), animated: true)
+
+            self.preXyh = xyh
+        }
+    }
+
 
 
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -582,7 +592,12 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
                 updateMapImageView()
                 updatePathPixel()
             }
-            self.plotUserCoord(xyh: [result.x, result.y, result.absolute_heading])
+            self.plotScaleUpUserCoord(xyh: [result.x, result.y, result.absolute_heading])
         }
     }
+    
+    public func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+        return mapImageView
+    }
 }
+
