@@ -10,27 +10,31 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
     private var mapImageView = UIImageView()
     private var buildingsCollectionView: UICollectionView!
     private var levelsCollectionView: UICollectionView!
+    private let scrollView = UIScrollView()
+    private let velocityLabel = UILabel()
+    
     private var buildingData = [String]()
     private var levelData = [String]()
     private var selectedBuilding: String?
     private var selectedLevel: String?
-    private let cellSize: CGSize = CGSize(width: 50, height: 50)
-    private let cellSpacing: CGFloat = 1.0
+    private let cellSize: CGSize = CGSize(width: 30, height: 30)
+    private let cellSpacing: CGFloat = 0.1
     private var buildingsCollectionViewHeightConstraint: NSLayoutConstraint!
     private var levelsCollectionViewHeightConstraint: NSLayoutConstraint!
-    
-    private let scrollView = UIScrollView()
+    private var levelsLeadingToSuperviewConstraint: NSLayoutConstraint!
+    private var levelsLeadingToBuildingsConstraint: NSLayoutConstraint!
     
     private var mapScaleOffset = [String: [Double]]()
     private var currentScale: CGFloat = 1.0
     private var translationOffset: CGPoint = .zero
-    
     private var isPpHidden = false
     
     private var preXyh = [Double]()
+    private var userHeadingBuffer = [Double]()
     private let userCoordTag = 999
     
-    private var mode: MapMode = .MAP_ONLY
+    private var mode: MapMode = .UPDATE_USER
+    private let USER_CENTER_OFFSET: CGFloat = 150
     
     public override init(frame: CGRect) {
         super.init(frame: frame)
@@ -108,10 +112,25 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
     private func setupView() {
         setupMapImageView()
         setupCollectionViews()
+        setupLabels()
+    }
+    
+    private func setupLabels() {
+        velocityLabel.text = "0"
+        velocityLabel.textAlignment = .center
+        velocityLabel.textColor = .black
+        velocityLabel.font = UIFont.boldSystemFont(ofSize: 50)
+        velocityLabel.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(velocityLabel)
+            
+        // Set up velocityLabel constraints
+        NSLayoutConstraint.activate([
+            velocityLabel.topAnchor.constraint(equalTo: self.topAnchor, constant: 40),
+            velocityLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 40)
+        ])
     }
     
     private func setupMapImageView() {
-        // Configure scrollView
         scrollView.frame = self.bounds
         scrollView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         scrollView.minimumZoomScale = 1.0
@@ -119,18 +138,11 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         scrollView.delegate = self
         addSubview(scrollView)
         
-        // Configure mapImageView and add it to scrollView
         mapImageView.contentMode = .scaleAspectFit
         mapImageView.backgroundColor = .clear
         mapImageView.frame = scrollView.bounds
         mapImageView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         scrollView.addSubview(mapImageView)
-        
-//        mapImageView.contentMode = .scaleAspectFit
-//        mapImageView.backgroundColor = .clear
-//        mapImageView.frame = self.bounds
-//        mapImageView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-//        addSubview(mapImageView)
     }
     
     private func setupCollectionViews() {
@@ -140,6 +152,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         
         buildingsCollectionView = UICollectionView(frame: .zero, collectionViewLayout: buildingLayout)
         buildingsCollectionView.backgroundColor = .clear
+        buildingsCollectionView.layer.cornerRadius = 10
         buildingsCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "BuildingCell")
         buildingsCollectionView.delegate = self
         buildingsCollectionView.dataSource = self
@@ -151,6 +164,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         
         levelsCollectionView = UICollectionView(frame: .zero, collectionViewLayout: levelLayout)
         levelsCollectionView.backgroundColor = .clear
+        levelsCollectionView.layer.cornerRadius = 10
         levelsCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "LevelCell")
         levelsCollectionView.delegate = self
         levelsCollectionView.dataSource = self
@@ -174,6 +188,30 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         
         levelsCollectionViewHeightConstraint = levelsCollectionView.heightAnchor.constraint(equalToConstant: calculateCollectionViewHeight(for: levelData.count))
         levelsCollectionViewHeightConstraint.isActive = true
+        
+        // MARK: - Control Building & Level CollectionView when building is 1
+        buildingsCollectionView.translatesAutoresizingMaskIntoConstraints = false
+        levelsCollectionView.translatesAutoresizingMaskIntoConstraints = false
+
+        levelsLeadingToBuildingsConstraint = levelsCollectionView.leadingAnchor.constraint(equalTo: buildingsCollectionView.trailingAnchor, constant: 5)
+        levelsLeadingToSuperviewConstraint = levelsCollectionView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20)
+            
+        NSLayoutConstraint.activate([
+            buildingsCollectionView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
+            buildingsCollectionView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -20),
+            buildingsCollectionView.widthAnchor.constraint(equalToConstant: cellSize.width),
+                
+            levelsCollectionView.bottomAnchor.constraint(equalTo: buildingsCollectionView.bottomAnchor),
+            levelsCollectionView.widthAnchor.constraint(equalToConstant: cellSize.width)
+        ])
+            
+        buildingsCollectionViewHeightConstraint = buildingsCollectionView.heightAnchor.constraint(equalToConstant: calculateCollectionViewHeight(for: buildingData.count))
+        buildingsCollectionViewHeightConstraint.isActive = true
+            
+        levelsCollectionViewHeightConstraint = levelsCollectionView.heightAnchor.constraint(equalToConstant: calculateCollectionViewHeight(for: levelData.count))
+        levelsCollectionViewHeightConstraint.isActive = true
+            
+        levelsLeadingToBuildingsConstraint.isActive = true
     }
     
     private func calculateCollectionViewHeight(for itemCount: Int) -> CGFloat {
@@ -197,6 +235,21 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         adjustCollectionViewHeights()
         updateMapImageView()
         updatePathPixel()
+        
+        // MARK: - Control Building & Level CollectionView when building is 1
+        if buildings.count < 2 {
+            buildingsCollectionView.isHidden = true
+            levelsLeadingToBuildingsConstraint.isActive = false
+            levelsLeadingToSuperviewConstraint.isActive = true
+        } else {
+            buildingsCollectionView.isHidden = false
+            levelsLeadingToSuperviewConstraint.isActive = false
+            levelsLeadingToBuildingsConstraint.isActive = true
+        }
+
+        UIView.animate(withDuration: 0.3) {
+            self.layoutIfNeeded()
+        }
     }
     
     private func adjustCollectionViewHeights() {
@@ -339,7 +392,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
 //                print(getLocalTimeString() + " , (Olympus) plotUserCoord : sameCoord [\(preXyh) == \(xyh)]")
                 return
             }
-//            print(getLocalTimeString() + " , (Olympus) plotUserCoord : updateCoord [\(xyh)]")
+            print(getLocalTimeString() + " , (Olympus) plotUserCoord : updateCoord [\(xyh)]")
             
             let key = "\(OlympusMapManager.shared.sector_id)_\(selectedBuilding ?? "")_\(selectedLevel ?? "")"
             guard let scaleOffsetValues = mapScaleOffset[key], scaleOffsetValues.count == 6 else {
@@ -356,6 +409,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             
             let x = xyh[0]
             let y = xyh[1]
+            let heading = xyh[2]
             
             let transformedX = ((x - offsetX)*scaleX) + offsetXByScale
             let transformedY = ((y - offsetY)*scaleY)
@@ -367,73 +421,35 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
                 existingPointView.removeFromSuperview()
             }
             
-            let coordWidthHeight: [Double] = [14, 14]
-            let pointView = UIView(frame: CGRect(x: rotatedX - coordWidthHeight[0]/2, y: rotatedY - coordWidthHeight[1]/2, width: coordWidthHeight[0], height: coordWidthHeight[1]))
-            pointView.backgroundColor = .systemRed
-            pointView.layer.cornerRadius = 8
-            pointView.tag = userCoordTag
-            mapImageView.addSubview(pointView)
-
-            self.preXyh = xyh
-        }
-    }
-    
-    private func plotScaleUpUserCoord(xyh: [Double]) {
-        DispatchQueue.main.async { [self] in
-            if preXyh == xyh {
-                return
-            }
-            
-            let key = "\(OlympusMapManager.shared.sector_id)_\(selectedBuilding ?? "")_\(selectedLevel ?? "")"
-            guard let scaleOffsetValues = mapScaleOffset[key], scaleOffsetValues.count == 6 else {
-                return
-            }
-
-            let scaleX = scaleOffsetValues[0]
-            let scaleY = scaleOffsetValues[1]
-            let offsetX = scaleOffsetValues[2]
-            let offsetY = scaleOffsetValues[3]
-            
-            let tempOffsetX = abs(mapImageView.bounds.width - (scaleX * mapImageView.bounds.width))
-            let offsetXByScale = scaleX < 1.0 ? (tempOffsetX / 2) : -(tempOffsetX / 2)
-            
-            let x = xyh[0]
-            let y = xyh[1]
-            
-            // Calculate transformed coordinates of the target point
-            let transformedX = ((x - offsetX) * scaleX) + offsetXByScale
-            let transformedY = ((y - offsetY) * scaleY)
-            
-            let rotatedX = transformedX
-            let rotatedY = scaleOffsetValues[5] - transformedY
-            
-            // Remove any existing user coordinate point
-            if let existingPointView = mapImageView.viewWithTag(userCoordTag) {
-                existingPointView.removeFromSuperview()
-            }
-            
-            // Create the user coordinate point at the specified location
             let coordSize: CGFloat = 14
             let pointView = UIView(frame: CGRect(x: rotatedX - coordSize / 2, y: rotatedY - coordSize / 2, width: coordSize, height: coordSize))
             pointView.backgroundColor = .systemRed
             pointView.layer.cornerRadius = coordSize / 2
             pointView.tag = userCoordTag
             mapImageView.addSubview(pointView)
+            
+            if mode == .MAP_ONLY {
+                
+            } else {
+                let scaleFactor: CGFloat = 1.0
+                scrollView.setZoomScale(scaleFactor, animated: true)
 
-            // Set the scroll view's zoom scale
-            let scaleFactor: CGFloat = 2.0
-            scrollView.setZoomScale(scaleFactor, animated: true)
-
-            // Center `pointView` within the scroll view
-            let centeredX = rotatedX * scaleFactor - scrollView.bounds.width / 2
-            let centeredY = rotatedY * scaleFactor - scrollView.bounds.height / 2
-            scrollView.setContentOffset(CGPoint(x: centeredX, y: centeredY), animated: true)
-
+                let rotationAngle = heading * (.pi/180)
+                let centeredX = rotatedX * scaleFactor - scrollView.bounds.width / 2
+                let centeredY = (rotatedY * scaleFactor - scrollView.bounds.height / 2) - USER_CENTER_OFFSET
+                
+                mapImageView.transform = CGAffineTransform.identity
+                                .translatedBy(x: centeredX, y: centeredY)
+                                .rotated(by: rotationAngle)
+                                .translatedBy(x: -centeredX, y: -centeredY)
+                
+                
+                scrollView.setContentOffset(CGPoint(x: centeredX, y: centeredY), animated: true)
+            }
+            
             self.preXyh = xyh
         }
     }
-
-
 
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if collectionView == buildingsCollectionView {
@@ -463,7 +479,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             } else {
                 label.textColor = .black
                 cell.backgroundColor = .systemGray6
-                cell.layer.borderWidth = 1
+                cell.layer.borderWidth = 0
                 cell.layer.borderColor = UIColor.black.cgColor
             }
             
@@ -487,7 +503,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             } else {
                 label.textColor = .black
                 cell.backgroundColor = .systemGray6
-                cell.layer.borderWidth = 1
+                cell.layer.borderWidth = 0
                 cell.layer.borderColor = UIColor.black.cgColor
             }
             cell.contentView.addSubview(label)
@@ -581,6 +597,8 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         let levelChanged = selectedLevel != newLevel
         
         DispatchQueue.main.async { [self] in
+            self.velocityLabel.text = String(Int(round(result.velocity)))
+            
             if buildingChanged || levelChanged {
                 selectedBuilding = newBuilding
                 selectedLevel = newLevel
@@ -592,12 +610,27 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
                 updateMapImageView()
                 updatePathPixel()
             }
-            self.plotScaleUpUserCoord(xyh: [result.x, result.y, result.absolute_heading])
+            self.plotUserCoord(xyh: [result.x, result.y, result.absolute_heading])
         }
     }
     
     public func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         return mapImageView
+    }
+    
+    private func controlMapMode() {
+        if mode == .MAP_ONLY {
+            
+        } else {
+            
+        }
+    }
+    
+    private func controlMapDirection(heading: Double) {
+        if userHeadingBuffer.count > 5 {
+            userHeadingBuffer.remove(at: 0)
+        }
+        userHeadingBuffer.append(heading)
     }
 }
 
