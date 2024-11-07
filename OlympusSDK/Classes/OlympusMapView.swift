@@ -133,7 +133,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
     
     private func setupMapImageView() {
         scrollView.frame = self.bounds
-        scrollView.backgroundColor = .systemYellow
+        scrollView.backgroundColor = .clear
         scrollView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         scrollView.minimumZoomScale = 1.0
         scrollView.maximumZoomScale = 4.0
@@ -142,7 +142,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         addSubview(scrollView)
         
         mapImageView.contentMode = .scaleAspectFit
-        mapImageView.backgroundColor = .systemBlue
+        mapImageView.backgroundColor = .clear
         mapImageView.frame = scrollView.bounds
         mapImageView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         scrollView.addSubview(mapImageView)
@@ -443,7 +443,71 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
 //            self.preXyh = xyh
 //        }
 //    }
-
+    
+    // MARK: - Plot without Scale Up
+//    private func plotUserCoord(xyh: [Double]) {
+//        DispatchQueue.main.async { [self] in
+//            if preXyh == xyh {
+//                return
+//            }
+//
+//            let key = "\(OlympusMapManager.shared.sector_id)_\(selectedBuilding ?? "")_\(selectedLevel ?? "")"
+//            guard let scaleOffsetValues = mapScaleOffset[key], scaleOffsetValues.count == 6 else {
+//                return
+//            }
+//
+//            let scaleX = scaleOffsetValues[0]
+//            let scaleY = scaleOffsetValues[1]
+//            let offsetX = scaleOffsetValues[2]
+//            let offsetY = scaleOffsetValues[3]
+//            
+//            let tempOffsetX = abs(mapImageView.bounds.width - (scaleX * mapImageView.bounds.width))
+//            let offsetXByScale = scaleX < 1.0 ? (tempOffsetX / 2) : -(tempOffsetX / 2)
+//            
+//            let x = xyh[0]
+//            let y = xyh[1]
+//            let heading = xyh[2]
+//
+//            // Reset the transform to ensure consistent rotation and translation
+//            mapImageView.transform = .identity
+//
+//            // Calculate transformed coordinates within the unrotated `mapImageView`
+//            let transformedX = ((x - offsetX) * scaleX) + offsetXByScale
+//            let transformedY = ((y - offsetY) * scaleY)
+//            let rotatedX = transformedX
+//            let rotatedY = scaleOffsetValues[5] - transformedY
+//
+//            // Apply rotation to `mapImageView`
+//            let rotationAngle = CGFloat((heading - 90) * .pi / 180)
+//            mapImageView.transform = CGAffineTransform(rotationAngle: rotationAngle)
+//
+//            // Create or update `pointView`
+//            if let existingPointView = mapImageView.viewWithTag(userCoordTag) {
+//                existingPointView.removeFromSuperview()
+//            }
+//            let coordSize: CGFloat = 14
+//            let radius = coordSize / 2
+//            let pointView = CircleView(frame: CGRect(x: rotatedX - radius, y: rotatedY - radius, width: coordSize, height: coordSize), radius: radius)
+//            pointView.tag = userCoordTag
+//            mapImageView.addSubview(pointView)
+//            
+//            // Calculate translation required to keep `pointView` in the center of `self`
+//            let mapCenterX = bounds.midX
+//            let mapCenterY = bounds.midY
+//            let pointViewCenterInSelf = scrollView.convert(pointView.center, to: self)
+//            
+//            let translationX = mapCenterX - pointViewCenterInSelf.x
+//            let translationY = mapCenterY - pointViewCenterInSelf.y
+//
+//            // Apply translation to `mapImageView`
+//            mapImageView.transform = mapImageView.transform.translatedBy(x: translationX, y: translationY)
+//
+//            // Store the previous coordinates
+//            self.preXyh = xyh
+//        }
+//    }
+    
+    // MARK: - Plot Rotation & Scale Up
     private func plotUserCoord(xyh: [Double]) {
         DispatchQueue.main.async { [self] in
             if preXyh == xyh {
@@ -459,54 +523,50 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             let scaleY = scaleOffsetValues[1]
             let offsetX = scaleOffsetValues[2]
             let offsetY = scaleOffsetValues[3]
-            
+                
             let tempOffsetX = abs(mapImageView.bounds.width - (scaleX * mapImageView.bounds.width))
             let offsetXByScale = scaleX < 1.0 ? (tempOffsetX / 2) : -(tempOffsetX / 2)
-            
+                
             let x = xyh[0]
             let y = xyh[1]
             let heading = xyh[2]
 
-            // Reset the transform to ensure consistent rotation and translation
             mapImageView.transform = .identity
-
-            // Calculate transformed coordinates within the unrotated `mapImageView`
             let transformedX = ((x - offsetX) * scaleX) + offsetXByScale
             let transformedY = ((y - offsetY) * scaleY)
             let rotatedX = transformedX
             let rotatedY = scaleOffsetValues[5] - transformedY
 
-            // Apply rotation to `mapImageView`
-            let rotationAngle = CGFloat((heading - 90) * .pi / 180)
-            mapImageView.transform = CGAffineTransform(rotationAngle: rotationAngle)
-
-            // Create or update `pointView`
             if let existingPointView = mapImageView.viewWithTag(userCoordTag) {
                 existingPointView.removeFromSuperview()
             }
+            
             let coordSize: CGFloat = 14
-            let pointView = UIView(frame: CGRect(x: rotatedX - coordSize / 2, y: rotatedY - coordSize / 2, width: coordSize, height: coordSize))
-            pointView.backgroundColor = .systemRed
-            pointView.layer.cornerRadius = coordSize / 2
+            let radius = coordSize / 2
+            let pointView = CircleView(frame: CGRect(x: rotatedX - radius, y: rotatedY - radius, width: coordSize, height: coordSize), radius: radius)
             pointView.tag = userCoordTag
             mapImageView.addSubview(pointView)
-            
-            // Calculate translation required to keep `pointView` in the center of `self`
+
+            let rotationAngle = CGFloat((heading - 90) * .pi / 180)
+                
+            let scaleFactor: CGFloat = 4.0
+            mapImageView.transform = CGAffineTransform(rotationAngle: rotationAngle)
+                    .scaledBy(x: scaleFactor, y: scaleFactor)
+
             let mapCenterX = bounds.midX
             let mapCenterY = bounds.midY
             let pointViewCenterInSelf = scrollView.convert(pointView.center, to: self)
-            
-            let translationX = mapCenterX - pointViewCenterInSelf.x
-            let translationY = mapCenterY - pointViewCenterInSelf.y
+                
+            let dx = -USER_CENTER_OFFSET*cos(heading*(.pi / 180))
+            let dy = USER_CENTER_OFFSET*sin(heading*(.pi / 180))
+                
+            var translationX = mapCenterX - pointViewCenterInSelf.x + dx
+            var translationY = mapCenterY - pointViewCenterInSelf.y + dy
 
-            // Apply translation to `mapImageView`
             mapImageView.transform = mapImageView.transform.translatedBy(x: translationX, y: translationY)
-
-            // Store the previous coordinates
             self.preXyh = xyh
         }
     }
-
     
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if collectionView == buildingsCollectionView {
@@ -696,3 +756,39 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
     }
 }
 
+import UIKit
+
+class CircleView: UIView {
+    private var radius: CGFloat = 0.0
+    
+    init(frame: CGRect, radius: CGFloat) {
+        super.init(frame: frame)
+        self.radius = radius
+        self.backgroundColor = .clear
+        drawCircle()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        drawCircle()
+    }
+    
+    private func drawCircle() {
+        let circleLayer = CAShapeLayer()
+
+        let circlePath = UIBezierPath(
+            arcCenter: CGPoint(x: bounds.midX, y: bounds.midY),
+            radius: radius,
+            startAngle: 0,
+            endAngle: CGFloat.pi * 2,
+            clockwise: true
+        )
+        
+        circleLayer.path = circlePath.cgPath
+        circleLayer.fillColor = UIColor.systemRed.cgColor
+        circleLayer.strokeColor = UIColor.clear.cgColor
+        circleLayer.lineWidth = 0
+        
+        layer.addSublayer(circleLayer)
+    }
+}
