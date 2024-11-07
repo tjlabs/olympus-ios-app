@@ -531,7 +531,6 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             let y = xyh[1]
             let heading = xyh[2]
 
-            mapImageView.transform = .identity
             let transformedX = ((x - offsetX) * scaleX) + offsetXByScale
             let transformedY = ((y - offsetY) * scaleY)
             let rotatedX = transformedX
@@ -540,7 +539,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             if let existingPointView = mapImageView.viewWithTag(userCoordTag) {
                 existingPointView.removeFromSuperview()
             }
-            
+
             let coordSize: CGFloat = 14
             let radius = coordSize / 2
             let pointView = CircleView(frame: CGRect(x: rotatedX - radius, y: rotatedY - radius, width: coordSize, height: coordSize), radius: radius)
@@ -548,22 +547,26 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             mapImageView.addSubview(pointView)
 
             let rotationAngle = CGFloat((heading - 90) * .pi / 180)
-                
             let scaleFactor: CGFloat = 4.0
-            mapImageView.transform = CGAffineTransform(rotationAngle: rotationAngle)
-                    .scaledBy(x: scaleFactor, y: scaleFactor)
-
             let mapCenterX = bounds.midX
             let mapCenterY = bounds.midY
             let pointViewCenterInSelf = scrollView.convert(pointView.center, to: self)
                 
-            let dx = -USER_CENTER_OFFSET*cos(heading*(.pi / 180))
-            let dy = USER_CENTER_OFFSET*sin(heading*(.pi / 180))
+            let dx = -USER_CENTER_OFFSET * cos(heading * (.pi / 180))
+            let dy = USER_CENTER_OFFSET * sin(heading * (.pi / 180))
                 
-            var translationX = mapCenterX - pointViewCenterInSelf.x + dx
-            var translationY = mapCenterY - pointViewCenterInSelf.y + dy
-
-            mapImageView.transform = mapImageView.transform.translatedBy(x: translationX, y: translationY)
+            let translationX = mapCenterX - pointViewCenterInSelf.x + dx
+            let translationY = mapCenterY - pointViewCenterInSelf.y + dy
+            
+            // Smooth Animation
+            UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseInOut, animations: {
+                self.mapImageView.transform = CGAffineTransform(rotationAngle: rotationAngle)
+                    .scaledBy(x: scaleFactor, y: scaleFactor)
+                    .translatedBy(x: translationX, y: translationY)
+            }, completion: nil)
+            
+            // without Animation
+//            mapImageView.transform = mapImageView.transform.translatedBy(x: translationX, y: translationY)
             self.preXyh = xyh
         }
     }
@@ -755,8 +758,6 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         let diffHeading = majorHeading - mapHeading
     }
 }
-
-import UIKit
 
 class CircleView: UIView {
     private var radius: CGFloat = 0.0
