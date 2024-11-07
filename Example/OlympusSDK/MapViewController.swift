@@ -43,7 +43,7 @@ class MapViewController: UIViewController, Observer {
     
     private func startOlympus() {
         let uniqueId = makeUniqueId(uuid: self.userId)
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_04_01_1007.csv", sensorFileName: "sensor_coex_04_01_1007.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
         serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_dr_03_1030.csv", sensorFileName: "sensor_coex_dr_03_1030.csv")
         
         serviceManager.addObserver(self)
