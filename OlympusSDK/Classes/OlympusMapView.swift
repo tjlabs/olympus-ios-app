@@ -606,35 +606,41 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             if let bundleURL = Bundle(for: OlympusSDK.OlympusMapView.self).url(forResource: "OlympusSDK", withExtension: "bundle"),
                let resourceBundle = Bundle(url: bundleURL),
                let markerImage = UIImage(named: "map_marker", in: resourceBundle, compatibleWith: nil) {
+                let coordSize: CGFloat = 14
+                let pointView = UIImageView(image: markerImage)
+                pointView.frame = CGRect(x: rotatedX - coordSize / 2, y: rotatedY - coordSize / 2, width: coordSize, height: coordSize)
+                pointView.tag = userCoordTag
+                
+                // Adding shadow effect to pointView
+                pointView.layer.shadowColor = UIColor.black.cgColor
+                pointView.layer.shadowOpacity = 0.25
+                pointView.layer.shadowOffset = CGSize(width: 0, height: 2)
+                pointView.layer.shadowRadius = 2
+                
+                mapImageView.addSubview(pointView)
+
+                let rotationAngle = CGFloat((heading - 90) * .pi / 180)
+                let scaleFactor: CGFloat = 6.0
+                let mapCenterX = bounds.midX
+                let mapCenterY = bounds.midY
+                let pointViewCenterInSelf = scrollView.convert(pointView.center, to: self)
+                    
+                let dx = -USER_CENTER_OFFSET * cos(heading * (.pi / 180))
+                let dy = USER_CENTER_OFFSET * sin(heading * (.pi / 180))
+                    
+                let translationX = mapCenterX - pointViewCenterInSelf.x + dx
+                let translationY = mapCenterY - pointViewCenterInSelf.y + dy
+                
+                UIView.animate(withDuration: 0.55, delay: 0, options: .curveEaseInOut, animations: {
+                    self.mapImageView.transform = CGAffineTransform(rotationAngle: rotationAngle)
+                        .scaledBy(x: scaleFactor, y: scaleFactor)
+                        .translatedBy(x: translationX, y: translationY)
+                }, completion: nil)
+                
+                pointView.transform = CGAffineTransform(rotationAngle: -rotationAngle)
             } else {
                 print(getLocalTimeString() + " , (Olympus) Error : Could not load map_marker.png from bundle.")
             }
-            
-            let markerImage = UIImage(named: "map_marker", in: Bundle(for: OlympusSDK.OlympusMapView.self), compatibleWith: nil)
-            let coordSize: CGFloat = 14
-            let pointView = UIImageView(image: markerImage)
-            pointView.frame = CGRect(x: rotatedX - coordSize / 2, y: rotatedY - coordSize / 2, width: coordSize, height: coordSize)
-            pointView.tag = userCoordTag
-            mapImageView.addSubview(pointView)
-
-            let rotationAngle = CGFloat((heading - 90) * .pi / 180)
-            let scaleFactor: CGFloat = 6.0
-            let mapCenterX = bounds.midX
-            let mapCenterY = bounds.midY
-            let pointViewCenterInSelf = scrollView.convert(pointView.center, to: self)
-                
-            let dx = -USER_CENTER_OFFSET * cos(heading * (.pi / 180))
-            let dy = USER_CENTER_OFFSET * sin(heading * (.pi / 180))
-                
-            let translationX = mapCenterX - pointViewCenterInSelf.x + dx
-            let translationY = mapCenterY - pointViewCenterInSelf.y + dy
-            
-            // Smooth Animation
-            UIView.animate(withDuration: 0.55, delay: 0, options: .curveEaseInOut, animations: {
-                self.mapImageView.transform = CGAffineTransform(rotationAngle: rotationAngle)
-                    .scaledBy(x: scaleFactor, y: scaleFactor)
-                    .translatedBy(x: translationX, y: translationY)
-            }, completion: nil)
 
             self.preXyh = xyh
         }

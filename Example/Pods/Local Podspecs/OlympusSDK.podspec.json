@@ -1,6 +1,6 @@
 {
   "name": "OlympusSDK",
-  "version": "0.0.5",
+  "version": "0.1.12",
   "summary": "OlympusSDK for iOS",
   "swift_versions": "5.0",
   "platforms": {
@@ -17,9 +17,14 @@
   },
   "source": {
     "git": "https://github.com/tjlabs/olympus-ios-app.git",
-    "tag": "0.0.5"
+    "tag": "0.1.12"
   },
   "source_files": "OlympusSDK/Classes/**/*",
   "static_framework": true,
+  "resource_bundles": {
+    "OlympusSDK": [
+      "OlympusSDK/Assets/*.png"
+    ]
+  },
   "swift_version": "5.0"
 }

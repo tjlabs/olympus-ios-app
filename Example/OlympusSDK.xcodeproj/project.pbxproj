@@ -285,6 +285,7 @@
 				607FACCE1AFB9204008FA782 /* Resources */,
 				325EF3297276DEAC9D7FB42F /* [CP] Embed Pods Frameworks */,
 				B3787E572BDA45F800D5EEBC /* ShellScript */,
+				DDD39AB78A6B97C3B30A5341 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -497,6 +498,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n\"${PODS_ROOT}/FirebaseCrashlytics/run\"\n\"${PODS_ROOT}/FirebaseCrashlytics/upload-symbols\" -gsp ${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/GoogleService-Info.plist -p ios ${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}\n";
+		};
+		DDD39AB78A6B97C3B30A5341 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-OlympusSDK_Example/Pods-OlympusSDK_Example-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/OlympusSDK/OlympusSDK.bundle",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/OlympusSDK.bundle",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-OlympusSDK_Example/Pods-OlympusSDK_Example-resources.sh\"\n";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 

@@ -51,10 +51,25 @@ public func isResultHeadingStraight(unitDRInfoBuffer: [UnitDRInfo], fltResult: F
     
     var matchedIndex: Int = -1
     var headingBuffer = [Double]()
+//    
+//    for i in 0..<unitDRInfoBuffer.count {
+//        let drBufferIndex = unitDRInfoBuffer[i].index
+//        if (drBufferIndex == resultIndex) {
+//            matchedIndex = i
+//        }
+//        
+//        if drBufferIndex >= resultIndex {
+//            headingBuffer.append(compensateHeading(heading: unitDRInfoBuffer[i].heading))
+//        }
+//    }
     
     for i in 0..<unitDRInfoBuffer.count {
+        guard i < unitDRInfoBuffer.count else {
+            matchedIndex = -1
+            break
+        }
         let drBufferIndex = unitDRInfoBuffer[i].index
-        if (drBufferIndex == resultIndex) {
+        if drBufferIndex == resultIndex {
             matchedIndex = i
         }
         
@@ -62,17 +77,17 @@ public func isResultHeadingStraight(unitDRInfoBuffer: [UnitDRInfo], fltResult: F
             headingBuffer.append(compensateHeading(heading: unitDRInfoBuffer[i].heading))
         }
     }
-    
+
     if (matchedIndex != -1 && matchedIndex >= 4) {
-        var startHeading: Double = 0
-        var endHeading: Double = 0
-        if (unitDRInfoBuffer.count < OlympusConstants.HEADING_BUFFER_SIZE) {
-            startHeading = unitDRInfoBuffer[0].heading
-            endHeading = unitDRInfoBuffer[matchedIndex].heading
-        } else {
-            startHeading = unitDRInfoBuffer[matchedIndex-4].heading
-            endHeading = unitDRInfoBuffer[matchedIndex].heading
-        }
+//        var startHeading: Double = 0
+//        var endHeading: Double = 0
+//        if (unitDRInfoBuffer.count < OlympusConstants.HEADING_BUFFER_SIZE) {
+//            startHeading = unitDRInfoBuffer[0].heading
+//            endHeading = unitDRInfoBuffer[matchedIndex].heading
+//        } else {
+//            startHeading = unitDRInfoBuffer[matchedIndex-4].heading
+//            endHeading = unitDRInfoBuffer[matchedIndex].heading
+//        }
         let headingStd = circularStandardDeviation(for: headingBuffer)
 //        print(getLocalTimeString() + " , (Olympus) Heading Std : headingStd = \(headingStd) count = \(headingBuffer.count) , diffHeading = \(abs(endHeading - startHeading))")
         isStraight = headingStd <= 2 ? true : false
