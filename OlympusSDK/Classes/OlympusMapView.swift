@@ -7,6 +7,16 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         case UPDATE_USER
     }
     
+    enum ZoomMode {
+        case ZOOM_IN
+        case ZOOM_OUT
+    }
+    
+    enum PlotType {
+        case NORMAL
+        case FORCE
+    }
+    
     private var mapImageView = UIImageView()
     private var buildingsCollectionView: UICollectionView!
     private var levelsCollectionView: UICollectionView!
@@ -41,7 +51,9 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
     private var mapHeading: Double = 0
     private let userCoordTag = 999
     
-    private var mode: MapMode = .UPDATE_USER
+    private var mode: MapMode = .MAP_ONLY
+    private var zoomMode: ZoomMode = .ZOOM_OUT
+    
     private var modeChangedTime = 0
     private let USER_CENTER_OFFSET: CGFloat = 30 // 150
     
@@ -125,6 +137,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         setupCollectionViews()
         setupLabels()
         setupButtons()
+        setupButtonActions()
     }
     
     private func setupLabels() {
@@ -152,7 +165,8 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             button.contentEdgeInsets = UIEdgeInsets(top: 6, left: 6, bottom: 6, right: 6)
         }
         
-        zoomButton.setImage(imageZoomOut, for: .normal)
+        zoomButton.isHidden = true
+        zoomButton.setImage(imageZoomIn, for: .normal)
         zoomButton.translatesAutoresizingMaskIntoConstraints = false
         zoomButton.widthAnchor.constraint(equalToConstant: 40).isActive = true
         zoomButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
@@ -167,15 +181,67 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         addSubview(myLocationButton)
 
         NSLayoutConstraint.activate([
-            zoomButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -20),
-            zoomButton.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -20),
+            myLocationButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -20),
+            myLocationButton.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -20),
 
-            myLocationButton.trailingAnchor.constraint(equalTo: zoomButton.trailingAnchor),
-            myLocationButton.bottomAnchor.constraint(equalTo: zoomButton.topAnchor, constant: -10)
+            zoomButton.trailingAnchor.constraint(equalTo: myLocationButton.trailingAnchor),
+            zoomButton.bottomAnchor.constraint(equalTo: myLocationButton.topAnchor, constant: -10)
         ])
     }
-
-
+    
+    private func setupButtonActions() {
+        myLocationButton.addTarget(self, action: #selector(myLocationButtonTapped), for: .touchUpInside)
+        zoomButton.addTarget(self, action: #selector(zoomButtonTapped), for: .touchUpInside)
+    }
+    
+    @objc private func myLocationButtonTapped() {
+        forceToZoomInMode()
+//        toggleZoomMode(to: .ZOOM_OUT)
+//        perform(#selector(returnToZoomInMode), with: nil, afterDelay: 3.0)
+    }
+    
+    private func forceToZoomInMode() {
+        if zoomMode == .ZOOM_OUT {
+            toggleZoomMode(to: .ZOOM_IN)
+            if !preXyh.isEmpty {
+                plotUserCoordWithZoomAndRotation(xyh: preXyh, type: .FORCE)
+            }
+        } else {
+            if !preXyh.isEmpty {
+                plotUserCoordWithZoomAndRotation(xyh: preXyh, type: .FORCE)
+            }
+        }
+    }
+        
+    @objc private func zoomButtonTapped() {
+        toggleZoomMode()
+    }
+        
+    private func toggleZoomMode(to mode: ZoomMode? = nil) {
+        zoomMode = mode ?? (zoomMode == .ZOOM_IN ? .ZOOM_OUT : .ZOOM_IN)
+        DispatchQueue.main.async { [self] in
+            zoomButton.setImage(zoomMode == .ZOOM_IN ? imageZoomOut : imageZoomIn, for: .normal)
+        }
+        
+        if zoomMode == .ZOOM_IN {
+            // 현재 확대 모드
+            if !preXyh.isEmpty {
+                plotUserCoordWithZoomAndRotation(xyh: preXyh, type: .FORCE)
+            }
+        } else {
+            modeChangedTime = getCurrentTimeInMilliseconds()
+            // 현재 전체 모드
+            if !preXyh.isEmpty {
+                plotUserCoord(xyh: preXyh)
+            }
+        }
+    }
+        
+    @objc private func returnToZoomInMode() {
+        if zoomMode == .ZOOM_OUT {
+            toggleZoomMode(to: .ZOOM_IN)
+        }
+    }
     
     private func setupAssets() {
         if let bundleURL = Bundle(for: OlympusSDK.OlympusMapView.self).url(forResource: "OlympusSDK", withExtension: "bundle") {
@@ -481,9 +547,30 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             let rotatedX = transformedX
             let rotatedY = scaleOffsetValues[5] - transformedY
             
+            mapImageView.transform = .identity
             if let existingPointView = mapImageView.viewWithTag(userCoordTag) {
                 existingPointView.removeFromSuperview()
             }
+            
+//            if let bundleURL = Bundle(for: OlympusSDK.OlympusMapView.self).url(forResource: "OlympusSDK", withExtension: "bundle"),
+//               let resourceBundle = Bundle(url: bundleURL),
+//               let markerImage = UIImage(named: "map_marker", in: resourceBundle, compatibleWith: nil) {
+//                let marker = markerImage
+//                let coordSize: CGFloat = 30
+//                let pointView = UIImageView(image: marker)
+//                pointView.frame = CGRect(x: rotatedX - coordSize / 2, y: rotatedY - coordSize / 2, width: coordSize, height: coordSize)
+//                pointView.tag = userCoordTag
+//
+//                pointView.layer.shadowColor = UIColor.black.cgColor
+//                pointView.layer.shadowOpacity = 0.25
+//                pointView.layer.shadowOffset = CGSize(width: 0, height: 2)
+//                pointView.layer.shadowRadius = 2
+//                
+//                let rotationAngle = CGFloat(-(heading - 90) * .pi / 180)
+//                pointView.transform = CGAffineTransform(rotationAngle: rotationAngle)
+//                
+//                mapImageView.addSubview(pointView)
+//            }
             
             let marker = self.imageMapMarker
             let coordSize: CGFloat = 30
@@ -496,7 +583,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             pointView.layer.shadowOffset = CGSize(width: 0, height: 2)
             pointView.layer.shadowRadius = 2
             
-            let rotationAngle = CGFloat((heading - 90) * .pi / 180)
+            let rotationAngle = CGFloat(-(heading - 90) * .pi / 180)
             pointView.transform = CGAffineTransform(rotationAngle: rotationAngle)
             
             mapImageView.addSubview(pointView)
@@ -629,9 +716,9 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
 //        }
 //    }
     
-    private func plotUserCoordWithZoomAndRotation(xyh: [Double]) {
+    private func plotUserCoordWithZoomAndRotation(xyh: [Double], type: PlotType) {
         DispatchQueue.main.async { [self] in
-            if preXyh == xyh {
+            if preXyh == xyh && type == .NORMAL {
                 return
             }
 
@@ -835,6 +922,14 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
     }
     
     public func updateResultInMap(result: FineLocationTrackingResult) {
+        if mode != .UPDATE_USER {
+            mode = .UPDATE_USER
+            toggleZoomMode(to: .ZOOM_IN)
+            DispatchQueue.main.async { [self] in
+                zoomButton.isHidden = false
+            }
+        }
+        
         let newBuilding = result.building_name
         let newLevel = result.level_name
         
@@ -855,21 +950,25 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
                 updateMapImageView()
                 updatePathPixel()
             }
+            
+            if zoomMode == .ZOOM_IN {
+                plotUserCoordWithZoomAndRotation(xyh: [result.x, result.y, result.absolute_heading], type: .NORMAL)
+            } else {
+                // 모드 전환 시기 확인
+                if (getCurrentTimeInMilliseconds() - modeChangedTime) > 3*1000 && modeChangedTime != 0 {
+                    toggleZoomMode()
+                    plotUserCoordWithZoomAndRotation(xyh: [result.x, result.y, result.absolute_heading], type: .FORCE)
+                } else {
+                    plotUserCoord(xyh: [result.x, result.y, result.absolute_heading])
+                }
+            }
 //            self.plotUserCoord(xyh: [result.x, result.y, result.absolute_heading])
-            self.plotUserCoordWithZoomAndRotation(xyh: [result.x, result.y, result.absolute_heading])
+//            self.plotUserCoordWithZoomAndRotation(xyh: [result.x, result.y, result.absolute_heading])
         }
     }
     
     public func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         return mapImageView
-    }
-    
-    private func controlMapMode() {
-        if mode == .MAP_ONLY {
-            
-        } else {
-            
-        }
     }
     
     private func controlMapDirection(heading: Double) {
