@@ -12,6 +12,13 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
     private var levelsCollectionView: UICollectionView!
     private let scrollView = UIScrollView()
     private let velocityLabel = UILabel()
+    private let myLocationButton = UIButton()
+    private let zoomButton = UIButton()
+    
+    private var imageMapMarker: UIImage?
+    private var imageZoomIn: UIImage?
+    private var imageZoomOut: UIImage?
+    private var imageMyLocation: UIImage?
     
     private var buildingData = [String]()
     private var levelData = [String]()
@@ -35,10 +42,12 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
     private let userCoordTag = 999
     
     private var mode: MapMode = .UPDATE_USER
+    private var modeChangedTime = 0
     private let USER_CENTER_OFFSET: CGFloat = 30 // 150
     
     public override init(frame: CGRect) {
         super.init(frame: frame)
+        setupAssets()
         setupView()
         observeImageUpdates()
         observePathPixelUpdates()
@@ -47,6 +56,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
     
     required init?(coder: NSCoder) {
         super.init(coder: coder)
+        setupAssets()
         setupView()
         observeImageUpdates()
         observePathPixelUpdates()
@@ -114,6 +124,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         setupMapImageView()
         setupCollectionViews()
         setupLabels()
+        setupButtons()
     }
     
     private func setupLabels() {
@@ -123,12 +134,81 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         velocityLabel.font = UIFont.boldSystemFont(ofSize: 50)
         velocityLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(velocityLabel)
-            
-        // Set up velocityLabel constraints
+        
         NSLayoutConstraint.activate([
             velocityLabel.topAnchor.constraint(equalTo: self.topAnchor, constant: 40),
             velocityLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 40)
         ])
+    }
+    
+    private func setupButtons() {
+        func styleButton(_ button: UIButton) {
+            button.backgroundColor = .white
+            button.layer.cornerRadius = 8
+            button.layer.shadowColor = UIColor.black.cgColor
+            button.layer.shadowOpacity = 0.2
+            button.layer.shadowOffset = CGSize(width: 0, height: 4)
+            button.layer.shadowRadius = 4
+            button.contentEdgeInsets = UIEdgeInsets(top: 6, left: 6, bottom: 6, right: 6)
+        }
+        
+        zoomButton.setImage(imageZoomOut, for: .normal)
+        zoomButton.translatesAutoresizingMaskIntoConstraints = false
+        zoomButton.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        zoomButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        styleButton(zoomButton)
+        addSubview(zoomButton)
+
+        myLocationButton.setImage(imageMyLocation, for: .normal)
+        myLocationButton.translatesAutoresizingMaskIntoConstraints = false
+        myLocationButton.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        myLocationButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        styleButton(myLocationButton)
+        addSubview(myLocationButton)
+
+        NSLayoutConstraint.activate([
+            zoomButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -20),
+            zoomButton.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -20),
+
+            myLocationButton.trailingAnchor.constraint(equalTo: zoomButton.trailingAnchor),
+            myLocationButton.bottomAnchor.constraint(equalTo: zoomButton.topAnchor, constant: -10)
+        ])
+    }
+
+
+    
+    private func setupAssets() {
+        if let bundleURL = Bundle(for: OlympusSDK.OlympusMapView.self).url(forResource: "OlympusSDK", withExtension: "bundle") {
+            if let resourceBundle = Bundle(url: bundleURL) {
+                if let mapMarker = UIImage(named: "icon_mapMarker", in: resourceBundle, compatibleWith: nil) {
+                    self.imageMapMarker = mapMarker
+                } else {
+                    print(getLocalTimeString() + " , (Olympus) Error : Could not load icon_mapMarker.png from bundle.")
+                }
+                
+                if let zoomIn = UIImage(named: "icon_zoomIn", in: resourceBundle, compatibleWith: nil) {
+                    self.imageZoomIn = zoomIn
+                } else {
+                    print(getLocalTimeString() + " , (Olympus) Error : Could not load icon_zoomIn.png from bundle.")
+                }
+                
+                if let zoomOut = UIImage(named: "icon_zoomOut", in: resourceBundle, compatibleWith: nil) {
+                    self.imageZoomOut = zoomOut
+                } else {
+                    print(getLocalTimeString() + " , (Olympus) Error : Could not load icon_zoomOut.png from bundle.")
+                }
+                
+                if let myLocation = UIImage(named: "icon_myLocation", in: resourceBundle, compatibleWith: nil) {
+                    self.imageMyLocation = myLocation
+                } else {
+                    print(getLocalTimeString() + " , (Olympus) Error : Could not load icon_myLocation.png from bundle.")
+                }
+            } else {
+                print(getLocalTimeString() + " , (Olympus) Error : Could not load resourceBundle")
+            }
+        } else {
+            print(getLocalTimeString() + " , (Olympus) Error : Could not load bundleURL")
+        }
     }
     
     private func setupMapImageView() {
@@ -294,10 +374,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
     
     private func calMapScaleOffset(ppCoord: [[Double]]) {
         DispatchQueue.main.async { [self] in
-            guard let image = mapImageView.image else {
-//                print(getLocalTimeString() + " , (Olympus) MapView : image is not loaded")
-                return
-            }
+            guard let image = mapImageView.image else { return }
             
             let imageSize = image.size
             let imageViewSize = mapImageView.bounds.size
@@ -332,17 +409,12 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
 
             let scaleX = scaledSize.width / ppWidth
             let scaleY = scaledSize.height / ppHeight
-            
-//            let offsetX = (scaledSize.width - ppWidth * scaleX) / 2.0
-//            let offsetY = (scaledSize.height - ppHeight * scaleY) / 2.0
+
             let offsetX = minX
             let offsetY = minY
             
             let key = "\(OlympusMapManager.shared.sector_id)_\(selectedBuilding ?? "")_\(selectedLevel ?? "")"
             mapScaleOffset[key] = [scaleX, scaleY, offsetX, offsetY, scaledSize.width, scaledSize.height]
-            
-//            print(getLocalTimeString() + " , (Olympus) MapView : \(key) // Path-Pixel Min and Max = [\(minX), \(maxX), \(minY), \(maxY)]")
-//            print(getLocalTimeString() + " , (Olympus) MapView : \(key) // Calculated Scale and Offset = [\(scaleX), \(scaleY), \(offsetX), \(offsetY)]")
         }
     }
 
@@ -350,11 +422,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         DispatchQueue.main.async { [self] in
             mapImageView.subviews.forEach { $0.removeFromSuperview() }
             let key = "\(OlympusMapManager.shared.sector_id)_\(selectedBuilding ?? "")_\(selectedLevel ?? "")"
-            guard let scaleOffsetValues = mapScaleOffset[key], scaleOffsetValues.count == 6 else {
-//                print(getLocalTimeString() + " , (Olympus) MapView : Scale and Offset not found for key \(key)")
-                return
-            }
-//            print(getLocalTimeString() + " , (Olympus) MapView : \(key) // scaleOffsetValues = \(scaleOffsetValues)")
+            guard let scaleOffsetValues = mapScaleOffset[key], scaleOffsetValues.count == 6 else { return }
             
             let scaleX = scaleOffsetValues[0]
             let scaleY = scaleOffsetValues[1]
@@ -363,17 +431,12 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             
             let tempOffsetX = abs(mapImageView.bounds.width - (scaleX*mapImageView.bounds.width))
             let offsetXByScale = scaleX < 1.0 ? (tempOffsetX/2) : -(tempOffsetX/2)
-            
-//            print(getLocalTimeString() + " , (Olympus) MapView : mapImageView.bounds.width = \(mapImageView.bounds.width) // scaleOffsetValues[4] = \(scaleOffsetValues[4])")
-//            print(getLocalTimeString() + " , (Olympus) MapView : offsetXByScale = \(offsetXByScale)")
-            
+
             var scaledXY = [[Double]]()
             for i in 0..<ppCoord[0].count {
                 let x = ppCoord[0][i]
                 let y = ppCoord[1][i]
-                
-//                let transformedX = ((x - offsetX)*scaleX)*currentScale + offsetXByScale + translationOffset.x
-//                let transformedY = ((y - offsetY)*scaleY)*currentScale + translationOffset.y
+
                 let transformedX = ((x - offsetX)*scaleX) + offsetXByScale
                 let transformedY = ((y - offsetY)*scaleY)
                 
@@ -389,60 +452,58 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         }
     }
 
-//    private func plotUserCoord(xyh: [Double]) {
-//        DispatchQueue.main.async { [self] in
-//            if preXyh == xyh {
-//                return
-//            }
-//            print(getLocalTimeString() + " , (Olympus) plotUserCoord : updateCoord \(xyh)")
-//            
-//            let key = "\(OlympusMapManager.shared.sector_id)_\(selectedBuilding ?? "")_\(selectedLevel ?? "")"
-//            guard let scaleOffsetValues = mapScaleOffset[key], scaleOffsetValues.count == 6 else {
-//                return
-//            }
-//
-//            let scaleX = scaleOffsetValues[0]
-//            let scaleY = scaleOffsetValues[1]
-//            let offsetX = scaleOffsetValues[2]
-//            let offsetY = scaleOffsetValues[3]
-//            
-//            let tempOffsetX = abs(mapImageView.bounds.width - (scaleX*mapImageView.bounds.width))
-//            let offsetXByScale = scaleX < 1.0 ? (tempOffsetX/2) : -(tempOffsetX/2)
-//            
-//            let x = xyh[0]
-//            let y = xyh[1]
-//            let heading = xyh[2]
-//            
-//            let transformedX = ((x - offsetX)*scaleX) + offsetXByScale
-//            let transformedY = ((y - offsetY)*scaleY)
-//            
-//            let rotatedX = transformedX
-//            let rotatedY = scaleOffsetValues[5] - transformedY
-//            
-//            if let existingPointView = mapImageView.viewWithTag(userCoordTag) {
-//                existingPointView.removeFromSuperview()
-//            }
-//            
-//            let coordSize: CGFloat = 14
-//            let pointView = UIView(frame: CGRect(x: rotatedX - coordSize / 2, y: rotatedY - coordSize / 2, width: coordSize, height: coordSize))
-//            pointView.backgroundColor = .systemRed
-//            pointView.layer.cornerRadius = coordSize / 2
-//            pointView.tag = userCoordTag
-//            mapImageView.addSubview(pointView)
-//            
-//            if mode == .MAP_ONLY {
-//                
-//            } else {
-//                let scaleFactor: CGFloat = 4.0
-//                scrollView.setZoomScale(scaleFactor, animated: true)
-//                let centeredX = rotatedX * scaleFactor - scrollView.bounds.width / 2
-//                let centeredY = rotatedY * scaleFactor - scrollView.bounds.height / 2 - USER_CENTER_OFFSET
-//                scrollView.setContentOffset(CGPoint(x: centeredX, y: centeredY), animated: true)
-//            }
-//            
-//            self.preXyh = xyh
-//        }
-//    }
+    private func plotUserCoord(xyh: [Double]) {
+        DispatchQueue.main.async { [self] in
+            if preXyh == xyh {
+                return
+            }
+            
+            let key = "\(OlympusMapManager.shared.sector_id)_\(selectedBuilding ?? "")_\(selectedLevel ?? "")"
+            guard let scaleOffsetValues = mapScaleOffset[key], scaleOffsetValues.count == 6 else {
+                return
+            }
+
+            let scaleX = scaleOffsetValues[0]
+            let scaleY = scaleOffsetValues[1]
+            let offsetX = scaleOffsetValues[2]
+            let offsetY = scaleOffsetValues[3]
+            
+            let tempOffsetX = abs(mapImageView.bounds.width - (scaleX*mapImageView.bounds.width))
+            let offsetXByScale = scaleX < 1.0 ? (tempOffsetX/2) : -(tempOffsetX/2)
+            
+            let x = xyh[0]
+            let y = xyh[1]
+            let heading = xyh[2]
+            
+            let transformedX = ((x - offsetX)*scaleX) + offsetXByScale
+            let transformedY = ((y - offsetY)*scaleY)
+            
+            let rotatedX = transformedX
+            let rotatedY = scaleOffsetValues[5] - transformedY
+            
+            if let existingPointView = mapImageView.viewWithTag(userCoordTag) {
+                existingPointView.removeFromSuperview()
+            }
+            
+            let marker = self.imageMapMarker
+            let coordSize: CGFloat = 30
+            let pointView = UIImageView(image: marker)
+            pointView.frame = CGRect(x: rotatedX - coordSize / 2, y: rotatedY - coordSize / 2, width: coordSize, height: coordSize)
+            pointView.tag = userCoordTag
+
+            pointView.layer.shadowColor = UIColor.black.cgColor
+            pointView.layer.shadowOpacity = 0.25
+            pointView.layer.shadowOffset = CGSize(width: 0, height: 2)
+            pointView.layer.shadowRadius = 2
+            
+            let rotationAngle = CGFloat((heading - 90) * .pi / 180)
+            pointView.transform = CGAffineTransform(rotationAngle: rotationAngle)
+            
+            mapImageView.addSubview(pointView)
+            
+            self.preXyh = xyh
+        }
+    }
     
     // MARK: - Plot without Scale Up
 //    private func plotUserCoord(xyh: [Double]) {
@@ -491,15 +552,12 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
 //            pointView.tag = userCoordTag
 //            mapImageView.addSubview(pointView)
 //            
-//            // Calculate translation required to keep `pointView` in the center of `self`
 //            let mapCenterX = bounds.midX
 //            let mapCenterY = bounds.midY
 //            let pointViewCenterInSelf = scrollView.convert(pointView.center, to: self)
 //            
 //            let translationX = mapCenterX - pointViewCenterInSelf.x
 //            let translationY = mapCenterY - pointViewCenterInSelf.y
-//
-//            // Apply translation to `mapImageView`
 //            mapImageView.transform = mapImageView.transform.translatedBy(x: translationX, y: translationY)
 //
 //            // Store the previous coordinates
@@ -571,7 +629,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
 //        }
 //    }
     
-    private func plotUserCoord(xyh: [Double]) {
+    private func plotUserCoordWithZoomAndRotation(xyh: [Double]) {
         DispatchQueue.main.async { [self] in
             if preXyh == xyh {
                 return
@@ -602,50 +660,43 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             if let existingPointView = mapImageView.viewWithTag(userCoordTag) {
                 existingPointView.removeFromSuperview()
             }
+            
+            let marker = self.imageMapMarker
+            let coordSize: CGFloat = 14
+            let pointView = UIImageView(image: marker)
+            pointView.frame = CGRect(x: rotatedX - coordSize / 2, y: rotatedY - coordSize / 2, width: coordSize, height: coordSize)
+            pointView.tag = userCoordTag
+            
+            // Adding shadow effect to pointView
+            pointView.layer.shadowColor = UIColor.black.cgColor
+            pointView.layer.shadowOpacity = 0.25
+            pointView.layer.shadowOffset = CGSize(width: 0, height: 2)
+            pointView.layer.shadowRadius = 2
+            
+            mapImageView.addSubview(pointView)
 
-            if let bundleURL = Bundle(for: OlympusSDK.OlympusMapView.self).url(forResource: "OlympusSDK", withExtension: "bundle"),
-               let resourceBundle = Bundle(url: bundleURL),
-               let markerImage = UIImage(named: "map_marker", in: resourceBundle, compatibleWith: nil) {
-                let coordSize: CGFloat = 14
-                let pointView = UIImageView(image: markerImage)
-                pointView.frame = CGRect(x: rotatedX - coordSize / 2, y: rotatedY - coordSize / 2, width: coordSize, height: coordSize)
-                pointView.tag = userCoordTag
+            let rotationAngle = CGFloat((heading - 90) * .pi / 180)
+            let scaleFactor: CGFloat = 6.0
+            let mapCenterX = bounds.midX
+            let mapCenterY = bounds.midY
+            let pointViewCenterInSelf = scrollView.convert(pointView.center, to: self)
                 
-                // Adding shadow effect to pointView
-                pointView.layer.shadowColor = UIColor.black.cgColor
-                pointView.layer.shadowOpacity = 0.25
-                pointView.layer.shadowOffset = CGSize(width: 0, height: 2)
-                pointView.layer.shadowRadius = 2
+            let dx = -USER_CENTER_OFFSET * cos(heading * (.pi / 180))
+            let dy = USER_CENTER_OFFSET * sin(heading * (.pi / 180))
                 
-                mapImageView.addSubview(pointView)
-
-                let rotationAngle = CGFloat((heading - 90) * .pi / 180)
-                let scaleFactor: CGFloat = 6.0
-                let mapCenterX = bounds.midX
-                let mapCenterY = bounds.midY
-                let pointViewCenterInSelf = scrollView.convert(pointView.center, to: self)
-                    
-                let dx = -USER_CENTER_OFFSET * cos(heading * (.pi / 180))
-                let dy = USER_CENTER_OFFSET * sin(heading * (.pi / 180))
-                    
-                let translationX = mapCenterX - pointViewCenterInSelf.x + dx
-                let translationY = mapCenterY - pointViewCenterInSelf.y + dy
-                
-                UIView.animate(withDuration: 0.55, delay: 0, options: .curveEaseInOut, animations: {
-                    self.mapImageView.transform = CGAffineTransform(rotationAngle: rotationAngle)
-                        .scaledBy(x: scaleFactor, y: scaleFactor)
-                        .translatedBy(x: translationX, y: translationY)
-                }, completion: nil)
-                
-                pointView.transform = CGAffineTransform(rotationAngle: -rotationAngle)
-            } else {
-                print(getLocalTimeString() + " , (Olympus) Error : Could not load map_marker.png from bundle.")
-            }
+            let translationX = mapCenterX - pointViewCenterInSelf.x + dx
+            let translationY = mapCenterY - pointViewCenterInSelf.y + dy
+            
+            UIView.animate(withDuration: 0.55, delay: 0, options: .curveEaseInOut, animations: {
+                self.mapImageView.transform = CGAffineTransform(rotationAngle: rotationAngle)
+                    .scaledBy(x: scaleFactor, y: scaleFactor)
+                    .translatedBy(x: translationX, y: translationY)
+            }, completion: nil)
+            pointView.transform = CGAffineTransform(rotationAngle: -rotationAngle)
 
             self.preXyh = xyh
         }
     }
-
     
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if collectionView == buildingsCollectionView {
@@ -763,7 +814,6 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         guard let userInfo = notification.userInfo, let pathPixelKey = userInfo["pathPixelKey"] as? String else { return }
         if let selectedBuilding = selectedBuilding, let selectedLevel = selectedLevel {
             let expectedPpKey = "\(OlympusMapManager.shared.sector_id)_\(selectedBuilding)_\(selectedLevel)"
-//            print(getLocalTimeString() + " , (Olympus) MapView : pathPixelUpdated // expectedPpKey = \(expectedPpKey) , pathPixelKey = \(pathPixelKey)")
             if pathPixelKey == expectedPpKey {
                 updatePathPixel()
             }
@@ -773,7 +823,6 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
     func calculateAspectFitImageSize(for image: UIImage, in imageView: UIImageView) -> CGSize {
         let imageSize = image.size
         let imageViewSize = imageView.bounds.size
-//        print(getLocalTimeString() + " , (Olympus) MapView : imageView width = \(imageViewSize.width), imageView height = \(imageViewSize.height)")
         let widthRatio = imageViewSize.width / imageSize.width
         let heightRatio = imageViewSize.height / imageSize.height
         
@@ -806,7 +855,8 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
                 updateMapImageView()
                 updatePathPixel()
             }
-            self.plotUserCoord(xyh: [result.x, result.y, result.absolute_heading])
+//            self.plotUserCoord(xyh: [result.x, result.y, result.absolute_heading])
+            self.plotUserCoordWithZoomAndRotation(xyh: [result.x, result.y, result.absolute_heading])
         }
     }
     
@@ -862,7 +912,6 @@ class CircleView: UIView {
         )
         
         circleLayer.path = circlePath.cgPath
-//        circleLayer.fillColor = UIColor.systemRed.cgColor
         circleLayer.fillColor = UIColor.systemGray6.cgColor
         circleLayer.strokeColor = UIColor.clear.cgColor
         circleLayer.lineWidth = 0
