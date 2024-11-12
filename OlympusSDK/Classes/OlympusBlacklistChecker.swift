@@ -23,7 +23,7 @@ public class OlympusBlacklistChecker: Observation {
         osVersion = Int(arr[0]) ?? 0
     }
     
-    public func checkServiceAvailableDevice(completion: @escaping (Int, Bool, Bool) -> Void) {
+    public func checkServiceAvailableDevice(completion: @escaping (Bool) -> Void) {
         setUserDeviceInfo()
         OlympusNetworkManager.shared.getBlackList(url: BLACK_LIST_URL) { [self] statusCode, returnedString in
             var isBlacklistUpdated = false
@@ -65,7 +65,7 @@ public class OlympusBlacklistChecker: Observation {
             }
 
             saveBlacklistInfo(isServiceAvailable: isServiceAvailable, updatedTime: blacklistUpdatedTime)
-            completion(statusCode, isBlacklistUpdated, isServiceAvailable)
+            completion(isServiceAvailable)
         }
     }
 

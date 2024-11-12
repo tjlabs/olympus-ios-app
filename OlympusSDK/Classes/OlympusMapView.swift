@@ -172,7 +172,8 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         zoomButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
         styleButton(zoomButton)
         addSubview(zoomButton)
-
+        
+        myLocationButton.isHidden = true
         myLocationButton.setImage(imageMyLocation, for: .normal)
         myLocationButton.translatesAutoresizingMaskIntoConstraints = false
         myLocationButton.widthAnchor.constraint(equalToConstant: 40).isActive = true
@@ -927,6 +928,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             toggleZoomMode(to: .ZOOM_IN)
             DispatchQueue.main.async { [self] in
                 zoomButton.isHidden = false
+                myLocationButton.isHidden = false
             }
         }
         
