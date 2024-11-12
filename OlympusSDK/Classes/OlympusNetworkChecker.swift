@@ -1,4 +1,5 @@
 import SystemConfiguration
+import Foundation
 
 class OlympusNetworkChecker {
     

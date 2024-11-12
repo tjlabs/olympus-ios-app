@@ -1,3 +1,4 @@
+import Foundation
 
 public class OlympusRflowCorrelator {
     let D = 10*2 // 10s

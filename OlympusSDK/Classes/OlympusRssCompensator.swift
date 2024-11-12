@@ -1,4 +1,4 @@
-
+import Foundation
 
 public class OlympusRssCompensator {
     var isScaleLoaded: Bool = false

@@ -1,4 +1,4 @@
-
+import Foundation
 
 public class OlympusFileDownloader {
     static let shared = OlympusFileDownloader()

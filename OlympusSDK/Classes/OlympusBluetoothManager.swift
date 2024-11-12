@@ -1,4 +1,5 @@
 import CoreBluetooth
+import Foundation
 
 let NRF_UUID_SERVICE: String          = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E";
 let NRF_UUID_CHAR_READ : String       = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E";

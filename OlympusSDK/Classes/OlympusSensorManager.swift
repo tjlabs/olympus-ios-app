@@ -1,6 +1,7 @@
 import CoreMotion
 import CoreLocation
 import simd
+import Foundation
 
 public class OlympusSensorManager: NSObject, CLLocationManagerDelegate {
     public var sensorData = OlympusSensorData()

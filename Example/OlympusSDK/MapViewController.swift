@@ -44,8 +44,8 @@ class MapViewController: UIViewController, Observer {
     private func startOlympus() {
         let uniqueId = makeUniqueId(uuid: self.userId)
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_02_04_1007.csv", sensorFileName: "sensor_coex_02_04_1007.csv")
         serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_dr_03_1030.csv", sensorFileName: "sensor_coex_dr_03_1030.csv")
-        
         serviceManager.addObserver(self)
         serviceManager.startService(user_id: uniqueId, region: "Korea", sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
             if (isStart) {
@@ -55,7 +55,6 @@ class MapViewController: UIViewController, Observer {
                 print(returnedString)
             }
         })
-        
 //        OlympusMapManager.shared.loadMap(region: "Korea", sector_id: sector_id, mapView: mapView)
     }
     

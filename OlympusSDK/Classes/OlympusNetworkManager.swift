@@ -1,4 +1,4 @@
-
+import Foundation
 
 public class OlympusNetworkManager {
     static let shared = OlympusNetworkManager()

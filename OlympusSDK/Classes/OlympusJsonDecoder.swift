@@ -1,3 +1,5 @@
+import Foundation
+
 public func jsonToSectorInfoFromServer(jsonString: String) -> (Bool, SectorInfoFromServer) {
     let result = SectorInfoFromServer(parameter: SectorInfoParam(trajectory_length: 0, trajectory_diagonal: 0, debug: false, standard_rss: []),
                                       level_list: [])

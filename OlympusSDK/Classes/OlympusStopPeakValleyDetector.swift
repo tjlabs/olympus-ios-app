@@ -1,4 +1,5 @@
 import Darwin
+import Foundation
 
 public class OlympusStopPeakValleyDetector: NSObject {
     

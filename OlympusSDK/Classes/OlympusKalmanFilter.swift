@@ -1,3 +1,5 @@
+import Foundation
+
 public class OlympusKalmanFilter: NSObject {
     
     var tuResult = FineLocationTrackingFromServer()

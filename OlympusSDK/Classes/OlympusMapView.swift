@@ -1,4 +1,5 @@
 import UIKit
+import Foundation
 
 public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UIScrollViewDelegate {
     

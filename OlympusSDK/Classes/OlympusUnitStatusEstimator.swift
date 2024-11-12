@@ -1,3 +1,4 @@
+import Foundation
 
 public class OlympusUnitStatusEstimator: NSObject {
     public override init() {

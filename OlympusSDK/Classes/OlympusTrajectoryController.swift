@@ -1,3 +1,4 @@
+import Foundation
 
 public class OlympusTrajectoryController {
     let defaultTrajCompensataionArray: [Double] = [0.8, 1.0, 1.2]

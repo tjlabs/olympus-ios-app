@@ -1,5 +1,5 @@
-
 import UIKit
+import Foundation
 
 public class OlympusMapManager {
     public static let shared = OlympusMapManager()
