@@ -33,6 +33,22 @@ public func jsonToRcInfoFromServer(jsonString: String) -> (Bool, RcInfoFromServe
     }
 }
 
+public func jsonToScaleFromServer(jsonString: String) -> (Bool, ScaleFromServer) {
+    let result = ScaleFromServer(scale_list: [])
+    
+    if let jsonData = jsonString.data(using: .utf8) {
+        do {
+            let decodedData: ScaleFromServer = try JSONDecoder().decode(ScaleFromServer.self, from: jsonData)
+            return (true, decodedData)
+        } catch {
+            print("Error decoding JSON: \(error)")
+            return (false, result)
+        }
+    } else {
+        return (false, result)
+    }
+}
+
 public func jsonToFineLocatoinTrackingResultFromServer(jsonString: String) -> (Bool, FineLocationTrackingFromServer) {
     let result = FineLocationTrackingFromServer.init()
     

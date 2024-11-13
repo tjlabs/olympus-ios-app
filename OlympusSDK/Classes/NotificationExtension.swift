@@ -22,6 +22,7 @@ extension Notification.Name {
     
     public static let sectorImagesUpdated             = Notification.Name("olympusSectorImagesUpdated")
     public static let sectorPathPixelUpdated          = Notification.Name("olympusSectorPathPixelUpdated")
+    public static let sectorScalesUpdated              = Notification.Name("olympusSectorScalesUpdated")
     
     public static let phaseChanged                    = Notification.Name("olmypusPhaseChanged")
     

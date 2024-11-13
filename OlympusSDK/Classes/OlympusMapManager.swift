@@ -7,6 +7,7 @@ public class OlympusMapManager {
     var sector_id: Int = -1
     var sectorInfo = [Int: [String: [String]]]()
     var sectorImages = [String: [UIImage]]()
+    var sectorScales = [String: [Double]]()
     
     init() {
         
@@ -33,6 +34,31 @@ public class OlympusMapManager {
 //                completion(statusCode, returnedString)
 //            }
         })
+    }
+    
+    
+    public func loadSectorScale(sector_id: Int) {
+        let scaleInput = ScaleInput(sector_id: sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM)
+        OlympusNetworkManager.shared.postUserScale(url: USER_SCALE_URL, input: scaleInput, completion: { [self] statusCode, returnedString in
+            let result = jsonToScaleFromServer(jsonString: returnedString)
+            if result.0 {
+                let scaleFromServer = result.1
+                updateSectorScales(sector_id: sector_id, scaleFromServer: scaleFromServer)
+            }
+        })
+    }
+    
+    private func updateSectorScales(sector_id: Int, scaleFromServer: ScaleFromServer) {
+        let scaleList = scaleFromServer.scale_list
+        for element in scaleList {
+            let buildingName = element.building_name
+            let levelName = element.level_name
+            
+            let scaleKey = "scale_\(sector_id)_\(buildingName)_\(levelName)"
+            sectorScales[scaleKey] = element.image_scale
+//            print(getLocalTimeString() + " , (Olympus) MapManager : key = \(key) // scale = \(sectorScales[key])")
+            NotificationCenter.default.post(name: .sectorScalesUpdated, object: nil, userInfo: ["scaleKey": scaleKey])
+        }
     }
     
     private func makeBuildingLevelInfo(sector_id: Int, sectorInfoFromServer: SectorInfoFromServer) -> [String: [String]] {
@@ -97,6 +123,7 @@ public class OlympusMapManager {
         setServerURL(region: region)
         setSectorID(value: sector_id)
             
+        loadSectorScale(sector_id: sector_id)
         if let value = self.sectorInfo[sector_id] {
             mapView.updateBuildingData(Array(value.keys), levelData: value)
             loadSectorImages(sector_id: sector_id, infoBuildingLevel: value)

@@ -165,26 +165,12 @@ public struct SectorInfoParam: Codable  {
     let standard_rss: [Int]
 }
 
-//public struct SectorInfoGeofence: Codable {
-//    let entrance_area: [[Double]]
-//    let entrance_matching_area: [[Double]]
-//    let level_change_area: [[Double]]
-//}
-
 public struct SectorInfoGeofence: Codable {
     let entrance_area: [[Double]]
     let entrance_matching_area: [[Double]]
     let level_change_area: [[Double]]
     let dr_mode_areas: [SectorDRModeArea]
 }
-
-//public struct SectorInfoEntrance: Codable {
-//    let spot_number: Int
-//    let network_status: Bool
-//    let outermost_ward_id: String
-//    let scale: Double
-//    let route_version: String
-//}
 
 public struct SectorInfoEntrance: Codable {
     let spot_number: Int
@@ -265,7 +251,21 @@ public struct RcInfoSave: Codable {
     let os_version: Int
     let normalization_scale: Double
 }
-// ---------------- RC ---------------- //
+// ---------------- SCALE ---------------- //
+public struct ScaleInput: Codable {
+    let sector_id: Int
+    let operating_system: String
+}
+
+public struct ScaleFromServer: Codable {
+    let scale_list: [ScaleInfo]
+}
+
+public struct ScaleInfo: Codable {
+    let building_name: String
+    let level_name: String
+    let image_scale: [Double]
+}
 
 // ---------------- REC DATA ---------------- //
 struct ReceivedForce: Encodable {
