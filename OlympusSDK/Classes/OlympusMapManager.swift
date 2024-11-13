@@ -175,6 +175,26 @@ public class OlympusMapManager {
                 }
                 task.resume()
             }
+//            let task = URLSession.shared.dataTask(with: urlLevel) { (data, response, error) in
+//                if let error = error {
+//                    completion(nil, error)
+//                }
+//                
+//                if let data = data, let httpResponse = response as? HTTPURLResponse,
+//                   httpResponse.statusCode == 200 {
+//                    DispatchQueue.main.async {
+//                        if let imageData = UIImage(data: data) {
+//                            OlympusImageCacheManager.shared.setObject(imageData, forKey: cacheKey)
+//                            completion(UIImage(data: data), nil)
+//                        } else {
+//                            completion(nil, error)
+//                        }
+//                    }
+//                } else {
+//                    completion(nil, error)
+//                }
+//            }
+//            task.resume()
         } else {
             completion(nil, nil)
         }

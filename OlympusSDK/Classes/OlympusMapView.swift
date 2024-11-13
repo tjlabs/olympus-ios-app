@@ -56,7 +56,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
     private var zoomMode: ZoomMode = .ZOOM_OUT
     
     private var modeChangedTime = 0
-    private let USER_CENTER_OFFSET: CGFloat = 30 // 150
+    private let USER_CENTER_OFFSET: CGFloat = 40 // 30 // 150
     
     public override init(frame: CGRect) {
         super.init(frame: frame)
@@ -147,6 +147,18 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         velocityLabel.textColor = .black
         velocityLabel.font = UIFont.boldSystemFont(ofSize: 50)
         velocityLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        let attrString = NSAttributedString(
+            string: "0",
+            attributes: [
+                NSAttributedString.Key.strokeColor: UIColor.white,
+                NSAttributedString.Key.foregroundColor: UIColor.black,
+                NSAttributedString.Key.strokeWidth: -3.0,
+                NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 53.0)
+            ]
+        )
+        velocityLabel.attributedText = attrString
+        
         addSubview(velocityLabel)
         
         NSLayoutConstraint.activate([
@@ -765,7 +777,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             mapImageView.addSubview(pointView)
 
             let rotationAngle = CGFloat((heading - 90) * .pi / 180)
-            let scaleFactor: CGFloat = 6.0
+            let scaleFactor: CGFloat = 4.0
             let mapCenterX = bounds.midX
             let mapCenterY = bounds.midY
             let pointViewCenterInSelf = scrollView.convert(pointView.center, to: self)
@@ -940,7 +952,18 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         let levelChanged = selectedLevel != newLevel
         
         DispatchQueue.main.async { [self] in
-            self.velocityLabel.text = String(Int(round(result.velocity)))
+            let velocityString = String(Int(round(result.velocity)))
+            self.velocityLabel.text = velocityString
+            let attrString = NSAttributedString(
+                string: "0",
+                attributes: [
+                    NSAttributedString.Key.strokeColor: UIColor.white,
+                    NSAttributedString.Key.foregroundColor: UIColor.black,
+                    NSAttributedString.Key.strokeWidth: -3.0,
+                    NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 53.0)
+                ]
+            )
+            self.velocityLabel.attributedText = attrString
             
             if buildingChanged || levelChanged {
                 selectedBuilding = newBuilding

@@ -1,7 +1,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'OlympusSDK'
-  s.version          = '0.2.0'
+  s.version          = '0.2.1'
   s.summary          = 'OlympusSDK for iOS'
   s.swift_version    = '5.0'
   
@@ -17,7 +17,7 @@ TODO: Add long description of the pod here.
 
 
   s.source_files = 'OlympusSDK/Classes/**/*'
-  s.static_framework = true
+  s.static_framework = false
   
   s.resource_bundles = {
       'OlympusSDK' => ['OlympusSDK/Assets/*.png']
