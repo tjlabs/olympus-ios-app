@@ -1,7 +1,7 @@
 import UIKit
 
 public extension UIDevice {
-    @objc static let modelIdentifier: String = {
+    static let modelIdentifier: String = {
         var systemInfo = utsname()
         uname(&systemInfo)
         let machineMirror = Mirror(reflecting: systemInfo.machine)
@@ -18,7 +18,7 @@ public extension UIDevice {
         return getIdentifier(identifier: identifier)
     }()
     
-    @objc static let modelName: String = {
+    static let modelName: String = {
         var systemInfo = utsname()
         uname(&systemInfo)
         let machineMirror = Mirror(reflecting: systemInfo.machine)

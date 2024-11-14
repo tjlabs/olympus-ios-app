@@ -248,7 +248,11 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
     // timer
     func startWaitTimer() {
         waitTimerCounter = 0
-        self.waitTimer = Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(self.waitTimerUpdate), userInfo: nil, repeats: true)
+//        self.waitTimer = Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(self.waitTimerUpdate), userInfo: nil, repeats: true)
+        self.waitTimer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            self.waitTimerUpdate()
+        }
     }
     
     func stopWaitTimer() {
@@ -258,7 +262,7 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
         }
     }
     
-    @objc func waitTimerUpdate() {
+    func waitTimerUpdate() {
         stopScan()
         startScan(option: .Background)
     }

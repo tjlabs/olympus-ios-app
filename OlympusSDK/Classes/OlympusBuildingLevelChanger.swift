@@ -379,14 +379,18 @@ public class OlympusBuildingLevelChanger {
     }
     
     func notificationCenterAddObserver() {
-        self.trajEditedObserver = NotificationCenter.default.addObserver(self, selector: #selector(onDidReceiveNotification), name: .trajEditedAfterOsr, object: nil)
+        self.trajEditedObserver = NotificationCenter.default.addObserver(forName: .trajEditedAfterOsr, object: nil, queue: .main) { [weak self] notification in
+            self?.onDidReceiveNotification(notification)
+        }
     }
-    
+
     func notificationCenterRemoveObserver() {
-        NotificationCenter.default.removeObserver(self.trajEditedObserver)
+        if let observer = self.trajEditedObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
-    
-    @objc func onDidReceiveNotification(_ notification: Notification) {
+
+    func onDidReceiveNotification(_ notification: Notification) {
         if notification.name == .trajEditedAfterOsr {
             self.isDetermineSpot = false
         }

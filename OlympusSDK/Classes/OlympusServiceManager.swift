@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
-    public static let sdkVersion: String = "0.2.1"
+    public static let sdkVersion: String = "0.2.2"
     var isSimulationMode: Bool = false
     var bleFileName: String = ""
     var sensorFileName: String = ""
@@ -573,7 +573,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             let queueRFD = DispatchQueue(label: Bundle.main.bundleIdentifier! + ".receivedForceTimer")
             self.receivedForceTimer = DispatchSource.makeTimerSource(queue: queueRFD)
             self.receivedForceTimer!.schedule(deadline: .now(), repeating: OlympusConstants.RFD_INTERVAL)
-            self.receivedForceTimer!.setEventHandler(handler: self.receivedForceTimerUpdate)
+            self.receivedForceTimer!.setEventHandler { [weak self] in
+                guard let self = self else { return }
+                self.receivedForceTimerUpdate()
+            }
             self.receivedForceTimer!.resume()
         }
         
@@ -581,7 +584,11 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             let queueUVD = DispatchQueue(label: Bundle.main.bundleIdentifier! + ".userVelocityTimer")
             self.userVelocityTimer = DispatchSource.makeTimerSource(queue: queueUVD)
             self.userVelocityTimer!.schedule(deadline: .now(), repeating: OlympusConstants.UVD_INTERVAL)
-            self.userVelocityTimer!.setEventHandler(handler: self.userVelocityTimerUpdate)
+            
+            self.userVelocityTimer!.setEventHandler { [weak self] in
+                guard let self = self else { return }
+                self.userVelocityTimerUpdate()
+            }
             self.userVelocityTimer!.resume()
         }
         
@@ -590,7 +597,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             let queue = DispatchQueue(label: Bundle.main.bundleIdentifier! + ".updateTimer")
             self.outputTimer = DispatchSource.makeTimerSource(queue: queue)
             self.outputTimer!.schedule(deadline: .now(), repeating: OlympusConstants.OUTPUT_INTERVAL)
-            self.outputTimer!.setEventHandler(handler: self.outputTimerUpdate)
+            self.outputTimer!.setEventHandler { [weak self] in
+                guard let self = self else { return }
+                self.outputTimerUpdate()
+            }
             self.outputTimer!.resume()
         }
         
@@ -599,7 +609,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             let queueOSR = DispatchQueue(label: Bundle.main.bundleIdentifier! + ".osrTimer")
             self.osrTimer = DispatchSource.makeTimerSource(queue: queueOSR)
             self.osrTimer!.schedule(deadline: .now(), repeating: OlympusConstants.OSR_INTERVAL)
-            self.osrTimer!.setEventHandler(handler: self.osrTimerUpdate)
+            self.osrTimer!.setEventHandler { [weak self] in
+                guard let self = self else { return }
+                self.osrTimerUpdate()
+            }
             self.osrTimer!.resume()
         }
     }
@@ -618,7 +631,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         self.backgroundUvTimer = nil
     }
     
-    @objc func receivedForceTimerUpdate() {
+    func receivedForceTimerUpdate() {
         handleRfd()
     }
     
@@ -785,7 +798,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
     }
     
-    @objc func userVelocityTimerUpdate() {
+    func userVelocityTimerUpdate() {
         let currentTime = getCurrentTimeInMilliseconds()
         
         self.controlMode()
@@ -1973,7 +1986,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
     }
     
-    @objc func outputTimerUpdate() {
+    func outputTimerUpdate() {
         // Run every 0.2s
         let validInfo = checkSolutionValidity(reportFlag: self.pastReportFlag, reportTime: self.pastReportTime, isIndoor: stateManager.isIndoor)
         if (isStartRouteTrack) {
@@ -2198,7 +2211,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         self.preTemporalResult.y = coord[1]
     }
     
-    @objc func osrTimerUpdate() {
+    func osrTimerUpdate() {
         if !isStartRouteTrack {
             buildingLevelChanger.estimateBuildingLevel(user_id: self.user_id, mode: self.runMode, phase: phaseController.PHASE, isGetFirstResponse: stateManager.isGetFirstResponse, networkStatus: self.networkStatus, isDRMode: self.isDRMode, passedNodes: OlympusPathMatchingCalculator.shared.getPassedNodeInfoBuffer(), result: self.olympusResult, currentBuilding: self.currentBuilding, currentLevel: self.currentLevel, currentEntrance: routeTracker.currentEntrance)
         }
@@ -2756,14 +2769,20 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         if (self.backgroundUpTimer == nil) {
             self.backgroundUpTimer = DispatchSource.makeTimerSource(queue: DispatchQueue.global(qos: .background))
             self.backgroundUpTimer!.schedule(deadline: .now(), repeating: OlympusConstants.OUTPUT_INTERVAL)
-            self.backgroundUpTimer!.setEventHandler(handler: self.outputTimerUpdate)
+            self.backgroundUpTimer!.setEventHandler { [weak self] in
+                guard let self = self else { return }
+                self.outputTimerUpdate()
+            }
             self.backgroundUpTimer!.resume()
         }
             
         if (self.backgroundUvTimer == nil) {
             self.backgroundUvTimer = DispatchSource.makeTimerSource(queue: DispatchQueue.global(qos: .background))
             self.backgroundUvTimer!.schedule(deadline: .now(), repeating: OlympusConstants.UVD_INTERVAL)
-            self.backgroundUvTimer!.setEventHandler(handler: self.userVelocityTimerUpdate)
+            self.backgroundUvTimer!.setEventHandler { [weak self] in
+                guard let self = self else { return }
+                self.userVelocityTimerUpdate()
+            }
             self.backgroundUvTimer!.resume()
         }
         
@@ -2853,7 +2872,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             let queueCollect = DispatchQueue(label: Bundle.main.bundleIdentifier! + ".collectTimer")
             self.collectTimer = DispatchSource.makeTimerSource(queue: queueCollect)
             self.collectTimer!.schedule(deadline: .now(), repeating: OlympusConstants.UVD_INTERVAL)
-            self.collectTimer!.setEventHandler(handler: self.collectTimerUpdate)
+            self.collectTimer!.setEventHandler { [weak self] in
+                guard let self = self else { return }
+                self.collectTimerUpdate()
+            }
             self.collectTimer!.resume()
         }
         
@@ -2864,7 +2886,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         self.collectTimer = nil
     }
     
-    @objc func collectTimerUpdate() {
+    func collectTimerUpdate() {
         let currentTime = getCurrentTimeInMilliseconds()
         
         var collectData = sensorManager.getCollecttData()

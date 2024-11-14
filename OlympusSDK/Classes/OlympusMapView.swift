@@ -87,57 +87,57 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
     }
     
     private func addGestures() {
-        addPinchGesture()
-        addPanGesture()
+//        addPinchGesture()
+//        addPanGesture()
     }
     
-    private func addPinchGesture() {
-        let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(handlePinchGesture(_:)))
-        self.addGestureRecognizer(pinchGesture)
-    }
-    
-    private func addPanGesture() {
-        let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(_:)))
-        self.addGestureRecognizer(panGesture)
-    }
-    
-    private func addTouchGesture() {
-        let touchGesture = UIPanGestureRecognizer(target: self, action: #selector(handleTouchGesture(_:)))
-        self.addGestureRecognizer(touchGesture)
-    }
-    
-    @objc private func handlePinchGesture(_ sender: UIPinchGestureRecognizer) {
-        if sender.state == .changed {
-            let scale = sender.scale
-            mapImageView.transform = mapImageView.transform.scaledBy(x: scale, y: scale)
-            currentScale = scale
-            sender.scale = 1.0
-            print(getLocalTimeString() + " , (Olympus) MapView : currentScale = \(currentScale)")
-        } else if sender.state == .ended {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-                self?.updatePathPixel()
-            }
-        }
-    }
-    
-    @objc private func handlePanGesture(_ sender: UIPanGestureRecognizer) {
-        let translation = sender.translation(in: self)
-        if sender.state == .changed {
-            mapImageView.transform = mapImageView.transform.translatedBy(x: translation.x, y: translation.y)
-            translationOffset.x = translation.x
-            translationOffset.y = translation.y
-            sender.setTranslation(.zero, in: self)
-        } else if sender.state == .ended {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-                self?.updatePathPixel()
-            }
-        }
-    }
-    
-    @objc private func handleTouchGesture(_ sender: UITapGestureRecognizer) {
-        let touchPoint = sender.location(in: self.mapImageView)
-        print(getLocalTimeString() + " , (Olympus) MapView : Touch \(touchPoint)")
-    }
+//    private func addPinchGesture() {
+//        let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(handlePinchGesture(_:)))
+//        self.addGestureRecognizer(pinchGesture)
+//    }
+//    
+//    private func addPanGesture() {
+//        let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(_:)))
+//        self.addGestureRecognizer(panGesture)
+//    }
+//    
+//    private func addTouchGesture() {
+//        let touchGesture = UIPanGestureRecognizer(target: self, action: #selector(handleTouchGesture(_:)))
+//        self.addGestureRecognizer(touchGesture)
+//    }
+//    
+//    @objc private func handlePinchGesture(_ sender: UIPinchGestureRecognizer) {
+//        if sender.state == .changed {
+//            let scale = sender.scale
+//            mapImageView.transform = mapImageView.transform.scaledBy(x: scale, y: scale)
+//            currentScale = scale
+//            sender.scale = 1.0
+//            print(getLocalTimeString() + " , (Olympus) MapView : currentScale = \(currentScale)")
+//        } else if sender.state == .ended {
+//            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+//                self?.updatePathPixel()
+//            }
+//        }
+//    }
+//    
+//    @objc private func handlePanGesture(_ sender: UIPanGestureRecognizer) {
+//        let translation = sender.translation(in: self)
+//        if sender.state == .changed {
+//            mapImageView.transform = mapImageView.transform.translatedBy(x: translation.x, y: translation.y)
+//            translationOffset.x = translation.x
+//            translationOffset.y = translation.y
+//            sender.setTranslation(.zero, in: self)
+//        } else if sender.state == .ended {
+//            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+//                self?.updatePathPixel()
+//            }
+//        }
+//    }
+//    
+//    @objc private func handleTouchGesture(_ sender: UITapGestureRecognizer) {
+//        let touchPoint = sender.location(in: self.mapImageView)
+//        print(getLocalTimeString() + " , (Olympus) MapView : Touch \(touchPoint)")
+//    }
 
     private func setupView() {
         setupMapImageView()
@@ -209,15 +209,34 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         ])
     }
     
-    private func setupButtonActions() {
-        myLocationButton.addTarget(self, action: #selector(myLocationButtonTapped), for: .touchUpInside)
-        myLocationButton.addTarget(self, action: #selector(myLocationButtonTappedOver), for: [.touchUpInside, .touchUpOutside])
-        
-        zoomButton.addTarget(self, action: #selector(zoomButtonTapped), for: .touchUpInside)
-        zoomButton.addTarget(self, action: #selector(zoomButtonTappedOver), for: [.touchUpInside, .touchUpOutside])
-    }
+//    private func setupButtonActions() {
+//        myLocationButton.addTarget(self, action: #selector(myLocationButtonTapped), for: .touchUpInside)
+//        myLocationButton.addTarget(self, action: #selector(myLocationButtonTappedOver), for: [.touchUpInside, .touchUpOutside])
+//        
+//        zoomButton.addTarget(self, action: #selector(zoomButtonTapped), for: .touchUpInside)
+//        zoomButton.addTarget(self, action: #selector(zoomButtonTappedOver), for: [.touchUpInside, .touchUpOutside])
+//    }
     
-    @objc private func myLocationButtonTapped() {
+    private func setupButtonActions() {
+        myLocationButton.addAction(UIAction { [weak self] _ in
+            self?.myLocationButtonTapped()
+        }, for: .touchUpInside)
+        
+        myLocationButton.addAction(UIAction { [weak self] _ in
+            self?.myLocationButtonTappedOver()
+        }, for: [.touchUpInside, .touchUpOutside])
+        
+        zoomButton.addAction(UIAction { [weak self] _ in
+            self?.zoomButtonTapped()
+        }, for: .touchUpInside)
+        
+        zoomButton.addAction(UIAction { [weak self] _ in
+            self?.zoomButtonTappedOver()
+        }, for: [.touchUpInside, .touchUpOutside])
+    }
+
+    
+    private func myLocationButtonTapped() {
         self.zoomButton.isUserInteractionEnabled = false
         self.myLocationButton.isUserInteractionEnabled = false
         UIView.animate(withDuration: 0.1) {
@@ -225,11 +244,9 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         }
         self.mode = .UPDATE_USER
         forceToZoomInMode()
-//        toggleZoomMode(to: .ZOOM_OUT)
-//        perform(#selector(returnToZoomInMode), with: nil, afterDelay: 3.0)
     }
     
-    @objc private func myLocationButtonTappedOver() {
+    private func myLocationButtonTappedOver() {
         UIView.animate(withDuration: 0.1) {
             self.myLocationButton.transform = CGAffineTransform.identity // Reset scale
             self.zoomButton.isUserInteractionEnabled = true
@@ -263,7 +280,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         }
     }
         
-    @objc private func zoomButtonTapped() {
+    private func zoomButtonTapped() {
         self.zoomButton.isUserInteractionEnabled = false
         self.myLocationButton.isUserInteractionEnabled = false
         UIView.animate(withDuration: 0.1) {
@@ -272,7 +289,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         toggleZoomMode()
     }
     
-    @objc private func zoomButtonTappedOver() {
+    private func zoomButtonTappedOver() {
         UIView.animate(withDuration: 0.1) {
             self.zoomButton.transform = CGAffineTransform.identity
             self.zoomButton.isUserInteractionEnabled = true
@@ -297,12 +314,6 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             if !preXyh.isEmpty && self.mode != .MAP_INTERACTION {
                 plotUserCoord(building: selectedBuilding ?? "", level: selectedLevel ?? "", xyh: preXyh)
             }
-        }
-    }
-        
-    @objc private func returnToZoomInMode() {
-        if zoomMode == .ZOOM_OUT {
-            toggleZoomMode(to: .ZOOM_IN)
         }
     }
     
@@ -531,7 +542,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
 //            let minY: Double = -8
 //            let maxY: Double = 530
             
-//            print(getLocalTimeString() + " , (Olympus) MapView : calMapScaleOffset // key = \(scaleKey) // value = \(sectorScale)")
+            print(getLocalTimeString() + " , (Olympus) MapView : calMapScaleOffset // key = \(scaleKey) // value = \(sectorScale)")
             let minX: Double = !sectorScale.isEmpty ? sectorScale[0] : -54.5
             let maxX: Double = !sectorScale.isEmpty ? sectorScale[1] : 277.8
             let minY: Double = !sectorScale.isEmpty ? sectorScale[2] : -8
@@ -962,38 +973,46 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
     
     // MARK: - Building & Level Images
     private func observeImageUpdates() {
-        NotificationCenter.default.addObserver(self, selector: #selector(imageUpdated(_:)), name: .sectorImagesUpdated, object: nil)
+        NotificationCenter.default.addObserver(forName: .sectorImagesUpdated, object: nil, queue: .main) { [weak self] notification in
+            guard let userInfo = notification.userInfo, let imageKey = userInfo["imageKey"] as? String else { return }
+            self?.updateImageIfNecessary(imageKey: imageKey)
+        }
     }
-    @objc private func imageUpdated(_ notification: Notification) {
-        guard let userInfo = notification.userInfo, let imageKey = userInfo["imageKey"] as? String else { return }
-        if let selectedBuilding = selectedBuilding, let selectedLevel = selectedLevel {
-            let expectedImageKey = "image_\(OlympusMapManager.shared.sector_id)_\(selectedBuilding)_\(selectedLevel)"
-            if imageKey == expectedImageKey {
-                updateMapImageView()
-            }
+
+    private func updateImageIfNecessary(imageKey: String) {
+        guard let selectedBuilding = selectedBuilding, let selectedLevel = selectedLevel else { return }
+        let expectedImageKey = "image_\(OlympusMapManager.shared.sector_id)_\(selectedBuilding)_\(selectedLevel)"
+        if imageKey == expectedImageKey {
+            updateMapImageView()
         }
     }
     
     // MARK: - Building & Level Scales
     private func observeScaleUpdates() {
-        NotificationCenter.default.addObserver(self, selector: #selector(scaleUpdated(_:)), name: .sectorScalesUpdated, object: nil)
+        NotificationCenter.default.addObserver(forName: .sectorScalesUpdated, object: nil, queue: .main) { [weak self] notification in
+            guard let userInfo = notification.userInfo, let scaleKey = userInfo["scaleKey"] as? String else { return }
+            self?.sectorScales[scaleKey] = OlympusMapManager.shared.sectorScales[scaleKey]
+        }
     }
-    @objc private func scaleUpdated(_ notification: Notification) {
+    
+    private func scaleUpdated(_ notification: Notification) {
         guard let userInfo = notification.userInfo, let scaleKey = userInfo["scaleKey"] as? String else { return }
         self.sectorScales[scaleKey] = OlympusMapManager.shared.sectorScales[scaleKey]
     }
     
     // MARK: - Building & Level Path-Pixels
     private func observePathPixelUpdates() {
-        NotificationCenter.default.addObserver(self, selector: #selector(pathPixelUpdated(_:)), name: .sectorPathPixelUpdated, object: nil)
+        NotificationCenter.default.addObserver(forName: .sectorPathPixelUpdated, object: nil, queue: .main) { [weak self] notification in
+            guard let userInfo = notification.userInfo, let pathPixelKey = userInfo["pathPixelKey"] as? String else { return }
+            self?.updatePathPixelIfNecessary(pathPixelKey: pathPixelKey)
+        }
     }
-    @objc private func pathPixelUpdated(_ notification: Notification) {
-        guard let userInfo = notification.userInfo, let pathPixelKey = userInfo["pathPixelKey"] as? String else { return }
-        if let selectedBuilding = selectedBuilding, let selectedLevel = selectedLevel {
-            let expectedPpKey = "\(OlympusMapManager.shared.sector_id)_\(selectedBuilding)_\(selectedLevel)"
-            if pathPixelKey == expectedPpKey {
-                updatePathPixel()
-            }
+
+    private func updatePathPixelIfNecessary(pathPixelKey: String) {
+        guard let selectedBuilding = selectedBuilding, let selectedLevel = selectedLevel else { return }
+        let expectedPpKey = "\(OlympusMapManager.shared.sector_id)_\(selectedBuilding)_\(selectedLevel)"
+        if pathPixelKey == expectedPpKey {
+            updatePathPixel()
         }
     }
     
