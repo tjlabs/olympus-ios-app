@@ -8,7 +8,7 @@ class MapViewController: UIViewController, Observer {
     }
     
     func report(flag: Int) {
-        // qwer
+        
     }
     
     @IBOutlet weak var topView: UIView!
@@ -23,9 +23,13 @@ class MapViewController: UIViewController, Observer {
     var timer: Timer?
     let TIMER_INTERVAL: TimeInterval = 1/10
     
+    private var foregroundObserver: Any!
+    private var backgroundObserver: Any!
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(false)
         navigationController?.isNavigationBarHidden = true
+        self.notificationCenterAddObserver()
     }
     
     override func viewDidLoad() {
@@ -36,6 +40,7 @@ class MapViewController: UIViewController, Observer {
     }
     
     override func viewDidDisappear(_ animated: Bool) {
+        self.notificationCenterRemoveObserver()
         stopTimer()
         serviceManager.stopService()
         serviceManager.removeObserver(self)
@@ -86,6 +91,21 @@ class MapViewController: UIViewController, Observer {
     @IBAction func tapBackButton(_ sender: UIButton) {
         serviceManager.removeObserver(self)
         self.navigationController?.popViewController(animated: true)
+    }
+    
+    func notificationCenterAddObserver() {
+        self.backgroundObserver = NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: .main) { _ in
+            self.serviceManager.setBackgroundMode(flag: true)
+        }
+        
+        self.foregroundObserver = NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main) { _ in
+            self.serviceManager.setBackgroundMode(flag: false)
+        }
+    }
+    
+    func notificationCenterRemoveObserver() {
+        NotificationCenter.default.removeObserver(self.backgroundObserver)
+        NotificationCenter.default.removeObserver(self.foregroundObserver)
     }
 }
 

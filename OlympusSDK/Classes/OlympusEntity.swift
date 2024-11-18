@@ -153,67 +153,6 @@ public struct LoginInput: Codable {
 }
 
 // ---------------- Sector ---------------- //
-public struct SectorInput: Codable {
-    public var sector_id: Int = 0
-    public var operating_system: String = "iOS"
-}
-
-public struct SectorInfoParam: Codable  {
-    let trajectory_length: Int
-    let trajectory_diagonal: Int
-    let debug: Bool
-    let standard_rss: [Int]
-}
-
-public struct SectorInfoGeofence: Codable {
-    let entrance_area: [[Double]]
-    let entrance_matching_area: [[Double]]
-    let level_change_area: [[Double]]
-    let dr_mode_areas: [SectorDRModeArea]
-}
-
-public struct SectorInfoEntrance: Codable {
-    let spot_number: Int
-    let network_status: Bool
-    let outermost_ward_id: String
-    let innermost_ward: SectorInfoInnermostWard
-    let scale: Double
-    let route_version: String
-}
-
-public struct SectorInfoInnermostWard: Codable {
-    let id: String
-    let rss: Double
-    let pos: [Double]
-    let direction: Double
-}
-
-public struct SectorDRModeArea: Codable {
-    let number: Int
-    let range: [Double] // xMin yMin xMax yMax
-    let direction: Double
-    let nodes: [DRModeAreaNode]
-}
-  
-public struct DRModeAreaNode: Codable {
-    let number: Int
-    let center_pos: [Double]
-    let direction_type: String
-}
-    
-public struct SectorInfoLevel: Codable {
-    let building_name: String
-    let level_name: String
-    let geofence: SectorInfoGeofence
-    let entrance_list: [SectorInfoEntrance]
-    let path_pixel_version: String
-}
-
-public struct SectorInfoFromServer: Codable {
-    let parameter: SectorInfoParam
-    let level_list: [SectorInfoLevel]
-}
-
 public struct SectorInfo: Codable {
     let standard_min_rss: Double
     let standard_max_rss: Double
@@ -222,6 +161,114 @@ public struct SectorInfo: Codable {
     let user_traj_length_pdr: Double
     let num_straight_idx_dr: Int
     let num_straight_idx_pdr: Int
+}
+
+public struct InputSectorID: Codable {
+    public var sector_id: Int = 0
+}
+
+public struct InputSectorIDnOS: Codable {
+    public var sector_id: Int = 0
+    public var operating_system: String = "iOS"
+}
+
+public struct Level: Codable {
+    let building_name: String
+    let level_name: String
+}
+
+public struct OutputLevel: Codable {
+    let level_list: [Level]
+}
+
+public struct Unit: Codable {
+    let category: Int
+    let number: Int
+    let name: String
+    let accessibility: String
+    let restriction: Bool
+    let visibility: Bool
+    let x: Double
+    let y: Double
+}
+
+public struct UnitList: Codable {
+    let building_name: String
+    let level_name: String
+    let units: [Unit]
+}
+
+public struct OutputUnit: Codable {
+    let unit_list: [UnitList]
+}
+
+public struct OutputParameter: Codable {
+    let trajectory_length: Int
+    let trajectory_diagonal: Int
+    let debug: Bool
+    let standard_rss: [Int]
+}
+
+public struct PathPixel: Codable {
+    let building_name: String
+    let level_name: String
+    let url: String
+}
+
+public struct OutputPathPixel: Codable {
+    let path_pixel_list: [PathPixel]
+}
+
+public struct DRModeArea: Codable {
+    let number: Int
+    let range: [Double]
+    let direction: Double
+    let nodes: [DRModeAreaNode]
+}
+
+public struct DRModeAreaNode: Codable {
+    let number: Int
+    let center_pos: [Double]
+    let direction_type: String
+}
+
+public struct Geofence: Codable {
+    let building_name: String
+    let level_name: String
+    let entrance_area: [[Double]]
+    let entrance_matching_area: [[Double]]
+    let level_change_area: [[Double]]
+    let dr_mode_areas: [DRModeArea]
+}
+
+public struct OutputGeofence: Codable {
+    let geofence_list: [Geofence]
+}
+
+public struct EntranceRF: Codable {
+    let id: String
+    let rss: Double
+    let pos: [Double]
+    let direction: Double
+}
+
+public struct Entrance: Codable {
+    let spot_number: Int
+    let outermost_ward_id: String
+    let scale: Double
+    let url: String
+    let network_status: Bool
+    let innermost_ward: EntranceRF
+}
+
+public struct EntranceList: Codable {
+    let building_name: String
+    let level_name: String
+    let entrances: [Entrance]
+}
+
+public struct OutputEntrance: Codable {
+    let entrance_list: [EntranceList]
 }
 
 // ---------------- RC ---------------- //

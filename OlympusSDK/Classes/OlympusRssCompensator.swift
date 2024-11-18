@@ -57,7 +57,7 @@ public class OlympusRssCompensator {
                                     if (rcDeviceResult.0) {
                                         if (rcDeviceResult.1.rss_compensations.isEmpty) {
                                             // Need Normalization-scale Estimation
-                                            print(getLocalTimeString() + " , (Olmypus) Information : Need RssCompensation Estimation")
+                                            print(getLocalTimeString() + " , (Olympus) Information : Need RssCompensation Estimation")
                                             let msg: String = getLocalTimeString() + " , (Olympus) Success : RssCompensation"
                                             completion(true, loadedNormalizationScale, msg)
                                         } else {
@@ -67,22 +67,22 @@ public class OlympusRssCompensator {
                                                 let rcFromServer: RcInfo = closest
                                                 loadedNormalizationScale = rcFromServer.normalization_scale
                                                 
-                                                print(getLocalTimeString() + " , (Olmypus) Information : Load RssCompensation from server (Device)")
+                                                print(getLocalTimeString() + " , (Olympus) Information : Load RssCompensation from server (\(device_model))")
                                                 let msg: String = getLocalTimeString() + " , (Olympus) Success : RssCompensation"
                                                 completion(true, loadedNormalizationScale, msg)
                                             } else {
                                                 // Need Normalization-scale Estimation
-                                                print(getLocalTimeString() + " , (Olmypus) Information : Need RssCompensation Estimation")
+                                                print(getLocalTimeString() + " , (Olympus) Information : Need RssCompensation Estimation")
                                                 let msg: String = getLocalTimeString() + " , (Olympus) Success : RssCompensation"
                                                 completion(true, loadedNormalizationScale, msg)
                                             }
                                         }
                                     } else {
-                                        let msg: String = getLocalTimeString() + " , (Olympus) Error : Decode RssCompensation (Device)"
+                                        let msg: String = getLocalTimeString() + " , (Olympus) Error : Decode RssCompensation (\(device_model))"
                                         completion(false, loadedNormalizationScale, msg)
                                     }
                                 } else {
-                                    let msg: String = getLocalTimeString() + " , (Olympus) Error : Load RssCompensation (Device) from server \(statusCode)"
+                                    let msg: String = getLocalTimeString() + " , (Olympus) Error : Load RssCompensation (\(device_model)) from server \(statusCode)"
                                     completion(false, loadedNormalizationScale, msg)
                                 }
                             })
@@ -91,16 +91,16 @@ public class OlympusRssCompensator {
                             let rcFromServer: RcInfo = rcResult.1.rss_compensations[0]
                             loadedNormalizationScale = rcFromServer.normalization_scale
                             
-                            print(getLocalTimeString() + " , (Olmypus) Information : Load RssCompensation from server (Device & OS)")
+                            print(getLocalTimeString() + " , (Olympus) Information : Load RssCompensation from server (\(device_model) & \(os_version))")
                             let msg: String = getLocalTimeString() + " , (Olympus) Success : RssCompensation"
                             completion(true, loadedNormalizationScale, msg)
                         }
                     } else {
-                        let msg: String = getLocalTimeString() + " , (Olympus) Error : Decode RssCompensation (Device & OS)"
+                        let msg: String = getLocalTimeString() + " , (Olympus) Error : Decode RssCompensation (\(device_model) & \(os_version))"
                         completion(false, loadedNormalizationScale, msg)
                     }
                 } else {
-                    let msg: String = getLocalTimeString() + " , (Olympus) Error : Load RssCompensation (Device & OS) from server \(statusCode)"
+                    let msg: String = getLocalTimeString() + " , (Olympus) Error : Load RssCompensation (\(device_model) & \(os_version)) from server \(statusCode)"
                     
                     // Edit Here !!
                     completion(false, loadedNormalizationScale, msg)

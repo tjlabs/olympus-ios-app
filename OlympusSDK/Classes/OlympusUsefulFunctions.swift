@@ -245,3 +245,35 @@ public func getCombination(inputArray: [Int], targetNum: Int) -> [[Int]] {
     
     return result
 }
+
+func determineClosestDirection(for angles: (Double, Double)) -> String? {
+    let normalizedAngles = (
+        angles.0.truncatingRemainder(dividingBy: 360),
+        angles.1.truncatingRemainder(dividingBy: 360)
+    )
+
+    let directions: [String: [Double]] = [
+        "hor": [0.0, 180.0],
+        "ver": [90.0, 270.0]
+    ]
+
+    func angularDifference(from angle1: Double, to angle2: Double) -> Double {
+        let diff = abs(angle1 - angle2)
+        return min(diff, 360 - diff)
+    }
+
+    for (directionName, referenceAngles) in directions {
+            let isBothClose = referenceAngles.contains { refAngle1 in
+                angularDifference(from: normalizedAngles.0, to: refAngle1) <= 40
+            } && referenceAngles.contains { refAngle2 in
+                angularDifference(from: normalizedAngles.1, to: refAngle2) <= 40
+            }
+
+            if isBothClose {
+                return directionName
+            }
+        }
+
+    return nil
+}
+

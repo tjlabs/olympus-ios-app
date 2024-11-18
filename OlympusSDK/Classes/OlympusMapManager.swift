@@ -17,25 +17,51 @@ public class OlympusMapManager {
         self.sector_id = value
     }
     
-    public func loadSectorInfo(sector_id: Int, completion: @escaping (Int, String) -> Void) {
+    public func loadUserLevel(sector_id: Int, completion: @escaping (Int, String) -> Void) {
         setSectorID(value: sector_id)
-        let sectorInput = SectorInput(sector_id: sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM)
-        OlympusNetworkManager.shared.postUserSector(url: USER_SECTOR_URL, input: sectorInput, completion: { statusCode, returnedString in
+        let input = InputSectorID(sector_id: sector_id)
+        OlympusNetworkManager.shared.postSectorID(url: USER_LEVEL_URL, input: input, completion: { statusCode, returnedString in
             completion(statusCode, returnedString)
-//            print(getLocalTimeString() + " , (Olympus) MapManager : loadSectorInfo // \(USER_SECTOR_URL) , \(returnedString)")
-//            if statusCode == 200 {
-//                let sectorInfoFromServer = jsonToSectorInfoFromServer(jsonString: returnedString)
-//                if sectorInfoFromServer.0 {
-//                    let infoBuildingLevel: [String: [String]] = makeBuildingLevelInfo(sectorInfoFromServer: sectorInfoFromServer.1)
-//                    setSectorBuildingLevel(sector_id: sector_id, infoBuildingLevel: infoBuildingLevel)
-//                }
-//                completion(statusCode, returnedString)
-//            } else {
-//                completion(statusCode, returnedString)
-//            }
         })
     }
     
+    private func loadUserPath(sector_id: Int, completion: @escaping (Bool, String) -> Void) {
+        let input = InputSectorIDnOS(sector_id: sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM)
+        OlympusNetworkManager.shared.postSectorIDnOS(url: USER_PATH_URL, input: input, completion: { statusCode, returnedString in
+            if statusCode == 200 {
+                let outputPath = jsonToPathFromServer(jsonString: returnedString)
+                if outputPath.0 {
+                    //MARK: - Path
+                    let pathInfo = outputPath.1
+                    for element in pathInfo.path_pixel_list {
+                        let buildingName = element.building_name
+                        let levelName = element.level_name
+                        let key = "\(input.sector_id)_\(buildingName)_\(levelName)"
+                        let ppURL = element.url
+                        // Path-Pixel URL 확인
+                        OlympusPathMatchingCalculator.shared.PpURL[key] = ppURL
+                        print(getLocalTimeString() + " , (Olympus) Sector Info : \(key) PP URL = \(ppURL)")
+                    }
+                    OlympusPathMatchingCalculator.shared.loadPathPixel(sector_id: sector_id, PathPixelURL: OlympusPathMatchingCalculator.shared.PpURL)
+                    let msg = getLocalTimeString() + " , (Olympus) Success : Load Sector Info // Path"
+                    print(msg)
+                    completion(true, msg)
+                } else {
+                    let msg = getLocalTimeString() + " , (Olympus) Error : Load Sector Info // Path \(statusCode)"
+                    print(msg)
+                    completion(false, msg)
+                }
+            } else {
+                let msg = getLocalTimeString() + " , (Olympus) Error : Load Sector Info // Path \(statusCode)"
+                print(msg)
+                completion(false, msg)
+            }
+        })
+    }
+    
+    public func loadSectorBuildingLevel(sector_id: Int, completion: @escaping (Int, String) -> Void) {
+        setSectorID(value: sector_id)
+    }
     
     public func loadSectorScale(sector_id: Int) {
         let scaleInput = ScaleInput(sector_id: sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM)
@@ -61,35 +87,22 @@ public class OlympusMapManager {
         }
     }
     
-    private func makeBuildingLevelInfo(sector_id: Int, sectorInfoFromServer: SectorInfoFromServer) -> [String: [String]] {
-        let sectorLevelList = sectorInfoFromServer.level_list
-        var infoBuildingLevel = [String: [String]]()
-        
-        for element in sectorLevelList {
+    private func makeBuildingLevelInfo(sector_id: Int, outputLevel: OutputLevel) -> [String: [String]] {
+        //MARK: - Level
+        var infoBuildingLevel = [String:[String]]()
+        for element in outputLevel.level_list {
             let buildingName = element.building_name
             let levelName = element.level_name
-            let key = "\(sector_id)_\(buildingName)_\(levelName)"
             
-            if !levelName.contains("_D") {
-                if var levels = infoBuildingLevel[buildingName] {
-                    levels.append(levelName)
-                    infoBuildingLevel[buildingName] = levels.sorted(by: { lhs, rhs in
-                        return compareFloorNames(lhs: lhs, rhs: rhs)
-                    })
-                } else {
-                    let levels = [levelName]
-                    infoBuildingLevel[buildingName] = levels
-                }
-                
-                if (!element.path_pixel_version.isEmpty) {
-                    OlympusPathMatchingCalculator.shared.PpVersion[key] = OlympusPathMatchingCalculator.shared.PpVersion[key] ?? element.path_pixel_version
-                    print(getLocalTimeString() + " , (Olympus) MapManager : \(key) PP Version = \(element.path_pixel_version)")
-                }
+            if let value = infoBuildingLevel[buildingName] {
+                var levels:[String] = value
+                levels.append(levelName)
+                infoBuildingLevel[buildingName] = levels
+            } else {
+                let levels:[String] = [levelName]
+                infoBuildingLevel[buildingName] = levels
             }
         }
-        OlympusPathMatchingCalculator.shared.loadPathPixel(sector_id: sector_id, PathPixelVersion: OlympusPathMatchingCalculator.shared.PpVersion)
-        // 임시
-//        infoBuildingLevel["Test"] = ["1F", "2F", "3F"]
         return infoBuildingLevel
     }
 
@@ -128,18 +141,23 @@ public class OlympusMapManager {
             mapView.updateBuildingData(Array(value.keys), levelData: value)
             loadSectorImages(sector_id: sector_id, infoBuildingLevel: value)
         } else {
-            loadSectorInfo(sector_id: sector_id) { [weak self] statusCode, returnedString in
+            loadUserLevel(sector_id: sector_id) { [weak self] statusCode, returnedString in
                 guard let self = self else { return }
                 if statusCode == 200 {
-                    let sectorInfoFromServer = jsonToSectorInfoFromServer(jsonString: returnedString)
-                    if sectorInfoFromServer.0 {
-                        let infoBuildingLevel = self.makeBuildingLevelInfo(sector_id: sector_id, sectorInfoFromServer: sectorInfoFromServer.1)
+                    let levelInfo = jsonToLevelFromServer(jsonString: returnedString)
+                    if levelInfo.0 {
+                        let infoBuildingLevel = self.makeBuildingLevelInfo(sector_id: sector_id, outputLevel: levelInfo.1)
                         self.setSectorBuildingLevel(sector_id: sector_id, infoBuildingLevel: infoBuildingLevel)
                         DispatchQueue.main.async {
                             mapView.updateBuildingData(Array(infoBuildingLevel.keys), levelData: infoBuildingLevel)
                         }
                         self.loadSectorImages(sector_id: sector_id, infoBuildingLevel: infoBuildingLevel)
                     }
+                    
+                    loadUserPath(sector_id: sector_id, completion: { isSuccess, message in
+                        if isSuccess {
+                        }
+                    })
                 }
             }
         }
@@ -202,26 +220,6 @@ public class OlympusMapManager {
                 }
                 task.resume()
             }
-//            let task = URLSession.shared.dataTask(with: urlLevel) { (data, response, error) in
-//                if let error = error {
-//                    completion(nil, error)
-//                }
-//                
-//                if let data = data, let httpResponse = response as? HTTPURLResponse,
-//                   httpResponse.statusCode == 200 {
-//                    DispatchQueue.main.async {
-//                        if let imageData = UIImage(data: data) {
-//                            OlympusImageCacheManager.shared.setObject(imageData, forKey: cacheKey)
-//                            completion(UIImage(data: data), nil)
-//                        } else {
-//                            completion(nil, error)
-//                        }
-//                    }
-//                } else {
-//                    completion(nil, error)
-//                }
-//            }
-//            task.resume()
         } else {
             completion(nil, nil)
         }

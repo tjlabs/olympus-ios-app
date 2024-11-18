@@ -4,8 +4,7 @@ public class OlympusRouteTracker {
     init() { }
     
     private var sector_id: Int = -1
-    
-    public var EntranceRouteVersion = [String: String]()
+    public var EntranceRouteURL = [String: String]()
     public var EntranceRouteLevel = [String: [String]]()
     public var EntranceRouteCoord = [String: [[Double]]]()
     public var EntranceNetworkStatus = [String: Bool]()
@@ -34,10 +33,10 @@ public class OlympusRouteTracker {
         self.sector_id = sector_id
     }
     
-    public func setEntranceInnerWardInfo(key: String, sectorInfoInnermostWard: SectorInfoInnermostWard) {
-        self.EntranceInnerWardID[key] = sectorInfoInnermostWard.id
-        self.EntranceInnerWardRSSI[key] = Double(sectorInfoInnermostWard.rss)
-        self.EntranceInnerWardCoord[key] = sectorInfoInnermostWard.pos + sectorInfoInnermostWard.direction
+    public func setEntranceInnerWardInfo(key: String, entranceRF: EntranceRF) {
+        self.EntranceInnerWardID[key] = entranceRF.id
+        self.EntranceInnerWardRSSI[key] = Double(entranceRF.rss)
+        self.EntranceInnerWardCoord[key] = entranceRF.pos + entranceRF.direction
     }
 
     private func parseRoute(data: String) -> ([String], [[Double]]) {
@@ -79,18 +78,18 @@ public class OlympusRouteTracker {
         }
     }
     
-    public func saveEntranceRouteVersion(key: String, routeVersion: String) {
-        print(getLocalTimeString() + " , (Olympus) Save \(key) Entrance Route Version : \(routeVersion)")
+    public func saveEntranceRouteURL(key: String, routeURL: String) {
+        print(getLocalTimeString() + " , (Olympus) Save \(key) Entrance Route URL : \(routeURL)")
         do {
-            let key: String = "OlympusEntranceRouteVersion_\(key)"
-            UserDefaults.standard.set(routeVersion, forKey: key)
+            let key: String = "OlympusEntranceRouteURL_\(key)"
+            UserDefaults.standard.set(routeURL, forKey: key)
         }
     }
     
-    public func loadEntranceRoute(sector_id: Int, RouteVersion: [String: String]) {
-        for (key, value) in RouteVersion {
+    public func loadEntranceRoute(sector_id: Int, RouteURL: [String: String]) {
+        for (key, value) in RouteURL {
             // Cache를 통해 PP 버전을 확인
-            let keyRouteVersion: String = "OlympusEntranceRouteVersion_\(key)"
+            let keyRouteVersion: String = "OlympusEntranceRouteURL_\(key)"
             if let loadedRouteVersion: String = UserDefaults.standard.object(forKey: keyRouteVersion) as? String {
                 if value == loadedRouteVersion {
                     // 만약 버전이 같다면 파일을 가져오기
@@ -109,8 +108,7 @@ public class OlympusRouteTracker {
                         }
                     } else {
                         // 첫 시작과 동일하게 다운로드 받아오기
-                        let sector_building_level = key.split(separator: "_")
-                        let routeUrl: String = CSV_URL + "/entrance-route/\(sector_id)/\(sector_building_level[1])/\(sector_building_level[2])/\(sector_building_level[3])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
+                        let routeUrl: String = value
                         let urlComponents = URLComponents(string: routeUrl)
                         OlympusFileDownloader.shared.downloadCSVFile(from: (urlComponents?.url)!, fname: key, completion: { [self] url, error in
                             if error == nil {
@@ -119,7 +117,7 @@ public class OlympusRouteTracker {
                                     let parsedData = self.parseRoute(data: contents)
                                     EntranceRouteLevel[key] = parsedData.0
                                     EntranceRouteCoord[key] = parsedData.1
-                                    saveEntranceRouteVersion(key: key, routeVersion: value)
+                                    saveEntranceRouteURL(key: key, routeURL: value)
                                     saveEntranceRouteLocalUrl(key: key, url: url)
                                     EntranceIsLoaded[key] = true
                                 } catch {
@@ -134,8 +132,7 @@ public class OlympusRouteTracker {
                 } else {
                     // 만약 버전이 다르면 다운로드 받아오기
                     // 첫 시작과 동일하게 다운로드 받아오기
-                    let sector_building_level = key.split(separator: "_")
-                    let routeUrl: String = CSV_URL + "/entrance-route/\(sector_id)/\(sector_building_level[1])/\(sector_building_level[2])/\(sector_building_level[3])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
+                    let routeUrl: String = value
                     let urlComponents = URLComponents(string: routeUrl)
                     OlympusFileDownloader.shared.downloadCSVFile(from: (urlComponents?.url)!, fname: key, completion: { [self] url, error in
                         if error == nil {
@@ -144,7 +141,7 @@ public class OlympusRouteTracker {
                                 let parsedData = self.parseRoute(data: contents)
                                 EntranceRouteLevel[key] = parsedData.0
                                 EntranceRouteCoord[key] = parsedData.1
-                                saveEntranceRouteVersion(key: key, routeVersion: value)
+                                saveEntranceRouteURL(key: key, routeURL: value)
                                 saveEntranceRouteLocalUrl(key: key, url: url)
                                 EntranceIsLoaded[key] = true
                             } catch {
@@ -158,8 +155,7 @@ public class OlympusRouteTracker {
                 }
             } else {
                 // 첫 시작이면 다운로드 받아오기
-                let sector_building_level = key.split(separator: "_")
-                let routeUrl: String = CSV_URL + "/entrance-route/\(sector_id)/\(sector_building_level[1])/\(sector_building_level[2])/\(sector_building_level[3])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
+                let routeUrl: String = value
                 let urlComponents = URLComponents(string: routeUrl)
                 OlympusFileDownloader.shared.downloadCSVFile(from: (urlComponents?.url)!, fname: key, completion: { [self] url, error in
                     if error == nil {
@@ -168,7 +164,7 @@ public class OlympusRouteTracker {
                             let parsedData = parseRoute(data: contents)
                             EntranceRouteLevel[key] = parsedData.0
                             EntranceRouteCoord[key] = parsedData.1
-                            saveEntranceRouteVersion(key: key, routeVersion: value)
+                            saveEntranceRouteURL(key: key, routeURL: value)
                             saveEntranceRouteLocalUrl(key: key, url: url)
                             EntranceIsLoaded[key] = true
                         } catch {

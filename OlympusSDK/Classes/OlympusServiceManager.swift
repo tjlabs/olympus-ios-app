@@ -339,45 +339,36 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             OlympusPathMatchingCalculator.shared.setSectorID(sector_id: sector_id)
                             buildingLevelChanger.setSectorID(sector_id: sector_id)
                             routeTracker.setSectorID(sector_id: sector_id)
-//                            let sectorInput = SectorInput(sector_id: sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM)
-                            OlympusMapManager.shared.loadSectorInfo(sector_id: sector_id, completion: { [self] statusCode, returnedString in
-//                            OlympusNetworkManager.shared.postUserSector(url: USER_SECTOR_URL, input: sectorInput, completion: { [self] statusCode, returnedString in
-                                if (statusCode == 200) {
-                                    let sectorInfoFromServer = jsonToSectorInfoFromServer(jsonString: returnedString)
-                                    if (sectorInfoFromServer.0) {
-                                        self.setSectorInfo(sector_id: sector_id, sector_info_from_server: sectorInfoFromServer.1)
-                                        rssCompensator.loadRssiCompensationParam(sector_id: sector_id, device_model: deviceModel, os_version: deviceOsVersion, completion: { [self] isSuccess, loadedParam, returnedString in
-                                            if (isSuccess) {
-                                                rssCompensator.setIsScaleLoaded(flag: isSuccess)
-                                                OlympusConstants().setNormalizationScale(cur: loadedParam, pre: loadedParam)
-                                                print(getLocalTimeString() + " , (Olympus) Scale : \(OlympusConstants.NORMALIZATION_SCALE), \(OlympusConstants.PRE_NORMALIZATION_SCALE)")
-                                                
-                                                if (!bleManager.bluetoothReady) {
-                                                    let msg: String = getLocalTimeString() + " , (Olympus) Error : Bluetooth is not enabled"
-                                                    completion(false, msg)
-                                                } else {
-                                                    if (!self.isSimulationMode) {
-                                                        OlympusFileManager.shared.setRegion(region: region)
-                                                        OlympusFileManager.shared.createFiles(region: region, sector_id: sector_id, deviceModel: deviceModel, osVersion: deviceOsVersion)
-                                                    }
-                                                    
-                                                    self.isStartComplete = true
-                                                    self.startTimer()
-                                                    NotificationCenter.default.post(name: .serviceStarted, object: nil, userInfo: nil)
-                                                    print(getLocalTimeString() + " , (Olympus) Service Start")
-                                                    completion(true, getLocalTimeString() + success_msg)
-                                                }
+                            loadSectorInfo(sector_id: sector_id, completion: { [self] isSuccess, message in
+                                if isSuccess {
+                                    rssCompensator.loadRssiCompensationParam(sector_id: sector_id, device_model: deviceModel, os_version: deviceOsVersion, completion: { [self] isSuccess, loadedParam, returnedString in
+                                        if (isSuccess) {
+                                            rssCompensator.setIsScaleLoaded(flag: isSuccess)
+                                            OlympusConstants().setNormalizationScale(cur: loadedParam, pre: loadedParam)
+                                            print(returnedString)
+                                            print(getLocalTimeString() + " , (Olympus) Scale : \(OlympusConstants.NORMALIZATION_SCALE), \(OlympusConstants.PRE_NORMALIZATION_SCALE)")
+                                            
+                                            if (!bleManager.bluetoothReady) {
+                                                let msg: String = getLocalTimeString() + " , (Olympus) Error : Bluetooth is not enabled"
+                                                completion(false, msg)
                                             } else {
-                                                completion(false, returnedString)
+                                                if (!self.isSimulationMode) {
+                                                    OlympusFileManager.shared.setRegion(region: region)
+                                                    OlympusFileManager.shared.createFiles(region: region, sector_id: sector_id, deviceModel: deviceModel, osVersion: deviceOsVersion)
+                                                }
+                                                
+                                                self.isStartComplete = true
+                                                self.startTimer()
+                                                NotificationCenter.default.post(name: .serviceStarted, object: nil, userInfo: nil)
+                                                print(getLocalTimeString() + " , (Olympus) Service Start")
+                                                completion(true, getLocalTimeString() + success_msg)
                                             }
-                                        })
-                                    } else {
-                                        let msg: String = getLocalTimeString() + " , (Olympus) Error : Decode SectorInfo"
-                                        completion(false, msg)
-                                    }
+                                        } else {
+                                            completion(false, returnedString)
+                                        }
+                                    })
                                 } else {
-                                    let msg: String = getLocalTimeString() + " , (Olympus) Error : Load Sector Info (id = \(sector_id))"
-                                    completion(false, msg)
+                                    completion(false, message)
                                 }
                             })
                         } else {
@@ -441,7 +432,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 return (isSuccess, msg)
             }
         }
-        
         return (isSuccess, msg)
     }
     
@@ -494,74 +484,211 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         return true
     }
     
-    private func setSectorInfo(sector_id: Int, sector_info_from_server: SectorInfoFromServer) {
+    private func loadSectorInfo(sector_id: Int, completion: @escaping (Bool, String) -> Void) {
         self.sector_id = sector_id
         self.sector_id_origin = sector_id
-        let sector_param: SectorInfoParam = sector_info_from_server.parameter
-        self.isSaveMobileResult = sector_param.debug
-        let stadard_rss: [Int] = sector_param.standard_rss
-        
-        let sector_info = SectorInfo(standard_min_rss: Double(stadard_rss[0]), standard_max_rss: Double(stadard_rss[1]), user_traj_length: Double(sector_param.trajectory_length + OlympusConstants.DR_LENGTH_MARGIN), user_traj_length_dr: Double(sector_param.trajectory_length + OlympusConstants.DR_LENGTH_MARGIN), user_traj_length_pdr:  Double(sector_param.trajectory_diagonal + OlympusConstants.PDR_LENGTH_MARGIN), num_straight_idx_dr: Int(ceil(OlympusConstants.USER_TRAJECTORY_LENGTH_DR/6)), num_straight_idx_pdr: Int(ceil(OlympusConstants.USER_TRAJECTORY_LENGTH_PDR/6)))
-        OlympusConstants().setSectorInfoConstants(sector_info: sector_info)
-        self.phaseController.setPhaseLengthParam(lengthConditionPdr: Double(sector_param.trajectory_diagonal), lengthConditionDr: Double(sector_param.trajectory_length))
-        print(getLocalTimeString() + " , (Olympus) Information : User Trajectory Param \(OlympusConstants.USER_TRAJECTORY_LENGTH_DR) // \(OlympusConstants.USER_TRAJECTORY_LENGTH_PDR) // \(OlympusConstants.NUM_STRAIGHT_IDX_DR)")
-        
-        let sectorLevelList = sector_info_from_server.level_list
-        var infoBuildingLevel = [String:[String]]()
-        
-        for element in sectorLevelList {
-            let buildingName = element.building_name
-            let levelName = element.level_name
-            
-            if let value = infoBuildingLevel[buildingName] {
-                var levels:[String] = value
-                levels.append(levelName)
-                infoBuildingLevel[buildingName] = levels
-            } else {
-                let levels:[String] = [levelName]
-                infoBuildingLevel[buildingName] = levels
-            }
-            
-            if !levelName.contains("_D") {
-                let key = "\(sector_id)_\(buildingName)_\(levelName)"
-                let entranceArea = element.geofence.entrance_area
-                let entranceMatcingArea = element.geofence.entrance_matching_area
-                let levelChangeArea = element.geofence.level_change_area
-                let drModeAreas = element.geofence.dr_mode_areas
-                
-                if !entranceArea.isEmpty { OlympusPathMatchingCalculator.shared.EntranceArea[key] = entranceArea }
-                if !entranceMatcingArea.isEmpty { OlympusPathMatchingCalculator.shared.EntranceMatchingArea[key] = entranceMatcingArea }
-                if !levelChangeArea.isEmpty { OlympusPathMatchingCalculator.shared.LevelChangeArea[key] = levelChangeArea }
-                if !drModeAreas.isEmpty { buildingLevelChanger.setSectorDRModeArea(building: buildingName, level: levelName, drModeAreaList: drModeAreas) }
-                
-                if (levelName == "B0") {
-                    routeTracker.EntranceNumbers = element.entrance_list.count
-                    var entranceOuterWards: [String] = []
-                    for entrance in element.entrance_list {
-                        let entranceKey = "\(key)_\(entrance.spot_number)"
-                        routeTracker.EntranceNetworkStatus[entranceKey] = entrance.network_status
-                        routeTracker.EntranceVelocityScales[entranceKey] = entrance.scale
-                        routeTracker.EntranceRouteVersion[entranceKey] = entrance.route_version
-                        routeTracker.setEntranceInnerWardInfo(key: entranceKey, sectorInfoInnermostWard: entrance.innermost_ward)
-                        entranceOuterWards.append(entrance.outermost_ward_id)
-                        print(getLocalTimeString() + " , (Olympus) Sector Info : Entrance \(entranceKey) Velocity Scale = \(entrance.scale)")
+        let inputSectorID = InputSectorID(sector_id: sector_id)
+        let inputSectorIDnOS = InputSectorIDnOS(sector_id: sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM)
+        loadUserLevel(input: inputSectorID, completion: { [self] isSuccess, message in
+            if isSuccess {
+                loadUserParam(input: inputSectorIDnOS, completion: { [self] isSuccess, message in
+                    if isSuccess {
+                        loadUserPath(input: inputSectorIDnOS, completion: { [self] isSuccess, message in
+                            if isSuccess {
+                                loadUserGeo(input: inputSectorIDnOS, completion: { [self] isSuccess, message in
+                                    if isSuccess {
+                                        loadUserEntrance(input: inputSectorIDnOS, completion: { isSuccess, message in
+                                            if isSuccess {
+                                                completion(isSuccess, message)
+                                            } else {
+                                                completion(isSuccess, message)
+                                            }
+                                        })
+                                    } else {
+                                        completion(isSuccess, message)
+                                    }
+                                })
+                            } else {
+                                completion(isSuccess, message)
+                            }
+                        })
+                    } else {
+                        completion(isSuccess, message)
                     }
-                    stateManager.EntranceOuterWards = entranceOuterWards
-                }
-                
-                if (!element.path_pixel_version.isEmpty) {
-                    OlympusPathMatchingCalculator.shared.PpVersion[key] = element.path_pixel_version
-                    print(getLocalTimeString() + " , (Olympus) Sector Info : \(key) PP Version = \(element.path_pixel_version)")
-                }
+                })
+            } else {
+                completion(isSuccess, message)
             }
-        }
-        buildingLevelChanger.buildingsAndLevels = infoBuildingLevel
-        // Entrance Route 버전 확인
-        routeTracker.loadEntranceRoute(sector_id: sector_id, RouteVersion: routeTracker.EntranceRouteVersion)
-        // Path-Pixel 버전 확인
-        OlympusPathMatchingCalculator.shared.loadPathPixel(sector_id: sector_id, PathPixelVersion: OlympusPathMatchingCalculator.shared.PpVersion)
+        })
     }
     
+    private func loadUserLevel(input: InputSectorID, completion: @escaping (Bool, String) -> Void) {
+        OlympusNetworkManager.shared.postSectorID(url: USER_LEVEL_URL, input: input, completion: { [self] statusCode, returnedString in
+            if statusCode == 200 {
+                let outputLevel = jsonToLevelFromServer(jsonString: returnedString)
+                if outputLevel.0 {
+                    //MARK: - Level
+                    var infoBuildingLevel = [String:[String]]()
+                    for element in outputLevel.1.level_list {
+                        let buildingName = element.building_name
+                        let levelName = element.level_name
+                        
+                        if let value = infoBuildingLevel[buildingName] {
+                            var levels:[String] = value
+                            levels.append(levelName)
+                            infoBuildingLevel[buildingName] = levels
+                        } else {
+                            let levels:[String] = [levelName]
+                            infoBuildingLevel[buildingName] = levels
+                        }
+                    }
+                    buildingLevelChanger.buildingsAndLevels = infoBuildingLevel
+                    let msg = getLocalTimeString() + " , (Olympus) Success : Load Sector Info // Level"
+                    completion(true, msg)
+                } else {
+                    let msg = getLocalTimeString() + " , (Olympus) Error : Load Sector Info // Level \(statusCode)"
+                    completion(false, msg)
+                }
+            } else {
+                let msg = getLocalTimeString() + " , (Olympus) Error : Load Sector Info // Level \(statusCode)"
+                completion(false, msg)
+            }
+        })
+    }
+    
+    private func loadUserParam(input: InputSectorIDnOS, completion: @escaping (Bool, String) -> Void) {
+        OlympusNetworkManager.shared.postSectorIDnOS(url: USER_PARAM_URL, input: input, completion: { [self] statusCode, returnedString in
+            if statusCode == 200 {
+                let outputParam = jsonToParamFromServer(jsonString: returnedString)
+                if outputParam.0 {
+                    //MARK: - Param
+                    let paramInfo = outputParam.1
+                    self.isSaveMobileResult = paramInfo.debug
+                    let stadard_rss: [Int] = paramInfo.standard_rss
+                    let sector_info = SectorInfo(standard_min_rss: Double(stadard_rss[0]), standard_max_rss: Double(stadard_rss[1]), user_traj_length: Double(paramInfo.trajectory_length + OlympusConstants.DR_LENGTH_MARGIN), user_traj_length_dr: Double(paramInfo.trajectory_length + OlympusConstants.DR_LENGTH_MARGIN), user_traj_length_pdr:  Double(paramInfo.trajectory_diagonal + OlympusConstants.PDR_LENGTH_MARGIN), num_straight_idx_dr: Int(ceil(OlympusConstants.USER_TRAJECTORY_LENGTH_DR/6)), num_straight_idx_pdr: Int(ceil(OlympusConstants.USER_TRAJECTORY_LENGTH_PDR/6)))
+                    OlympusConstants().setSectorInfoConstants(sector_info: sector_info)
+                    self.phaseController.setPhaseLengthParam(lengthConditionPdr: Double(paramInfo.trajectory_diagonal), lengthConditionDr: Double(paramInfo.trajectory_length))
+                    print(getLocalTimeString() + " , (Olympus) Information : User Trajectory Param \(OlympusConstants.USER_TRAJECTORY_LENGTH_DR) // \(OlympusConstants.USER_TRAJECTORY_LENGTH_PDR) // \(OlympusConstants.NUM_STRAIGHT_IDX_DR)")
+                    let msg = getLocalTimeString() + " , (Olympus) Success : Load Sector Info // Param"
+                    completion(true, msg)
+                } else {
+                    let msg = getLocalTimeString() + " , (Olympus) Error : Load Sector Info // Param \(statusCode)"
+                    print(msg)
+                    completion(false, msg)
+                }
+            } else {
+                let msg = getLocalTimeString() + " , (Olympus) Error : Load Sector Info // Param \(statusCode)"
+                print(msg)
+                completion(false, msg)
+            }
+        })
+    }
+    
+    private func loadUserPath(input: InputSectorIDnOS, completion: @escaping (Bool, String) -> Void) {
+        OlympusNetworkManager.shared.postSectorIDnOS(url: USER_PATH_URL, input: input, completion: { [self] statusCode, returnedString in
+            if statusCode == 200 {
+                let outputPath = jsonToPathFromServer(jsonString: returnedString)
+                if outputPath.0 {
+                    //MARK: - Path
+                    let pathInfo = outputPath.1
+                    for element in pathInfo.path_pixel_list {
+                        let buildingName = element.building_name
+                        let levelName = element.level_name
+                        let key = "\(input.sector_id)_\(buildingName)_\(levelName)"
+                        let ppURL = element.url
+                        // Path-Pixel URL 확인
+                        OlympusPathMatchingCalculator.shared.PpURL[key] = ppURL
+                        print(getLocalTimeString() + " , (Olympus) Sector Info : \(key) PP URL = \(ppURL)")
+                    }
+                    OlympusPathMatchingCalculator.shared.loadPathPixel(sector_id: sector_id, PathPixelURL: OlympusPathMatchingCalculator.shared.PpURL)
+                    let msg = getLocalTimeString() + " , (Olympus) Success : Load Sector Info // Path"
+                    completion(true, msg)
+                } else {
+                    let msg = getLocalTimeString() + " , (Olympus) Error : Load Sector Info // Path \(statusCode)"
+                    completion(false, msg)
+                }
+            } else {
+                let msg = getLocalTimeString() + " , (Olympus) Error : Load Sector Info // Path \(statusCode)"
+                completion(false, msg)
+            }
+        })
+    }
+    
+    private func loadUserGeo(input: InputSectorIDnOS, completion: @escaping (Bool, String) -> Void) {
+        OlympusNetworkManager.shared.postSectorIDnOS(url: USER_GEO_URL, input: input, completion: { [self] statusCode, returnedString in
+            if statusCode == 200 {
+                let outputGeo = jsonToGeofenceFromServer(jsonString: returnedString)
+                if outputGeo.0 {
+                    //MARK: - Geo
+                    let geoInfo = outputGeo.1
+                    for element in geoInfo.geofence_list {
+                        let buildingName = element.building_name
+                        let levelName = element.level_name
+                        let key = "\(input.sector_id)_\(buildingName)_\(levelName)"
+                        
+                        let entranceArea = element.entrance_area
+                        let entranceMatcingArea = element.entrance_matching_area
+                        let levelChangeArea = element.level_change_area
+                        let drModeAreas = element.dr_mode_areas
+                        
+                        if !entranceArea.isEmpty { OlympusPathMatchingCalculator.shared.EntranceArea[key] = entranceArea }
+                        if !entranceMatcingArea.isEmpty { OlympusPathMatchingCalculator.shared.EntranceMatchingArea[key] = entranceMatcingArea }
+                        if !levelChangeArea.isEmpty { OlympusPathMatchingCalculator.shared.LevelChangeArea[key] = levelChangeArea }
+                        if !drModeAreas.isEmpty { buildingLevelChanger.setSectorDRModeArea(building: buildingName, level: levelName, drModeAreaList: drModeAreas) }
+                    }
+                    let msg = getLocalTimeString() + " , (Olympus) Success : Load Sector Info // Geo"
+                    completion(true, msg)
+                } else {
+                    let msg = getLocalTimeString() + " , (Olympus) Error : Load Sector Info // Geo \(statusCode)"
+                    completion(false, msg)
+                }
+            } else {
+                let msg = getLocalTimeString() + " , (Olympus) Error : Load Sector Info // Geo \(statusCode)"
+                completion(false, msg)
+            }
+        })
+    }
+    
+    private func loadUserEntrance(input: InputSectorIDnOS, completion: @escaping (Bool, String) -> Void) {
+        OlympusNetworkManager.shared.postSectorIDnOS(url: USER_ENTRANCE_URL, input: input, completion: { [self] statusCode, returnedString in
+            if statusCode == 200 {
+                let outputEntrance = jsonToEntranceFromServer(jsonString: returnedString)
+                if outputEntrance.0 {
+                    //MARK: - Entrance
+                    let entranceInfo = outputEntrance.1
+                    var entranceOuterWards: [String] = []
+                    var entranceNumbers: Int = 0
+                    for element in entranceInfo.entrance_list {
+                        let buildingName = element.building_name
+                        let levelName = element.level_name
+                        let key = "\(input.sector_id)_\(buildingName)_\(levelName)"
+                        
+                        let entrances = element.entrances
+                        entranceNumbers += entrances.count
+                        for ent in entrances {
+                            let entranceKey = "\(key)_\(ent.spot_number)"
+                            routeTracker.EntranceNetworkStatus[entranceKey] = ent.network_status
+                            routeTracker.EntranceVelocityScales[entranceKey] = ent.scale
+                            routeTracker.EntranceRouteURL[entranceKey] = ent.url
+                            routeTracker.setEntranceInnerWardInfo(key: entranceKey, entranceRF: ent.innermost_ward)
+                            entranceOuterWards.append(ent.outermost_ward_id)
+                        }
+                    }
+                    routeTracker.EntranceNumbers = entranceNumbers
+                    stateManager.EntranceOuterWards = entranceOuterWards
+                    routeTracker.loadEntranceRoute(sector_id: sector_id, RouteURL: routeTracker.EntranceRouteURL)
+                    let msg = getLocalTimeString() + " , (Olympus) Success : Load Sector Info // Entrance"
+                    completion(true, msg)
+                } else {
+                    let msg = getLocalTimeString() + " , (Olympus) Error : Load Sector Info // Entrance \(statusCode)"
+                    completion(false, msg)
+                }
+            } else {
+                let msg = getLocalTimeString() + " , (Olympus) Error : Load Sector Info // Entrance \(statusCode)"
+                completion(false, msg)
+            }
+        })
+    }
     
     public func setMinimumTimeForIndoorReport(time: Double) {
         OlympusConstants.TIME_INIT_THRESHOLD = time
@@ -905,7 +1032,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     mustInSameLink = false
                 } else if (OlympusPathMatchingCalculator.shared.isInNode || pathMatchingArea.0) {
                     mustInSameLink = false
-                    //                    // 길 끝에 있는지 확인해야 한다
+                    // 길 끝에 있는지 확인해야 한다
                     self.isInMapEnd = OlympusPathMatchingCalculator.shared.checkIsInMapEnd(resultStandard: self.temporalResult, tuResult: tuResult, pathType: pathType)
                     if (self.isInMapEnd) {
                         tuResult.x = self.temporalResult.x
@@ -1193,6 +1320,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         if ((self.unitDRInfoIndex % RQ_IDX) == 0 && !stateManager.isBackground) {
             if (phaseController.PHASE == OlympusConstants.PHASE_1 || phaseController.PHASE == OlympusConstants.PHASE_3) {
                 // Phase 1 ~ 3
+                if KF.isRunning && !self.isPhaseBreak {
+                    self.isPhaseBreak = true
+                }
                 let phase3Trajectory = trajectoryInfo
                 let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase3Trajectory, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, isKF: KF.isRunning, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult, LENGTH_THRESHOLD: USER_TRAJECTORY_LENGTH)
                 let displaySearchType: Int = trajTypeConverter(trajType: searchInfo.trajType)
@@ -1357,6 +1487,11 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                         isPhaseBreak = false
                                     }
                                 }
+                            } else {
+                                let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: fltResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+                                currentBuilding = updatedResult.building_name
+                                currentLevel = updatedResult.level_name
+                                self.isBuildingLevelChanged(newBuilding: updatedResult.building_name, newLevel: updatedResult.level_name, newCoord: [])
                             }
                         } else {
                             if (resultPhase.0 == OlympusConstants.PHASE_6 && !stateManager.isVenusMode) {
@@ -2055,7 +2190,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         OlympusPathMatchingCalculator.shared.PpIsLoaded[key] = true
                     } else {
                         if (!ppIsLoaded) {
-                            OlympusPathMatchingCalculator.shared.loadPathPixel(sector_id: sector_id, PathPixelVersion: OlympusPathMatchingCalculator.shared.PpVersion)
+                            OlympusPathMatchingCalculator.shared.loadPathPixel(sector_id: sector_id, PathPixelURL: OlympusPathMatchingCalculator.shared.PpURL)
                         }
                     }
                     isPmFailed = true
@@ -2083,7 +2218,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         OlympusPathMatchingCalculator.shared.PpIsLoaded[key] = true
                     } else {
                         if (!ppIsLoaded) {
-                            OlympusPathMatchingCalculator.shared.loadPathPixel(sector_id: sector_id, PathPixelVersion: OlympusPathMatchingCalculator.shared.PpVersion)
+                            OlympusPathMatchingCalculator.shared.loadPathPixel(sector_id: sector_id, PathPixelURL: OlympusPathMatchingCalculator.shared.PpURL)
                         }
                     }
                     isPmFailed = true
@@ -2454,14 +2589,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         if (self.headingBufferForCorrection.count > OlympusConstants.HEADING_BUFFER_SIZE) {
             self.headingBufferForCorrection.remove(at: 0)
         }
-    }
-    
-    private func phaseBreakInPhase2() {
-        trajController.setIsNeedTrajCheck(flag: true)
-        NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_1])
-        phaseController.setPhase2BadCount(value: 0)
-        isPhaseBreakInRouteTrack = isStartRouteTrack
-        isPhaseBreak = KF.isRunning
     }
     
     private func phaseBreakInPhase4(fltResult: FineLocationTrackingFromServer, isUpdatePhaseBreakResult: Bool) {

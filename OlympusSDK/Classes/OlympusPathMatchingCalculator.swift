@@ -4,7 +4,7 @@ public class OlympusPathMatchingCalculator {
     static var shared = OlympusPathMatchingCalculator()
     
     private var sector_id: Int = -1
-    public var PpVersion = [String: String]()
+    public var PpURL = [String: String]()
     public var PpType = [String: [Int]]()
     public var PpNode = [String: [Int]]()
     public var PpCoord = [String: [[Double]]]()
@@ -181,20 +181,20 @@ public class OlympusPathMatchingCalculator {
         }
     }
     
-    public func savePathPixelVersion(key: String, ppVersion: String) {
-        print(getLocalTimeString() + " , (Olympus) Save \(key) Path-Pixel Version : \(ppVersion)")
+    public func savePathPixelURL(key: String, ppURL: String) {
+        print(getLocalTimeString() + " , (Olympus) Save \(key) Path-Pixel URL : \(ppURL)")
         do {
-            let key: String = "OlympusPathPixelVersion_\(key)"
-            UserDefaults.standard.set(ppVersion, forKey: key)
+            let key: String = "OlympusPathPixelURL_\(key)"
+            UserDefaults.standard.set(ppURL, forKey: key)
         }
     }
     
-    public func loadPathPixel(sector_id: Int, PathPixelVersion: [String: String]) {
-        for (key, value) in PathPixelVersion {
+    public func loadPathPixel(sector_id: Int, PathPixelURL: [String: String]) {
+        for (key, value) in PathPixelURL {
             // Cache를 통해 PP 버전을 확인
-            let keyPpVersion: String = "OlympusPathPixelVersion_\(key)"
-            if let loadedPpVersion: String = UserDefaults.standard.object(forKey: keyPpVersion) as? String {
-                if value == loadedPpVersion {
+            let keyPpURL: String = "OlympusPathPixelURL_\(key)"
+            if let loadedPpURL: String = UserDefaults.standard.object(forKey: keyPpURL) as? String {
+                if value == loadedPpURL {
                     // 만약 버전이 같다면 파일을 가져오기
                     let ppLocalUrl = loadPathPixelLocalUrl(key: key)
                     if (ppLocalUrl.0) {
@@ -211,8 +211,7 @@ public class OlympusPathMatchingCalculator {
                         
                     } else {
                         // 첫 시작과 동일하게 다운로드 받아오기
-                        let sector_building_level = key.split(separator: "_")
-                        let ppUrl: String = CSV_URL + "/path-pixel/\(sector_id)/\(sector_building_level[1])/\(sector_building_level[2])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
+                        let ppUrl: String = value
                         let urlComponents = URLComponents(string: ppUrl)
                         OlympusFileDownloader.shared.downloadCSVFile(from: (urlComponents?.url)!, fname: key, completion: { [self] url, error in
                             if error == nil {
@@ -220,7 +219,7 @@ public class OlympusPathMatchingCalculator {
                                     let contents = try String(contentsOf: url!)
                                     ( PpType[key], PpNode[key],PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
                                     NotificationCenter.default.post(name: .sectorPathPixelUpdated, object: nil, userInfo: ["pathPixelKey": key])
-                                    savePathPixelVersion(key: key, ppVersion: value)
+                                    savePathPixelURL(key: key, ppURL: value)
                                     savePathPixelLocalUrl(key: key, url: url)
                                     PpIsLoaded[key] = true
                                 } catch {
@@ -235,8 +234,7 @@ public class OlympusPathMatchingCalculator {
                 } else {
                     // 만약 버전이 다르면 다운로드 받아오기
                     // 첫 시작과 동일하게 다운로드 받아오기
-                    let sector_building_level = key.split(separator: "_")
-                    let ppUrl: String = CSV_URL + "/path-pixel/\(sector_id)/\(sector_building_level[1])/\(sector_building_level[2])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
+                    let ppUrl: String = value
                     let urlComponents = URLComponents(string: ppUrl)
                     OlympusFileDownloader.shared.downloadCSVFile(from: (urlComponents?.url)!, fname: key, completion: { [self] url, error in
                         if error == nil {
@@ -244,7 +242,7 @@ public class OlympusPathMatchingCalculator {
                                 let contents = try String(contentsOf: url!)
                                 ( PpType[key], PpNode[key], PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
                                 NotificationCenter.default.post(name: .sectorPathPixelUpdated, object: nil, userInfo: ["pathPixelKey": key])
-                                savePathPixelVersion(key: key, ppVersion: value)
+                                savePathPixelURL(key: key, ppURL: value)
                                 savePathPixelLocalUrl(key: key, url: url)
                                 PpIsLoaded[key] = true
                             } catch {
@@ -259,8 +257,7 @@ public class OlympusPathMatchingCalculator {
             } else {
                 // 첫 시작이면 다운로드 받아오기
                 if (!value.isEmpty) {
-                    let sector_building_level = key.split(separator: "_")
-                    let ppUrl: String = CSV_URL + "/path-pixel/\(sector_id)/\(sector_building_level[1])/\(sector_building_level[2])/\(value)/\(OlympusConstants.OPERATING_SYSTEM).csv"
+                    let ppUrl: String = value
                     let urlComponents = URLComponents(string: ppUrl)
                     OlympusFileDownloader.shared.downloadCSVFile(from: (urlComponents?.url)!, fname: key, completion: { [self] url, error in
                         if error == nil {
@@ -269,7 +266,7 @@ public class OlympusPathMatchingCalculator {
                                 print(key)
                                 ( PpType[key], PpNode[key], PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
                                 NotificationCenter.default.post(name: .sectorPathPixelUpdated, object: nil, userInfo: ["pathPixelKey": key])
-                                savePathPixelVersion(key: key, ppVersion: value)
+                                savePathPixelURL(key: key, ppURL: value)
                                 savePathPixelLocalUrl(key: key, url: url)
                                 PpIsLoaded[key] = true
                             } catch {
@@ -965,13 +962,11 @@ public class OlympusPathMatchingCalculator {
         
         if (isPhaseBreak) {
             paddingValues = [Double] (repeating: PADDING_VALUE, count: 4)
-//            print(getLocalTimeString() + " , (Olympus) isPhaseBreak // paddingValues = \(paddingValues)")
             return paddingValues
         }
         
         let directions = linkDirections
         
-//        print(getLocalTimeString() + " , (Olympus) linkDirections = \(linkDirections)")
         var isDefault: Bool = true
         if directions.count == 2 {
             var xyLimitValue: Double = 30
@@ -979,11 +974,20 @@ public class OlympusPathMatchingCalculator {
                 xyLimitValue = xyLimitValue - 5
             }
             if (directions.contains(0) && directions.contains(180)) {
-                paddingValues = [xyLimitValue, 2, xyLimitValue, 2]
+                paddingValues = [xyLimitValue, 1, xyLimitValue, 1]
                 isDefault = false
             } else if (directions.contains(90) && directions.contains(270)) {
-                paddingValues = [2, xyLimitValue, 2, xyLimitValue]
+                paddingValues = [1, xyLimitValue, 1, xyLimitValue]
                 isDefault = false
+            } else {
+                if let closestDir = determineClosestDirection(for: (directions[0], directions[1])) {
+                    if closestDir == "hor" {
+                        paddingValues = [xyLimitValue/2, 3, xyLimitValue/2, 3]
+                    } else {
+                        paddingValues = [3, xyLimitValue/2, 3, xyLimitValue/2]
+                    }
+                    isDefault = false
+                }
             }
         }
         
@@ -1022,31 +1026,6 @@ public class OlympusPathMatchingCalculator {
             }
         
         return coordinates
-    }
-    
-    private func getPaddingValuesForPhase4(directions: [Double], PIXELS_TO_CHECK: Int) -> [Double] {
-        var paddingValues: [Double] = [0, 0, 0, 0]
-        let pixelValue: Double = Double(PIXELS_TO_CHECK)
-        
-        var isDefault: Bool = true
-        if directions.count == 2 {
-            if (directions.contains(0) && directions.contains(180)) {
-                paddingValues = [pixelValue, 2, pixelValue, 2]
-                isDefault = false
-            } else if (directions.contains(90) && directions.contains(270)) {
-                paddingValues = [2, pixelValue, 2, pixelValue]
-                isDefault = false
-            }
-        }
-        
-        if (isDefault) {
-            paddingValues = [Double] (repeating: pixelValue, count: 4)
-//            print(getLocalTimeString() + " , (Olympus) Request Phase 4 : Default // paddingValues = \(paddingValues)")
-        } else {
-//            print(getLocalTimeString() + " , (Olympus) Request Phase 4 : XYLimit // paddingValues = \(paddingValues)")
-        }
-        
-        return paddingValues
     }
     
     public func checkIsInMapEnd(resultStandard: FineLocationTrackingFromServer, tuResult: FineLocationTrackingFromServer, pathType: Int) -> Bool {
