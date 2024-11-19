@@ -50,18 +50,18 @@ class MapViewController: UIViewController, Observer {
         let uniqueId = makeUniqueId(uuid: self.userId)
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_01_04_1007.csv", sensorFileName: "sensor_coex_01_04_1007.csv")
-        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_dr_03_1030.csv", sensorFileName: "sensor_coex_dr_03_1030.csv")
-        serviceManager.addObserver(self)
-        serviceManager.startService(user_id: uniqueId, region: "Korea", sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
-            if (isStart) {
-                self.startTimer()
-                OlympusMapManager.shared.loadMap(region: "Korea", sector_id: sector_id, mapView: mapView)
-            } else {
-                print(returnedString)
-            }
-        })
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_dr_03_1030.csv", sensorFileName: "sensor_coex_dr_03_1030.csv")
+//        serviceManager.addObserver(self)
+//        serviceManager.startService(user_id: uniqueId, region: "Korea", sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
+//            if (isStart) {
+//                self.startTimer()
+//                OlympusMapManager.shared.loadMap(region: "Korea", sector_id: sector_id, mapView: mapView)
+//            } else {
+//                print(returnedString)
+//            }
+//        })
         
-//        OlympusMapManager.shared.loadMap(region: "Korea", sector_id: sector_id, mapView: mapView)
+        OlympusMapManager.shared.loadMap(region: "Korea", sector_id: sector_id, mapView: mapView)
     }
     
     func startTimer() {
