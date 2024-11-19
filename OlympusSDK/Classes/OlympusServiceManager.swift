@@ -339,6 +339,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             OlympusPathMatchingCalculator.shared.setSectorID(sector_id: sector_id)
                             buildingLevelChanger.setSectorID(sector_id: sector_id)
                             routeTracker.setSectorID(sector_id: sector_id)
+                            stateManager.setSectorID(sector_id: sector_id)
                             loadSectorInfo(sector_id: sector_id, completion: { [self] isSuccess, message in
                                 if isSuccess {
                                     rssCompensator.loadRssiCompensationParam(sector_id: sector_id, device_model: deviceModel, os_version: deviceOsVersion, completion: { [self] isSuccess, loadedParam, returnedString in
@@ -598,7 +599,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         let ppURL = element.url
                         // Path-Pixel URL 확인
                         OlympusPathMatchingCalculator.shared.PpURL[key] = ppURL
-                        print(getLocalTimeString() + " , (Olympus) Sector Info : \(key) PP URL = \(ppURL)")
+//                        print(getLocalTimeString() + " , (Olympus) Sector Info : \(key) PP URL = \(ppURL)")
                     }
                     OlympusPathMatchingCalculator.shared.loadPathPixel(sector_id: sector_id, PathPixelURL: OlympusPathMatchingCalculator.shared.PpURL)
                     let msg = getLocalTimeString() + " , (Olympus) Success : Load Sector Info // Path"

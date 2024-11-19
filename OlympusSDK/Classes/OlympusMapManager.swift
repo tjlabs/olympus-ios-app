@@ -40,20 +40,17 @@ public class OlympusMapManager {
                         let ppURL = element.url
                         // Path-Pixel URL 확인
                         OlympusPathMatchingCalculator.shared.PpURL[key] = ppURL
-                        print(getLocalTimeString() + " , (Olympus) Sector Info : \(key) PP URL = \(ppURL)")
+//                        print(getLocalTimeString() + " , (Olympus) Sector Info : \(key) PP URL = \(ppURL)")
                     }
                     OlympusPathMatchingCalculator.shared.loadPathPixel(sector_id: sector_id, PathPixelURL: OlympusPathMatchingCalculator.shared.PpURL)
                     let msg = getLocalTimeString() + " , (Olympus) Success : Load Sector Info // Path"
-                    print(msg)
                     completion(true, msg)
                 } else {
                     let msg = getLocalTimeString() + " , (Olympus) Error : Load Sector Info // Path \(statusCode)"
-                    print(msg)
                     completion(false, msg)
                 }
             } else {
                 let msg = getLocalTimeString() + " , (Olympus) Error : Load Sector Info // Path \(statusCode)"
-                print(msg)
                 completion(false, msg)
             }
         })
@@ -70,6 +67,8 @@ public class OlympusMapManager {
             if result.0 {
                 let scaleFromServer = result.1
                 updateSectorScales(sector_id: sector_id, scaleFromServer: scaleFromServer)
+            } else {
+                print(getLocalTimeString() + " , (Olympus) MapManager : Error deocoding Sector Scale")
             }
         })
     }
@@ -82,7 +81,7 @@ public class OlympusMapManager {
             
             let scaleKey = "scale_\(sector_id)_\(buildingName)_\(levelName)"
             sectorScales[scaleKey] = element.image_scale
-//            print(getLocalTimeString() + " , (Olympus) MapManager : key = \(key) // scale = \(sectorScales[key])")
+//            print(getLocalTimeString() + " , (Olympus) MapManager : key = \(scaleKey) // scale = \(sectorScales[scaleKey])")
             NotificationCenter.default.post(name: .sectorScalesUpdated, object: nil, userInfo: ["scaleKey": scaleKey])
         }
     }
@@ -94,13 +93,15 @@ public class OlympusMapManager {
             let buildingName = element.building_name
             let levelName = element.level_name
             
-            if let value = infoBuildingLevel[buildingName] {
-                var levels:[String] = value
-                levels.append(levelName)
-                infoBuildingLevel[buildingName] = levels
-            } else {
-                let levels:[String] = [levelName]
-                infoBuildingLevel[buildingName] = levels
+            if !levelName.contains("_D") {
+                if let value = infoBuildingLevel[buildingName] {
+                    var levels:[String] = value
+                    levels.append(levelName)
+                    infoBuildingLevel[buildingName] = levels
+                } else {
+                    let levels:[String] = [levelName]
+                    infoBuildingLevel[buildingName] = levels
+                }
             }
         }
         return infoBuildingLevel

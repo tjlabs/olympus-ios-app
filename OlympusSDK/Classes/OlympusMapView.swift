@@ -542,7 +542,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
 //            let minY: Double = -8
 //            let maxY: Double = 530
             
-            print(getLocalTimeString() + " , (Olympus) MapView : calMapScaleOffset // key = \(scaleKey) // value = \(sectorScale)")
+//            print(getLocalTimeString() + " , (Olympus) MapView : calMapScaleOffset // key = \(scaleKey) // value = \(sectorScale)")
             let minX: Double = !sectorScale.isEmpty ? sectorScale[0] : -54.5
             let maxX: Double = !sectorScale.isEmpty ? sectorScale[1] : 277.8
             let minY: Double = !sectorScale.isEmpty ? sectorScale[2] : -8

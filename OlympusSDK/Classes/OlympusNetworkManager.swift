@@ -339,12 +339,12 @@ public class OlympusNetworkManager {
         sessionConfig.timeoutIntervalForRequest = TIMEOUT_VALUE_POST
         let session = URLSession(configuration: sessionConfig)
         
-        print("")
-        print("====================================")
-        print("POST USER SCALE URL :: ", url)
-        print("POST USER SCALE 데이터 :: ", input)
-        print("====================================")
-        print("")
+//        print("")
+//        print("====================================")
+//        print("POST USER SCALE URL :: ", url)
+//        print("POST USER SCALE 데이터 :: ", input)
+//        print("====================================")
+//        print("")
         
         let dataTask = session.dataTask(with: requestURL, completionHandler: { (data, response, error) in
             // [error가 존재하면 종료]
