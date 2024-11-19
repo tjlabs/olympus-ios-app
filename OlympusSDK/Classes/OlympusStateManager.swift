@@ -54,6 +54,7 @@ public class OlympusStateManager: NSObject {
         }
     }
     
+    private var sector_id: Int = -1
     public var EntranceOuterWards = [String]()
     public var lastScannedEntranceOuterWardTime: Double = 0
     
@@ -87,7 +88,9 @@ public class OlympusStateManager: NSObject {
     private var foregroundObserver: Any!
     private var trajEditedObserver: Any!
     
-    
+    public func setSectorID(sector_id: Int) {
+        self.sector_id = sector_id
+    }
     
     public func setVariblesWhenBleIsNotEmpty() {
         self.timeBleOff = 0
@@ -203,7 +206,7 @@ public class OlympusStateManager: NSObject {
         if (levelName == "B0") {
             return true
         } else {
-            let key = "\(buildingName)_\(levelName)"
+            let key = "\(self.sector_id)_\(buildingName)_\(levelName)"
             guard let entranceArea: [[Double]] = OlympusPathMatchingCalculator.shared.EntranceArea[key] else {
                 return false
             }
