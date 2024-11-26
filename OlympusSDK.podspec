@@ -1,7 +1,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'OlympusSDK'
-  s.version          = '0.2.2'
+  s.version          = '0.2.3'
   s.summary          = 'OlympusSDK for iOS'
   s.swift_version    = '5.0'
   
@@ -17,7 +17,6 @@ TODO: Add long description of the pod here.
 
 
   s.source_files = 'OlympusSDK/Classes/**/*'
-  s.static_framework = false
   
   s.pod_target_xcconfig = { 'SWIFT_OPTIMIZATION_LEVEL' => '-Owholemodule' }
   s.resource_bundles = {

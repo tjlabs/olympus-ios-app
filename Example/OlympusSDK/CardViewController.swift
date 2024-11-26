@@ -19,6 +19,9 @@ class CardViewController: UIViewController, Observer {
     var coordToDisplay = CoordToDisplay()
     var isSaved: Bool = false
     
+    var phoenixIndex: Int = 0
+    var phoenixData = PhoenixRecord(user_id: "", company: "", car_number: "", mobile_time: 0, index: 0, latitude: 0, longitude: 0, remaining_time: 0, velocity: 0, sector_id: 0, building_name: "", level_name: "", x: 0, y: 0, absolute_heading: 0, is_indoor: false)
+    var phoenixRecords = [PhoenixRecord]()
     
     override func viewDidDisappear(_ animated: Bool) {
         serviceManager.stopService()
@@ -50,6 +53,14 @@ class CardViewController: UIViewController, Observer {
                 self.coordToDisplay.heading = result.absolute_heading
                 self.coordToDisplay.isIndoor = result.isIndoor
                 
+                self.phoenixData.building_name = building
+                self.phoenixData.level_name = level
+                self.phoenixData.x = Int(result.x)
+                self.phoenixData.y = Int(result.y)
+                self.phoenixData.absolute_heading = result.absolute_heading
+                self.phoenixData.velocity = result.velocity
+                self.phoenixData.is_indoor = result.isIndoor
+                
 //                let diffTime = result.mobile_time - self.preServiceTime
 //                print(getLocalTimeString() + " , (VC) : index = \(result.index) // isIndoor = \(result.isIndoor)")
                 self.preServiceTime = result.mobile_time
@@ -64,14 +75,14 @@ class CardViewController: UIViewController, Observer {
     var region: String = ""
     var userId: String = ""
     
-//    var sector_id: Int = 2
-//    var mode: String = "pdr"
+    var sector_id: Int = 2
+    var mode: String = "pdr"
     
 //    var sector_id: Int = 14 // DS
 //    var mode: String = "pdr"
     
-    var sector_id: Int = 6
-    var mode: String = "auto"
+//    var sector_id: Int = 6
+//    var mode: String = "auto"
     
 //    var sector_id: Int = 15 // LG G2
 //    var mode: String = "pdr"
@@ -94,6 +105,7 @@ class CardViewController: UIViewController, Observer {
     
     var timer: Timer?
     let TIMER_INTERVAL: TimeInterval = 1/10
+    var phoenixTime: TimeInterval = 0
     var preServiceTime: Int = 0
     
     override func viewDidLoad() {
@@ -110,12 +122,14 @@ class CardViewController: UIViewController, Observer {
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_dr_03_1030.csv", sensorFileName: "sensor_coex_dr_03_1030.csv")
     
+        serviceManager.setDeadReckoningMode(flag: true, buildingName: "S3", levelName: "7F", x: 16, y: 13, heading: 180)
         // collect
 //        isCollect = true
 //        serviceManager.initCollect(region: self.region)
 //        serviceManager.startCollect()
 //        self.startTimer()
         
+        self.setPhoenixData()
         let uniqueId = makeUniqueId(uuid: self.userId)
 //        let uniqueId = "coex01_olympus"
         // service
@@ -663,6 +677,12 @@ class CardViewController: UIViewController, Observer {
                 saveButton.isHidden = true
             }
         }
+        
+        self.phoenixTime += TIMER_INTERVAL
+        if self.phoenixTime >= 1 {
+            self.phoenixTime = 0
+            postPhoenixRecords()
+        }
     }
     
     private func makeUniqueId(uuid: String) -> String {
@@ -671,4 +691,119 @@ class CardViewController: UIViewController, Observer {
         
         return unique_id
     }
+    
+    private func setPhoenixData() {
+        self.phoenixData.user_id = "user1163"
+        self.phoenixData.company = "TJLABS"
+        self.phoenixData.car_number = "07도3687"
+        self.phoenixData.latitude = 37.513109
+        self.phoenixData.longitude = 127.058375
+    }
+    
+    private func postPhoenixRecords() {
+        if phoenixData.longitude != 0 && phoenixData.latitude != 0 {
+            self.phoenixData.mobile_time = getCurrentTimeInMillisecondsDouble()
+            self.phoenixIndex += 1
+            self.phoenixData.index = self.phoenixIndex
+            
+            self.phoenixData.remaining_time = 0
+            self.phoenixData.mobile_time = getCurrentTimeInMillisecondsDouble()
+            self.phoenixData.sector_id = self.sector_id
+
+            postPhoenixRecord(url: PHOENIX_RECORD_URL, input: [phoenixData], completion: { [self] statusCode, returnedString in
+                if statusCode == 200 {
+//                    print(getLocalTimeString() + " , (Phoenix) Record Success : \(statusCode) , \(returnedString)")
+                } else {
+//                    print(getLocalTimeString() + " , (Phoenix) Record Error : \(statusCode) , \(returnedString)")
+                }
+            })
+        }
+    }
+    
+    func postPhoenixRecord(url: String, input: [PhoenixRecord], completion: @escaping (Int, String) -> Void) {
+        // [http 비동기 방식을 사용해서 http 요청 수행 실시]
+        let urlComponents = URLComponents(string: url)
+        var requestURL = URLRequest(url: (urlComponents?.url)!)
+        
+        requestURL.httpMethod = "POST"
+        let encodingData = JSONConverter.encodeJson(param: input)
+        if (encodingData != nil) {
+            requestURL.httpBody = encodingData
+            requestURL.addValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
+            
+            let sessionConfig = URLSessionConfiguration.default
+            sessionConfig.timeoutIntervalForResource = 5.0
+            sessionConfig.timeoutIntervalForRequest = 5.0
+            let session = URLSession(configuration: sessionConfig)
+            
+            let dataTask = session.dataTask(with: requestURL, completionHandler: { (data, response, error) in
+                // [error가 존재하면 종료]
+                guard error == nil else {
+                    if let timeoutError = error as? URLError, timeoutError.code == .timedOut {
+                        DispatchQueue.main.async {
+                            completion(timeoutError.code.rawValue, error?.localizedDescription ?? "timed out")
+                        }
+                    } else {
+                        DispatchQueue.main.async {
+                            completion(500, error?.localizedDescription ?? "Fail")
+                        }
+                    }
+                    return
+                }
+                
+                // [status 코드 체크 실시]
+                let successsRange = 200..<300
+                guard let statusCode = (response as? HTTPURLResponse)?.statusCode, successsRange.contains(statusCode)
+                else {
+                    DispatchQueue.main.async {
+                        completion(500, (response as? HTTPURLResponse)?.description ?? "Fail")
+                    }
+                    return
+                }
+                
+                // [response 데이터 획득]
+                let resultCode = (response as? HTTPURLResponse)?.statusCode ?? 500 // [상태 코드]
+                guard let resultLen = data else {
+                    DispatchQueue.main.async {
+                        completion(500, (response as? HTTPURLResponse)?.description ?? "Fail")
+                    }
+                    return
+                }
+                let resultData = String(data: resultLen, encoding: .utf8) ?? "" // [데이터 확인]
+                
+                // [콜백 반환]
+                DispatchQueue.main.async {
+                    completion(resultCode, resultData)
+                }
+            })
+            
+            // [network 통신 실행]
+            dataTask.resume()
+        } else {
+            DispatchQueue.main.async {
+                completion(500, "Fail to encode")
+            }
+        }
+    }
+}
+
+let PHOENIX_RECORD_URL: String = "https://ap-northeast-2.rec.phoenix.tjlabs.dev/2024-08-05/mr"
+
+struct PhoenixRecord: Codable {
+    var user_id: String
+    var company: String
+    var car_number: String
+    var mobile_time: Double
+    var index: Int
+    var latitude: Double
+    var longitude: Double
+    var remaining_time: Int
+    var velocity: Double
+    var sector_id: Int
+    var building_name: String
+    var level_name: String
+    var x: Int
+    var y: Int
+    var absolute_heading: Double
+    var is_indoor: Bool
 }

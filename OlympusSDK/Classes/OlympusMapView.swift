@@ -450,22 +450,56 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         self.autoresizingMask = [.flexibleWidth, .flexibleHeight]
     }
 
+//    public func updateBuildingData(_ buildings: [String], levelData: [String: [String]]) {
+//        self.buildingData = buildings
+//        if let firstBuilding = buildings.first {
+//            self.selectedBuilding = firstBuilding
+//            self.levelData = levelData[firstBuilding] ?? []
+//            self.selectedLevel = self.levelData.first
+//        }
+//        buildingsCollectionView.reloadData()
+//        levelsCollectionView.reloadData()
+//        adjustCollectionViewHeights()
+//        updateMapImageView()
+//        updatePathPixel()
+//        updateUnit()
+//        
+//        // MARK: - Control Building & Level CollectionView when building is 1
+//        if buildings.count < 2 {
+//            buildingsCollectionView.isHidden = true
+//            levelsLeadingToBuildingsConstraint.isActive = false
+//            levelsLeadingToSuperviewConstraint.isActive = true
+//        } else {
+//            buildingsCollectionView.isHidden = false
+//            levelsLeadingToSuperviewConstraint.isActive = false
+//            levelsLeadingToBuildingsConstraint.isActive = true
+//        }
+//
+//        UIView.animate(withDuration: 0.3) {
+//            self.layoutIfNeeded()
+//        }
+//    }
+    
     public func updateBuildingData(_ buildings: [String], levelData: [String: [String]]) {
         self.buildingData = buildings
         if let firstBuilding = buildings.first {
             self.selectedBuilding = firstBuilding
             self.levelData = levelData[firstBuilding] ?? []
             self.selectedLevel = self.levelData.first
+        } else {
+            self.selectedBuilding = nil
+            self.levelData = []
+            self.selectedLevel = nil
         }
+
         buildingsCollectionView.reloadData()
         levelsCollectionView.reloadData()
         adjustCollectionViewHeights()
         updateMapImageView()
         updatePathPixel()
         updateUnit()
-        
-        // MARK: - Control Building & Level CollectionView when building is 1
-        if buildings.count < 2 {
+
+        if buildings.isEmpty {
             buildingsCollectionView.isHidden = true
             levelsLeadingToBuildingsConstraint.isActive = false
             levelsLeadingToSuperviewConstraint.isActive = true
@@ -479,13 +513,26 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             self.layoutIfNeeded()
         }
     }
+
     
     private func adjustCollectionViewHeights() {
+//        let buildingHeight = calculateCollectionViewHeight(for: buildingData.count)
+//        let levelHeight = calculateCollectionViewHeight(for: levelData.count)
+//        
+//        buildingsCollectionViewHeightConstraint.constant = buildingHeight
+//        levelsCollectionViewHeightConstraint.constant = levelHeight
+//
+//        UIView.animate(withDuration: 0.3) {
+//            self.layoutIfNeeded()
+//        }
+        
         let buildingHeight = calculateCollectionViewHeight(for: buildingData.count)
         let levelHeight = calculateCollectionViewHeight(for: levelData.count)
-        
-        buildingsCollectionViewHeightConstraint.constant = buildingHeight
-        levelsCollectionViewHeightConstraint.constant = levelHeight
+            
+        print(getLocalTimeString() + " , (Olympus) MapView : Building Height= \(buildingHeight), Level Height= \(levelHeight)")
+            
+        buildingsCollectionViewHeightConstraint.constant = max(buildingHeight, 0)
+        levelsCollectionViewHeightConstraint.constant = max(levelHeight, 0)
 
         UIView.animate(withDuration: 0.3) {
             self.layoutIfNeeded()

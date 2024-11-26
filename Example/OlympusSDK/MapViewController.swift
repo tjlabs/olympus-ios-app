@@ -16,8 +16,8 @@ class MapViewController: UIViewController, Observer {
     let mapView = OlympusMapView()
     
     var serviceManager = OlympusServiceManager()
-    var sector_id: Int = 6
-    var mode: String = "auto"
+    var sector_id: Int = 2
+    var mode: String = "pdr"
     var userId: String = ""
     
     var timer: Timer?
