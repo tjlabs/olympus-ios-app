@@ -659,8 +659,8 @@
 		B2DD7CF96035374C7AC80D88B8904691 /* ShapeRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CA0D3880930CB65C570D1DA2C250229 /* ShapeRenderer.swift */; };
 		B30C78B11FE755C64E53E9DCC5CC2AF8 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C2F2760D2076800B40A8502397482D57 /* PrivacyInfo.xcprivacy */; };
 		B3247F337AE9DF933B37A37EF33F2B5C /* EventGDTLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADBA63AB6EB036659636296903C7E4AF /* EventGDTLogger.swift */; };
+		B33150F62CFC39C000D73C38 /* OlympusMapViewForScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33150F52CFC39C000D73C38 /* OlympusMapViewForScale.swift */; };
 		B339F902BE3344C3B322D420F96A89FA /* FirebaseInstallations-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 4303E5617C6A1C5A9678254852344146 /* FirebaseInstallations-dummy.m */; };
-		B37D3C032CF809F70079E010 /* OlympusMapViewForScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = B37D3C022CF809F20079E010 /* OlympusMapViewForScale.swift */; };
 		B4015BE1313094DACA3DBB86191C5030 /* CombinedHighlighter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EF83C3BB4E6D70C22C6957DC42117C0 /* CombinedHighlighter.swift */; };
 		B44D2712FFF08918150EF68B95301375 /* FBLPromise+Await.h in Headers */ = {isa = PBXBuildFile; fileRef = FF5A68C23EA7BCE4C05F6D0E16DC8DCD /* FBLPromise+Await.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B45DCBE879600562E26A837600599173 /* GULSecureCoding.h in Headers */ = {isa = PBXBuildFile; fileRef = B439493B242E971AD741B355AA279112 /* GULSecureCoding.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -2024,9 +2024,9 @@
 		B26AC54159E41262EB22A9DC952B23B0 /* Charts-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Charts-prefix.pch"; sourceTree = "<group>"; };
 		B2944B0304024D9FFAAF12DF03FC76F6 /* GULNetworkURLSession.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = GULNetworkURLSession.m; path = GoogleUtilities/Network/GULNetworkURLSession.m; sourceTree = "<group>"; };
 		B2A9F3D8AA6C6974F4A4260210367256 /* FIRCLSProcess.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSProcess.h; path = Crashlytics/Crashlytics/Components/FIRCLSProcess.h; sourceTree = "<group>"; };
+		B33150F52CFC39C000D73C38 /* OlympusMapViewForScale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusMapViewForScale.swift; path = OlympusSDK/Classes/OlympusMapViewForScale.swift; sourceTree = "<group>"; };
 		B358537494260256AC3138BDA6251379 /* SessionsSubscriber.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SessionsSubscriber.swift; path = FirebaseSessions/Sources/Public/SessionsSubscriber.swift; sourceTree = "<group>"; };
 		B378D1162026B0FF7989F1A754CC0CF5 /* FBLPromise+Reduce.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "FBLPromise+Reduce.h"; path = "Sources/FBLPromises/include/FBLPromise+Reduce.h"; sourceTree = "<group>"; };
-		B37D3C022CF809F20079E010 /* OlympusMapViewForScale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OlympusMapViewForScale.swift; sourceTree = "<group>"; };
 		B385554459445169926EAF96251B0449 /* FIRInstallationsIIDTokenStore.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = FIRInstallationsIIDTokenStore.m; path = FirebaseInstallations/Source/Library/IIDMigration/FIRInstallationsIIDTokenStore.m; sourceTree = "<group>"; };
 		B3E88BA9C9C31857052365E6EC8F90E9 /* GoogleUtilities.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = GoogleUtilities.debug.xcconfig; sourceTree = "<group>"; };
 		B43874C6CBB50E7134FBEC24BABFE14F /* GoogleUtilities.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = GoogleUtilities.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -2651,7 +2651,6 @@
 		1591658ADE4BD9B320FD6F640E271260 /* OlympusSDK */ = {
 			isa = PBXGroup;
 			children = (
-				B37D3C022CF809F20079E010 /* OlympusMapViewForScale.swift */,
 				2B07753AC7550860C937C0292D0A2A6F /* ArrayExtension.swift */,
 				9705E99E26546F4F01398E4937FFD8CE /* DeviceModel.swift */,
 				680EB47059AE28F185BCB43A3B4DE4D1 /* icon_mapMarker.png */,
@@ -2706,6 +2705,7 @@
 				8CE3F953F944EE2503A54667DBD2C0A8 /* UIViewExtenstion.swift */,
 				CA7CDF99519B983F0540E619FC330C1B /* Pod */,
 				E60E4F78AC1EEE63DE029B375B65C171 /* Support Files */,
+				B33150F52CFC39C000D73C38 /* OlympusMapViewForScale.swift */,
 			);
 			name = OlympusSDK;
 			path = ../..;
@@ -5708,7 +5708,6 @@
 				81FBF0376203B747988FAAC9DE14578D /* OlympusRflowCorrelator.swift in Sources */,
 				5D1FF9520A1F52CEA8A0230BB4AAE9A1 /* OlympusRouteTracker.swift in Sources */,
 				47B770FB444BEE3A130FC0BEDEC7B523 /* OlympusRssCompensator.swift in Sources */,
-				B37D3C032CF809F70079E010 /* OlympusMapViewForScale.swift in Sources */,
 				B02075445D38E6A456913FEBF7A8276A /* OlympusSDK-dummy.m in Sources */,
 				37D41D4AFA46676E06FD0B655CCD2C0C /* OlympusSectionController.swift in Sources */,
 				7CDE5A78F74F4D663C192DD993581CAC /* OlympusSensorManager.swift in Sources */,
@@ -5716,6 +5715,7 @@
 				E778A656D1728CDAFA5AF12B25D65B7E /* OlympusStateManager.swift in Sources */,
 				F261465571E684A2A56DA14FE631483E /* OlympusStepLengthEstimator.swift in Sources */,
 				53B1FB58B42C68772068D8150FEE6D3D /* OlympusStopDectector.swift in Sources */,
+				B33150F62CFC39C000D73C38 /* OlympusMapViewForScale.swift in Sources */,
 				BD1953AE4D4B2CC5CEAF22C6296C3142 /* OlympusStopPeakValleyDetector.swift in Sources */,
 				C3DBB86CAAC60E2D46356CF020E1BE58 /* OlympusTrajectoryController.swift in Sources */,
 				A4D1C3EBAFD6C4F5D5E152C1BFEC3F3B /* OlympusUnitAttitudeEstimator.swift in Sources */,

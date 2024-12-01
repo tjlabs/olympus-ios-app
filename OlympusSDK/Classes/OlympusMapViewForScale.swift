@@ -316,7 +316,7 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
 //        guard let selectedBuilding = selectedBuilding, let selectedLevel = selectedLevel else { return }
 //        let pathPixelKey = "\(OlympusMapManager.shared.sector_id)_\(selectedBuilding)_\(selectedLevel)"
 //        let unitKey = "unit_" + pathPixelKey
-//        
+//
 //        if let ppCoord = OlympusPathMatchingCalculator.shared.PpCoord[pathPixelKey] {
 //            guard let scaleOffsetValues = mapScaleOffset[pathPixelKey], scaleOffsetValues.count == 6 else {
 //                print(getLocalTimeString() + " , (Olympus) MapView : Scale Empty in Unit")
