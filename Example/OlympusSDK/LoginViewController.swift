@@ -63,6 +63,12 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         self.navigationController?.pushViewController(mapVC, animated: true)
     }
     
+    func goToMapScaleViewController(userId: String) {
+        guard let mapVC = self.storyboard?.instantiateViewController(withIdentifier: "MapScaleViewController") as? MapScaleViewController else { return }
+        mapVC.userId = userId
+        self.navigationController?.pushViewController(mapVC, animated: true)
+    }
+    
     @IBAction func tapSaveUserIdButton(_ sender: UIButton) {
         UIView.animate(withDuration: 0.2, delay: 0.0, options: .curveLinear, animations: {
         }) { (success) in
@@ -121,6 +127,7 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
                 print(getLocalTimeString() + " , (InnerLabs) Success : User Login")
 //                self.goToCardViewController(region: "Korea", userId: self.userId)
                 self.goToMapViewController(userId: self.userId)
+//                self.goToMapScaleViewController(userId: self.userId)
             } else {
                 print(getLocalTimeString() + " , (InnerLabs) Fail : User Login \(statusCode)")
                 print(returnedString)

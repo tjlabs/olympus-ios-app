@@ -201,6 +201,38 @@ public class OlympusMapManager {
         }
     }
     
+    public func loadMapForScale(region: String, sector_id: Int, mapView: OlympusMapViewForScale) {
+        setServerURL(region: region)
+        setSectorID(value: sector_id)
+            
+        loadSectorScale(sector_id: sector_id)
+        loadSectorUnits(sector_id: sector_id)
+        if let value = self.sectorInfo[sector_id] {
+            mapView.updateBuildingData(Array(value.keys), levelData: value)
+            loadSectorImages(sector_id: sector_id, infoBuildingLevel: value)
+        } else {
+            loadUserLevel(sector_id: sector_id) { [weak self] statusCode, returnedString in
+                guard let self = self else { return }
+                if statusCode == 200 {
+                    let levelInfo = jsonToLevelFromServer(jsonString: returnedString)
+                    if levelInfo.0 {
+                        let infoBuildingLevel = self.makeBuildingLevelInfo(sector_id: sector_id, outputLevel: levelInfo.1)
+                        self.setSectorBuildingLevel(sector_id: sector_id, infoBuildingLevel: infoBuildingLevel)
+                        DispatchQueue.main.async {
+                            mapView.updateBuildingData(Array(infoBuildingLevel.keys), levelData: infoBuildingLevel)
+                        }
+                        self.loadSectorImages(sector_id: sector_id, infoBuildingLevel: infoBuildingLevel)
+                    }
+                    
+                    loadUserPath(sector_id: sector_id, completion: { isSuccess, message in
+                        if isSuccess {
+                        }
+                    })
+                }
+            }
+        }
+    }
+    
     private func loadSectorImages(sector_id: Int, infoBuildingLevel: [String: [String]]) {
         print(getLocalTimeString() + " , (Olympus) MapManager : loadSectorImages // infoBuildingLevel = \(infoBuildingLevel)")
         for (key, value) in infoBuildingLevel {

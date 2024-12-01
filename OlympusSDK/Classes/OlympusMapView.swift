@@ -90,6 +90,10 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         NotificationCenter.default.removeObserver(self)
     }
     
+    public func setIsPpHidden(flag: Bool) {
+        self.isPpHidden = flag
+    }
+    
     private func addGestures() {
 //        addPinchGesture()
 //        addPanGesture()
@@ -451,8 +455,8 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
     }
 
 //    public func updateBuildingData(_ buildings: [String], levelData: [String: [String]]) {
-//        self.buildingData = buildings
-//        if let firstBuilding = buildings.first {
+//        self.buildingData = buildings.sorted()
+//        if let firstBuilding = buildingData.first {
 //            self.selectedBuilding = firstBuilding
 //            self.levelData = levelData[firstBuilding] ?? []
 //            self.selectedLevel = self.levelData.first
@@ -481,8 +485,8 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
 //    }
     
     public func updateBuildingData(_ buildings: [String], levelData: [String: [String]]) {
-        self.buildingData = buildings
-        if let firstBuilding = buildings.first {
+        self.buildingData = buildings.sorted()
+        if let firstBuilding = buildingData.first {
             self.selectedBuilding = firstBuilding
             self.levelData = levelData[firstBuilding] ?? []
             self.selectedLevel = self.levelData.first
@@ -516,20 +520,10 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
 
     
     private func adjustCollectionViewHeights() {
-//        let buildingHeight = calculateCollectionViewHeight(for: buildingData.count)
-//        let levelHeight = calculateCollectionViewHeight(for: levelData.count)
-//        
-//        buildingsCollectionViewHeightConstraint.constant = buildingHeight
-//        levelsCollectionViewHeightConstraint.constant = levelHeight
-//
-//        UIView.animate(withDuration: 0.3) {
-//            self.layoutIfNeeded()
-//        }
-        
         let buildingHeight = calculateCollectionViewHeight(for: buildingData.count)
         let levelHeight = calculateCollectionViewHeight(for: levelData.count)
             
-        print(getLocalTimeString() + " , (Olympus) MapView : Building Height= \(buildingHeight), Level Height= \(levelHeight)")
+        print(getLocalTimeString() + " , (Olympus) MapView : Building Height = \(buildingHeight), Level Height = \(levelHeight)")
             
         buildingsCollectionViewHeightConstraint.constant = max(buildingHeight, 0)
         levelsCollectionViewHeightConstraint.constant = max(levelHeight, 0)
@@ -596,11 +590,18 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             let scaledSize = calculateAspectFitImageSize(for: image, in: mapImageView)
             
             let scaleKey = "scale_" + key
-            let sectorScale: [Double] = sectorScales[scaleKey] ?? []
-//            guard let minX = xCoords.min(),
-//                  let maxX = xCoords.max(),
-//                  let minY = yCoords.min(),
-//                  let maxY = yCoords.max() else { return }
+            var sectorScale: [Double] = sectorScales[scaleKey] ?? []
+            if key == "2_S3_7F" {
+                sectorScale = []
+            }
+            
+            let xCoords = ppCoord[0]
+            let yCoords = ppCoord[1]
+            
+            guard let ppMinX = xCoords.min(),
+                  let ppMaxX = xCoords.max(),
+                  let ppMinY = yCoords.min(),
+                  let ppMaxY = yCoords.max() else { return }
             
             // COEX PP Min Max : 6, 294, 3, 469
 //            let minX: Double = -48
@@ -613,14 +614,17 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
 //            let minY: Double = -8
 //            let maxY: Double = 530
             
-//            print(getLocalTimeString() + " , (Olympus) MapView : calMapScaleOffset // key = \(scaleKey) // value = \(sectorScale)")
-            let minX: Double = !sectorScale.isEmpty ? sectorScale[0] : -54.5
-            let maxX: Double = !sectorScale.isEmpty ? sectorScale[1] : 277.8
-            let minY: Double = !sectorScale.isEmpty ? sectorScale[2] : -8
-            let maxY: Double = !sectorScale.isEmpty ? sectorScale[3] : 530
+            print(getLocalTimeString() + " , (Olympus) MapView : calMapScaleOffset // xyMinMax = [\(ppMinX),\(ppMaxX),\(ppMinY),\(ppMaxY)]")
+            print(getLocalTimeString() + " , (Olympus) MapView : calMapScaleOffset // key = \(scaleKey) // value = \(sectorScale)")
             
-            let ppWidth: Double = maxX - minX
-            let ppHeight: Double = maxY - minY
+            // -54.5, 277.8, -8, 530
+            let minX: Double = !sectorScale.isEmpty ? sectorScale[0] : ppMinX
+            let maxX: Double = !sectorScale.isEmpty ? sectorScale[1] : ppMaxX
+            let minY: Double = !sectorScale.isEmpty ? sectorScale[2] : ppMinY
+            let maxY: Double = !sectorScale.isEmpty ? sectorScale[3] : ppMaxY
+            
+            let ppWidth: Double = maxX - minX // 11
+            let ppHeight: Double = maxY - minY // 10
 
             let scaleX = scaledSize.width / ppWidth
             let scaleY = scaledSize.height / ppHeight
@@ -640,7 +644,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
                 calMapScaleOffset(building: building, level: level, ppCoord: ppCoord)
                 return
             }
-            
+            print(getLocalTimeString() + " , (Olympus) MapView : calMapScaleOffset // key = \(key) // scaleOffsetValues = \(scaleOffsetValues)")
             let scaleX = scaleOffsetValues[0]
             let scaleY = scaleOffsetValues[1]
             let offsetX = scaleOffsetValues[2]
@@ -648,7 +652,8 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             
             let tempOffsetX = abs(mapImageView.bounds.width - (scaleX*mapImageView.bounds.width))
             let offsetXByScale = scaleX < 1.0 ? (tempOffsetX/2) : -(tempOffsetX/2)
-
+            let markerSize: Double = scaleX < 20.0 ? 3 : 20
+            print(getLocalTimeString() + " , (Olympus) MapView : tempOffsetX = \(tempOffsetX) // offsetXByScale = \(offsetXByScale)")
             var scaledXY = [[Double]]()
             for i in 0..<ppCoord[0].count {
                 let x = ppCoord[0][i]
@@ -659,15 +664,68 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
                 
                 let rotatedX = transformedX
                 let rotatedY = scaleOffsetValues[5] - transformedY
+                print(getLocalTimeString() + " , (Olympus) MapView : \(x),\(y) -> \(rotatedX),\(rotatedY)")
                 scaledXY.append([transformedX, transformedY])
                 
-                let pointView = UIView(frame: CGRect(x: rotatedX - 2.5, y: rotatedY - 2.5, width: 3, height: 3))
+                let pointView = UIView(frame: CGRect(x: rotatedX - markerSize/2, y: rotatedY - markerSize/2, width: markerSize, height: markerSize))
                 pointView.backgroundColor = .systemYellow
-                pointView.layer.cornerRadius = 2.5
+                pointView.layer.cornerRadius = markerSize/2
                 mapImageView.addSubview(pointView)
             }
         }
     }
+    
+//    private func plotPathPixels(building: String, level: String, ppCoord: [[Double]]) {
+//        DispatchQueue.main.async { [self] in
+//            mapImageView.subviews.forEach { $0.removeFromSuperview() }
+//            let key = "\(OlympusMapManager.shared.sector_id)_\(building)_\(level)"
+//            guard let scaleOffsetValues = mapScaleOffset[key], scaleOffsetValues.count == 6 else {
+//                calMapScaleOffset(building: building, level: level, ppCoord: ppCoord)
+//                return
+//            }
+//            print(getLocalTimeString() + " , (Olympus) MapView : calMapScaleOffset // key = \(key) // scaleOffsetValues = \(scaleOffsetValues)")
+//            let scaleX = scaleOffsetValues[0]
+//            let scaleY = scaleOffsetValues[1]
+//            let offsetX = scaleOffsetValues[2]
+//            let offsetY = scaleOffsetValues[3]
+//            
+//            let tempOffsetX = abs(mapImageView.bounds.width - (scaleX*mapImageView.bounds.width))
+//            let offsetXByScale = scaleX < 1.0 ? (tempOffsetX/2) : -(tempOffsetX/2)
+//            let markerSize: Double = scaleX < 20.0 ? 3 : 10
+//            print(getLocalTimeString() + " , (Olympus) MapView : tempOffsetX = \(tempOffsetX) // offsetXByScale = \(offsetXByScale)")
+//            
+//            
+//            let checkers: [Double] = [14, 13, 5, -2]
+//            let centerX: Double = mapImageView.bounds.width/2
+//            let centerY: Double = mapImageView.bounds.height/2
+//            print(getLocalTimeString() + " , (Olympus) MapView : centerX = \(centerX) , centerY = \(centerY)")
+//            var scaledXY = [[Double]]()
+//            for i in 0..<ppCoord[0].count {
+//                let x = ppCoord[0][i]
+//                let y = ppCoord[1][i]
+//
+////                let transformedX = ((x - offsetX)*scaleX)
+////                let transformedY = ((y - offsetY)*scaleY)
+////                
+////                let rotatedX = transformedX
+////                let rotatedY = scaleOffsetValues[5] - transformedY
+//            
+//                let transformedX = (x + checkers[2])*checkers[0]
+//                let transformedY = (y + checkers[3])*checkers[1]
+//                
+//                let rotatedX = transformedX
+//                let rotatedY = transformedY
+//                
+//                print(getLocalTimeString() + " , (Olympus) MapView : \(x),\(y) -> \(rotatedX),\(rotatedY)")
+//                scaledXY.append([transformedX, transformedY])
+//                
+//                let pointView = UIView(frame: CGRect(x: rotatedX - markerSize/2, y: rotatedY - markerSize/2, width: markerSize, height: markerSize))
+//                pointView.backgroundColor = .systemYellow
+//                pointView.layer.cornerRadius = markerSize/2
+//                mapImageView.addSubview(pointView)
+//            }
+//        }
+//    }
 
     private func plotUserCoord(building: String, level: String, xyh: [Double]) {
         DispatchQueue.main.async { [self] in
@@ -1144,6 +1202,9 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
         let scaledWidth = imageSize.width * scaleFactor
         let scaledHeight = imageSize.height * scaleFactor
         
+        print(getLocalTimeString() + " , (Olympus) MapView : image // w = \(imageSize.width) , h = \(imageSize.height)")
+        print(getLocalTimeString() + " , (Olympus) MapView : imageView // w = \(imageViewSize.width) , h = \(imageViewSize.height)")
+        print(getLocalTimeString() + " , (Olympus) MapView : imageView // scaleFactor = \(scaleFactor)")
         return CGSize(width: scaledWidth, height: scaledHeight)
     }
     
