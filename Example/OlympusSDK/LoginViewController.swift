@@ -126,8 +126,8 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
             if (statusCode == 200) {
                 print(getLocalTimeString() + " , (InnerLabs) Success : User Login")
 //                self.goToCardViewController(region: "Korea", userId: self.userId)
-                self.goToMapViewController(userId: self.userId)
-//                self.goToMapScaleViewController(userId: self.userId)
+//                self.goToMapViewController(userId: self.userId)
+                self.goToMapScaleViewController(userId: self.userId)
             } else {
                 print(getLocalTimeString() + " , (InnerLabs) Fail : User Login \(statusCode)")
                 print(returnedString)

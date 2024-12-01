@@ -25,6 +25,7 @@
 		B31439802BAD439E002C072F /* UIViewControllerExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B314397F2BAD439E002C072F /* UIViewControllerExtension.swift */; };
 		B31439832BAD5A27002C072F /* ColorPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31439822BAD5A27002C072F /* ColorPalette.swift */; };
 		B31439872BAD5B76002C072F /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B31439862BAD5B76002C072F /* Colors.xcassets */; };
+		B33152242CFC6D9D00D73C38 /* MapSettingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33152232CFC6D9D00D73C38 /* MapSettingView.swift */; };
 		B335370D2CC8919900468A95 /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B335370C2CC8919900468A95 /* MapViewController.swift */; };
 		B3787E4A2BD209C400D5EEBC /* ImageCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3787E492BD209C400D5EEBC /* ImageCacheManager.swift */; };
 		B3787E4C2BD20C4D00D5EEBC /* UIImageExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3787E4B2BD20C4D00D5EEBC /* UIImageExtension.swift */; };
@@ -81,6 +82,7 @@
 		B314397F2BAD439E002C072F /* UIViewControllerExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewControllerExtension.swift; sourceTree = "<group>"; };
 		B31439822BAD5A27002C072F /* ColorPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPalette.swift; sourceTree = "<group>"; };
 		B31439862BAD5B76002C072F /* Colors.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Colors.xcassets; sourceTree = "<group>"; };
+		B33152232CFC6D9D00D73C38 /* MapSettingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapSettingView.swift; sourceTree = "<group>"; };
 		B335370C2CC8919900468A95 /* MapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
 		B3787E492BD209C400D5EEBC /* ImageCacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCacheManager.swift; sourceTree = "<group>"; };
 		B3787E4B2BD20C4D00D5EEBC /* UIImageExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageExtension.swift; sourceTree = "<group>"; };
@@ -154,6 +156,8 @@
 				B31439702BAD42BE002C072F /* Extensions */,
 				B314395D2BAD3043002C072F /* ViewControllers */,
 				607FACD51AFB9204008FA782 /* AppDelegate.swift */,
+				B3787E492BD209C400D5EEBC /* ImageCacheManager.swift */,
+				B33152232CFC6D9D00D73C38 /* MapSettingView.swift */,
 				B3A7A5602BBBE1D400561897 /* Entity.swift */,
 				B3A7A5622BBBE2AE00561897 /* JSONConverter.swift */,
 				B3FE035C2C04754400039EAC /* S3_7F.csv */,
@@ -169,7 +173,6 @@
 				B3787E582BDA47BE00D5EEBC /* GoogleService-Info.plist */,
 				607FACDC1AFB9204008FA782 /* Images.xcassets */,
 				607FACD31AFB9204008FA782 /* Supporting Files */,
-				B3787E492BD209C400D5EEBC /* ImageCacheManager.swift */,
 			);
 			name = "Example for OlympusSDK";
 			path = OlympusSDK;
@@ -433,7 +436,12 @@
 				"${BUILT_PRODUCTS_DIR}/OlympusSDK/OlympusSDK.framework",
 				"${BUILT_PRODUCTS_DIR}/PromisesObjC/FBLPromises.framework",
 				"${BUILT_PRODUCTS_DIR}/PromisesSwift/Promises.framework",
+				"${BUILT_PRODUCTS_DIR}/RxCocoa/RxCocoa.framework",
+				"${BUILT_PRODUCTS_DIR}/RxRelay/RxRelay.framework",
+				"${BUILT_PRODUCTS_DIR}/RxSwift/RxSwift.framework",
+				"${BUILT_PRODUCTS_DIR}/SnapKit/SnapKit.framework",
 				"${BUILT_PRODUCTS_DIR}/SwiftAlgorithms/Algorithms.framework",
+				"${BUILT_PRODUCTS_DIR}/Then/Then.framework",
 				"${BUILT_PRODUCTS_DIR}/nanopb/nanopb.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
@@ -451,7 +459,12 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OlympusSDK.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FBLPromises.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Promises.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxCocoa.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxRelay.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxSwift.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SnapKit.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Algorithms.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Then.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/nanopb.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -529,6 +542,7 @@
 				B3A7A5612BBBE1D400561897 /* Entity.swift in Sources */,
 				607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */,
 				B314397C2BAD435D002C072F /* UITextViewExtension.swift in Sources */,
+				B33152242CFC6D9D00D73C38 /* MapSettingView.swift in Sources */,
 				B31439832BAD5A27002C072F /* ColorPalette.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

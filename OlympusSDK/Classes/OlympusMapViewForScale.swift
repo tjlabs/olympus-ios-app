@@ -84,6 +84,9 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
     
     public func setIsPpHidden(flag: Bool) {
         self.isPpHidden = flag
+        if !flag {
+            updatePathPixel()
+        }
     }
     
     public func setBuildingLevelIsHidden(flag: Bool) {
@@ -92,6 +95,7 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
     
     public func setIsDefaultScale(flag: Bool) {
         self.isDefaultScale = flag
+        updatePathPixel()
     }
     
     public func getMapAndPpScaleValues() -> [Double] {

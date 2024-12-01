@@ -119,17 +119,29 @@ PODS:
     - nanopb/encode (= 2.30910.0)
   - nanopb/decode (2.30910.0)
   - nanopb/encode (2.30910.0)
-  - OlympusSDK (0.2.2)
+  - OlympusSDK (0.2.5)
   - PromisesObjC (2.4.0)
   - PromisesSwift (2.4.0):
     - PromisesObjC (= 2.4.0)
+  - RxCocoa (6.5.0):
+    - RxRelay (= 6.5.0)
+    - RxSwift (= 6.5.0)
+  - RxRelay (6.5.0):
+    - RxSwift (= 6.5.0)
+  - RxSwift (6.5.0)
+  - SnapKit (5.7.1)
   - SwiftAlgorithms (1.0.0)
+  - Then (3.0.0)
 
 DEPENDENCIES:
   - Charts
   - Firebase/Analytics
   - Firebase/Crashlytics
   - OlympusSDK (from `../`)
+  - RxCocoa (~> 6.5.0)
+  - RxSwift (~> 6.5.0)
+  - SnapKit
+  - Then
 
 SPEC REPOS:
   trunk:
@@ -149,7 +161,12 @@ SPEC REPOS:
     - nanopb
     - PromisesObjC
     - PromisesSwift
+    - RxCocoa
+    - RxRelay
+    - RxSwift
+    - SnapKit
     - SwiftAlgorithms
+    - Then
 
 EXTERNAL SOURCES:
   OlympusSDK:
@@ -170,11 +187,16 @@ SPEC CHECKSUMS:
   GoogleDataTransport: 6c09b596d841063d76d4288cc2d2f42cc36e1e2a
   GoogleUtilities: d053d902a8edaa9904e1bd00c37535385b8ed152
   nanopb: 438bc412db1928dac798aa6fd75726007be04262
-  OlympusSDK: da7526e328ce3c6993a3f7126e046d59978a22b4
+  OlympusSDK: c50f55487a268919c9275a42608008b9a289fd1c
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   PromisesSwift: 9d77319bbe72ebf6d872900551f7eeba9bce2851
+  RxCocoa: 94f817b71c07517321eb4f9ad299112ca8af743b
+  RxRelay: 1de1523e604c72b6c68feadedd1af3b1b4d0ecbd
+  RxSwift: 5710a9e6b17f3c3d6e40d6e559b9fa1e813b2ef8
+  SnapKit: d612e99e678a2d3b95bf60b0705ed0a35c03484a
   SwiftAlgorithms: 38dda4731d19027fdeee1125f973111bf3386b53
+  Then: 844265ae87834bbe1147d91d5d41a404da2ec27d
 
-PODFILE CHECKSUM: 6f48911ffabaf6b5d44e38c835984bc3835bc00b
+PODFILE CHECKSUM: 05a53d8a7e6bf473e117f4c2a2a1e79f75dafe73
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2

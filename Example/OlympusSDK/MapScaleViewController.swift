@@ -1,14 +1,17 @@
 import UIKit
 import OlympusSDK
 
-class MapScaleViewController: UIViewController, Observer {
+class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate {
+    
+    func sliderValueChanged(index: Int, value: Double) {
+        mapView.updateMapAndPpScaleValues(index: index, value: value)
+    }
     
     func update(result: OlympusSDK.FineLocationTrackingResult) { }
     func report(flag: Int) { }
     
     @IBOutlet weak var topView: UIView!
     @IBOutlet weak var mainView: UIView!
-    @IBOutlet weak var bottomView: UIView!
     
     let mapView = OlympusMapViewForScale()
     var scales: [Double] = [0, 0, 0, 0]
@@ -19,6 +22,7 @@ class MapScaleViewController: UIViewController, Observer {
     var sector_id: Int = 2
     var mode: String = "pdr"
     var userId: String = ""
+    let key_header = "S3_7F"
     
     var timer: Timer?
     let TIMER_INTERVAL: TimeInterval = 1 / 10
@@ -35,7 +39,7 @@ class MapScaleViewController: UIViewController, Observer {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupLayout()
-        setupBottomView()
+//        setupBottomView()
         startOlympus()
     }
     
@@ -92,6 +96,70 @@ class MapScaleViewController: UIViewController, Observer {
         NotificationCenter.default.removeObserver(self.backgroundObserver)
         NotificationCenter.default.removeObserver(self.foregroundObserver)
     }
+    
+    @IBAction func tapSettingButton(_ sender: UIButton) {
+        self.setupMapScaleView()
+    }
+    
+    func setupMapScaleView() {
+        let mapSettingView = MapSettingView()
+        mapSettingView.delegate = self
+        let loadScale = loadMapScaleFromCache(key: key_header)
+        if loadScale.0, let cachedValues = loadScale.1 {
+            mapView.setIsDefaultScale(flag: false)
+            print(getLocalTimeString() + " , (MapScaleViewController) cachedValues = \(cachedValues)")
+            mapSettingView.configure(with: cachedValues)
+        } else {
+            let defaultScales = mapView.mapAndPpScaleValues
+            print(getLocalTimeString() + " , (MapScaleViewController) defaultScales = \(defaultScales)")
+            mapSettingView.configure(with: defaultScales)
+        }
+        
+        mapSettingView.onSave = { [weak self] in
+            guard let self = self else { return }
+            print("Save tapped")
+            let currentScales = mapSettingView.scales
+            self.saveMapScaleToCache(key: key_header, value: currentScales)
+        }
+        mapSettingView.onCancel = { [weak self] in
+            print("Cancel tapped")
+        }
+        mapSettingView.onReset = { [weak self] in
+            guard let self = self else { return }
+            print("Reset tapped")
+            mapView.setIsDefaultScale(flag: true)
+            self.deleteMapScaleFromCache(key: key_header)
+        }
+        
+        view.addSubview(mapSettingView)
+        mapSettingView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+    }
+    
+    private func saveMapScaleToCache(key: String, value: [Double]) {
+        print(getLocalTimeString() + " , (MapScaleViewController) Save \(key) scale : \(value)")
+        do {
+            let key: String = "MapScale_\(key)"
+            UserDefaults.standard.set(value, forKey: key)
+        }
+    }
+    
+    private func loadMapScaleFromCache(key: String) -> (Bool, [Double]?) {
+        let keyMapScale: String = "MapScale_\(key)"
+        if let loadedMapScale: [Double] = UserDefaults.standard.object(forKey: keyMapScale) as? [Double] {
+            print(getLocalTimeString() + " , (MapScaleViewController) Load \(key) scale : \(loadedMapScale)")
+            return (true, loadedMapScale)
+        } else {
+            return (false, nil)
+        }
+    }
+    
+    private func deleteMapScaleFromCache(key: String) {
+        let cacheKey = "MapScale_\(key)"
+        UserDefaults.standard.removeObject(forKey: cacheKey)
+        print(getLocalTimeString() + " , (MapScaleViewController) Deleted \(key) scale from cache")
+    }
 }
 
 extension MapScaleViewController {
@@ -100,71 +168,71 @@ extension MapScaleViewController {
         mainView.addSubview(mapView)
     }
     
-    func setupBottomView() {
-        let verticalStackView = UIStackView()
-        verticalStackView.axis = .vertical
-        verticalStackView.distribution = .fillEqually
-        verticalStackView.spacing = 10
-        verticalStackView.translatesAutoresizingMaskIntoConstraints = false
-        bottomView.addSubview(verticalStackView)
-
-        NSLayoutConstraint.activate([
-            verticalStackView.leadingAnchor.constraint(equalTo: bottomView.leadingAnchor, constant: 10),
-            verticalStackView.trailingAnchor.constraint(equalTo: bottomView.trailingAnchor, constant: -10),
-            verticalStackView.topAnchor.constraint(equalTo: bottomView.topAnchor, constant: 10),
-            verticalStackView.bottomAnchor.constraint(equalTo: bottomView.bottomAnchor, constant: -10)
-        ])
-
-        let labels = ["x scale: ", "y scale: ", "x offset: ", "y offset: "]
-
-        for (index, labelText) in labels.enumerated() {
-            let horizontalStackView = UIStackView()
-            horizontalStackView.axis = .horizontal
-            horizontalStackView.distribution = .fill
-            horizontalStackView.spacing = 10
-            horizontalStackView.translatesAutoresizingMaskIntoConstraints = false
-            
-            let label = UILabel()
-            label.text = labelText
-            label.textAlignment = .left
-            label.setContentHuggingPriority(.defaultHigh, for: .horizontal)
-            
-            let slider = UISlider()
-            if index < 2 {
-                slider.minimumValue = SCALE_MIN_MAX[0]
-                slider.maximumValue = SCALE_MIN_MAX[1]
-            } else {
-                slider.minimumValue = OFFSET_MIN_MAX[0]
-                slider.maximumValue = OFFSET_MIN_MAX[1]
-            }
-            
-            slider.value = Float(scales[index])
-            slider.tag = index
-            
-            slider.addTarget(self, action: #selector(sliderValueChanged(_:)), for: .valueChanged)
-            
-            let valueLabel = UILabel()
-            valueLabel.text = String(format: "%.2f", scales[index])
-            valueLabel.textAlignment = .right
-            valueLabel.setContentHuggingPriority(.defaultHigh, for: .horizontal)
-            valueLabel.tag = 1000 + index
-            
-            horizontalStackView.addArrangedSubview(label)
-            horizontalStackView.addArrangedSubview(slider)
-            horizontalStackView.addArrangedSubview(valueLabel)
-            
-            verticalStackView.addArrangedSubview(horizontalStackView)
-        }
-    }
-
-    @objc private func sliderValueChanged(_ sender: UISlider) {
-        let index = sender.tag
-        let sliderValue = Double(sender.value)
-        scales[index] = Double(sender.value)
-        if let valueLabel = bottomView.viewWithTag(1000 + index) as? UILabel {
-            valueLabel.text = String(format: "%.2f", scales[index])
-        }
-        
-        mapView.updateMapAndPpScaleValues(index: index, value: sliderValue)
-    }
+//    func setupBottomView() {
+//        let verticalStackView = UIStackView()
+//        verticalStackView.axis = .vertical
+//        verticalStackView.distribution = .fillEqually
+//        verticalStackView.spacing = 10
+//        verticalStackView.translatesAutoresizingMaskIntoConstraints = false
+//        bottomView.addSubview(verticalStackView)
+//
+//        NSLayoutConstraint.activate([
+//            verticalStackView.leadingAnchor.constraint(equalTo: bottomView.leadingAnchor, constant: 10),
+//            verticalStackView.trailingAnchor.constraint(equalTo: bottomView.trailingAnchor, constant: -10),
+//            verticalStackView.topAnchor.constraint(equalTo: bottomView.topAnchor, constant: 10),
+//            verticalStackView.bottomAnchor.constraint(equalTo: bottomView.bottomAnchor, constant: -10)
+//        ])
+//
+//        let labels = ["x scale: ", "y scale: ", "x offset: ", "y offset: "]
+//
+//        for (index, labelText) in labels.enumerated() {
+//            let horizontalStackView = UIStackView()
+//            horizontalStackView.axis = .horizontal
+//            horizontalStackView.distribution = .fill
+//            horizontalStackView.spacing = 10
+//            horizontalStackView.translatesAutoresizingMaskIntoConstraints = false
+//            
+//            let label = UILabel()
+//            label.text = labelText
+//            label.textAlignment = .left
+//            label.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+//            
+//            let slider = UISlider()
+//            if index < 2 {
+//                slider.minimumValue = SCALE_MIN_MAX[0]
+//                slider.maximumValue = SCALE_MIN_MAX[1]
+//            } else {
+//                slider.minimumValue = OFFSET_MIN_MAX[0]
+//                slider.maximumValue = OFFSET_MIN_MAX[1]
+//            }
+//            
+//            slider.value = Float(scales[index])
+//            slider.tag = index
+//            
+//            slider.addTarget(self, action: #selector(sliderValueChanged(_:)), for: .valueChanged)
+//            
+//            let valueLabel = UILabel()
+//            valueLabel.text = String(format: "%.2f", scales[index])
+//            valueLabel.textAlignment = .right
+//            valueLabel.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+//            valueLabel.tag = 1000 + index
+//            
+//            horizontalStackView.addArrangedSubview(label)
+//            horizontalStackView.addArrangedSubview(slider)
+//            horizontalStackView.addArrangedSubview(valueLabel)
+//            
+//            verticalStackView.addArrangedSubview(horizontalStackView)
+//        }
+//    }
+//
+//    @objc private func sliderValueChanged(_ sender: UISlider) {
+//        let index = sender.tag
+//        let sliderValue = Double(sender.value)
+//        scales[index] = Double(sender.value)
+//        if let valueLabel = bottomView.viewWithTag(1000 + index) as? UILabel {
+//            valueLabel.text = String(format: "%.2f", scales[index])
+//        }
+//        
+//        mapView.updateMapAndPpScaleValues(index: index, value: sliderValue)
+//    }
 }

@@ -7,6 +7,10 @@ target 'OlympusSDK_Example' do
   
   pod 'OlympusSDK', :path => '../'
   pod 'Charts'
+  pod 'SnapKit' 
+  pod 'Then' 
+  pod 'RxSwift', '~> 6.5.0'
+  pod 'RxCocoa', '~> 6.5.0'
 
   pod 'Firebase/Analytics'
   pod 'Firebase/Crashlytics'

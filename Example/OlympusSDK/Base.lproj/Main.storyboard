@@ -423,43 +423,48 @@
                                             <action selector="tapBackButton:" destination="lTm-Bc-T4p" eventType="touchUpInside" id="JZI-2x-GFl"/>
                                         </connections>
                                     </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hrx-ve-bi4">
+                                        <rect key="frame" x="313" y="55" width="50" height="50"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="50" id="BwU-FW-k3Y"/>
+                                            <constraint firstAttribute="width" constant="50" id="e0h-Oo-U6C"/>
+                                        </constraints>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="plain" image="gearshape.fill" catalog="system"/>
+                                        <connections>
+                                            <action selector="tapSettingButton:" destination="lTm-Bc-T4p" eventType="touchUpInside" id="lbD-Nm-ZJe"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                                 <color key="backgroundColor" systemColor="systemOrangeColor"/>
                                 <constraints>
+                                    <constraint firstItem="hrx-ve-bi4" firstAttribute="centerY" secondItem="2fq-2J-M9t" secondAttribute="centerY" id="4tG-lf-mAa"/>
+                                    <constraint firstAttribute="trailing" secondItem="hrx-ve-bi4" secondAttribute="trailing" constant="30" id="F21-RN-XZB"/>
                                     <constraint firstAttribute="height" constant="120" id="FiS-Py-N70"/>
                                     <constraint firstItem="2fq-2J-M9t" firstAttribute="leading" secondItem="BzV-Z6-YGe" secondAttribute="leading" constant="10" id="JaH-r4-TFn"/>
                                     <constraint firstAttribute="bottom" secondItem="2fq-2J-M9t" secondAttribute="bottom" constant="10" id="wuQ-q3-QMy"/>
                                 </constraints>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2E5-wH-5EF">
-                                <rect key="frame" x="0.0" y="120" width="393" height="258"/>
+                                <rect key="frame" x="0.0" y="120" width="393" height="400"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                            </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="yZf-ZK-cyf">
-                                <rect key="frame" x="0.0" y="578" width="393" height="240"/>
-                                <color key="backgroundColor" systemColor="systemGray6Color"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="240" id="Oc4-QG-wSD"/>
+                                    <constraint firstAttribute="height" constant="400" id="9bt-bK-nil"/>
                                 </constraints>
                             </view>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="IpD-Yo-MwE"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="IpD-Yo-MwE" firstAttribute="trailing" secondItem="yZf-ZK-cyf" secondAttribute="trailing" id="14Y-u6-PgF"/>
                             <constraint firstItem="2E5-wH-5EF" firstAttribute="top" secondItem="BzV-Z6-YGe" secondAttribute="bottom" id="B9Q-mM-Phi"/>
                             <constraint firstItem="IpD-Yo-MwE" firstAttribute="trailing" secondItem="BzV-Z6-YGe" secondAttribute="trailing" id="DXx-T5-DoB"/>
-                            <constraint firstItem="IpD-Yo-MwE" firstAttribute="bottom" secondItem="yZf-ZK-cyf" secondAttribute="bottom" id="Mav-DO-Xyn"/>
-                            <constraint firstItem="yZf-ZK-cyf" firstAttribute="leading" secondItem="IpD-Yo-MwE" secondAttribute="leading" id="OnE-84-DT8"/>
                             <constraint firstItem="BzV-Z6-YGe" firstAttribute="top" secondItem="Jai-32-2kg" secondAttribute="top" id="Rsc-P0-n2F"/>
                             <constraint firstItem="IpD-Yo-MwE" firstAttribute="trailing" secondItem="2E5-wH-5EF" secondAttribute="trailing" id="WVA-cf-WQr"/>
                             <constraint firstItem="BzV-Z6-YGe" firstAttribute="leading" secondItem="IpD-Yo-MwE" secondAttribute="leading" id="aCm-OO-HN3"/>
-                            <constraint firstItem="yZf-ZK-cyf" firstAttribute="top" secondItem="2E5-wH-5EF" secondAttribute="bottom" constant="200" id="dW0-eu-wke"/>
                             <constraint firstItem="2E5-wH-5EF" firstAttribute="leading" secondItem="IpD-Yo-MwE" secondAttribute="leading" id="khL-Qc-nbK"/>
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="bottomView" destination="yZf-ZK-cyf" id="r2e-EQ-Udp"/>
                         <outlet property="mainView" destination="2E5-wH-5EF" id="a1r-Tu-oIg"/>
                         <outlet property="topView" destination="BzV-Z6-YGe" id="hSs-LC-TM0"/>
                     </connections>
@@ -472,6 +477,7 @@
     <resources>
         <image name="checked_box" width="24.666666030883789" height="25.333333969116211"/>
         <image name="field_login" width="349.33334350585938" height="58.333332061767578"/>
+        <image name="gearshape.fill" catalog="system" width="128" height="123"/>
         <image name="image_back" width="29" height="29"/>
         <image name="image_login" width="349.33334350585938" height="58.333332061767578"/>
         <image name="unchecked_box" width="24.666666030883789" height="25.333333969116211"/>
