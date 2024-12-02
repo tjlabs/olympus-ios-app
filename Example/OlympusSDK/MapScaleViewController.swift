@@ -104,36 +104,38 @@ class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate
     func setupMapScaleView() {
         let mapSettingView = MapSettingView()
         mapSettingView.delegate = self
+        
+        view.addSubview(mapSettingView)
+        mapSettingView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        
         let loadScale = loadMapScaleFromCache(key: key_header)
         if loadScale.0, let cachedValues = loadScale.1 {
-            mapView.setIsDefaultScale(flag: false)
             print(getLocalTimeString() + " , (MapScaleViewController) cachedValues = \(cachedValues)")
             mapSettingView.configure(with: cachedValues)
+            mapView.mapAndPpScaleValues = cachedValues
+            mapView.setIsDefaultScale(flag: false)
         } else {
             let defaultScales = mapView.mapAndPpScaleValues
             print(getLocalTimeString() + " , (MapScaleViewController) defaultScales = \(defaultScales)")
             mapSettingView.configure(with: defaultScales)
         }
         
-        mapSettingView.onSave = { [weak self] in
-            guard let self = self else { return }
-            print("Save tapped")
+        mapSettingView.onSave = {
+            print(getLocalTimeString() + " , (MapScaleViewController) Save Button Tapped")
             let currentScales = mapSettingView.scales
-            self.saveMapScaleToCache(key: key_header, value: currentScales)
-        }
-        mapSettingView.onCancel = { [weak self] in
-            print("Cancel tapped")
-        }
-        mapSettingView.onReset = { [weak self] in
-            guard let self = self else { return }
-            print("Reset tapped")
-            mapView.setIsDefaultScale(flag: true)
-            self.deleteMapScaleFromCache(key: key_header)
+            self.saveMapScaleToCache(key: self.key_header, value: currentScales)
+            self.mapView.setIsPpHidden(flag: true)
         }
         
-        view.addSubview(mapSettingView)
-        mapSettingView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+        mapSettingView.onCancel = {
+            self.mapView.setIsPpHidden(flag: true)
+        }
+        
+        mapSettingView.onReset = {
+            self.mapView.setIsPpHidden(flag: true)
+            self.deleteMapScaleFromCache(key: self.key_header)
         }
     }
     

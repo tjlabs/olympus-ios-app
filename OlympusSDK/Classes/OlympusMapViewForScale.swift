@@ -84,7 +84,9 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
     
     public func setIsPpHidden(flag: Bool) {
         self.isPpHidden = flag
-        if !flag {
+        if flag {
+            self.mapImageView.subviews.forEach { $0.removeFromSuperview() }
+        } else {
             updatePathPixel()
         }
     }
@@ -95,6 +97,9 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
     
     public func setIsDefaultScale(flag: Bool) {
         self.isDefaultScale = flag
+        if self.isPpHidden {
+            self.mapImageView.subviews.forEach { $0.removeFromSuperview() }
+        }
         updatePathPixel()
     }
     
@@ -388,9 +393,6 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
             }
             let markerSize: Double = 10
             let scales: [Double] = isDefaultScale ? scaleOffsetValues : self.mapAndPpScaleValues
-//            scales[0] = 18.23
-//            scales[1] = 16.72
-//            let scales: [Double] = [18.23, 16.72, -2.47, -22.17]
             print(getLocalTimeString() + " , (Olympus) MapView : \(key) // isDefaultScale = \(isDefaultScale) // scales = \(scales)")
             let offsetValue = scaleOffsetValues[3]
             var scaledXY = [[Double]]()
@@ -415,6 +417,12 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
         }
     }
     
+    private func plotUnitUsingCoord(unitView: UIView) {
+        DispatchQueue.main.async { [self] in
+            mapImageView.addSubview(unitView)
+        }
+    }
+    
     private func plotUnit(building: String, level: String, units: [Unit], ppCoord: [[Double]]) {
         DispatchQueue.main.async { [self] in
             mapImageView.subviews.forEach { $0.removeFromSuperview() }
@@ -423,25 +431,20 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
                 calMapScaleOffset(building: building, level: level, ppCoord: ppCoord)
                 return
             }
-            
-            let scaleX = scaleOffsetValues[0]
-            let scaleY = scaleOffsetValues[1]
-            let offsetX = scaleOffsetValues[2]
-            let offsetY = scaleOffsetValues[3]
-            
-            let tempOffsetX = abs(mapImageView.bounds.width - (scaleX*mapImageView.bounds.width))
-            let offsetXByScale = scaleX < 1.0 ? (tempOffsetX/2) : -(tempOffsetX/2)
-
+            let markerSize: Double = 20
+            let scales: [Double] = isDefaultScale ? scaleOffsetValues : self.mapAndPpScaleValues
+            print(getLocalTimeString() + " , (Olympus) MapView : \(key) // isDefaultScale = \(isDefaultScale) // scales = \(scales)")
+            let offsetValue = scaleOffsetValues[3]
             var scaledXY = [[Double]]()
             for unit in units {
                 let x = unit.x
-                let y = unit.y
+                let y = -unit.y
                 
-                let transformedX = ((x - offsetX)*scaleX) + offsetXByScale
-                let transformedY = ((y - offsetY)*scaleY)
+                let transformedX = (x - scales[2])*scales[0]
+                let transformedY = (y - scales[3])*scales[1]
                 
                 let rotatedX = transformedX
-                let rotatedY = scaleOffsetValues[5] - transformedY
+                let rotatedY = transformedY
                 scaledXY.append([transformedX, transformedY])
                 
                 let pointView = UIView(frame: CGRect(x: rotatedX - 2.5, y: rotatedY - 2.5, width: 20, height: 20))
@@ -450,6 +453,81 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
                 pointView.layer.cornerRadius = 2.5
                 mapImageView.addSubview(pointView)
             }
+        }
+    }
+    
+    private func plotUserCoord(building: String, level: String, xyh: [Double]) {
+        DispatchQueue.main.async { [self] in
+            if preXyh == xyh {
+                return
+            }
+            
+            let key = "\(OlympusMapManager.shared.sector_id)_\(building)_\(level)"
+            guard let scaleOffsetValues = mapScaleOffset[key], scaleOffsetValues.count == 4 else {
+                if let ppCoord = OlympusPathMatchingCalculator.shared.PpCoord[key] {
+                    calMapScaleOffset(building: building, level: level, ppCoord: ppCoord)
+                }
+                return
+            }
+            let scales: [Double] = isDefaultScale ? scaleOffsetValues : self.mapAndPpScaleValues
+            
+            let x = xyh[0]
+            let y = xyh[1]
+            let heading = xyh[2]
+            
+            let transformedX = (x - scales[2])*scales[0]
+            let transformedY = (y - scales[3])*scales[1]
+            
+            let rotatedX = transformedX
+            let rotatedY = transformedY
+            
+            mapImageView.transform = .identity
+            if let existingPointView = mapImageView.viewWithTag(userCoordTag) {
+                existingPointView.removeFromSuperview()
+            }
+            
+            let marker = self.imageMapMarker
+            let coordSize: CGFloat = 30
+            let pointView = UIImageView(image: marker)
+            pointView.frame = CGRect(x: rotatedX - coordSize / 2, y: rotatedY - coordSize / 2, width: coordSize, height: coordSize)
+            pointView.tag = userCoordTag
+            pointView.layer.shadowColor = UIColor.black.cgColor
+            pointView.layer.shadowOpacity = 0.25
+            pointView.layer.shadowOffset = CGSize(width: 0, height: 2)
+            pointView.layer.shadowRadius = 2
+            
+            let rotationAngle = CGFloat(-(heading - 90) * .pi / 180)
+            pointView.transform = CGAffineTransform(rotationAngle: rotationAngle)
+            
+            UIView.animate(withDuration: 0.55, delay: 0, options: .curveEaseInOut, animations: {
+                self.mapImageView.addSubview(pointView)
+            }, completion: nil)
+            
+            self.preXyh = xyh
+        }
+    }
+    
+    public func updateResultInMap(result: FineLocationTrackingResult) {
+        let newBuilding = result.building_name
+        let newLevel = result.level_name
+        
+        let buildingChanged = selectedBuilding != newBuilding
+        let levelChanged = selectedLevel != newLevel
+        
+        DispatchQueue.main.async { [self] in
+            if buildingChanged || levelChanged {
+                selectedBuilding = newBuilding
+                selectedLevel = newLevel
+                
+                buildingsCollectionView.reloadData()
+                levelsCollectionView.reloadData()
+                adjustCollectionViewHeights()
+                
+                updateMapImageView()
+                updatePathPixel()
+                updateUnit()
+            }
+            plotUserCoord(building: selectedBuilding ?? "", level: selectedLevel ?? "", xyh: [result.x, result.y, result.absolute_heading])
         }
     }
     
