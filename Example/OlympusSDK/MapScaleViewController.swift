@@ -1,8 +1,14 @@
 import UIKit
 import OlympusSDK
 
-class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate {
+class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate, MapViewForScaleDelegate {
     
+    func plotPathPixelsActivated(isActivated: Bool) {
+        if isActivated {
+            plotProducts(products: self.testProducts)
+        }
+    }
+
     func sliderValueChanged(index: Int, value: Double) {
         mapView.updateMapAndPpScaleValues(index: index, value: value)
     }
@@ -17,6 +23,7 @@ class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate
     var scales: [Double] = [0, 0, 0, 0]
     let SCALE_MIN_MAX: [Float] = [0, 25]
     let OFFSET_MIN_MAX: [Float] = [0, 25]
+    let testProducts: [[Double]] = [[12, 14], [8, 17], [7, 8], [16, 10]]
     
     var serviceManager = OlympusServiceManager()
     var sector_id: Int = 2
@@ -39,8 +46,10 @@ class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate
     override func viewDidLoad() {
         super.viewDidLoad()
         setupLayout()
+        mapView.delegate = self
 //        setupBottomView()
         startOlympus()
+        
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -161,6 +170,34 @@ class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate
         let cacheKey = "MapScale_\(key)"
         UserDefaults.standard.removeObject(forKey: cacheKey)
         print(getLocalTimeString() + " , (MapScaleViewController) Deleted \(key) scale from cache")
+    }
+    
+    private func plotProducts(products: [[Double]]) {
+        let mapAndPpScaleValues = mapView.mapAndPpScaleValues
+        print("(MapScaleViewController) : plotProduct // mapAndPpScaleValues = \(mapAndPpScaleValues)")
+        print("(MapScaleViewController) : plotProduct // products = \(products)")
+        for item in products {
+            let productView = makeProductUIView(product: item, scales: mapAndPpScaleValues)
+            mapView.plotUnitUsingCoord(unitView: productView)
+        }
+    }
+    
+    private func makeProductUIView(product: [Double], scales: [Double]) -> UIView {
+        let x = product[0]
+        let y = -product[1]
+        
+        let transformedX = (x - scales[2])*scales[0]
+        let transformedY = (y - scales[3])*scales[1]
+        
+        let rotatedX = transformedX
+        let rotatedY = transformedY
+        
+        let markerSize: Double = 20
+        let productView = UIView(frame: CGRect(x: rotatedX - markerSize/2, y: rotatedY - markerSize/2, width: markerSize, height: markerSize))
+        productView.backgroundColor = .systemRed
+        productView.layer.cornerRadius = markerSize/4
+        
+        return productView
     }
 }
 

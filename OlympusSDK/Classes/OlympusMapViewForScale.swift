@@ -1,7 +1,12 @@
 import UIKit
 import Foundation
 
+public protocol MapViewForScaleDelegate: AnyObject {
+    func plotPathPixelsActivated(isActivated: Bool)
+}
+
 public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UIScrollViewDelegate {
+    public var delegate: MapViewForScaleDelegate?
     
     enum MapMode {
         case MAP_ONLY
@@ -381,16 +386,18 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
             
             let scaleKey = "scale_" + key
             let sectorScale: [Double] = sectorScales[scaleKey] ?? []
-
+            
+            print(getLocalTimeString() + " , (Olympus) MapView : isDefaultScale \(isDefaultScale) // sectorScale = \(sectorScale)")
             if self.isDefaultScale {
                 if sectorScale.isEmpty {
                     mapAndPpScaleValues = [scaleX, scaleY, offsetX, offsetY]
+                    mapScaleOffset[key] = [scaleX, scaleY, offsetX, offsetY]
                 } else {
                     mapAndPpScaleValues = sectorScale
+                    mapScaleOffset[key] = sectorScale
                 }
             }
-            
-            mapScaleOffset[key] = [scaleX, scaleY, offsetX, offsetY]
+            print(getLocalTimeString() + " , (Olympus) MapView : mapAndPpScaleValues = \(mapAndPpScaleValues)")
         }
     }
     
@@ -424,6 +431,7 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
                 pointView.backgroundColor = .systemYellow
                 pointView.layer.cornerRadius = markerSize/2
                 mapImageView.addSubview(pointView)
+                self.delegate?.plotPathPixelsActivated(isActivated: true)
             }
         }
     }
