@@ -44,6 +44,7 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
     private var levelsLeadingToBuildingsConstraint: NSLayoutConstraint!
     
     private var mapScaleOffset = [String: [Double]]()
+    private var sectorScales = [String: [Double]]()
     private var sectorUnits = [String: [Unit]]()
     private var currentScale: CGFloat = 1.0
     private var translationOffset: CGPoint = .zero
@@ -67,6 +68,7 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
         observeImageUpdates()
         observeUnitUpdates()
         observePathPixelUpdates()
+        observeScaleUpdates()
     }
     
     required init?(coder: NSCoder) {
@@ -76,6 +78,7 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
         observeImageUpdates()
         observeUnitUpdates()
         observePathPixelUpdates()
+        observeScaleUpdates()
     }
     
     deinit {
@@ -351,7 +354,7 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
             
             let key = "\(OlympusMapManager.shared.sector_id)_\(building)_\(level)"
             let scaledSize = calculateAspectFitImageSize(for: image, in: mapImageView)
-
+            
             let xCoords = ppCoord[0]
             let yCoords = ppCoord[1]
             
@@ -376,9 +379,17 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
             let offsetX = minX
             let offsetY =  -maxY
             
+            let scaleKey = "scale_" + key
+            let sectorScale: [Double] = sectorScales[scaleKey] ?? []
+
             if self.isDefaultScale {
-                mapAndPpScaleValues = [scaleX, scaleY, offsetX, offsetY]
+                if sectorScale.isEmpty {
+                    mapAndPpScaleValues = [scaleX, scaleY, offsetX, offsetY]
+                } else {
+                    mapAndPpScaleValues = sectorScale
+                }
             }
+            
             mapScaleOffset[key] = [scaleX, scaleY, offsetX, offsetY]
         }
     }
@@ -417,7 +428,7 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
         }
     }
     
-    private func plotUnitUsingCoord(unitView: UIView) {
+    public func plotUnitUsingCoord(unitView: UIView) {
         DispatchQueue.main.async { [self] in
             mapImageView.addSubview(unitView)
         }
@@ -628,6 +639,19 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
             updatePathPixel()
             updateUnit()
         }
+    }
+    
+    // MARK: - Building & Level Scales
+    private func observeScaleUpdates() {
+        NotificationCenter.default.addObserver(forName: .sectorScalesUpdated, object: nil, queue: .main) { [weak self] notification in
+            guard let userInfo = notification.userInfo, let scaleKey = userInfo["scaleKey"] as? String else { return }
+            self?.sectorScales[scaleKey] = OlympusMapManager.shared.sectorScales[scaleKey]
+        }
+    }
+    
+    private func scaleUpdated(_ notification: Notification) {
+        guard let userInfo = notification.userInfo, let scaleKey = userInfo["scaleKey"] as? String else { return }
+        self.sectorScales[scaleKey] = OlympusMapManager.shared.sectorScales[scaleKey]
     }
     
     // MARK: - Building & Level Images
