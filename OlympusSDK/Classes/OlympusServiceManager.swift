@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
-    public static let sdkVersion: String = "0.2.10"
+    public static let sdkVersion: String = "0.2.11"
     var isSimulationMode: Bool = false
     var isDeadReckoningMode: Bool = false
     var bleFileName: String = ""
@@ -2231,7 +2231,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 var headingRange = OlympusConstants.HEADING_RANGE
                 let paddings = paddingValues
                 if (pathMatchingType == .NARROW) {
-                    isUseHeading = true
+                    isUseHeading = false // true
                     headingRange -= 10
                 }
                 let correctedResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, HEADING_RANGE: headingRange, isUseHeading: isUseHeading, pathType: 0, PADDING_VALUES: paddings)

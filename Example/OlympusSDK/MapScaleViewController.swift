@@ -12,7 +12,11 @@ class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate
     }
     
     func update(result: OlympusSDK.FineLocationTrackingResult) {
-        mapView.updateResultInMap(result: result)
+        let currentIndex = result.index
+        if currentIndex > preIndex {
+            mapView.updateResultInMap(result: result)
+        }
+        preIndex = currentIndex
     }
     func report(flag: Int) { }
     
@@ -27,6 +31,7 @@ class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate
     let testProducts: [[Double]] = [[12, 14], [8, 17], [7, 8], [16, 10]]
     
     var serviceManager = OlympusServiceManager()
+    var preIndex: Int = -1
     var isStarted: Bool = false
     var sector_id: Int = 2
     var mode: String = "pdr"
@@ -48,7 +53,7 @@ class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate
     override func viewDidLoad() {
         super.viewDidLoad()
         setupLayout()
-        mapView.setIsPpHidden(flag: true)
+        mapView.setIsPpHidden(flag: false)
         mapView.delegate = self
 //        setupBottomView()
     }

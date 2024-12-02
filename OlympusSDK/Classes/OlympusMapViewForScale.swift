@@ -24,6 +24,8 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
         case FORCE
     }
     
+    private var plotUserCoordWorkItem: DispatchWorkItem?
+    
     private var mapImageView = UIImageView()
     private var buildingsCollectionView: UICollectionView!
     private var levelsCollectionView: UICollectionView!
@@ -58,6 +60,7 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
     private var isUnitHidden = true
     
     private var preXyh = [Double]()
+    private var preIndex = -1
     private var userHeadingBuffer = [Double]()
     private var mapHeading: Double = 0
     private let userCoordTag = 999
@@ -475,57 +478,121 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
             }
         }
     }
-    
+
     private func plotUserCoord(building: String, level: String, xyh: [Double]) {
-        DispatchQueue.main.async { [self] in
-            if preXyh == xyh {
+        // Cancel any existing work item
+        plotUserCoordWorkItem?.cancel()
+
+        // Create a new work item
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self = self else { return }
+
+            if self.preXyh == xyh {
                 return
             }
-            
+
             let key = "\(OlympusMapManager.shared.sector_id)_\(building)_\(level)"
-            guard let scaleOffsetValues = mapScaleOffset[key], scaleOffsetValues.count == 4 else {
+            guard let scaleOffsetValues = self.mapScaleOffset[key], scaleOffsetValues.count == 4 else {
                 if let ppCoord = OlympusPathMatchingCalculator.shared.PpCoord[key] {
-                    calMapScaleOffset(building: building, level: level, ppCoord: ppCoord)
+                    self.calMapScaleOffset(building: building, level: level, ppCoord: ppCoord)
                 }
                 return
             }
-            let scales: [Double] = isDefaultScale ? scaleOffsetValues : self.mapAndPpScaleValues
-//            print(getLocalTimeString() + " , (PlotUserCoord) display = \(xyh)")
+            let scales: [Double] = self.isDefaultScale ? scaleOffsetValues : self.mapAndPpScaleValues
+
             let x = xyh[0]
             let y = -xyh[1]
             let heading = xyh[2]
-            
-            let transformedX = (x - scales[2])*scales[0]
-            let transformedY = (y - scales[3])*scales[1]
-            
+
+            let transformedX = (x - scales[2]) * scales[0]
+            let transformedY = (y - scales[3]) * scales[1]
+
             let rotatedX = transformedX
             let rotatedY = transformedY
-            
-            mapImageView.transform = .identity
-            if let existingPointView = mapImageView.viewWithTag(userCoordTag) {
-                existingPointView.removeFromSuperview()
+
+            DispatchQueue.main.async {
+                self.mapImageView.transform = .identity
+                if let existingPointView = self.mapImageView.viewWithTag(self.userCoordTag) {
+                    existingPointView.removeFromSuperview()
+                }
+
+                let marker = self.imageMapMarker
+                let coordSize: CGFloat = 30
+                let pointView = UIImageView(image: marker)
+                pointView.frame = CGRect(x: rotatedX - coordSize / 2, y: rotatedY - coordSize / 2, width: coordSize, height: coordSize)
+                pointView.tag = self.userCoordTag
+                pointView.layer.shadowColor = UIColor.black.cgColor
+                pointView.layer.shadowOpacity = 0.25
+                pointView.layer.shadowOffset = CGSize(width: 0, height: 2)
+                pointView.layer.shadowRadius = 2
+
+                let rotationAngle = CGFloat(-(heading - 90) * .pi / 180)
+                pointView.transform = CGAffineTransform(rotationAngle: rotationAngle)
+
+                UIView.animate(withDuration: 0.55, delay: 0, options: .curveEaseInOut, animations: {
+                    self.mapImageView.addSubview(pointView)
+                }, completion: nil)
+
+                self.preXyh = xyh
             }
-            
-            let marker = self.imageMapMarker
-            let coordSize: CGFloat = 30
-            let pointView = UIImageView(image: marker)
-            pointView.frame = CGRect(x: rotatedX - coordSize / 2, y: rotatedY - coordSize / 2, width: coordSize, height: coordSize)
-            pointView.tag = userCoordTag
-            pointView.layer.shadowColor = UIColor.black.cgColor
-            pointView.layer.shadowOpacity = 0.25
-            pointView.layer.shadowOffset = CGSize(width: 0, height: 2)
-            pointView.layer.shadowRadius = 2
-            
-            let rotationAngle = CGFloat(-(heading - 90) * .pi / 180)
-            pointView.transform = CGAffineTransform(rotationAngle: rotationAngle)
-            
-            UIView.animate(withDuration: 0.55, delay: 0, options: .curveEaseInOut, animations: {
-                self.mapImageView.addSubview(pointView)
-            }, completion: nil)
-            
-            self.preXyh = xyh
         }
+
+        // Assign and execute the new work item
+        plotUserCoordWorkItem = workItem
+        DispatchQueue.global(qos: .userInteractive).async(execute: workItem)
     }
+
+    
+//    private func plotUserCoord(building: String, level: String, xyh: [Double]) {
+//        DispatchQueue.main.async { [self] in
+//            if preXyh == xyh {
+//                return
+//            }
+//            
+//            let key = "\(OlympusMapManager.shared.sector_id)_\(building)_\(level)"
+//            guard let scaleOffsetValues = mapScaleOffset[key], scaleOffsetValues.count == 4 else {
+//                if let ppCoord = OlympusPathMatchingCalculator.shared.PpCoord[key] {
+//                    calMapScaleOffset(building: building, level: level, ppCoord: ppCoord)
+//                }
+//                return
+//            }
+//            let scales: [Double] = isDefaultScale ? scaleOffsetValues : self.mapAndPpScaleValues
+////            print(getLocalTimeString() + " , (PlotUserCoord) display = \(xyh)")
+//            let x = xyh[0]
+//            let y = -xyh[1]
+//            let heading = xyh[2]
+//            
+//            let transformedX = (x - scales[2])*scales[0]
+//            let transformedY = (y - scales[3])*scales[1]
+//            
+//            let rotatedX = transformedX
+//            let rotatedY = transformedY
+//            
+//            mapImageView.transform = .identity
+//            if let existingPointView = mapImageView.viewWithTag(userCoordTag) {
+//                existingPointView.removeFromSuperview()
+//            }
+//            
+//            let marker = self.imageMapMarker
+//            let coordSize: CGFloat = 30
+//            let pointView = UIImageView(image: marker)
+//            pointView.frame = CGRect(x: rotatedX - coordSize / 2, y: rotatedY - coordSize / 2, width: coordSize, height: coordSize)
+//            pointView.tag = userCoordTag
+//            pointView.layer.shadowColor = UIColor.black.cgColor
+//            pointView.layer.shadowOpacity = 0.25
+//            pointView.layer.shadowOffset = CGSize(width: 0, height: 2)
+//            pointView.layer.shadowRadius = 2
+//            
+//            let rotationAngle = CGFloat(-(heading - 90) * .pi / 180)
+//            pointView.transform = CGAffineTransform(rotationAngle: rotationAngle)
+//            
+//            UIView.animate(withDuration: 0.55, delay: 0, options: .curveEaseInOut, animations: {
+//                self.mapImageView.addSubview(pointView)
+//            }, completion: nil)
+//            
+//            self.preXyh = xyh
+//        }
+//    }
     
     public func updateResultInMap(result: FineLocationTrackingResult) {
         let newBuilding = result.building_name
@@ -550,6 +617,7 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
             }
             plotUserCoord(building: selectedBuilding ?? "", level: selectedLevel ?? "", xyh: [result.x, result.y, result.absolute_heading])
         }
+        preIndex = result.index
     }
     
     private func determineUnitProperty(unit: Unit) {

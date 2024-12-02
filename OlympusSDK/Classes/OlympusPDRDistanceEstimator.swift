@@ -85,15 +85,15 @@ public class OlympusPDRDistanceEstimator: NSObject {
                 self.pastIndexChangedTime = isIndexChangedTime
                 
                 
-//                finalUnitResult.length = stepLengthEstimator.estStepLength(accPeakQueue: accPeakQueue, accValleyQueue: accValleyQueue)
-                finalUnitResult.length = OlympusConstants.DEFAULT_STEP_LENGTH
+                finalUnitResult.length = stepLengthEstimator.estStepLength(accPeakQueue: accPeakQueue, accValleyQueue: accValleyQueue)
+//                finalUnitResult.length = OlympusConstants.DEFAULT_STEP_LENGTH
                 updateStepLengthQueue(stepLengthWithTimeStamp: StepLengthWithTimestamp(timestamp: foundAccPV.timestamp, stepLength: finalUnitResult.length))
                 
-//                if (finalUnitResult.length > OlympusConstants.STEP_LENGTH_RANGE_TOP) {
-//                    finalUnitResult.length = OlympusConstants.STEP_LENGTH_RANGE_TOP
-//                } else if (finalUnitResult.length < OlympusConstants.STEP_LENGTH_RANGE_BOTTOM) {
-//                    finalUnitResult.length = OlympusConstants.STEP_LENGTH_RANGE_BOTTOM
-//                }
+                if (finalUnitResult.length > OlympusConstants.STEP_LENGTH_RANGE_TOP) {
+                    finalUnitResult.length = OlympusConstants.STEP_LENGTH_RANGE_TOP
+                } else if (finalUnitResult.length < OlympusConstants.STEP_LENGTH_RANGE_BOTTOM) {
+                    finalUnitResult.length = OlympusConstants.STEP_LENGTH_RANGE_BOTTOM
+                }
                 
 
                 if (!self.autoMode) {
