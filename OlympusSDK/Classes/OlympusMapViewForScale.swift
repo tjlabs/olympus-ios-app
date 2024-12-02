@@ -2,7 +2,7 @@ import UIKit
 import Foundation
 
 public protocol MapViewForScaleDelegate: AnyObject {
-    func plotPathPixelsActivated(isActivated: Bool)
+    func mapScaleUpdated()
 }
 
 public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UIScrollViewDelegate {
@@ -37,6 +37,7 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
     private var imageZoomOut: UIImage?
     private var imageMyLocation: UIImage?
     
+    private var isInit: Bool = true
     private var buildingData = [String]()
     private var levelData = [String]()
     private var selectedBuilding: String?
@@ -398,6 +399,7 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
                 }
             }
             print(getLocalTimeString() + " , (Olympus) MapView : mapAndPpScaleValues = \(mapAndPpScaleValues)")
+            self.delegate?.mapScaleUpdated()
         }
     }
     
@@ -431,7 +433,6 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
                 pointView.backgroundColor = .systemYellow
                 pointView.layer.cornerRadius = markerSize/2
                 mapImageView.addSubview(pointView)
-                self.delegate?.plotPathPixelsActivated(isActivated: true)
             }
         }
     }
@@ -489,9 +490,9 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
                 return
             }
             let scales: [Double] = isDefaultScale ? scaleOffsetValues : self.mapAndPpScaleValues
-            
+//            print(getLocalTimeString() + " , (PlotUserCoord) display = \(xyh)")
             let x = xyh[0]
-            let y = xyh[1]
+            let y = -xyh[1]
             let heading = xyh[2]
             
             let transformedX = (x - scales[2])*scales[0]
@@ -530,11 +531,12 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
         let newBuilding = result.building_name
         let newLevel = result.level_name
         
-        let buildingChanged = selectedBuilding != newBuilding
-        let levelChanged = selectedLevel != newLevel
-        
+        let buildingChanged = isInit ? true : selectedBuilding != newBuilding
+        let levelChanged = isInit ? true : selectedLevel != newLevel
+//        print(getLocalTimeString() + " , (PlotUserCoord) result = \(result.x),\(result.y),\(result.absolute_heading)")
         DispatchQueue.main.async { [self] in
             if buildingChanged || levelChanged {
+                isInit = false
                 selectedBuilding = newBuilding
                 selectedLevel = newLevel
                 

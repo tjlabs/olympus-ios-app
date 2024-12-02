@@ -452,20 +452,35 @@
                                     <constraint firstAttribute="height" constant="400" id="9bt-bK-nil"/>
                                 </constraints>
                             </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LKY-nh-5dr">
+                                <rect key="frame" x="20" y="764" width="353" height="34"/>
+                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                <state key="normal" title="Start">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </state>
+                                <connections>
+                                    <action selector="tapStartButton:" destination="lTm-Bc-T4p" eventType="touchUpInside" id="GLY-ru-S4L"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="IpD-Yo-MwE"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
+                            <constraint firstItem="IpD-Yo-MwE" firstAttribute="trailing" secondItem="LKY-nh-5dr" secondAttribute="trailing" constant="20" id="8m5-vA-ydL"/>
+                            <constraint firstItem="LKY-nh-5dr" firstAttribute="leading" secondItem="IpD-Yo-MwE" secondAttribute="leading" constant="20" id="ArN-8i-wV7"/>
                             <constraint firstItem="2E5-wH-5EF" firstAttribute="top" secondItem="BzV-Z6-YGe" secondAttribute="bottom" id="B9Q-mM-Phi"/>
                             <constraint firstItem="IpD-Yo-MwE" firstAttribute="trailing" secondItem="BzV-Z6-YGe" secondAttribute="trailing" id="DXx-T5-DoB"/>
                             <constraint firstItem="BzV-Z6-YGe" firstAttribute="top" secondItem="Jai-32-2kg" secondAttribute="top" id="Rsc-P0-n2F"/>
                             <constraint firstItem="IpD-Yo-MwE" firstAttribute="trailing" secondItem="2E5-wH-5EF" secondAttribute="trailing" id="WVA-cf-WQr"/>
                             <constraint firstItem="BzV-Z6-YGe" firstAttribute="leading" secondItem="IpD-Yo-MwE" secondAttribute="leading" id="aCm-OO-HN3"/>
                             <constraint firstItem="2E5-wH-5EF" firstAttribute="leading" secondItem="IpD-Yo-MwE" secondAttribute="leading" id="khL-Qc-nbK"/>
+                            <constraint firstItem="IpD-Yo-MwE" firstAttribute="bottom" secondItem="LKY-nh-5dr" secondAttribute="bottom" constant="20" id="rCp-75-e0Z"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="mainView" destination="2E5-wH-5EF" id="a1r-Tu-oIg"/>
+                        <outlet property="startButton" destination="LKY-nh-5dr" id="MgK-Oh-Gst"/>
                         <outlet property="topView" destination="BzV-Z6-YGe" id="hSs-LC-TM0"/>
                     </connections>
                 </viewController>

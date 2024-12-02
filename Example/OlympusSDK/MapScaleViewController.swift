@@ -3,21 +3,22 @@ import OlympusSDK
 
 class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate, MapViewForScaleDelegate {
     
-    func plotPathPixelsActivated(isActivated: Bool) {
-        if isActivated {
-            plotProducts(products: self.testProducts)
-        }
+    func mapScaleUpdated() {
+        plotProducts(products: self.testProducts)
     }
 
     func sliderValueChanged(index: Int, value: Double) {
         mapView.updateMapAndPpScaleValues(index: index, value: value)
     }
     
-    func update(result: OlympusSDK.FineLocationTrackingResult) { }
+    func update(result: OlympusSDK.FineLocationTrackingResult) {
+        mapView.updateResultInMap(result: result)
+    }
     func report(flag: Int) { }
     
     @IBOutlet weak var topView: UIView!
     @IBOutlet weak var mainView: UIView!
+    @IBOutlet weak var startButton: UIButton!
     
     let mapView = OlympusMapViewForScale()
     var scales: [Double] = [0, 0, 0, 0]
@@ -26,6 +27,7 @@ class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate
     let testProducts: [[Double]] = [[12, 14], [8, 17], [7, 8], [16, 10]]
     
     var serviceManager = OlympusServiceManager()
+    var isStarted: Bool = false
     var sector_id: Int = 2
     var mode: String = "pdr"
     var userId: String = ""
@@ -46,22 +48,36 @@ class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate
     override func viewDidLoad() {
         super.viewDidLoad()
         setupLayout()
+        mapView.setIsPpHidden(flag: true)
         mapView.delegate = self
 //        setupBottomView()
-        startOlympus()
-        
     }
     
     override func viewDidDisappear(_ animated: Bool) {
-        self.notificationCenterRemoveObserver()
+        stopOlympus()
         stopTimer()
-        serviceManager.stopService()
-        serviceManager.removeObserver(self)
     }
     
     private func startOlympus() {
+        serviceManager.addObserver(self)
+        serviceManager.setDeadReckoningMode(flag: true, buildingName: "S3", levelName: "7F", x: 16, y: 13, heading: 180)
         let uniqueId = makeUniqueId(uuid: self.userId)
         OlympusMapManager.shared.loadMapForScale(region: "Korea", sector_id: sector_id, mapView: mapView)
+        serviceManager.startService(user_id: uniqueId, region: "Korea", sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
+            if (isStart) {
+                self.startTimer()
+            } else {
+                print(returnedString)
+            }
+        })
+        
+//        OlympusMapManager.shared.loadMapForScale(region: "Korea", sector_id: sector_id, mapView: mapView)
+    }
+    
+    private func stopOlympus() {
+        self.notificationCenterRemoveObserver()
+        serviceManager.stopService()
+        serviceManager.removeObserver(self)
     }
     
     func startTimer() {
@@ -77,6 +93,19 @@ class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate
             self.timer = nil
         }
     }
+    
+    @IBAction func tapStartButton(_ sender: UIButton) {
+        if isStarted {
+            startButton.titleLabel!.text = "Start"
+            stopOlympus()
+            isStarted = false
+        } else {
+            startButton.titleLabel!.text = "Stop"
+            startOlympus()
+            isStarted = true
+        }
+    }
+    
     
     @objc func timerUpdate() { }
     
@@ -174,8 +203,8 @@ class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate
     
     private func plotProducts(products: [[Double]]) {
         let mapAndPpScaleValues = mapView.mapAndPpScaleValues
-        print("(MapScaleViewController) : plotProduct // mapAndPpScaleValues = \(mapAndPpScaleValues)")
-        print("(MapScaleViewController) : plotProduct // products = \(products)")
+//        print("(MapScaleViewController) : plotProduct // mapAndPpScaleValues = \(mapAndPpScaleValues)")
+//        print("(MapScaleViewController) : plotProduct // products = \(products)")
         for item in products {
             let productView = makeProductUIView(product: item, scales: mapAndPpScaleValues)
             mapView.plotUnitUsingCoord(unitView: productView)
@@ -206,72 +235,4 @@ extension MapScaleViewController {
         mapView.configureFrame(to: mainView)
         mainView.addSubview(mapView)
     }
-    
-//    func setupBottomView() {
-//        let verticalStackView = UIStackView()
-//        verticalStackView.axis = .vertical
-//        verticalStackView.distribution = .fillEqually
-//        verticalStackView.spacing = 10
-//        verticalStackView.translatesAutoresizingMaskIntoConstraints = false
-//        bottomView.addSubview(verticalStackView)
-//
-//        NSLayoutConstraint.activate([
-//            verticalStackView.leadingAnchor.constraint(equalTo: bottomView.leadingAnchor, constant: 10),
-//            verticalStackView.trailingAnchor.constraint(equalTo: bottomView.trailingAnchor, constant: -10),
-//            verticalStackView.topAnchor.constraint(equalTo: bottomView.topAnchor, constant: 10),
-//            verticalStackView.bottomAnchor.constraint(equalTo: bottomView.bottomAnchor, constant: -10)
-//        ])
-//
-//        let labels = ["x scale: ", "y scale: ", "x offset: ", "y offset: "]
-//
-//        for (index, labelText) in labels.enumerated() {
-//            let horizontalStackView = UIStackView()
-//            horizontalStackView.axis = .horizontal
-//            horizontalStackView.distribution = .fill
-//            horizontalStackView.spacing = 10
-//            horizontalStackView.translatesAutoresizingMaskIntoConstraints = false
-//            
-//            let label = UILabel()
-//            label.text = labelText
-//            label.textAlignment = .left
-//            label.setContentHuggingPriority(.defaultHigh, for: .horizontal)
-//            
-//            let slider = UISlider()
-//            if index < 2 {
-//                slider.minimumValue = SCALE_MIN_MAX[0]
-//                slider.maximumValue = SCALE_MIN_MAX[1]
-//            } else {
-//                slider.minimumValue = OFFSET_MIN_MAX[0]
-//                slider.maximumValue = OFFSET_MIN_MAX[1]
-//            }
-//            
-//            slider.value = Float(scales[index])
-//            slider.tag = index
-//            
-//            slider.addTarget(self, action: #selector(sliderValueChanged(_:)), for: .valueChanged)
-//            
-//            let valueLabel = UILabel()
-//            valueLabel.text = String(format: "%.2f", scales[index])
-//            valueLabel.textAlignment = .right
-//            valueLabel.setContentHuggingPriority(.defaultHigh, for: .horizontal)
-//            valueLabel.tag = 1000 + index
-//            
-//            horizontalStackView.addArrangedSubview(label)
-//            horizontalStackView.addArrangedSubview(slider)
-//            horizontalStackView.addArrangedSubview(valueLabel)
-//            
-//            verticalStackView.addArrangedSubview(horizontalStackView)
-//        }
-//    }
-//
-//    @objc private func sliderValueChanged(_ sender: UISlider) {
-//        let index = sender.tag
-//        let sliderValue = Double(sender.value)
-//        scales[index] = Double(sender.value)
-//        if let valueLabel = bottomView.viewWithTag(1000 + index) as? UILabel {
-//            valueLabel.text = String(format: "%.2f", scales[index])
-//        }
-//        
-//        mapView.updateMapAndPpScaleValues(index: index, value: sliderValue)
-//    }
 }
