@@ -971,7 +971,7 @@ public class OlympusPathMatchingCalculator {
         if directions.count == 2 {
             var xyLimitValue: Double = 30
             if (mode == OlympusConstants.MODE_PDR) {
-                xyLimitValue = xyLimitValue - 5
+                xyLimitValue = 1.5  // xyLimitValue - 5
             }
             if (directions.contains(0) && directions.contains(180)) {
                 paddingValues = [xyLimitValue, 1, xyLimitValue, 1]
