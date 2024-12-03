@@ -656,6 +656,8 @@ public class OlympusPathMatchingCalculator {
                             }
                         }
                     } else if (updateType == .PATH_TRAJ_MATCHING) {
+                        let correctedX = round(x)
+                        let correctedY = round(y)
                         var passedNodeInfoBuffer = [PassedNodeInfo]()
                         for i in 0..<roadX.count {
                             let xPath = roadX[i]
@@ -685,7 +687,7 @@ public class OlympusPathMatchingCalculator {
                                         headingCandidates.append(headingArray)
                                     }
                                     
-                                    if (xPath == x && yPath == y) {
+                                    if (xPath == correctedX && yPath == correctedY) {
                                         var ppHeadingValues = [Double]()
                                         let headingData = headingArray.components(separatedBy: ",")
                                         for j in 0..<headingData.count {
@@ -780,6 +782,9 @@ public class OlympusPathMatchingCalculator {
                         }
 //                        print(getLocalTimeString() + " , (Olympus) Node Find : passedNode (PATH_TRAJ_MATCHING) = \(self.passedNode) // index = \(self.passedNodeMatchedIndex) // heading = \(self.passedNodeHeadings)")
                     } else {
+                        let correctedX = round(x)
+                        let correctedY = round(y)
+                        
                         for i in 0..<roadX.count {
                             let xPath = roadX[i]
                             let yPath = roadY[i]
@@ -809,7 +814,7 @@ public class OlympusPathMatchingCalculator {
                                         headingCandidates.append(headingArray)
                                     }
                                     
-                                    if (xPath == x && yPath == y) {
+                                    if (xPath == correctedX && yPath == correctedY) {
                                         var ppHeadingValues = [Double]()
                                         let headingData = headingArray.components(separatedBy: ",")
                                         for j in 0..<headingData.count {

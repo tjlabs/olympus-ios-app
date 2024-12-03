@@ -66,6 +66,7 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
     private let userCoordTag = 999
     
     private var mode: MapMode = .MAP_ONLY
+    private var isZoomMode: Bool = false
     
     public var isDefaultScale: Bool = true
     public var mapAndPpScaleValues: [Double] = [0, 0, 0, 0]
@@ -74,6 +75,8 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
         super.init(frame: frame)
         setupAssets()
         setupView()
+        setupButtons()
+        setupButtonActions()
         observeImageUpdates()
         observeUnitUpdates()
         observePathPixelUpdates()
@@ -84,6 +87,8 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
         super.init(coder: coder)
         setupAssets()
         setupView()
+        setupButtons()
+        setupButtonActions()
         observeImageUpdates()
         observeUnitUpdates()
         observePathPixelUpdates()
@@ -123,6 +128,63 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
     private func setupView() {
         setupMapImageView()
         setupCollectionViews()
+    }
+    
+    private func setupButtons() {
+        func styleButton(_ button: UIButton) {
+            button.backgroundColor = .white
+            button.layer.cornerRadius = 8
+            button.layer.shadowColor = UIColor.black.cgColor
+            button.layer.shadowOpacity = 0.2
+            button.layer.shadowOffset = CGSize(width: 0, height: 4)
+            button.layer.shadowRadius = 4
+            button.contentEdgeInsets = UIEdgeInsets(top: 6, left: 6, bottom: 6, right: 6)
+        }
+        
+        zoomButton.isHidden = false
+        zoomButton.isUserInteractionEnabled = true
+        zoomButton.setImage(imageZoomIn, for: .normal)
+        zoomButton.translatesAutoresizingMaskIntoConstraints = false
+        zoomButton.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        zoomButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        styleButton(zoomButton)
+        addSubview(zoomButton)
+
+        NSLayoutConstraint.activate([
+            zoomButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -20),
+            zoomButton.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -20),
+        ])
+    }
+    
+    private func setupButtonActions() {
+        zoomButton.addAction(UIAction { [weak self] _ in
+            self?.zoomButtonTapped()
+        }, for: .touchUpInside)
+        
+        zoomButton.addAction(UIAction { [weak self] _ in
+            self?.zoomButtonTappedOver()
+        }, for: [.touchUpInside, .touchUpOutside])
+    }
+    
+    private func zoomButtonTapped() {
+        print(getLocalTimeString() + " , (OlympusMapViewForScale) zoomButtonTapped")
+        self.zoomButton.isUserInteractionEnabled = false
+        UIView.animate(withDuration: 0.1) {
+            self.zoomButton.transform = CGAffineTransform(scaleX: 0.98, y: 0.98)
+        }
+        
+        if self.isZoomMode {
+            isZoomMode = false
+        } else {
+            isZoomMode = true
+        }
+    }
+    
+    private func zoomButtonTappedOver() {
+        UIView.animate(withDuration: 0.1) {
+            self.zoomButton.transform = CGAffineTransform.identity
+            self.zoomButton.isUserInteractionEnabled = true
+        }
     }
     
     public func updateMapAndPpScaleValues(index: Int, value: Double) {
@@ -542,6 +604,88 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
         plotUserCoordWorkItem = workItem
         DispatchQueue.global(qos: .userInteractive).async(execute: workItem)
     }
+    
+    private func plotUserCoordWithZoomAndRotation(building: String, level: String,xyh: [Double]) {
+        plotUserCoordWorkItem?.cancel()
+        
+        // Create a new work item
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self = self else { return }
+
+            if self.preXyh == xyh {
+                return
+            }
+
+            let key = "\(OlympusMapManager.shared.sector_id)_\(building)_\(level)"
+            guard let scaleOffsetValues = self.mapScaleOffset[key], scaleOffsetValues.count == 4 else {
+                if let ppCoord = OlympusPathMatchingCalculator.shared.PpCoord[key] {
+                    self.calMapScaleOffset(building: building, level: level, ppCoord: ppCoord)
+                }
+                return
+            }
+            let scales: [Double] = self.isDefaultScale ? scaleOffsetValues : self.mapAndPpScaleValues
+
+            let x = xyh[0]
+            let y = -xyh[1]
+            let heading = xyh[2]
+
+            let transformedX = (x - scales[2]) * scales[0]
+            let transformedY = (y - scales[3]) * scales[1]
+
+            let rotatedX = transformedX
+            let rotatedY = transformedY
+
+            DispatchQueue.main.async { [self] in
+//                self.mapImageView.transform = .identity
+                if let existingPointView = self.mapImageView.viewWithTag(self.userCoordTag) {
+                    existingPointView.removeFromSuperview()
+                }
+
+                let marker = self.imageMapMarker
+                let coordSize: CGFloat = 30
+                let pointView = UIImageView(image: marker)
+                pointView.frame = CGRect(x: rotatedX - coordSize / 2, y: rotatedY - coordSize / 2, width: coordSize, height: coordSize)
+                pointView.tag = self.userCoordTag
+                
+                // Adding shadow effect to pointView
+                pointView.layer.shadowColor = UIColor.black.cgColor
+                pointView.layer.shadowOpacity = 0.25
+                pointView.layer.shadowOffset = CGSize(width: 0, height: 2)
+                pointView.layer.shadowRadius = 2
+                
+                UIView.animate(withDuration: 0.55, delay: 0, options: .curveEaseInOut, animations: {
+                    self.mapImageView.addSubview(pointView)
+                }, completion: nil)
+                
+
+                let rotationAngle = CGFloat((heading - 90) * .pi / 180)
+                let scaleFactor: CGFloat = 2.0
+                let mapCenterX = self.bounds.midX
+                let mapCenterY = self.bounds.midY
+                let pointViewCenterInSelf = self.scrollView.convert(pointView.center, to: self)
+                
+                let USER_CENTER_OFFSET: CGFloat = 40
+                let dx = -USER_CENTER_OFFSET * cos(heading * (.pi / 180))
+                let dy = USER_CENTER_OFFSET * sin(heading * (.pi / 180))
+                    
+                let translationX = mapCenterX - pointViewCenterInSelf.x + dx
+                let translationY = mapCenterY - pointViewCenterInSelf.y + dy
+                
+                UIView.animate(withDuration: 0.55, delay: 0, options: .curveEaseInOut, animations: {
+                    self.mapImageView.transform = CGAffineTransform(rotationAngle: rotationAngle)
+                        .scaledBy(x: scaleFactor, y: scaleFactor)
+                        .translatedBy(x: translationX, y: translationY)
+                }, completion: nil)
+                pointView.transform = CGAffineTransform(rotationAngle: -rotationAngle)
+                
+                self.preXyh = xyh
+            }
+        }
+
+        // Assign and execute the new work item
+        plotUserCoordWorkItem = workItem
+        DispatchQueue.global(qos: .userInteractive).async(execute: workItem)
+    }
 
     
 //    private func plotUserCoord(building: String, level: String, xyh: [Double]) {
@@ -616,7 +760,14 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
                 updatePathPixel()
                 updateUnit()
             }
-            plotUserCoord(building: selectedBuilding ?? "", level: selectedLevel ?? "", xyh: [result.x, result.y, result.absolute_heading])
+            
+            if self.isZoomMode {
+                plotUserCoordWithZoomAndRotation(building: selectedBuilding ?? "", level: selectedLevel ?? "", xyh: [result.x, result.y, result.absolute_heading])
+            } else {
+                plotUserCoord(building: selectedBuilding ?? "", level: selectedLevel ?? "", xyh: [result.x, result.y, result.absolute_heading])
+            }
+//            plotUserCoord(building: selectedBuilding ?? "", level: selectedLevel ?? "", xyh: [result.x, result.y, result.absolute_heading])
+//            plotUserCoordWithZoomAndRotation(building: selectedBuilding ?? "", level: selectedLevel ?? "", xyh: [result.x, result.y, result.absolute_heading])
         }
         preIndex = result.index
     }

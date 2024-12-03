@@ -95,7 +95,6 @@ public class OlympusPDRDistanceEstimator: NSObject {
                     finalUnitResult.length = OlympusConstants.STEP_LENGTH_RANGE_BOTTOM
                 }
                 
-
                 if (!self.autoMode) {
                     if (isLossStep && finalUnitResult.index > OlympusConstants.NORMAL_STEP_LOSS_CHECK_SIZE) {
                         finalUnitResult.length = OlympusConstants.DEFAULT_STEP_LENGTH * Double(OlympusConstants.NORMAL_STEP_LOSS_CHECK_SIZE)

@@ -53,8 +53,9 @@ class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate
     override func viewDidLoad() {
         super.viewDidLoad()
         setupLayout()
-        mapView.setIsPpHidden(flag: false)
         mapView.delegate = self
+        mapView.setIsPpHidden(flag: true)
+        OlympusMapManager.shared.loadMapForScale(region: "Korea", sector_id: sector_id, mapView: mapView)
 //        setupBottomView()
     }
     
@@ -67,7 +68,6 @@ class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate
         serviceManager.addObserver(self)
         serviceManager.setDeadReckoningMode(flag: true, buildingName: "S3", levelName: "7F", x: 16, y: 13, heading: 180)
         let uniqueId = makeUniqueId(uuid: self.userId)
-        OlympusMapManager.shared.loadMapForScale(region: "Korea", sector_id: sector_id, mapView: mapView)
         serviceManager.startService(user_id: uniqueId, region: "Korea", sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
             if (isStart) {
                 self.startTimer()

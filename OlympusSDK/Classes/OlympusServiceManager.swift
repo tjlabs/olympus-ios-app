@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
-    public static let sdkVersion: String = "0.2.13"
+    public static let sdkVersion: String = "0.2.14"
     var isSimulationMode: Bool = false
     var isDeadReckoningMode: Bool = false
     var bleFileName: String = ""
@@ -1091,7 +1091,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 if (isDidPathTrajMatching) {
                     let pathTrajMatchingNode: PassedNodeInfo = KF.getPathTrajMatchingNode()
                     OlympusPathMatchingCalculator.shared.updateAnchorNodeAfterPathTrajMatching(nodeInfo: pathTrajMatchingNode, sectionNumber: sectionController.getSectionNumber())
-//                    print(getLocalTimeString() + " , (Olympus) Path-Matching : Result After Path Traj Matching // xyh = [\(tuResult.x) , \(tuResult.y) , \(tuResult.absolute_heading)]")
+                    print(getLocalTimeString() + " , (Olympus) Path-Matching : Result After Path Traj Matching // xyh = [\(tuResult.x) , \(tuResult.y) , \(tuResult.absolute_heading)]")
                     updateType = .PATH_TRAJ_MATCHING
                     mustInSameLink = false
                 } else if (OlympusPathMatchingCalculator.shared.isInNode || pathMatchingArea.0) {
@@ -2234,15 +2234,19 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     isUseHeading = true // true
                     headingRange -= 10
                 }
-                let correctedResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, HEADING_RANGE: headingRange, isUseHeading: isUseHeading, pathType: 0, PADDING_VALUES: paddings)
-//                print(getLocalTimeString() + " , (Olympus) Path-Matching : correctedResult (before) // level = \(levelName) , xyh = [\(result.x) , \(result.y) , \(result.absolute_heading)]")
-//                print(getLocalTimeString() + " , (Olympus) Path-Matching : correctedResult // isUseHeading = \(isUseHeading) // headingRange = \(headingRange) // pathMatchingType = \(pathMatchingType) // paddings = \(paddings)")
-//                print(getLocalTimeString() + " , (Olympus) Path-Matching : correctedResult (after) // success = \(correctedResult.isSuccess) // level = \(result.level_name) , xyh = [\(correctedResult.xyhs[0]) , \(correctedResult.xyhs[1]) , \(correctedResult.xyhs[2])]")
                 
+                let correctedResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, HEADING_RANGE: headingRange, isUseHeading: isUseHeading, pathType: 0, PADDING_VALUES: paddings)
                 if (correctedResult.isSuccess) {
-                    result.x = correctedResult.xyhs[0]
-                    result.y = correctedResult.xyhs[1]
                     result.absolute_heading = correctedResult.xyhs[2]
+                    if result.absolute_heading == 0 || result.absolute_heading == 180 {
+                        result.y = correctedResult.xyhs[1]
+                    } else if result.absolute_heading == 90 || result.absolute_heading == 270 {
+                        result.x = correctedResult.xyhs[0]
+                    } else {
+                        result.x = correctedResult.xyhs[0]
+                        result.y = correctedResult.xyhs[1]
+                    }
+//                    print(getLocalTimeString() + " , (Olympus) Path-Matching : correctedResult = \(result.x), \(result.y), \(result.absolute_heading)")
                     temporalResultHeading = correctedResult.bestHeading
                     self.curTemporalResultHeading = correctedResult.bestHeading
                 } else {
@@ -2259,6 +2263,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     }
                     isPmFailed = true
                 }
+                isUseHeading = false
             } else {
                 pathTypeForNodeAndLink = 1
                 isUseHeading = stateManager.isVenusMode ? false : true
@@ -2315,6 +2320,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 }
             }
             
+//            print(getLocalTimeString() + " , (Olympus) Path-Matching : isUseHeading = \(isUseHeading) // isStableMode = \(isStableMode) // isPmFailed = \(isPmFailed)")
             if (isUseHeading && isStableMode && !self.isPhaseBreak) {
                 let diffX = result.x - temporalResult.x
                 let diffY = result.y - temporalResult.y
@@ -2342,6 +2348,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             }
             
             if (KF.isRunning) {
+//                print(getLocalTimeString() + " , (Olympus) Path-Matching : before updateNodeAndLinkInfo // result = \(result.x), \(result.y), \(result.absolute_heading) // updateType = \(updateType)")
                 OlympusPathMatchingCalculator.shared.updateNodeAndLinkInfo(uvdIndex: resultIndex, currentResult: result, currentResultHeading: self.curTemporalResultHeading, pastResult: preTemporalResult, pastResultHeading: preTemporalResultHeading, pathType: pathTypeForNodeAndLink, updateType: updateType)
                 KF.setLinkInfo(coord: OlympusPathMatchingCalculator.shared.linkCoord, directions: OlympusPathMatchingCalculator.shared.linkDirections)
                 self.paddingValues = OlympusPathMatchingCalculator.shared.getPaddingValues(mode: runMode, isPhaseBreak: isPhaseBreak, PADDING_VALUE: PADDING_VALUE)
