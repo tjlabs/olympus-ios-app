@@ -98,6 +98,7 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
         self.isPpHidden = flag
         if flag {
             self.mapImageView.subviews.forEach { $0.removeFromSuperview() }
+            self.delegate?.mapScaleUpdated()
         } else {
             updatePathPixel()
         }
