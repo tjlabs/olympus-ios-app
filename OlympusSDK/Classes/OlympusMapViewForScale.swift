@@ -348,7 +348,7 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
         if let firstBuilding = buildingData.first {
             self.selectedBuilding = firstBuilding
             self.levelData = levelData[firstBuilding] ?? []
-            self.selectedLevel = self.levelData.first(
+            self.selectedLevel = self.levelData.first
         } else {
             self.selectedBuilding = nil
             self.levelData = []
