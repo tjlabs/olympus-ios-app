@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
-    public static let sdkVersion: String = "0.2.15"
+    public static let sdkVersion: String = "0.2.16"
     var isSimulationMode: Bool = false
     var isDeadReckoningMode: Bool = false
     var bleFileName: String = ""
@@ -2216,6 +2216,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         let resultIndex = unitDRInfoIndex
         let resultMobileTime = getCurrentTimeInMilliseconds()
         result.index = resultIndex
+        var correctedXYH = [Double]()
         preTemporalResult.index = resultIndex
         
         var isUseHeading: Bool = false
@@ -2237,16 +2238,18 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 
                 let correctedResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, HEADING_RANGE: headingRange, isUseHeading: isUseHeading, pathType: 0, PADDING_VALUES: paddings)
                 if (correctedResult.isSuccess) {
+                    print(getLocalTimeString() + " , (Olympus) Path-Matching : correctedResult = \(result.x), \(result.y), \(result.absolute_heading)")
                     result.absolute_heading = correctedResult.xyhs[2]
-                    if result.absolute_heading == 0 || result.absolute_heading == 180 {
-                        result.y = correctedResult.xyhs[1]
-                    } else if result.absolute_heading == 90 || result.absolute_heading == 270 {
-                        result.x = correctedResult.xyhs[0]
-                    } else {
-                        result.x = correctedResult.xyhs[0]
-                        result.y = correctedResult.xyhs[1]
-                    }
-//                    print(getLocalTimeString() + " , (Olympus) Path-Matching : correctedResult = \(result.x), \(result.y), \(result.absolute_heading)")
+//                    if result.absolute_heading == 0 || result.absolute_heading == 180 {
+//                        result.y = correctedResult.xyhs[1]
+//                    } else if result.absolute_heading == 90 || result.absolute_heading == 270 {
+//                        result.x = correctedResult.xyhs[0]
+//                    } else {
+//                        result.x = correctedResult.xyhs[0]
+//                        result.y = correctedResult.xyhs[1]
+//                    }
+                    result.x = correctedResult.xyhs[0]
+                    result.y = correctedResult.xyhs[1]
                     temporalResultHeading = correctedResult.bestHeading
                     self.curTemporalResultHeading = correctedResult.bestHeading
                 } else {
@@ -2404,8 +2407,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             self.temporalResult = result
             self.preTemporalResult = result
             self.preTemporalResultHeading = temporalResultHeading
-            KF.updateTuResult(x: result.x, y: result.y)
-            KF.updateTuResultNow(result: result)
+//            KF.updateTuResult(x: result.x, y: result.y)
+//            KF.updateTuResultNow(result: result)
         }
     }
     

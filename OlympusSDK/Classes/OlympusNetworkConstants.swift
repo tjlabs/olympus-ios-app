@@ -58,6 +58,9 @@ public func setServerURL(region: String) {
     case "Canada":
         REGION_PREFIX = "ca-central-1."
         REGION_NAME = "Canada"
+    case "US-East":
+        REGION_PREFIX = "us-east-1."
+        REGION_NAME = "US-East"
     default:
         REGION_PREFIX = "ap-northeast-2."
         REGION_NAME = "Korea"

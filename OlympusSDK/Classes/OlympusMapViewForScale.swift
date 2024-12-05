@@ -63,7 +63,8 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
     private var preIndex = -1
     private var userHeadingBuffer = [Double]()
     private var mapHeading: Double = 0
-    private let userCoordTag = 999
+    private let userCoordTag = 111
+    private let contentsTag = 200
     
     private var mode: MapMode = .MAP_ONLY
     private var zoomMode: ZoomMode = .ZOOM_OUT
@@ -173,12 +174,6 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
         UIView.animate(withDuration: 0.1) {
             self.zoomButton.transform = CGAffineTransform(scaleX: 0.98, y: 0.98)
         }
-        
-//        if self.isZoomMode {
-//            isZoomMode = false
-//        } else {
-//            isZoomMode = true
-//        }
         toggleZoomMode()
     }
     
@@ -526,6 +521,14 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
     
     public func plotUnitUsingCoord(unitView: UIView) {
         DispatchQueue.main.async { [self] in
+//            self.mapImageView.subviews.forEach { subview in
+//                if subview.tag >= 2000 {
+//                    if let existingUnitView = self.mapImageView.viewWithTag(subview.tag) {
+//                        existingUnitView.removeFromSuperview()
+//                    }
+//                }
+//            }
+            unitView.tag = contentsTag + mapImageView.subviews.count
             mapImageView.addSubview(unitView)
         }
     }
@@ -697,68 +700,22 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
                         .scaledBy(x: scaleFactor, y: scaleFactor)
                         .translatedBy(x: translationX, y: translationY)
                 }, completion: nil)
+                
                 pointView.transform = CGAffineTransform(rotationAngle: -rotationAngle)
+                
+                self.mapImageView.subviews.forEach { subview in
+                    if subview.tag >= self.contentsTag {
+                        subview.transform = CGAffineTransform(rotationAngle: -rotationAngle)
+                    }
+                }
                 
                 self.preXyh = xyh
             }
         }
 
-        // Assign and execute the new work item
         plotUserCoordWorkItem = workItem
         DispatchQueue.global(qos: .userInteractive).async(execute: workItem)
     }
-
-    
-//    private func plotUserCoord(building: String, level: String, xyh: [Double]) {
-//        DispatchQueue.main.async { [self] in
-//            if preXyh == xyh {
-//                return
-//            }
-//            
-//            let key = "\(OlympusMapManager.shared.sector_id)_\(building)_\(level)"
-//            guard let scaleOffsetValues = mapScaleOffset[key], scaleOffsetValues.count == 4 else {
-//                if let ppCoord = OlympusPathMatchingCalculator.shared.PpCoord[key] {
-//                    calMapScaleOffset(building: building, level: level, ppCoord: ppCoord)
-//                }
-//                return
-//            }
-//            let scales: [Double] = isDefaultScale ? scaleOffsetValues : self.mapAndPpScaleValues
-////            print(getLocalTimeString() + " , (PlotUserCoord) display = \(xyh)")
-//            let x = xyh[0]
-//            let y = -xyh[1]
-//            let heading = xyh[2]
-//            
-//            let transformedX = (x - scales[2])*scales[0]
-//            let transformedY = (y - scales[3])*scales[1]
-//            
-//            let rotatedX = transformedX
-//            let rotatedY = transformedY
-//            
-//            mapImageView.transform = .identity
-//            if let existingPointView = mapImageView.viewWithTag(userCoordTag) {
-//                existingPointView.removeFromSuperview()
-//            }
-//            
-//            let marker = self.imageMapMarker
-//            let coordSize: CGFloat = 30
-//            let pointView = UIImageView(image: marker)
-//            pointView.frame = CGRect(x: rotatedX - coordSize / 2, y: rotatedY - coordSize / 2, width: coordSize, height: coordSize)
-//            pointView.tag = userCoordTag
-//            pointView.layer.shadowColor = UIColor.black.cgColor
-//            pointView.layer.shadowOpacity = 0.25
-//            pointView.layer.shadowOffset = CGSize(width: 0, height: 2)
-//            pointView.layer.shadowRadius = 2
-//            
-//            let rotationAngle = CGFloat(-(heading - 90) * .pi / 180)
-//            pointView.transform = CGAffineTransform(rotationAngle: rotationAngle)
-//            
-//            UIView.animate(withDuration: 0.55, delay: 0, options: .curveEaseInOut, animations: {
-//                self.mapImageView.addSubview(pointView)
-//            }, completion: nil)
-//            
-//            self.preXyh = xyh
-//        }
-//    }
     
     public func updateResultInMap(result: FineLocationTrackingResult) {
         let newBuilding = result.building_name
@@ -766,7 +723,7 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
         
         let buildingChanged = isInit ? true : selectedBuilding != newBuilding
         let levelChanged = isInit ? true : selectedLevel != newLevel
-//        print(getLocalTimeString() + " , (PlotUserCoord) result = \(result.x),\(result.y),\(result.absolute_heading)")
+
         DispatchQueue.main.async { [self] in
             if buildingChanged || levelChanged {
                 isInit = false

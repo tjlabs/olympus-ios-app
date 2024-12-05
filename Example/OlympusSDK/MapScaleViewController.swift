@@ -2,7 +2,6 @@ import UIKit
 import OlympusSDK
 
 class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate, MapViewForScaleDelegate {
-    
     func mapScaleUpdated() {
         plotProducts(products: self.testProducts)
     }
@@ -25,15 +24,13 @@ class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate
     @IBOutlet weak var startButton: UIButton!
     
     let mapView = OlympusMapViewForScale()
-    var scales: [Double] = [0, 0, 0, 0]
-    let SCALE_MIN_MAX: [Float] = [0, 25]
-    let OFFSET_MIN_MAX: [Float] = [0, 25]
-    let testProducts: [[Double]] = [[12, 14], [8, 17], [7, 8], [16, 10]]
+    let testProducts: [[Double]] = [[5, 8], [10, 12], [12, 12], [12, 10]]
     
     var serviceManager = OlympusServiceManager()
     var preIndex: Int = -1
     var isStarted: Bool = false
     var sector_id: Int = 2
+    var region: String = "US-East"
     var mode: String = "pdr"
     var userId: String = ""
     let key_header = "S3_7F"
@@ -52,11 +49,11 @@ class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupLayout()
+        
         mapView.delegate = self
         mapView.setIsPpHidden(flag: true)
         OlympusMapManager.shared.loadMapForScale(region: "Korea", sector_id: sector_id, mapView: mapView)
-//        setupBottomView()
+        setupMapView()
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -68,7 +65,7 @@ class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate
         serviceManager.addObserver(self)
         serviceManager.setDeadReckoningMode(flag: true, buildingName: "S3", levelName: "7F", x: 16, y: 13, heading: 180)
         let uniqueId = makeUniqueId(uuid: self.userId)
-        serviceManager.startService(user_id: uniqueId, region: "Korea", sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
+        serviceManager.startService(user_id: uniqueId, region: region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
             if (isStart) {
                 self.startTimer()
             } else {
@@ -208,8 +205,8 @@ class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate
     
     private func plotProducts(products: [[Double]]) {
         let mapAndPpScaleValues = mapView.mapAndPpScaleValues
-//        print("(MapScaleViewController) : plotProduct // mapAndPpScaleValues = \(mapAndPpScaleValues)")
-//        print("(MapScaleViewController) : plotProduct // products = \(products)")
+        print("(MapScaleViewController) : plotProduct // mapAndPpScaleValues = \(mapAndPpScaleValues)")
+        print("(MapScaleViewController) : plotProduct // products = \(products)")
         for item in products {
             let productView = makeProductUIView(product: item, scales: mapAndPpScaleValues)
             mapView.plotUnitUsingCoord(unitView: productView)
@@ -231,12 +228,22 @@ class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate
         productView.backgroundColor = .systemRed
         productView.layer.cornerRadius = markerSize/4
         
+        let categoryLabel = UILabel()
+        categoryLabel.text = "1"
+        categoryLabel.textAlignment = .center
+        categoryLabel.font = UIFont.systemFont(ofSize: 12, weight: .bold)
+        categoryLabel.textColor = .white
+        categoryLabel.frame = productView.bounds
+        categoryLabel.adjustsFontSizeToFitWidth = true
+        categoryLabel.minimumScaleFactor = 0.5
+        productView.addSubview(categoryLabel)
+        
         return productView
     }
 }
 
 extension MapScaleViewController {
-    func setupLayout() {
+    func setupMapView() {
         mapView.configureFrame(to: mainView)
         mainView.addSubview(mapView)
     }
