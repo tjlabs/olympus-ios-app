@@ -64,7 +64,10 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
     private var userHeadingBuffer = [Double]()
     private var mapHeading: Double = 0
     private let userCoordTag = 111
-    private let contentsTag = 200
+    
+    private var numUnits: Int = 0
+    private var unitTags = [Int]()
+    private let UNIT_TAG = 200
     
     private var mode: MapMode = .MAP_ONLY
     private var zoomMode: ZoomMode = .ZOOM_OUT
@@ -198,6 +201,7 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
         } else {
             // 현재 전체 모드
             if !preXyh.isEmpty && self.mode != .MAP_INTERACTION {
+                delegate?.mapScaleUpdated()
                 plotUserCoord(building: selectedBuilding ?? "", level: selectedLevel ?? "", xyh: preXyh)
             }
         }
@@ -344,7 +348,7 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
         if let firstBuilding = buildingData.first {
             self.selectedBuilding = firstBuilding
             self.levelData = levelData[firstBuilding] ?? []
-            self.selectedLevel = self.levelData.first
+            self.selectedLevel = self.levelData.first(
         } else {
             self.selectedBuilding = nil
             self.levelData = []
@@ -519,18 +523,48 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
         }
     }
     
-    public func plotUnitUsingCoord(unitView: UIView) {
-        DispatchQueue.main.async { [self] in
-//            self.mapImageView.subviews.forEach { subview in
-//                if subview.tag >= 2000 {
-//                    if let existingUnitView = self.mapImageView.viewWithTag(subview.tag) {
-//                        existingUnitView.removeFromSuperview()
-//                    }
-//                }
-//            }
-            unitView.tag = contentsTag + mapImageView.subviews.count
-            mapImageView.addSubview(unitView)
+    public func setUnitTags(num: Int) {
+        self.numUnits = num
+        self.unitTags = []
+        for v in 0..<num {
+            unitTags.append(UNIT_TAG + v)
         }
+    }
+    
+    private func removeAllUnits(completion: @escaping (Bool) -> Void) {
+        DispatchQueue.main.async { [self] in
+            self.mapImageView.subviews.forEach { subview in
+                for tag in self.unitTags {
+                    if let existingUnitView = self.mapImageView.viewWithTag(tag) {
+//                        print(getLocalTimeString() + " , (Olympus) MapView : delete // unit tag = \(subview.tag)")
+                        existingUnitView.removeFromSuperview()
+                    }
+                }
+            }
+            completion(true)
+        }
+    }
+    
+    public func plotUnitUsingCoord(unitViews: [UIView]) {
+        removeAllUnits(completion: { [self] isRemoved in
+            if isRemoved {
+                DispatchQueue.main.async { [self] in
+                    for (index, item) in unitViews.enumerated() {
+                        item.tag = unitTags[index]
+                        mapImageView.addSubview(item)
+//                        print(getLocalTimeString() + " , (Olympus) MapView : create // unit tag = \(item.tag)")
+                    }
+//                    unitView.tag = UNIT_TAG + mapImageView.subviews.count
+//                    print(getLocalTimeString() + " , (Olympus) MapView : create // unit tag = \(unitView.tag)")
+//                    mapImageView.addSubview(unitView)
+                }
+            }
+        })
+//        DispatchQueue.main.async { [self] in
+//            unitView.tag = UNIT_TAG + mapImageView.subviews.count
+//            print(getLocalTimeString() + " , (Olympus) MapView : create // unit tag = \(unitView.tag)")
+//            mapImageView.addSubview(unitView)
+//        }
     }
     
     private func plotUnit(building: String, level: String, units: [Unit], ppCoord: [[Double]]) {
@@ -703,9 +737,17 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
                 
                 pointView.transform = CGAffineTransform(rotationAngle: -rotationAngle)
                 
+//                self.mapImageView.subviews.forEach { subview in
+//                    if subview.tag >= self.UNIT_TAG {
+//                        subview.transform = CGAffineTransform(rotationAngle: -rotationAngle)
+//                    }
+//                }
+                
                 self.mapImageView.subviews.forEach { subview in
-                    if subview.tag >= self.contentsTag {
-                        subview.transform = CGAffineTransform(rotationAngle: -rotationAngle)
+                    for tag in self.unitTags {
+                        if let existingUnitView = self.mapImageView.viewWithTag(tag) {
+                            existingUnitView.transform = CGAffineTransform(rotationAngle: -rotationAngle)
+                        }
                     }
                 }
                 

@@ -51,7 +51,7 @@ class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate
         super.viewDidLoad()
         
         mapView.delegate = self
-        mapView.setIsPpHidden(flag: true)
+        mapView.setIsPpHidden(flag: false)
         OlympusMapManager.shared.loadMapForScale(region: "Korea", sector_id: sector_id, mapView: mapView)
         setupMapView()
     }
@@ -204,13 +204,25 @@ class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate
     }
     
     private func plotProducts(products: [[Double]]) {
+        mapView.setUnitTags(num: products.count)
         let mapAndPpScaleValues = mapView.mapAndPpScaleValues
         print("(MapScaleViewController) : plotProduct // mapAndPpScaleValues = \(mapAndPpScaleValues)")
         print("(MapScaleViewController) : plotProduct // products = \(products)")
-        for item in products {
-            let productView = makeProductUIView(product: item, scales: mapAndPpScaleValues)
-            mapView.plotUnitUsingCoord(unitView: productView)
+        
+        if mapAndPpScaleValues[0] != 0 && mapAndPpScaleValues[1] != 0 && mapAndPpScaleValues[2] != 0 && mapAndPpScaleValues[3] != 0 {
+            var productViews = [UIView]()
+            for item in products {
+                let productView = makeProductUIView(product: item, scales: mapAndPpScaleValues)
+                productViews.append(productView)
+//                mapView.plotUnitUsingCoord(unitView: productView)
+            }
+            mapView.plotUnitUsingCoord(unitViews: productViews)
         }
+        
+//        for item in products {
+//            let productView = makeProductUIView(product: item, scales: mapAndPpScaleValues)
+//            mapView.plotUnitUsingCoord(unitView: productView)
+//        }
     }
     
     private func makeProductUIView(product: [Double], scales: [Double]) -> UIView {

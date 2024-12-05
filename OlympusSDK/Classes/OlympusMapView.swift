@@ -495,7 +495,7 @@ public class OlympusMapView: UIView, UICollectionViewDelegate, UICollectionViewD
             self.levelData = []
             self.selectedLevel = nil
         }
-
+        
         buildingsCollectionView.reloadData()
         levelsCollectionView.reloadData()
         adjustCollectionViewHeights()
