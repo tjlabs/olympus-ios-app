@@ -66,6 +66,7 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
     private let userCoordTag = 999
     
     private var mode: MapMode = .MAP_ONLY
+    private var zoomMode: ZoomMode = .ZOOM_OUT
     private var isZoomMode: Bool = false
     
     public var isDefaultScale: Bool = true
@@ -173,17 +174,37 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
             self.zoomButton.transform = CGAffineTransform(scaleX: 0.98, y: 0.98)
         }
         
-        if self.isZoomMode {
-            isZoomMode = false
-        } else {
-            isZoomMode = true
-        }
+//        if self.isZoomMode {
+//            isZoomMode = false
+//        } else {
+//            isZoomMode = true
+//        }
+        toggleZoomMode()
     }
     
     private func zoomButtonTappedOver() {
         UIView.animate(withDuration: 0.1) {
             self.zoomButton.transform = CGAffineTransform.identity
             self.zoomButton.isUserInteractionEnabled = true
+        }
+    }
+    
+    private func toggleZoomMode(to mode: ZoomMode? = nil) {
+        zoomMode = mode ?? (zoomMode == .ZOOM_IN ? .ZOOM_OUT : .ZOOM_IN)
+        DispatchQueue.main.async { [self] in
+            zoomButton.setImage(zoomMode == .ZOOM_IN ? imageZoomOut : imageZoomIn, for: .normal)
+        }
+        
+        if zoomMode == .ZOOM_IN {
+            // 현재 확대 모드
+            if !preXyh.isEmpty {
+                plotUserCoordWithZoomAndRotation(building: selectedBuilding ?? "", level: selectedLevel ?? "", xyh: preXyh)
+            }
+        } else {
+            // 현재 전체 모드
+            if !preXyh.isEmpty && self.mode != .MAP_INTERACTION {
+                plotUserCoord(building: selectedBuilding ?? "", level: selectedLevel ?? "", xyh: preXyh)
+            }
         }
     }
     
@@ -761,7 +782,7 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
                 updateUnit()
             }
             
-            if self.isZoomMode {
+            if self.zoomMode == .ZOOM_IN {
                 plotUserCoordWithZoomAndRotation(building: selectedBuilding ?? "", level: selectedLevel ?? "", xyh: [result.x, result.y, result.absolute_heading])
             } else {
                 plotUserCoord(building: selectedBuilding ?? "", level: selectedLevel ?? "", xyh: [result.x, result.y, result.absolute_heading])
