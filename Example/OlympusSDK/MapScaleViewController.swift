@@ -51,6 +51,7 @@ class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate
         super.viewDidLoad()
         
         mapView.delegate = self
+        mapView.setBuildingLevelIsHidden(flag: true)
         mapView.setIsPpHidden(flag: false)
         OlympusMapManager.shared.loadMapForScale(region: "Korea", sector_id: sector_id, mapView: mapView)
         setupMapView()

@@ -57,6 +57,7 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
     private var currentScale: CGFloat = 1.0
     private var translationOffset: CGPoint = .zero
     private var isPpHidden = false
+    private var isBuildingLevelHidden = false
     private var isUnitHidden = true
     
     private var preXyh = [Double]()
@@ -116,6 +117,8 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
     
     public func setBuildingLevelIsHidden(flag: Bool) {
         self.buildingsCollectionView.isHidden = flag
+        self.levelsCollectionView.isHidden = flag
+        self.isBuildingLevelHidden = flag
     }
     
     public func setIsDefaultScale(flag: Bool) {
@@ -367,7 +370,8 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
             levelsLeadingToBuildingsConstraint.isActive = false
             levelsLeadingToSuperviewConstraint.isActive = true
         } else {
-            buildingsCollectionView.isHidden = false
+            buildingsCollectionView.isHidden = self.isBuildingLevelHidden
+            levelsCollectionView.isHidden = self.isBuildingLevelHidden
             levelsLeadingToSuperviewConstraint.isActive = false
             levelsLeadingToBuildingsConstraint.isActive = true
         }
