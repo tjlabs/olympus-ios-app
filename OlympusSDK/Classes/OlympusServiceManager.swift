@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
-    public static let sdkVersion: String = "0.2.19"
+    public static let sdkVersion: String = "0.2.20"
     var isSimulationMode: Bool = false
     var isDeadReckoningMode: Bool = false
     var bleFileName: String = ""
@@ -320,6 +320,14 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
         routeTrackResult = FineLocationTrackingFromServer()
         phaseBreakResult = FineLocationTrackingFromServer()
+    }
+    
+    public func setUseFixedStep(flag: Bool) {
+        OlympusPDRDistanceEstimator.useFixedStep = flag
+    }
+    
+    public func setFixedStepLength(value: Double) {
+        OlympusPDRDistanceEstimator.fixedStepLength = value
     }
     
     public func startService(user_id: String, region: String, sector_id: Int, service: String, mode: String, completion: @escaping (Bool, String) -> Void) {
@@ -1024,7 +1032,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             displayOutput.velocity = unitDRInfo.velocity * 3.6
             displayOutput.indexTx = unitDRInfo.index
             // 임시
-            
+            print("\(unitDRInfo.index) // \(unitDRInfo.length)")
             stateManager.setVariblesWhenIsIndexChanged()
             stackHeadingForCheckCorrection()
             isPossibleHeadingCorrection = checkHeadingCorrection(buffer: headingBufferForCorrection)

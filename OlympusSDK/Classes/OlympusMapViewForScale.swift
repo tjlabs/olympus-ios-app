@@ -733,6 +733,10 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
                 let translationX = mapCenterX - pointViewCenterInSelf.x + dx
                 let translationY = mapCenterY - pointViewCenterInSelf.y + dy
                 
+//                self.mapImageView.transform = CGAffineTransform(rotationAngle: rotationAngle)
+//                    .scaledBy(x: scaleFactor, y: scaleFactor)
+//                    .translatedBy(x: translationX, y: translationY)
+                
                 UIView.animate(withDuration: 0.55, delay: 0, options: .curveEaseInOut, animations: {
                     self.mapImageView.transform = CGAffineTransform(rotationAngle: rotationAngle)
                         .scaledBy(x: scaleFactor, y: scaleFactor)
@@ -740,13 +744,6 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
                 }, completion: nil)
                 
                 pointView.transform = CGAffineTransform(rotationAngle: -rotationAngle)
-                
-//                self.mapImageView.subviews.forEach { subview in
-//                    if subview.tag >= self.UNIT_TAG {
-//                        subview.transform = CGAffineTransform(rotationAngle: -rotationAngle)
-//                    }
-//                }
-                
                 self.mapImageView.subviews.forEach { subview in
                     for tag in self.unitTags {
                         if let existingUnitView = self.mapImageView.viewWithTag(tag) {

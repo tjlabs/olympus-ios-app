@@ -27,6 +27,9 @@ public class OlympusPDRDistanceEstimator: NSObject {
     public var autoMode: Bool = false
     public var isModeDrToPdr: Bool = false
     
+    public static var useFixedStep: Bool = false
+    public static var fixedStepLength: Double = OlympusConstants.DEFAULT_STEP_LENGTH
+    
     var pastIndexChangedTime: Double = 0
     
     public func normalStepCountSet(normalStepCountSet: Int) {
@@ -36,7 +39,6 @@ public class OlympusPDRDistanceEstimator: NSObject {
     public func isAutoMode(autoMode: Bool) {
         self.autoMode = autoMode
     }
-    
     
     public func estimateDistanceInfo(time: Double, sensorData: OlympusSensorData) -> UnitDistance {
         let accNorm = MF.l2Normalize(originalVector: sensorData.acc)
@@ -84,20 +86,27 @@ public class OlympusPDRDistanceEstimator: NSObject {
                 }
                 self.pastIndexChangedTime = isIndexChangedTime
                 
-                
-                finalUnitResult.length = stepLengthEstimator.estStepLength(accPeakQueue: accPeakQueue, accValleyQueue: accValleyQueue)
-//                finalUnitResult.length = OlympusConstants.DEFAULT_STEP_LENGTH
-                updateStepLengthQueue(stepLengthWithTimeStamp: StepLengthWithTimestamp(timestamp: foundAccPV.timestamp, stepLength: finalUnitResult.length))
-                
-                if (finalUnitResult.length > OlympusConstants.STEP_LENGTH_RANGE_TOP) {
-                    finalUnitResult.length = OlympusConstants.STEP_LENGTH_RANGE_TOP
-                } else if (finalUnitResult.length < OlympusConstants.STEP_LENGTH_RANGE_BOTTOM) {
-                    finalUnitResult.length = OlympusConstants.STEP_LENGTH_RANGE_BOTTOM
+                // Step Length Setting
+                if OlympusPDRDistanceEstimator.useFixedStep {
+                    finalUnitResult.length = OlympusPDRDistanceEstimator.fixedStepLength
+                } else {
+                    finalUnitResult.length = stepLengthEstimator.estStepLength(accPeakQueue: accPeakQueue, accValleyQueue: accValleyQueue)
+                    updateStepLengthQueue(stepLengthWithTimeStamp: StepLengthWithTimestamp(timestamp: foundAccPV.timestamp, stepLength: finalUnitResult.length))
+                    
+                    if (finalUnitResult.length > OlympusConstants.STEP_LENGTH_RANGE_TOP) {
+                        finalUnitResult.length = OlympusConstants.STEP_LENGTH_RANGE_TOP
+                    } else if (finalUnitResult.length < OlympusConstants.STEP_LENGTH_RANGE_BOTTOM) {
+                        finalUnitResult.length = OlympusConstants.STEP_LENGTH_RANGE_BOTTOM
+                    }
                 }
                 
                 if (!self.autoMode) {
                     if (isLossStep && finalUnitResult.index > OlympusConstants.NORMAL_STEP_LOSS_CHECK_SIZE) {
-                        finalUnitResult.length = OlympusConstants.DEFAULT_STEP_LENGTH * Double(OlympusConstants.NORMAL_STEP_LOSS_CHECK_SIZE)
+                        if OlympusPDRDistanceEstimator.useFixedStep {
+                            finalUnitResult.length = OlympusPDRDistanceEstimator.fixedStepLength * Double(OlympusConstants.NORMAL_STEP_LOSS_CHECK_SIZE)
+                        } else {
+                            finalUnitResult.length = OlympusConstants.DEFAULT_STEP_LENGTH * Double(OlympusConstants.NORMAL_STEP_LOSS_CHECK_SIZE)
+                        }
                     }
                 } else {
                     if (finalUnitResult.index > OlympusConstants.AUTO_MODE_NORMAL_STEP_LOSS_CHECK_SIZE) {
