@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
-    public static let sdkVersion: String = "0.2.22"
+    public static let sdkVersion: String = "0.2.23"
     var isSimulationMode: Bool = false
     var isDeadReckoningMode: Bool = false
     var bleFileName: String = ""
@@ -2534,16 +2534,18 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         if userMaskBuffer.count >= th {
             var diffX: Int = 0
             var diffY: Int = 0
+            var diffH: Double = 0
             var checkCount: Int = 0
             for i in userMaskBuffer.count-(th-1)..<userMaskBuffer.count {
                 if (userMaskBuffer[i].index) > recoveryIndex {
                     userMaskChecker.append(userMaskBuffer[i])
                     diffX += abs(userMaskBuffer[i-1].x - userMaskBuffer[i].x)
                     diffY += abs(userMaskBuffer[i-1].y - userMaskBuffer[i].y)
+                    diffH += abs(userMaskBuffer[i-1].absolute_heading - userMaskBuffer[i].absolute_heading)
                     checkCount += 1
                 }
             }
-            if diffX == 0 && diffY == 0 && checkCount >= (th-1) {
+            if diffX == 0 && diffY == 0 && diffH == 0 && checkCount >= (th-1) {
                 print(getLocalTimeString() + " , (Olympus) checkIsNeedPathTrajMatching : userMask = \(userMaskChecker)")
                 isNeedPathTrajMatching = true
             }

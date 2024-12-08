@@ -319,11 +319,11 @@ public class OlympusKalmanFilter: NSObject {
                                             endY += inputUnitDrInfoBuffer[i].length*sin(compensationDirection*OlympusConstants.D2R)
                                         }
                                         
-                                        if (turnType == 1) {
-                                            distanceCompensation = 1.5
-                                            endX += distanceCompensation*cos(compensationDirection*OlympusConstants.D2R)
-                                            endY += distanceCompensation*sin(compensationDirection*OlympusConstants.D2R)
-                                        }
+//                                        if (turnType == 1) {
+//                                            distanceCompensation = 1.5
+//                                            endX += distanceCompensation*cos(compensationDirection*OlympusConstants.D2R)
+//                                            endY += distanceCompensation*sin(compensationDirection*OlympusConstants.D2R)
+//                                        }
                                         
                                         var endPaddingValues: [Double] = [1, 1, 1, 1]
                                         let headingRange: Double = 10
