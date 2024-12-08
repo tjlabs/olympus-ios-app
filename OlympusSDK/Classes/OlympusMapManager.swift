@@ -82,7 +82,7 @@ public class OlympusMapManager {
             
             let scaleKey = "scale_\(sector_id)_\(buildingName)_\(levelName)"
             sectorScales[scaleKey] = element.image_scale
-//            print(getLocalTimeString() + " , (Olympus) MapManager : key = \(scaleKey) // scale = \(sectorScales[scaleKey])")
+            print(getLocalTimeString() + " , (Olympus) MapManager : key = \(scaleKey) // scale = \(sectorScales[scaleKey])")
             NotificationCenter.default.post(name: .sectorScalesUpdated, object: nil, userInfo: ["scaleKey": scaleKey])
         }
     }

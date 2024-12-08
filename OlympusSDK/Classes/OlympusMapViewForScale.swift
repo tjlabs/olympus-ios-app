@@ -109,6 +109,7 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
         self.isPpHidden = flag
         if flag {
             self.mapImageView.subviews.forEach { $0.removeFromSuperview() }
+            print(getLocalTimeString() + " , (Olympus) setIsPpHidden : delegate run")
             self.delegate?.mapScaleUpdated()
         } else {
             updatePathPixel()
@@ -477,8 +478,8 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
             
             let scaleKey = "scale_" + key
             let sectorScale: [Double] = sectorScales[scaleKey] ?? []
+            print(getLocalTimeString() + " , (Olympus) MapView : isDefaultScale = \(isDefaultScale) // scaleKey = \(scaleKey) // sectorScale = \(sectorScales[scaleKey])")
             
-            print(getLocalTimeString() + " , (Olympus) MapView : isDefaultScale = \(isDefaultScale) // sectorScale = \(sectorScale)")
             if self.isDefaultScale {
                 if sectorScale.isEmpty {
                     mapAndPpScaleValues = [scaleX, scaleY, offsetX, offsetY]
@@ -497,8 +498,8 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
         DispatchQueue.main.async { [self] in
             mapImageView.subviews.forEach { $0.removeFromSuperview() }
             let key = "\(OlympusMapManager.shared.sector_id)_\(building)_\(level)"
+            print(getLocalTimeString() + " , (Olympus) MapView : key = \(key) // calMapScaleOffset (plotPathPixels)")
             guard let scaleOffsetValues = mapScaleOffset[key], scaleOffsetValues.count == 4 else {
-                print(getLocalTimeString() + " , (Olympus) MapView : key = \(key) // calMapScaleOffset (plotPathPixels)")
                 calMapScaleOffset(building: building, level: level, ppCoord: ppCoord)
                 return
             }

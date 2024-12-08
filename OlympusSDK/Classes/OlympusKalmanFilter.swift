@@ -210,7 +210,7 @@ public class OlympusKalmanFilter: NSObject {
                 if (isNeedPathTrajMatching.turn && turnAngle <= 135) {
                     // Node를 옮기자
                     isNeedRequestPhase4 = true
-                    print(getLocalTimeString() + " , (Olympus) Path-Matching : isNeedRequestPhase4 (1) = \(isNeedRequestPhase4)")
+//                    print(getLocalTimeString() + " , (Olympus) Path-Matching : isNeedRequestPhase4 (1) = \(isNeedRequestPhase4)")
                     let linkDirArray = linkDirections
                     if (!linkDirArray.isEmpty) {
                         let inputUserMaskBuffer = Array(userMaskBuffer.suffix(straight_threshold))
@@ -227,7 +227,7 @@ public class OlympusKalmanFilter: NSObject {
                         let userY = inputUserMaskBuffer[inputUserMaskBuffer.count-1].y
                         let userHeading = inputUserMaskBuffer[inputUserMaskBuffer.count-1].absolute_heading
 //                        print(getLocalTimeString() + " , (Olympus) Path-Matching : User Mask  = \(inputUserMaskBuffer)")
-//                        print(getLocalTimeString() + " , (Olympus) Path-Matching : linkDirArray  = \(linkDirArray)")
+                        print(getLocalTimeString() + " , (Olympus) Path-Matching : linkDirArray  = \(linkDirArray)")
                         var directionCount = [Int](repeating: 0, count: linkDirArray.count)
                         for idx in 0..<inputUserMaskBuffer.count {
                             if (idx > turnIndex) {
@@ -245,13 +245,13 @@ public class OlympusKalmanFilter: NSObject {
                             let minIndex = diffValues.firstIndex(of: diffValues.min()!)
                             directionCount[minIndex!] = directionCount[minIndex!] + 1
                         }
-//                        print(getLocalTimeString() + " , (Olympus) Path-Matching : directionCount  = \(directionCount)")
+                        print(getLocalTimeString() + " , (Olympus) Path-Matching : directionCount  = \(directionCount)")
                         let maxIndex = directionCount.firstIndex(of: directionCount.max()!)
                         let startHeading = linkDirArray[maxIndex!]
                         let endHeading = compensateHeading(heading: userHeading)
                         
                         let findPathMatchingNodeResult = OlympusPathMatchingCalculator.shared.findPathTrajMatchingNode(fltResult: outputResult, x: Double(userX), y: Double(userY), heading: startHeading, uvdBuffer: inputUnitDrInfoBuffer, pathType: 0, linkDirections: linkDirArray)
-//                        print(getLocalTimeString() + " , (Olympus) Path-Matching : findPathMatchingNodeResult = \(findPathMatchingNodeResult)")
+                        print(getLocalTimeString() + " , (Olympus) Path-Matching : findPathMatchingNodeResult = \(findPathMatchingNodeResult)")
                         
                         var pathMatchingNodeInfoCandidates = [PassedNodeInfo]()
                         if !findPathMatchingNodeResult.isEmpty {
@@ -283,13 +283,13 @@ public class OlympusKalmanFilter: NSObject {
                                 }
                                 
                                 candidateDirections.append(bestMapHeading)
-//                                print(getLocalTimeString() + " , (Olympus) Path-Matching : after findPathMatchingNodeResult // endHeading = \(endHeading)")
-//                                print(getLocalTimeString() + " , (Olympus) Path-Matching : after findPathMatchingNodeResult // candidateDirections = \(candidateDirections)")
+                                print(getLocalTimeString() + " , (Olympus) Path-Matching : after findPathMatchingNodeResult // endHeading = \(endHeading)")
+                                print(getLocalTimeString() + " , (Olympus) Path-Matching : after findPathMatchingNodeResult // candidateDirections = \(candidateDirections)")
                                 if (candidateDirections.count == 1) {
                                     pathTrajMatchingHeading = candidateDirections[0]
                                     let nodeCoord = pathMatchingNode.nodeCoord
                                     let turnType = determineTurnType(headings: uvdHeadings)
-//                                    print(getLocalTimeString() + " , (Olympus) Turn Type : turnType = \(turnType)")
+                                    print(getLocalTimeString() + " , (Olympus) Turn Type : turnType = \(turnType)")
                                     var distanceCompensation: Double = 0
                                     
                                     var startX = nodeCoord[0]
@@ -308,7 +308,7 @@ public class OlympusKalmanFilter: NSObject {
                                     }
                                     
                                     let startXy = OlympusPathMatchingCalculator.shared.pathMatching(building: outputResult.building_name, level: outputResult.level_name, x: startX, y: startY, heading: startHeading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 0, PADDING_VALUES: startPaddingValues)
-//                                    print(getLocalTimeString() + " , (Olympus) Path-Matching : startXY = \(startX) , \(startY) // pm = \(startXy)")
+                                    print(getLocalTimeString() + " , (Olympus) Path-Matching : startXY = \(startX) , \(startY) // pm = \(startXy)")
                                     if (startXy.isSuccess) {
                                         let compensationDirection = candidateDirections[0]
                                         
@@ -333,7 +333,7 @@ public class OlympusKalmanFilter: NSObject {
                                             endPaddingValues = [0.45, 0.45, 1, 1]
                                         }
                                         let endXy = OlympusPathMatchingCalculator.shared.pathMatching(building: outputResult.building_name, level: outputResult.level_name, x: endX, y: endY, heading: compensationDirection, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 0, PADDING_VALUES: endPaddingValues)
-//                                        print(getLocalTimeString() + " , (Olympus) Path-Matching : endXy = \(endX) , \(endY) // pm = \(endXy)")
+                                        print(getLocalTimeString() + " , (Olympus) Path-Matching : endXy = \(endX) , \(endY) // pm = \(endXy)")
                                         if (endXy.isSuccess) {
                                             uvdIndexMatchedWithTurn = inputUnitDrInfoBuffer[turnIndex].index
                                             // 후보군 중에 하나로 포함
@@ -359,7 +359,7 @@ public class OlympusKalmanFilter: NSObject {
                                         bestCoord = [resultCoordX[c], resultCoordY[c]]
                                     }
                                 }
-//                                print(getLocalTimeString() + " , (Olympus) Path-Matching : bestCoord = \(bestCoord)")
+                                print(getLocalTimeString() + " , (Olympus) Path-Matching : bestCoord = \(bestCoord)")
                                 if (!bestCoord.isEmpty) {
                                     self.pathTrajTurnIndex = uvdIndexMatchedWithTurn
                                     self.pathTrajMatchingIndex = currentUvdIndex
