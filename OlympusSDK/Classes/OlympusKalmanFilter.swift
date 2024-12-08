@@ -189,7 +189,7 @@ public class OlympusKalmanFilter: NSObject {
                 uvdCount += 1
                 if (unitUvd.index == self.pathTrajTurnIndex) {
                     isPossiblePathTrajMatching = false
-//                    print(getLocalTimeString() + " , (Olympus) Path-Matching : pathTrajTurnIndex = \(pathTrajTurnIndex) // isPossiblePathTrajMatching = \(false)")
+                    print(getLocalTimeString() + " , (Olympus) Path-Matching : pathTrajTurnIndex = \(pathTrajTurnIndex) // isPossiblePathTrajMatching = \(false)")
                     break
                 }
             }
@@ -203,14 +203,14 @@ public class OlympusKalmanFilter: NSObject {
             
             let isDrStraight: Bool = drBufferStraightResult.0
             let turnAngle = drBufferStraightResult.1
-//            print(getLocalTimeString() + " , (Olympus) Path-Matching : isPossiblePathTrajMatching = \(isPossiblePathTrajMatching) // turnAngle = \(turnAngle) // isDrStraight = \(isDrStraight)")
+            print(getLocalTimeString() + " , (Olympus) Path-Matching : isPossiblePathTrajMatching = \(isPossiblePathTrajMatching) // turnAngle = \(turnAngle) // isDrStraight = \(isDrStraight)")
             
             if (!isDrStraight && isPossiblePathTrajMatching) {
                 // 사용자는 Turn 하는 궤적이다
                 if (isNeedPathTrajMatching.turn && turnAngle <= 135) {
                     // Node를 옮기자
                     isNeedRequestPhase4 = true
-//                    print(getLocalTimeString() + " , (Olympus) Path-Matching : isNeedRequestPhase4 (1) = \(isNeedRequestPhase4)")
+                    print(getLocalTimeString() + " , (Olympus) Path-Matching : isNeedRequestPhase4 (1) = \(isNeedRequestPhase4)")
                     let linkDirArray = linkDirections
                     if (!linkDirArray.isEmpty) {
                         let inputUserMaskBuffer = Array(userMaskBuffer.suffix(straight_threshold))
