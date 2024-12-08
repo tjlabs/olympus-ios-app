@@ -202,6 +202,12 @@ public class OlympusPathMatchingCalculator {
                             if let loadedURL: URL = ppLocalUrl.1 {
                                 let contents = try String(contentsOf: loadedURL)
                                 ( PpType[key], PpNode[key], PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
+//                                print(getLocalTimeString() + " , (Olympus) loadPathPixel : key = \(key)")
+//                                print(getLocalTimeString() + " , (Olympus) loadPathPixel : type = \(PpType[key])")
+//                                print(getLocalTimeString() + " , (Olympus) loadPathPixel : node = \(PpNode[key])")
+//                                print(getLocalTimeString() + " , (Olympus) loadPathPixel : coord = \(PpCoord[key])")
+//                                print(getLocalTimeString() + " , (Olympus) loadPathPixel : magScale = \(PpMagScale[key])")
+//                                print(getLocalTimeString() + " , (Olympus) loadPathPixel : heading = \(PpHeading[key])")
                                 NotificationCenter.default.post(name: .sectorPathPixelUpdated, object: nil, userInfo: ["pathPixelKey": key])
                                 PpIsLoaded[key] = true
                             }
@@ -218,6 +224,12 @@ public class OlympusPathMatchingCalculator {
                                 do {
                                     let contents = try String(contentsOf: url!)
                                     ( PpType[key], PpNode[key],PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
+//                                    print(getLocalTimeString() + " , (Olympus) loadPathPixel : key = \(key)")
+//                                    print(getLocalTimeString() + " , (Olympus) loadPathPixel : type = \(PpType[key])")
+//                                    print(getLocalTimeString() + " , (Olympus) loadPathPixel : node = \(PpNode[key])")
+//                                    print(getLocalTimeString() + " , (Olympus) loadPathPixel : coord = \(PpCoord[key])")
+//                                    print(getLocalTimeString() + " , (Olympus) loadPathPixel : magScale = \(PpMagScale[key])")
+//                                    print(getLocalTimeString() + " , (Olympus) loadPathPixel : heading = \(PpHeading[key])")
                                     NotificationCenter.default.post(name: .sectorPathPixelUpdated, object: nil, userInfo: ["pathPixelKey": key])
                                     savePathPixelURL(key: key, ppURL: value)
                                     savePathPixelLocalUrl(key: key, url: url)
@@ -289,7 +301,7 @@ public class OlympusPathMatchingCalculator {
 
         let levelCopy = removeLevelDirectionString(levelName: level)
         let key = "\(self.sector_id)_\(building)_\(levelCopy)"
-
+        print(getLocalTimeString() + " , (Olympus) Path-Matching : key = \(key)")
         guard !building.isEmpty, !level.isEmpty,
               let mainType = self.PpType[key],
               let mainRoad = self.PpCoord[key],
@@ -302,7 +314,7 @@ public class OlympusPathMatchingCalculator {
 
         var idshArray = [[Double]]()
         var idshArrayWhenFail = [[Double]]()
-
+        
         if !mainRoad.isEmpty {
             let roadX = mainRoad[0]
             let roadY = mainRoad[1]
@@ -320,7 +332,7 @@ public class OlympusPathMatchingCalculator {
                     yMax = pathMatchingArea.1[3]
                 }
             }
-
+            print(getLocalTimeString() + " , (Olympus) Path-Matching : range = [\(xMin), \(xMax), \(yMin), \(yMax)]")
             for i in 0..<roadX.count {
                 let xPath = roadX[i]
                 let yPath = roadY[i]
@@ -356,6 +368,8 @@ public class OlympusPathMatchingCalculator {
             } else {
                 processFailedIdshArray(&idshArrayWhenFail, mainHeading, roadX, roadY, &xyhs, &bestHeading)
             }
+        } else {
+            print(getLocalTimeString() + " , (Olympus) Path-Matching : mainRoad is Empty")
         }
 
         xyhs[2] = compensateHeading(heading: xyhs[2])
@@ -976,7 +990,7 @@ public class OlympusPathMatchingCalculator {
         if directions.count == 2 {
             var xyLimitValue: Double = 30
             if (mode == OlympusConstants.MODE_PDR) {
-                xyLimitValue = 1.5  // xyLimitValue - 5
+                xyLimitValue = 3 // xyLimitValue - 5
             }
             if (directions.contains(0) && directions.contains(180)) {
                 paddingValues = [xyLimitValue, 1, xyLimitValue, 1]

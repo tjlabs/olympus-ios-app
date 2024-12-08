@@ -24,16 +24,17 @@ class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate
     @IBOutlet weak var startButton: UIButton!
     
     let mapView = OlympusMapViewForScale()
-    let testProducts: [[Double]] = [[5, 8], [10, 12], [12, 12], [12, 10]]
+//    let testProducts: [[Double]] = [[5, 8], [10, 12], [12, 12], [12, 10]]
+    let testProducts: [[Double]] = [[6.218950437, 6.218950437], [5.990520364, 7.119098669], [6.218950437, 12.09361472]]
     
     var serviceManager = OlympusServiceManager()
     var preIndex: Int = -1
     var isStarted: Bool = false
-    var sector_id: Int = 2
+    var sector_id: Int = 3
     var region: String = "US-East"
     var mode: String = "pdr"
     var userId: String = ""
-    let key_header = "S3_7F"
+    let key_header = "SOLUM_0F"
     
     var timer: Timer?
     let TIMER_INTERVAL: TimeInterval = 1 / 10
@@ -53,7 +54,7 @@ class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate
         mapView.delegate = self
         mapView.setBuildingLevelIsHidden(flag: true)
         mapView.setIsPpHidden(flag: false)
-        OlympusMapManager.shared.loadMapForScale(region: "Korea", sector_id: sector_id, mapView: mapView)
+        OlympusMapManager.shared.loadMapForScale(region: region, sector_id: sector_id, mapView: mapView)
         setupMapView()
     }
     
@@ -64,7 +65,8 @@ class MapScaleViewController: UIViewController, Observer, MapSettingViewDelegate
     
     private func startOlympus() {
         serviceManager.addObserver(self)
-        serviceManager.setDeadReckoningMode(flag: true, buildingName: "S3", levelName: "7F", x: 16, y: 13, heading: 180)
+//        serviceManager.setDeadReckoningMode(flag: true, buildingName: "S3", levelName: "7F", x: 16, y: 13, heading: 180)
+        serviceManager.setDeadReckoningMode(flag: true, buildingName: "Solum", levelName: "0F", x: 5, y: 5, heading: 90)
         let uniqueId = makeUniqueId(uuid: self.userId)
         serviceManager.startService(user_id: uniqueId, region: region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
             if (isStart) {

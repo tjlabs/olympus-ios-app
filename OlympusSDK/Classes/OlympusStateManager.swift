@@ -21,7 +21,7 @@ public class OlympusStateManager: NSObject {
     }
     
     private func notifyObservers(state: Int) {
-        print(getLocalTimeString() + " , (Olympus) Information : state = \(state)")
+//        print(getLocalTimeString() + " , (Olympus) Information : state = \(state)")
         observers.forEach { $0.isStateDidChange(newValue: state) }
     }
     

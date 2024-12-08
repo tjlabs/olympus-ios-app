@@ -899,7 +899,10 @@ public class OlympusMapViewForScale: UIView, UICollectionViewDelegate, UICollect
         NotificationCenter.default.addObserver(forName: .sectorScalesUpdated, object: nil, queue: .main) { [weak self] notification in
             guard let userInfo = notification.userInfo, let scaleKey = userInfo["scaleKey"] as? String else { return }
             self?.sectorScales[scaleKey] = OlympusMapManager.shared.sectorScales[scaleKey]
+            self?.updateMapImageView()
             self?.updatePathPixel()
+            self?.updateUnit()
+//            self?.updatePathPixel()
         }
     }
     

@@ -17,7 +17,7 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     var deviceOsVersion: Int = 0
     var sdkVersion: String = ""
     
-    var regions: [String] = ["Korea", "Canada", "US(East)"]
+    var regions: [String] = ["Korea", "Canada", "US-East"]
     var currentRegion: String = "Korea"
     var defaultMeasage: String = ""
     
@@ -125,7 +125,7 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         NetworkManager.shared.postUserLogin(url: USER_LOGIN_URL, input: loginInfo, completion: { statusCode, returnedString in
             if (statusCode == 200) {
                 print(getLocalTimeString() + " , (InnerLabs) Success : User Login")
-//                self.goToCardViewController(region: "Korea", userId: self.userId)
+//                self.goToCardViewController(region: "US-East", userId: self.userId)
 //                self.goToMapViewController(userId: self.userId)
                 self.goToMapScaleViewController(userId: self.userId)
             } else {

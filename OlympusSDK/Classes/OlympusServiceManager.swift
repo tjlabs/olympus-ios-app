@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
-    public static let sdkVersion: String = "0.2.23"
+    public static let sdkVersion: String = "0.2.24"
     var isSimulationMode: Bool = false
     var isDeadReckoningMode: Bool = false
     var bleFileName: String = ""
@@ -939,7 +939,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         }
                     }
                 case .failure(_):
-                    print(getLocalTimeString() + " , (Olympus) Warning : Fail RFD Trimming")
+//                    print(getLocalTimeString() + " , (Olympus) Warning : Fail RFD Trimming")
                     let isNeedClearBle = stateManager.checkBleError(olympusResult: self.olympusResult)
                     if (isNeedClearBle) {
                         self.bleAvg = [String: Double]()
@@ -2331,7 +2331,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 }
             }
             
-//            print(getLocalTimeString() + " , (Olympus) Path-Matching : isUseHeading = \(isUseHeading) // isStableMode = \(isStableMode) // isPmFailed = \(isPmFailed)")
+            print(getLocalTimeString() + " , (Olympus) Path-Matching : isUseHeading = \(isUseHeading) // isStableMode = \(isStableMode) // isPmFailed = \(isPmFailed)")
             if (isUseHeading && isStableMode && !self.isPhaseBreak) {
                 let diffX = result.x - temporalResult.x
                 let diffY = result.y - temporalResult.y

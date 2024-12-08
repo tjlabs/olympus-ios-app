@@ -75,7 +75,7 @@ class CardViewController: UIViewController, Observer {
     var region: String = ""
     var userId: String = ""
     
-    var sector_id: Int = 2
+    var sector_id: Int = 3
     var mode: String = "pdr"
     
 //    var sector_id: Int = 14 // DS
@@ -121,8 +121,9 @@ class CardViewController: UIViewController, Observer {
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_04_0930.csv", sensorFileName: "sensor_coex_04_0930.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_dr_03_1030.csv", sensorFileName: "sensor_coex_dr_03_1030.csv")
-    
-        serviceManager.setDeadReckoningMode(flag: true, buildingName: "S3", levelName: "7F", x: 6, y: 16, heading: 270)
+        
+        serviceManager.setDeadReckoningMode(flag: true, buildingName: "Solum", levelName: "0F", x: 5, y: 5, heading: 90)
+//        serviceManager.setDeadReckoningMode(flag: true, buildingName: "S3", levelName: "7F", x: 6, y: 16, heading: 270)
         // collect
 //        isCollect = true
 //        serviceManager.initCollect(region: self.region)
