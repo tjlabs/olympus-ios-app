@@ -1470,7 +1470,7 @@ public class OlympusPathMatchingCalculator {
         return recoveryCaseNodeInfo
     }
     
-    public func getMultipleAnchorNodeCandidates(fltResult: FineLocationTrackingFromServer, pathType: Int) -> NodeCandidateInfo {
+    public func getMultipleAnchorNodeCandidates(fltResult: FineLocationTrackingFromServer, pathType: Int, maskBuffer: [UserMask]) -> NodeCandidateInfo {
         var multipleNodeInfo = NodeCandidateInfo(isPhaseBreak: false, nodeCandidatesInfo: [])
         
         let anchorNodeInfo = self.anchorNode
@@ -1547,7 +1547,9 @@ public class OlympusPathMatchingCalculator {
                         let nearestHeading = getNearestNodeHeading(userHeading: heading, nodeHeadings: n.nodeHeadings)
                         let coordToCheck: [Double] = [n.nodeCoord[0]+cos(nearestHeading*OlympusConstants.D2R), n.nodeCoord[1]+sin(nearestHeading*OlympusConstants.D2R)]
                         let isPossibleNode = checkPathPixelHasCoords(fltResult: fltResult, coordToCheck: coordToCheck)
-                        if (isPossibleNode) {
+                        
+                        let isMultiplePassedNode = checkIsMultiplePassedNode(nodeCoord: n.nodeCoord, targetCoord: coordToCheck, userMask: maskBuffer)
+                        if (isPossibleNode && isMultiplePassedNode) {
                             let distanceX = n.nodeCoord[0]-x
                             let distanceY = n.nodeCoord[1]-y
                             let newDistance = sqrt(distanceX*distanceX + distanceY*distanceY)
@@ -1584,8 +1586,10 @@ public class OlympusPathMatchingCalculator {
                             if (matchedNodeResult.1 != -1) {
                                 let nearestHeading = getNearestNodeHeading(userHeading: heading, nodeHeadings: matchedNodeResult.2)
                                 let coordToCheck: [Double] = [x+cos(nearestHeading*OlympusConstants.D2R), y+sin(nearestHeading*OlympusConstants.D2R)]
+                                
+                                let isMultiplePassedNode = checkIsMultiplePassedNode(nodeCoord: [x, y], targetCoord: coordToCheck, userMask: maskBuffer)
                                 let isPossibleNode = checkPathPixelHasCoords(fltResult: fltResult, coordToCheck: coordToCheck)
-                                if (isPossibleNode) {
+                                if (isPossibleNode && isMultiplePassedNode) {
                                     let nodeInfo = PassedNodeInfo(nodeNumber: matchedNodeResult.1, nodeCoord: [x, y], nodeHeadings: matchedNodeResult.2, matchedIndex: nodeMatchedIndex, userHeading: heading)
                                     nodeCandidatesInfo.append(nodeInfo)
                                     break
@@ -1601,6 +1605,20 @@ public class OlympusPathMatchingCalculator {
         
         return multipleNodeInfo
     }
+    
+    private func checkIsMultiplePassedNode(nodeCoord: [Double], targetCoord: [Double], userMask: [UserMask]) -> Bool {
+        guard let targetIndex = userMask.lastIndex(where: { Double($0.x) == nodeCoord[0] && Double($0.y) == nodeCoord[1] }) else {
+            return true
+        }
+        
+        if targetIndex > 0 {
+            let previousData = userMask[targetIndex - 1]
+            return !(Double(previousData.x) == targetCoord[0] && Double(previousData.y) == targetCoord[1])
+        }
+        
+        return true
+    }
+
     
     public func getPreviousPassedNode(nodeCandidateInfo: NodeCandidateInfo) -> PassedNodeInfo {
         let nodeInfoBuffer = self.passedNodeInfoBufferForMulti
