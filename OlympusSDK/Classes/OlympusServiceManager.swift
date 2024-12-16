@@ -162,6 +162,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     var isNeedClearBuffer: Bool = false
     var userMaskBufferPathTrajMatching: [UserMask] = []
     var userMaskBuffer: [UserMask] = []
+    var userUniqueMaskBuffer: [UserMask] = []
     var userMaskBufferDisplay: [UserMask] = []
     var userMaskSendCount: Int = 0
     
@@ -1236,7 +1237,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                     } else {
                                         let isSectionChanged = isNeedRq.1
 //                                        print(getLocalTimeString() + " , (Olympus) Node Find : checkSectionChanged = \(isSectionChanged) // isAmbiguious = \(ambiguitySolver.getIsAmbiguous())")
-                                        let multipleNodeCandidates = OlympusPathMatchingCalculator.shared.getMultipleAnchorNodeCandidates(fltResult: tuResult, pathType: 1)
+                                        let multipleNodeCandidates = OlympusPathMatchingCalculator.shared.getMultipleAnchorNodeCandidates(fltResult: tuResult, pathType: 1, maskBuffer: self.userUniqueMaskBuffer)
                                         var prevPassedNodeInfo = OlympusPathMatchingCalculator.shared.getPreviousPassedNode(nodeCandidateInfo: multipleNodeCandidates)
                                         
                                         if isSectionChanged {
@@ -1285,7 +1286,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 let nodeCandidatesInfo = goodCaseNodeCandidates.nodeCandidatesInfo
                                 
                                 var nodeNumberCandidates = [Int]()
-                                let multipleNodeCandidates = OlympusPathMatchingCalculator.shared.getMultipleAnchorNodeCandidates(fltResult: tuResult, pathType: 1)
+                                let multipleNodeCandidates = OlympusPathMatchingCalculator.shared.getMultipleAnchorNodeCandidates(fltResult: tuResult, pathType: 1, maskBuffer: self.userUniqueMaskBuffer)
                                 var prevPassedNodeInfo = OlympusPathMatchingCalculator.shared.getPreviousPassedNode(nodeCandidateInfo: multipleNodeCandidates)
                                 if prevPassedNodeInfo.nodeNumber == -1 {
                                     prevPassedNodeInfo.matchedIndex = sectionController.getAnchorTailIndex()
@@ -2398,6 +2399,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     inputUserMask = []
                 }
                 stackUserMask(data: data)
+                stackUserUniqueMask(data: data)
                 stackUserMaskForDisplay(data: data)
                 if (runMode == OlympusConstants.MODE_PDR) {
                     self.isNeedPathTrajMatching = checkIsNeedPathTrajMatching(userMaskBuffer: self.userMaskBuffer)
@@ -2482,13 +2484,34 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             let currentIndex = data.index
             
             if (lastIndex == currentIndex) {
-                self.userMaskBuffer.remove(at: self.userMaskBuffer.count-1)
+                self.userMaskBuffer.removeLast()
             }
         }
         
         self.userMaskBuffer.append(data)
         if (self.userMaskBuffer.count > OlympusConstants.DR_INFO_BUFFER_SIZE) {
             self.userMaskBuffer.remove(at: 0)
+        }
+    }
+    
+    private func stackUserUniqueMask(data: UserMask) {
+        if (self.userUniqueMaskBuffer.count > 0) {
+            let lastIndex = self.userUniqueMaskBuffer[self.userUniqueMaskBuffer.count-1].index
+            let lastX = self.userUniqueMaskBuffer[self.userUniqueMaskBuffer.count-1].x
+            let lastY = self.userUniqueMaskBuffer[self.userUniqueMaskBuffer.count-1].y
+            
+            let currentIndex = data.index
+            let currentX = data.x
+            let currentY = data.y
+            
+            if (lastIndex == currentIndex || (lastX == currentX && lastY == currentY)) {
+                self.userUniqueMaskBuffer.removeLast()
+            }
+        }
+        
+        self.userUniqueMaskBuffer.append(data)
+        if (self.userUniqueMaskBuffer.count > OlympusConstants.DR_INFO_BUFFER_SIZE) {
+            self.userUniqueMaskBuffer.remove(at: 0)
         }
     }
     
@@ -2514,7 +2537,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             let currentIndex = data.index
             
             if (lastIndex == currentIndex) {
-                self.userMaskBufferDisplay.remove(at: self.userMaskBufferDisplay.count-1)
+                self.userMaskBufferDisplay.removeLast()
             }
         }
         
