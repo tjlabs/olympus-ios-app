@@ -183,6 +183,7 @@ class OlympusConstants {
     static var PADDING_VALUE_SMALL: Double = 15
     static var PADDING_VALUE_LARGE: Double = 20
     static var PADDING_VALUES: [Double] = [10, 10, 10, 10]
+    static let DEFAULT_HEADINGS: [Double] = [0, 90, 180, 270]
     
     public func setSectorInfoConstants(sector_info: SectorInfo) {
         OlympusConstants.STANDARD_MIN_RSS = sector_info.standard_min_rss

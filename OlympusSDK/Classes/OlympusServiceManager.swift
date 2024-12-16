@@ -1084,7 +1084,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             if (KF.isRunning && KF.tuFlag && !self.isInRecoveryProcess) {
                 var pathType: Int = 1
                 if (runMode == OlympusConstants.MODE_PDR) { pathType = 0 }
-                print(getLocalTimeString() + " , (Olympus) Path-Matching : Check Bad Case : isNeedPathTrajMatching = \(isNeedPathTrajMatching) // index = \(unitDRInfoIndex)")
+//                print(getLocalTimeString() + " , (Olympus) Path-Matching : Check Bad Case : isNeedPathTrajMatching = \(isNeedPathTrajMatching) // index = \(unitDRInfoIndex)")
                 let kfTimeUpdate = KF.timeUpdate(currentTime: currentTime, recentResult: olympusResult, length: unitUvdLength, diffHeading: diffHeading, isPossibleHeadingCorrection: isPossibleHeadingCorrection, unitDRInfoBuffer: unitDRInfoBuffer, userMaskBuffer: userMaskBufferPathTrajMatching, isNeedPathTrajMatching: isNeedPathTrajMatching, PADDING_VALUES: PADDING_VALUES, mode: runMode)
                 var tuResult = kfTimeUpdate.0
                 let isDidPathTrajMatching: Bool = kfTimeUpdate.1
@@ -1099,7 +1099,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 if (isDidPathTrajMatching) {
                     let pathTrajMatchingNode: PassedNodeInfo = KF.getPathTrajMatchingNode()
                     OlympusPathMatchingCalculator.shared.updateAnchorNodeAfterPathTrajMatching(nodeInfo: pathTrajMatchingNode, sectionNumber: sectionController.getSectionNumber())
-                    print(getLocalTimeString() + " , (Olympus) Path-Matching : Result After Path Traj Matching // xyh = [\(tuResult.x) , \(tuResult.y) , \(tuResult.absolute_heading)]")
+//                    print(getLocalTimeString() + " , (Olympus) Path-Matching : Result After Path Traj Matching // xyh = [\(tuResult.x) , \(tuResult.y) , \(tuResult.absolute_heading)]")
                     updateType = .PATH_TRAJ_MATCHING
                     mustInSameLink = false
                 } else if (OlympusPathMatchingCalculator.shared.isInNode || pathMatchingArea.0) {
@@ -1139,12 +1139,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             // Anchor를 바꿔서 Phase4 요청 보내기
                             let badCaseNodeCandidatesResult = OlympusPathMatchingCalculator.shared.getAnchorNodeCandidatesForBadCase(fltResult: tuResult, pathType: pathType)
                             if (badCaseNodeCandidatesResult.isPhaseBreak) {
-                                print(getLocalTimeString() + " , (Olympus) Request Phase 4 : phaseBreak (badCaseNodeCandidatesResult Empty)")
+//                                print(getLocalTimeString() + " , (Olympus) Request Phase 4 : phaseBreak (badCaseNodeCandidatesResult Empty)")
                                 phaseBreakInPhase4(fltResult: tuResult, isUpdatePhaseBreakResult: false)
                             } else {
                                 let nodeCandidatesInfo = badCaseNodeCandidatesResult.nodeCandidatesInfo
                                 if (nodeCandidatesInfo.isEmpty) {
-                                    print(getLocalTimeString() + " , (Olympus) Request Phase 4 : phaseBreak (nodeCandidatesInfo Empty)")
+//                                    print(getLocalTimeString() + " , (Olympus) Request Phase 4 : phaseBreak (nodeCandidatesInfo Empty)")
                                     phaseBreakInPhase4(fltResult: tuResult, isUpdatePhaseBreakResult: false)
                                 } else {
                                     var nodeNumberCandidates = [Int]()
@@ -2246,7 +2246,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 
                 let correctedResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, HEADING_RANGE: headingRange, isUseHeading: isUseHeading, pathType: 0, PADDING_VALUES: paddings)
                 if (correctedResult.isSuccess) {
-//                    print(getLocalTimeString() + " , (Olympus) Path-Matching : correctedResult = \(result.x), \(result.y), \(result.absolute_heading)")
+                    print(getLocalTimeString() + " , (Olympus) Check Map End : correctedResult = \(result.x), \(result.y), \(result.absolute_heading)")
                     result.absolute_heading = correctedResult.xyhs[2]
 //                    if result.absolute_heading == 0 || result.absolute_heading == 180 {
 //                        result.y = correctedResult.xyhs[1]
@@ -2331,7 +2331,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 }
             }
             
-            print(getLocalTimeString() + " , (Olympus) Path-Matching : isUseHeading = \(isUseHeading) // isStableMode = \(isStableMode) // isPmFailed = \(isPmFailed)")
             if (isUseHeading && isStableMode && !self.isPhaseBreak) {
                 let diffX = result.x - temporalResult.x
                 let diffY = result.y - temporalResult.y
@@ -2386,6 +2385,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 
                 self.inputUserMask.append(data)
                 if ((self.inputUserMask.count) >= OlympusConstants.USER_MASK_INPUT_NUM) {
+//                    print(getLocalTimeString() + " , (Olympus) UserMask : post \(self.inputUserMask)")
                     OlympusNetworkManager.shared.postUserMask(url: REC_UMD_URL, input: self.inputUserMask, completion: { [self] statusCode, returnedString, inputUserMask in
                         if (statusCode == 200) {
                             userMaskSendCount += 1
@@ -2415,8 +2415,15 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             self.temporalResult = result
             self.preTemporalResult = result
             self.preTemporalResultHeading = temporalResultHeading
-//            KF.updateTuResult(x: result.x, y: result.y)
-//            KF.updateTuResultNow(result: result)
+            if !OlympusConstants.DEFAULT_HEADINGS.contains(result.absolute_heading) {
+                let diffX = input.x - result.x
+                let diffY = input.y - result.y
+                let diffNorm = sqrt(diffX*diffX + diffY*diffY)
+                if diffNorm >= 2 {
+                    KF.updateTuResult(x: result.x, y: result.y)
+                    KF.updateTuResultNow(result: result)
+                }
+            }
         }
     }
     

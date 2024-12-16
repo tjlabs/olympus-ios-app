@@ -44,22 +44,21 @@ public class OlympusAmbiguitySolver {
             if firstFltOutput.scc != 0 {
                 let ratio = secondFltOutput.scc / firstFltOutput.scc
                 if ratio < OlympusConstants.OUTPUT_AMBIGUITY_RATIO {
-//                    print(getLocalTimeString() + " , (Olympus) selectResult (Clear) : index = \(firstFltOutput.index) // 1st = \(firstFltOutput.scc) // 2nd = \(secondFltOutput.scc) // ratio = \(ratio)")
                     return (true, firstFltOutput)
                 } else {
                     if nodeCandidatesInfo.nodeCandidatesInfo.isEmpty {
-//                        print(getLocalTimeString() + " , (Olympus) selectResult (Ambiguous) nodeCandidatesInfo Empty : index = \(firstFltOutput.index) // 1st = \(firstFltOutput.scc) // 2nd = \(secondFltOutput.scc) // ratio = \(ratio)")
                         return (false, FineLocationTrackingFromServer())
                     } else {
+                        return (false, firstFltOutput)
 //                        print(getLocalTimeString() + " , (Olympus) selectResult (Ambiguous) : index = \(firstFltOutput.index) // 1st = \(firstFltOutput.scc) // 2nd = \(secondFltOutput.scc) // ratio = \(ratio)")
-                        let inputNodeNumber = nodeCandidatesInfo.nodeCandidatesInfo[0].nodeNumber
-                        for output in fltOutputs {
-                            if inputNodeNumber == output.node_number {
-//                                print(getLocalTimeString() + " , (Olympus) selectResult (Ambiguous & Select) : index = \(firstFltOutput.index) // output = \(output)")
-                                return (false, output)
-                            }
-                        }
-                        return (false, FineLocationTrackingFromServer())
+//                        let inputNodeNumber = nodeCandidatesInfo.nodeCandidatesInfo[0].nodeNumber
+//                        for output in fltOutputs {
+//                            if inputNodeNumber == output.node_number {
+////                                print(getLocalTimeString() + " , (Olympus) selectResult (Ambiguous & Select) : index = \(firstFltOutput.index) // output = \(output)")
+//                                return (false, output)
+//                            }
+//                        }
+//                        return (false, FineLocationTrackingFromServer())
                     }
                 }
             } else {
@@ -69,7 +68,6 @@ public class OlympusAmbiguitySolver {
             return (false, FineLocationTrackingFromServer())
         }
     }
-    
 
 
     public func selectBestResult(results: FineLocationTrackingFromServerList) -> FineLocationTrackingFromServer {
