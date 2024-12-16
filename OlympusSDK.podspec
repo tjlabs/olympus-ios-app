@@ -15,7 +15,7 @@ TODO: Add long description of the pod here.
   s.author           = { 'tjlabs-dev' => 'dev@tjlabscorp.com' }
   s.source           = { :git => 'https://github.com/tjlabs/olympus-ios-app.git', :tag => s.version.to_s }
 
-
+  s.static_framework = true
   s.source_files = 'OlympusSDK/Classes/**/*'
   
   s.pod_target_xcconfig = { 'SWIFT_OPTIMIZATION_LEVEL' => '-Owholemodule' }

@@ -301,7 +301,6 @@ public class OlympusPathMatchingCalculator {
 
         let levelCopy = removeLevelDirectionString(levelName: level)
         let key = "\(self.sector_id)_\(building)_\(levelCopy)"
-        print(getLocalTimeString() + " , (Olympus) Path-Matching : key = \(key)")
         guard !building.isEmpty, !level.isEmpty,
               let mainType = self.PpType[key],
               let mainRoad = self.PpCoord[key],
@@ -332,7 +331,6 @@ public class OlympusPathMatchingCalculator {
                     yMax = pathMatchingArea.1[3]
                 }
             }
-            print(getLocalTimeString() + " , (Olympus) Path-Matching : range = [\(xMin), \(xMax), \(yMin), \(yMax)]")
             for i in 0..<roadX.count {
                 let xPath = roadX[i]
                 let yPath = roadY[i]
@@ -368,8 +366,6 @@ public class OlympusPathMatchingCalculator {
             } else {
                 processFailedIdshArray(&idshArrayWhenFail, mainHeading, roadX, roadY, &xyhs, &bestHeading)
             }
-        } else {
-            print(getLocalTimeString() + " , (Olympus) Path-Matching : mainRoad is Empty")
         }
 
         xyhs[2] = compensateHeading(heading: xyhs[2])
@@ -1109,7 +1105,7 @@ public class OlympusPathMatchingCalculator {
                 for v in checkValues {
                     let xToCheck = resultStandard.x + v[0]
                     let yToCheck = resultStandard.y + v[1]
-//                    print(getLocalTimeString() + " , (Olympus) Check Map End : Index = \(tuResult.index) // xyToCheck = [\(xToCheck), \(yToCheck)]")
+//                    print(getLocalTimeString() + " , (Olympus) Check Map End : Index = \(resultStandard.index) // xyToCheck = [\(xToCheck), \(yToCheck)]")
                     let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: resultStandard.building_name, level: resultStandard.level_name, x: xToCheck, y: yToCheck, heading: resultStandard.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: pathType, PADDING_VALUES: [0, 0, 0, 0])
                     if !pathMatchingResult.isSuccess {
 //                        print(getLocalTimeString() + " , (Olympus) Check Map End : isSuccess = \(pathMatchingResult.isSuccess)")
@@ -1259,7 +1255,6 @@ public class OlympusPathMatchingCalculator {
         }
         
         distance *= scCompensation
-        print(getLocalTimeString() + " , (Olympus) SC Velocity : \(distance) , \(diffTime) , \(distance/(diffTime*1e-3))")
         return (false, distance, diffTime)
     }
     
@@ -1477,6 +1472,7 @@ public class OlympusPathMatchingCalculator {
     
     public func getMultipleAnchorNodeCandidates(fltResult: FineLocationTrackingFromServer, pathType: Int) -> NodeCandidateInfo {
         var multipleNodeInfo = NodeCandidateInfo(isPhaseBreak: false, nodeCandidatesInfo: [])
+        
         let anchorNodeInfo = self.anchorNode
 //        print(getLocalTimeString() + " , (Olympus) Node Find : getMultipleAnchorNodeCandidates (1) // anchorNodeInfo = \(anchorNodeInfo)")
         if anchorNodeInfo.matchedIndex == -1 {
@@ -1508,6 +1504,7 @@ public class OlympusPathMatchingCalculator {
                     candidateDirections.append(mapHeading)
                 }
             }
+
 //            print(getLocalTimeString() + " , (Olympus) Node Find : getMultipleAnchorNodeCandidates // candidateDirections = \(candidateDirections)")
             
             let PIXEL_LENGTH = OlympusConstants.PIXEL_LENGTH_TO_FIND_NODE*2

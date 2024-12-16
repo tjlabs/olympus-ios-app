@@ -75,14 +75,14 @@ class CardViewController: UIViewController, Observer {
     var region: String = ""
     var userId: String = ""
     
-    var sector_id: Int = 3
-    var mode: String = "pdr"
+//    var sector_id: Int = 3
+//    var mode: String = "pdr"
     
 //    var sector_id: Int = 14 // DS
 //    var mode: String = "pdr"
     
-//    var sector_id: Int = 6
-//    var mode: String = "auto"
+    var sector_id: Int = 6
+    var mode: String = "auto"
     
 //    var sector_id: Int = 15 // LG G2
 //    var mode: String = "pdr"
@@ -118,11 +118,11 @@ class CardViewController: UIViewController, Observer {
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex05.csv", sensorFileName: "sensor_coex05.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_dr1.csv", sensorFileName: "sensor_dr1.csv")
 //        serviceManager.setSimulationMode(flag: false, bleFileName: "ble_coex_01_0924.csv", sensorFileName: "sensor_coex_01_0924.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_04_0930.csv", sensorFileName: "sensor_coex_04_0930.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_05_0930.csv", sensorFileName: "sensor_coex_05_0930.csv")
+        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_dr_03_1030.csv", sensorFileName: "sensor_coex_dr_03_1030.csv")
-        
-        serviceManager.setDeadReckoningMode(flag: true, buildingName: "Solum", levelName: "0F", x: 5, y: 5, heading: 90)
+    
+//        serviceManager.setDeadReckoningMode(flag: true, buildingName: "Solum", levelName: "0F", x: 5, y: 5, heading: 90)
 //        serviceManager.setDeadReckoningMode(flag: true, buildingName: "S3", levelName: "7F", x: 6, y: 16, heading: 270)
         // collect
 //        isCollect = true
