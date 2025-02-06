@@ -58,8 +58,7 @@ public class OlympusRouteTracker {
     }
     
     public func saveEntranceRouteLocalUrl(key: String, url: URL?) {
-        if let urlToSave = url {
-//            print(getLocalTimeString() + " , (Olympus) Save \(key) Entrance Route Local URL : \(urlToSave)")
+        if let _ = url {
             do {
                 let key: String = "OlympusEntranceRouteLocalUrl_\(key)"
                 UserDefaults.standard.set(url, forKey: key)
@@ -68,15 +67,6 @@ public class OlympusRouteTracker {
             print(getLocalTimeString() + " , (Olympus) Error : Save \(key) Entrance Route Local URL")
         }
     }
-    
-//    public func loadEntranceRouteLocalUrl(key: String) -> (Bool, URL?) {
-//        let keyEntranceRouteUrl: String = "OlympusEntranceRouteLocalUrl_\(key)"
-//        if let loadedEntranceRouteUrl: URL = UserDefaults.standard.object(forKey: keyEntranceRouteUrl) as? URL {
-//            return (true, loadedEntranceRouteUrl)
-//        } else {
-//            return (false, nil)
-//        }
-//    }
     
     public func loadEntranceRouteLocalUrl(key: String) -> (Bool, URL?) {
         do {

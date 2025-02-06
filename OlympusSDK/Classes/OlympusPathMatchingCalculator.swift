@@ -161,8 +161,7 @@ public class OlympusPathMatchingCalculator {
     }
     
     public func savePathPixelLocalUrl(key: String, url: URL?) {
-        if let urlToSave = url {
-//            print(getLocalTimeString() + " , (Olympus) Save \(key) Path-Pixel Local URL : \(urlToSave)")
+        if let _ = url {
             do {
                 let key: String = "OlympusPathPixelLocalUrl_\(key)"
                 UserDefaults.standard.set(url, forKey: key)
@@ -171,15 +170,6 @@ public class OlympusPathMatchingCalculator {
             print(getLocalTimeString() + " , (Olympus) Error : Save \(key) Path-Pixel Local URL")
         }
     }
-    
-//    public func loadPathPixelLocalUrl(key: String) -> (Bool, URL?) {
-//        let keyPpLocalUrl: String = "OlympusPathPixelLocalUrl_\(key)"
-//        if let loadedPpLocalUrl: URL = UserDefaults.standard.object(forKey: keyPpLocalUrl) as? URL {
-//            return (true, loadedPpLocalUrl)
-//        } else {
-//            return (false, nil)
-//        }
-//    }
     
     public func loadPathPixelLocalUrl(key: String) -> (Bool, URL?) {
         do {
@@ -218,12 +208,6 @@ public class OlympusPathMatchingCalculator {
                             if let loadedURL: URL = ppLocalUrl.1 {
                                 let contents = try String(contentsOf: loadedURL)
                                 ( PpType[key], PpNode[key], PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
-//                                print(getLocalTimeString() + " , (Olympus) loadPathPixel : key = \(key)")
-//                                print(getLocalTimeString() + " , (Olympus) loadPathPixel : type = \(PpType[key])")
-//                                print(getLocalTimeString() + " , (Olympus) loadPathPixel : node = \(PpNode[key])")
-//                                print(getLocalTimeString() + " , (Olympus) loadPathPixel : coord = \(PpCoord[key])")
-//                                print(getLocalTimeString() + " , (Olympus) loadPathPixel : magScale = \(PpMagScale[key])")
-//                                print(getLocalTimeString() + " , (Olympus) loadPathPixel : heading = \(PpHeading[key])")
                                 NotificationCenter.default.post(name: .sectorPathPixelUpdated, object: nil, userInfo: ["pathPixelKey": key])
                                 PpIsLoaded[key] = true
                             }
@@ -240,12 +224,6 @@ public class OlympusPathMatchingCalculator {
                                 do {
                                     let contents = try String(contentsOf: url!)
                                     ( PpType[key], PpNode[key],PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
-//                                    print(getLocalTimeString() + " , (Olympus) loadPathPixel : key = \(key)")
-//                                    print(getLocalTimeString() + " , (Olympus) loadPathPixel : type = \(PpType[key])")
-//                                    print(getLocalTimeString() + " , (Olympus) loadPathPixel : node = \(PpNode[key])")
-//                                    print(getLocalTimeString() + " , (Olympus) loadPathPixel : coord = \(PpCoord[key])")
-//                                    print(getLocalTimeString() + " , (Olympus) loadPathPixel : magScale = \(PpMagScale[key])")
-//                                    print(getLocalTimeString() + " , (Olympus) loadPathPixel : heading = \(PpHeading[key])")
                                     NotificationCenter.default.post(name: .sectorPathPixelUpdated, object: nil, userInfo: ["pathPixelKey": key])
                                     savePathPixelURL(key: key, ppURL: value)
 //                                    savePathPixelLocalUrl(key: key, url: url)
@@ -295,7 +273,7 @@ public class OlympusPathMatchingCalculator {
                                 ( PpType[key], PpNode[key], PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
                                 NotificationCenter.default.post(name: .sectorPathPixelUpdated, object: nil, userInfo: ["pathPixelKey": key])
                                 savePathPixelURL(key: key, ppURL: value)
-//                                savePathPixelLocalUrl(key: key, url: url)
+                                savePathPixelLocalUrl(key: key, url: url)
                                 PpIsLoaded[key] = true
                             } catch {
                                 PpIsLoaded[key] = false
