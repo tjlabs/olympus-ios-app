@@ -4,7 +4,7 @@ let SERVER_VERSION = "2024-06-12"
 
 let HTTP_PREFIX = "https://"
 var REGION_PREFIX = "ap-northeast-2."
-let OLYMPUS_SUFFIX = ".olympus.tjlabs.dev"
+let OLYMPUS_SUFFIX = ".jupiter.tjlabs.dev"
 
 var USER_URL = "user"
 var IMAGE_URL = "img"

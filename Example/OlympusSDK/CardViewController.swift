@@ -115,12 +115,12 @@ class CardViewController: UIViewController, Observer {
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_05_0910.csv", sensorFileName: "sensor_coex_05_0910.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_02_02_0910.csv", sensorFileName: "sensor_coex_02_02_0910.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_pdr_01_0910.csv", sensorFileName: "sensor_coex_pdr_01_0910.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex05.csv", sensorFileName: "sensor_coex05.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_dr1.csv", sensorFileName: "sensor_dr1.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex03.csv", sensorFileName: "sensor_coex03.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_dr3.csv", sensorFileName: "sensor_dr3.csv")
 //        serviceManager.setSimulationMode(flag: false, bleFileName: "ble_coex_01_0924.csv", sensorFileName: "sensor_coex_01_0924.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_05_0930.csv", sensorFileName: "sensor_coex_05_0930.csv")
-        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_dr_03_1030.csv", sensorFileName: "sensor_coex_dr_03_1030.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_03_0930.csv", sensorFileName: "sensor_coex_03_0930.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
+        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_dr_03_1030.csv", sensorFileName: "sensor_coex_dr_03_1030.csv")
     
 //        serviceManager.setDeadReckoningMode(flag: true, buildingName: "Solum", levelName: "0F", x: 5, y: 5, heading: 90)
 //        serviceManager.setDeadReckoningMode(flag: true, buildingName: "S3", levelName: "7F", x: 6, y: 16, heading: 270)
@@ -682,7 +682,7 @@ class CardViewController: UIViewController, Observer {
         self.phoenixTime += TIMER_INTERVAL
         if self.phoenixTime >= 1 {
             self.phoenixTime = 0
-            postPhoenixRecords()
+//            postPhoenixRecords()
         }
     }
     

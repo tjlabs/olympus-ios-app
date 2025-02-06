@@ -172,11 +172,27 @@ public class OlympusPathMatchingCalculator {
         }
     }
     
+//    public func loadPathPixelLocalUrl(key: String) -> (Bool, URL?) {
+//        let keyPpLocalUrl: String = "OlympusPathPixelLocalUrl_\(key)"
+//        if let loadedPpLocalUrl: URL = UserDefaults.standard.object(forKey: keyPpLocalUrl) as? URL {
+//            return (true, loadedPpLocalUrl)
+//        } else {
+//            return (false, nil)
+//        }
+//    }
+    
     public func loadPathPixelLocalUrl(key: String) -> (Bool, URL?) {
-        let keyPpLocalUrl: String = "OlympusPathPixelLocalUrl_\(key)"
-        if let loadedPpLocalUrl: URL = UserDefaults.standard.object(forKey: keyPpLocalUrl) as? URL {
-            return (true, loadedPpLocalUrl)
-        } else {
+        do {
+            let documentsURL = try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+            let savedURL = documentsURL.appendingPathComponent("\(key).csv")
+            
+            if FileManager.default.fileExists(atPath: savedURL.path) {
+                print(getLocalTimeString() + " , (Olympus) Path-Pixel : PathPixel \(key).csv exists")
+                return (true, savedURL)
+            } else {
+                return (false, nil)
+            }
+        } catch {
             return (false, nil)
         }
     }
@@ -232,7 +248,7 @@ public class OlympusPathMatchingCalculator {
 //                                    print(getLocalTimeString() + " , (Olympus) loadPathPixel : heading = \(PpHeading[key])")
                                     NotificationCenter.default.post(name: .sectorPathPixelUpdated, object: nil, userInfo: ["pathPixelKey": key])
                                     savePathPixelURL(key: key, ppURL: value)
-                                    savePathPixelLocalUrl(key: key, url: url)
+//                                    savePathPixelLocalUrl(key: key, url: url)
                                     PpIsLoaded[key] = true
                                 } catch {
                                     PpIsLoaded[key] = false
@@ -255,7 +271,7 @@ public class OlympusPathMatchingCalculator {
                                 ( PpType[key], PpNode[key], PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
                                 NotificationCenter.default.post(name: .sectorPathPixelUpdated, object: nil, userInfo: ["pathPixelKey": key])
                                 savePathPixelURL(key: key, ppURL: value)
-                                savePathPixelLocalUrl(key: key, url: url)
+//                                savePathPixelLocalUrl(key: key, url: url)
                                 PpIsLoaded[key] = true
                             } catch {
                                 PpIsLoaded[key] = false
@@ -279,7 +295,7 @@ public class OlympusPathMatchingCalculator {
                                 ( PpType[key], PpNode[key], PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
                                 NotificationCenter.default.post(name: .sectorPathPixelUpdated, object: nil, userInfo: ["pathPixelKey": key])
                                 savePathPixelURL(key: key, ppURL: value)
-                                savePathPixelLocalUrl(key: key, url: url)
+//                                savePathPixelLocalUrl(key: key, url: url)
                                 PpIsLoaded[key] = true
                             } catch {
                                 PpIsLoaded[key] = false

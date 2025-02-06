@@ -13,11 +13,11 @@ let USER_ENTERANCE_SERVER_VERSION = "2024-11-14"
 let CALC_FLT_SERVER_VERSION = "2024-12-12"  // 11-18 , 12-10
 let CALC_OSR_SERVER_VERSION = "2024-08-30"
 let REC_SERVER_VERSION = "2024-04-19"
-let BLACK_LIST_URL = "https://ap-northeast-2.client.olympus.tjlabs.dev/black"
+let BLACK_LIST_URL = "https://ap-northeast-2.client.jupiter.tjlabs.dev/black"
 
 let HTTP_PREFIX = "https://"
 var REGION_PREFIX = "ap-northeast-2."
-let OLYMPUS_SUFFIX = ".olympus.tjlabs.dev"
+let OLYMPUS_SUFFIX = ".jupiter.tjlabs.dev"
 var REGION_NAME = "Korea"
 
 var USER_URL = "user"

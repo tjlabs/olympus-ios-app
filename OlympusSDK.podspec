@@ -19,8 +19,4 @@ TODO: Add long description of the pod here.
   s.source_files = 'OlympusSDK/Classes/**/*'
   
   s.pod_target_xcconfig = { 'SWIFT_OPTIMIZATION_LEVEL' => '-Owholemodule' }
-  s.resource_bundles = {
-      'OlympusSDK' => ['OlympusSDK/Assets/*.png']
-  }
-  
 end

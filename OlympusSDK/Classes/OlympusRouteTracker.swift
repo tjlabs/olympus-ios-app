@@ -69,11 +69,27 @@ public class OlympusRouteTracker {
         }
     }
     
+//    public func loadEntranceRouteLocalUrl(key: String) -> (Bool, URL?) {
+//        let keyEntranceRouteUrl: String = "OlympusEntranceRouteLocalUrl_\(key)"
+//        if let loadedEntranceRouteUrl: URL = UserDefaults.standard.object(forKey: keyEntranceRouteUrl) as? URL {
+//            return (true, loadedEntranceRouteUrl)
+//        } else {
+//            return (false, nil)
+//        }
+//    }
+    
     public func loadEntranceRouteLocalUrl(key: String) -> (Bool, URL?) {
-        let keyEntranceRouteUrl: String = "OlympusEntranceRouteLocalUrl_\(key)"
-        if let loadedEntranceRouteUrl: URL = UserDefaults.standard.object(forKey: keyEntranceRouteUrl) as? URL {
-            return (true, loadedEntranceRouteUrl)
-        } else {
+        do {
+            let documentsURL = try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+            let savedURL = documentsURL.appendingPathComponent("\(key).csv")
+            
+            if FileManager.default.fileExists(atPath: savedURL.path) {
+                print(getLocalTimeString() + " , (Olympus) RouteTracker : EntranceRoute \(key).csv exists")
+                return (true, savedURL)
+            } else {
+                return (false, nil)
+            }
+        } catch {
             return (false, nil)
         }
     }
@@ -118,7 +134,7 @@ public class OlympusRouteTracker {
                                     EntranceRouteLevel[key] = parsedData.0
                                     EntranceRouteCoord[key] = parsedData.1
                                     saveEntranceRouteURL(key: key, routeURL: value)
-                                    saveEntranceRouteLocalUrl(key: key, url: url)
+//                                    saveEntranceRouteLocalUrl(key: key, url: url)
                                     EntranceIsLoaded[key] = true
                                 } catch {
                                     EntranceIsLoaded[key] = false
@@ -142,7 +158,7 @@ public class OlympusRouteTracker {
                                 EntranceRouteLevel[key] = parsedData.0
                                 EntranceRouteCoord[key] = parsedData.1
                                 saveEntranceRouteURL(key: key, routeURL: value)
-                                saveEntranceRouteLocalUrl(key: key, url: url)
+//                                saveEntranceRouteLocalUrl(key: key, url: url)
                                 EntranceIsLoaded[key] = true
                             } catch {
                                 EntranceIsLoaded[key] = false
@@ -165,7 +181,7 @@ public class OlympusRouteTracker {
                             EntranceRouteLevel[key] = parsedData.0
                             EntranceRouteCoord[key] = parsedData.1
                             saveEntranceRouteURL(key: key, routeURL: value)
-                            saveEntranceRouteLocalUrl(key: key, url: url)
+//                            saveEntranceRouteLocalUrl(key: key, url: url)
                             EntranceIsLoaded[key] = true
                         } catch {
                             EntranceIsLoaded[key] = false

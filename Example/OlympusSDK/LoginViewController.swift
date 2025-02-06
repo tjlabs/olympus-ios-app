@@ -57,17 +57,17 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         self.navigationController?.pushViewController(cardVC, animated: true)
     }
     
-    func goToMapViewController(userId: String) {
-        guard let mapVC = self.storyboard?.instantiateViewController(withIdentifier: "MapViewController") as? MapViewController else { return }
-        mapVC.userId = userId
-        self.navigationController?.pushViewController(mapVC, animated: true)
-    }
-    
-    func goToMapScaleViewController(userId: String) {
-        guard let mapVC = self.storyboard?.instantiateViewController(withIdentifier: "MapScaleViewController") as? MapScaleViewController else { return }
-        mapVC.userId = userId
-        self.navigationController?.pushViewController(mapVC, animated: true)
-    }
+//    func goToMapViewController(userId: String) {
+//        guard let mapVC = self.storyboard?.instantiateViewController(withIdentifier: "MapViewController") as? MapViewController else { return }
+//        mapVC.userId = userId
+//        self.navigationController?.pushViewController(mapVC, animated: true)
+//    }
+//    
+//    func goToMapScaleViewController(userId: String) {
+//        guard let mapVC = self.storyboard?.instantiateViewController(withIdentifier: "MapScaleViewController") as? MapScaleViewController else { return }
+//        mapVC.userId = userId
+//        self.navigationController?.pushViewController(mapVC, animated: true)
+//    }
     
     @IBAction func tapSaveUserIdButton(_ sender: UIButton) {
         UIView.animate(withDuration: 0.2, delay: 0.0, options: .curveLinear, animations: {
