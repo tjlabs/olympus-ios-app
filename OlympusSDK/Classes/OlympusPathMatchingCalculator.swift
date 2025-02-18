@@ -32,6 +32,7 @@ public class OlympusPathMatchingCalculator {
     var isNeedClearUVDBuffer: Bool = false
     var distFromNode: Double = -1
     var buildingLevelChangedCoord = [Double]()
+    var rqSectionLength: Double = 10
     
     var linkCoord: [Double] = [0, 0]
     var linkDirections = [Double]()
@@ -508,6 +509,9 @@ public class OlympusPathMatchingCalculator {
         return headings
     }
     
+    public func setRqSectionLength(value: Double) {
+        self.rqSectionLength = value + 5
+    }
     
     public func updateNodeAndLinkInfo(uvdIndex: Int, currentResult: FineLocationTrackingFromServer, currentResultHeading: Double, pastResult: FineLocationTrackingFromServer, pastResultHeading: Double, pathType: Int, updateType: UpdateNodeLinkType) {
         let diffX = abs(currentResult.x - pastResult.x)
@@ -598,7 +602,9 @@ public class OlympusPathMatchingCalculator {
                                     }
                                 }
                                 
-                                let checkLength: Double = 10
+//                                let checkLength: Double = 10
+                                let checkLength: Double = self.rqSectionLength
+                                print(getLocalTimeString() + " , (Olympus) PMC : index = \(uvdIndex), sectionLength = \(checkLength)")
                                 let PIXELS_TO_CHECK = Int(checkLength)
                                 
                                 var paddingValues = [Double] (repeating: Double(PIXELS_TO_CHECK), count: 4)
