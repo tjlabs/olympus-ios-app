@@ -1218,6 +1218,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             // Phase 6 요청 보내야하는 상황이면 요쳥 보내기
                             let isNeedRq = sectionController.checkIsNeedRequestFlt(isAmbiguous: ambiguitySolver.getIsAmbiguous())
                             if (isNeedRq.0 && phaseController.PHASE == OlympusConstants.PHASE_6) {
+                                OlympusPathMatchingCalculator.shared.setRqSectionLength(value: sectionController.getSectionLength())
                                 let goodCaseNodeCandidates = OlympusPathMatchingCalculator.shared.getAnchorNodeCandidatesForGoodCase(fltResult: tuResult, pathType: pathType)
                                 var inputNodeCandidates = goodCaseNodeCandidates
                                 let nodeCandidatesInfo = goodCaseNodeCandidates.nodeCandidatesInfo
@@ -1303,6 +1304,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             if ambiguitySolver.isAmbiguousInDRMode {
                                 let isNeedRqInDRMode = sectionController.checkIsNeedRequestFltInDRMode()
                                 if isNeedRqInDRMode.0 {
+                                    OlympusPathMatchingCalculator.shared.setRqSectionLength(value: sectionController.getSectionLength())
                                     processPhase5InDRMode(currentTime: getCurrentTimeInMilliseconds(), mode: runMode, trajectoryInfo: drModeRequestInfo.trajectoryInfo, stableInfo: drModeRequestInfo.stableInfo, nodeCandidatesInfo: drModeRequestInfo.nodeCandidatesInfo, prevNodeInfo: drModeRequestInfo.prevNodeInfo)
                                 }
                             }
