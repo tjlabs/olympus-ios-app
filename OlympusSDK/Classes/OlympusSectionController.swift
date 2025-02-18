@@ -153,6 +153,10 @@ public class OlympusSectionController {
         return self.sectionNumber
     }
     
+    public func getSectionLength() -> Double {
+        return self.uvdSectionLength
+    }
+    
     public func getAnchorTailIndex() -> Int {
         return self.anchorTailIndex
     }
