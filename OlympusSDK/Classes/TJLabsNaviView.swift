@@ -28,34 +28,16 @@ public class TJLabsNaviView: UIView, UICollectionViewDelegate, UICollectionViewD
     private var sectorId: Int = -1
     private let mapManager = TJLabsMapManager()
 
-    enum MapMode {
-        case MAP_ONLY
-        case MAP_INTERACTION
-        case UPDATE_USER
-    }
-    
-    enum ZoomMode {
-        case ZOOM_IN
-        case ZOOM_OUT
-    }
-    
-    enum PlotType {
-        case NORMAL
-        case FORCE
-    }
     
     private var mapImageView = UIImageView()
     private var buildingsCollectionView: UICollectionView!
     private var levelsCollectionView: UICollectionView!
     private let scrollView = UIScrollView()
     private var velocityLabel = TJLabsVelocityLabel()
-    private let myLocationButton = UIButton()
-    private let zoomButton = UIButton()
+    private let myLocationButton = TJLabsMyLocationButton()
+    private let zoomButton = TJLabsZoomButton()
     
     private var imageMapMarker: UIImage?
-    private var imageZoomIn: UIImage?
-    private var imageZoomOut: UIImage?
-    private var imageMyLocation: UIImage?
     
     private var buildingData = [String]()
     private var levelData = [String]()
@@ -81,10 +63,9 @@ public class TJLabsNaviView: UIView, UICollectionViewDelegate, UICollectionViewD
     private let userCoordTag = 999
     
     private var mode: MapMode = .MAP_ONLY
-    private var zoomMode: ZoomMode = .ZOOM_OUT
     
     private var mapModeChangedTime = 0
-    private var zoomModeChangedTime = 0
+
     private let TIME_FOR_REST: Int = 3*1000
     private let USER_CENTER_OFFSET: CGFloat = 40
     
@@ -128,36 +109,15 @@ public class TJLabsNaviView: UIView, UICollectionViewDelegate, UICollectionViewD
     }
     
     private func setupButtons() {
-        func styleButton(_ button: UIButton) {
-            button.backgroundColor = .white
-            button.layer.cornerRadius = 8
-            button.layer.shadowColor = UIColor.black.cgColor
-            button.layer.shadowOpacity = 0.2
-            button.layer.shadowOffset = CGSize(width: 0, height: 4)
-            button.layer.shadowRadius = 4
-            button.contentEdgeInsets = UIEdgeInsets(top: 6, left: 6, bottom: 6, right: 6)
+        [zoomButton, myLocationButton].forEach {
+            $0.widthAnchor.constraint(equalToConstant: 40).isActive = true
+            $0.heightAnchor.constraint(equalToConstant: 40).isActive = true
+            addSubview($0)
         }
-        
-        zoomButton.isHidden = true
-        zoomButton.setImage(imageZoomIn, for: .normal)
-        zoomButton.translatesAutoresizingMaskIntoConstraints = false
-        zoomButton.widthAnchor.constraint(equalToConstant: 40).isActive = true
-        zoomButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
-        styleButton(zoomButton)
-        addSubview(zoomButton)
-        
-        myLocationButton.isHidden = true
-        myLocationButton.setImage(imageMyLocation, for: .normal)
-        myLocationButton.translatesAutoresizingMaskIntoConstraints = false
-        myLocationButton.widthAnchor.constraint(equalToConstant: 40).isActive = true
-        myLocationButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
-        styleButton(myLocationButton)
-        addSubview(myLocationButton)
 
         NSLayoutConstraint.activate([
             myLocationButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -20),
             myLocationButton.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -20),
-
             zoomButton.trailingAnchor.constraint(equalTo: myLocationButton.trailingAnchor),
             zoomButton.bottomAnchor.constraint(equalTo: myLocationButton.topAnchor, constant: -10)
         ])
@@ -214,7 +174,7 @@ public class TJLabsNaviView: UIView, UICollectionViewDelegate, UICollectionViewD
     }
     
     private func forceToZoomInMode() {
-        if zoomMode == .ZOOM_OUT {
+        if TJLabsZoomButton.zoomMode == .ZOOM_OUT {
             toggleZoomMode(to: .ZOOM_IN)
             if !preXyh.isEmpty {
                 plotUserCoordWithZoomAndRotation(building: selectedBuilding ?? "", level: selectedLevel ?? "",xyh: preXyh, type: .FORCE)
@@ -244,18 +204,14 @@ public class TJLabsNaviView: UIView, UICollectionViewDelegate, UICollectionViewD
     }
         
     private func toggleZoomMode(to mode: ZoomMode? = nil) {
-        zoomMode = mode ?? (zoomMode == .ZOOM_IN ? .ZOOM_OUT : .ZOOM_IN)
-        DispatchQueue.main.async { [self] in
-            zoomButton.setImage(zoomMode == .ZOOM_IN ? imageZoomOut : imageZoomIn, for: .normal)
-        }
-        
-        if zoomMode == .ZOOM_IN {
+        zoomButton.setButtonImage(to: mode)
+        if TJLabsZoomButton.zoomMode == .ZOOM_IN {
             // 현재 확대 모드
             if !preXyh.isEmpty {
                 plotUserCoordWithZoomAndRotation(building: selectedBuilding ?? "", level: selectedLevel ?? "", xyh: preXyh, type: .FORCE)
             }
         } else {
-            zoomModeChangedTime = mapManager.getCurrentTimeInMilliseconds()
+            zoomButton.updateZoomModeChangedTime(time: mapManager.getCurrentTimeInMilliseconds())
             // 현재 전체 모드
             if !preXyh.isEmpty && self.mode != .MAP_INTERACTION {
                 plotUserCoord(building: selectedBuilding ?? "", level: selectedLevel ?? "", xyh: preXyh)
@@ -270,24 +226,6 @@ public class TJLabsNaviView: UIView, UICollectionViewDelegate, UICollectionViewD
                     self.imageMapMarker = mapMarker
                 } else {
                     print(getLocalTimeString() + " , (Olympus) Error : Could not load icon_mapMarker.png from bundle.")
-                }
-                
-                if let zoomIn = UIImage(named: "icon_zoomIn", in: resourceBundle, compatibleWith: nil) {
-                    self.imageZoomIn = zoomIn
-                } else {
-                    print(getLocalTimeString() + " , (Olympus) Error : Could not load icon_zoomIn.png from bundle.")
-                }
-                
-                if let zoomOut = UIImage(named: "icon_zoomOut", in: resourceBundle, compatibleWith: nil) {
-                    self.imageZoomOut = zoomOut
-                } else {
-                    print(getLocalTimeString() + " , (Olympus) Error : Could not load icon_zoomOut.png from bundle.")
-                }
-                
-                if let myLocation = UIImage(named: "icon_myLocation", in: resourceBundle, compatibleWith: nil) {
-                    self.imageMyLocation = myLocation
-                } else {
-                    print(getLocalTimeString() + " , (Olympus) Error : Could not load icon_myLocation.png from bundle.")
                 }
             } else {
                 print(getLocalTimeString() + " , (Olympus) Error : Could not load resourceBundle")
@@ -437,19 +375,6 @@ public class TJLabsNaviView: UIView, UICollectionViewDelegate, UICollectionViewD
             self.layoutIfNeeded()
         }
     }
-
-    
-//    private func adjustCollectionViewHeights() {
-//        let buildingHeight = calculateCollectionViewHeight(for: buildingData.count)
-//        let levelHeight = calculateCollectionViewHeight(for: levelData.count)
-//            
-//        buildingsCollectionViewHeightConstraint.constant = max(buildingHeight, 0)
-//        levelsCollectionViewHeightConstraint.constant = max(levelHeight, 0)
-//
-//        UIView.animate(withDuration: 0.3) {
-//            self.layoutIfNeeded()
-//        }
-//    }
     
     private func adjustCollectionViewHeights() {
         let buildingHeight = calculateCollectionViewHeight(for: buildingData.count)
@@ -897,11 +822,11 @@ public class TJLabsNaviView: UIView, UICollectionViewDelegate, UICollectionViewD
                     updatePathPixel()
                 }
                 
-                if zoomMode == .ZOOM_IN {
+                if TJLabsZoomButton.zoomMode == .ZOOM_IN {
                     plotUserCoordWithZoomAndRotation(building: selectedBuilding ?? "", level: selectedLevel ?? "", xyh: [result.x, result.y, result.heading], type: .NORMAL)
                 } else {
                     // 모드 전환 시기 확인
-                    if (mapManager.getCurrentTimeInMilliseconds() - zoomModeChangedTime) > TIME_FOR_REST && zoomModeChangedTime != 0 {
+                    if (mapManager.getCurrentTimeInMilliseconds() - TJLabsZoomButton.zoomModeChangedTime) > TIME_FOR_REST && TJLabsZoomButton.zoomModeChangedTime != 0 {
                         toggleZoomMode()
                         plotUserCoordWithZoomAndRotation(building: selectedBuilding ?? "", level: selectedLevel ?? "", xyh: [result.x, result.y, result.heading], type: .FORCE)
                     } else {

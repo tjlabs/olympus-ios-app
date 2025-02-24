@@ -27,3 +27,19 @@ protocol TJLabsMapManagerDelegate: AnyObject {
     func onBuildingLevelImageData(_ manager: TJLabsMapManager, imageKey: String, data: UIImage)
     func onScaleOffsetData(_ manager: TJLabsMapManager, scaleKey: String, data: [Double])
 }
+
+enum ZoomMode {
+    case ZOOM_IN
+    case ZOOM_OUT
+}
+
+enum MapMode {
+    case MAP_ONLY
+    case MAP_INTERACTION
+    case UPDATE_USER
+}
+
+enum PlotType {
+    case NORMAL
+    case FORCE
+}
