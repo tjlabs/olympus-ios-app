@@ -4,6 +4,7 @@ import TJLabsResource
 import UIKit
 
 public class TJLabsNaviView: UIView, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UIScrollViewDelegate, TJLabsMapManagerDelegate {
+
     func onBuildingLevelData(_ manager: TJLabsMapManager, buildingLevelData: [String : [String]]) {
         self.updateBuildingData(Array(buildingLevelData.keys), levelData: buildingLevelData)
     }
@@ -17,10 +18,13 @@ public class TJLabsNaviView: UIView, UICollectionViewDelegate, UICollectionViewD
     }
     
     func onScaleOffsetData(_ manager: TJLabsMapManager, scaleKey: String, data: [Double]) {
-        print("(TJLabsMap) MapView : scale updated // \(scaleKey) = \(data)")
         self.buildingLevelScale[scaleKey] = data
         updatePathPixel()
         updateMapImageView()
+    }
+    
+    func onUnitData(_ manager: TJLabsMapManager, unitKey: String, data: [TJLabsResource.UnitData]) {
+        print("(TJLabsNaviView) onUnitData : unitKey = \(unitKey) , data = \(data)")
     }
     
     
@@ -53,20 +57,16 @@ public class TJLabsNaviView: UIView, UICollectionViewDelegate, UICollectionViewD
     private var levelsLeadingToBuildingsConstraint: NSLayoutConstraint!
     
     private var currentScale: CGFloat = 1.0
-    private var translationOffset: CGPoint = .zero
     private var isPpHidden = true
     private var isUnitHidden = true
     
     private var preXyh = [Double]()
-    private var userHeadingBuffer = [Double]()
-    private var mapHeading: Double = 0
     private let userCoordTag = 999
     
     private var mode: MapMode = .MAP_ONLY
-    
     private var mapModeChangedTime = 0
 
-    private let TIME_FOR_REST: Int = 3*1000
+    private let TIME_FOR_REST: Int = 31000
     private let USER_CENTER_OFFSET: CGFloat = 40
     
     public override init(frame: CGRect) {
@@ -328,10 +328,6 @@ public class TJLabsNaviView: UIView, UICollectionViewDelegate, UICollectionViewD
         levelsCollectionView.bounces = false
     }
     
-//    private func calculateCollectionViewHeight(for itemCount: Int) -> CGFloat {
-//        return CGFloat(itemCount) * (cellSize.height + cellSpacing) - cellSpacing
-//    }
-    
     private func calculateCollectionViewHeight(for itemCount: Int) -> CGFloat {
         let computedHeight = CGFloat(itemCount) * (cellSize.height + cellSpacing) - cellSpacing
         return min(computedHeight, maxCollectionViewHeight)
@@ -441,11 +437,7 @@ public class TJLabsNaviView: UIView, UICollectionViewDelegate, UICollectionViewD
             
             let offsetX = imageCenterX - imageViewCenterX / scale
             let offsetY = imageCenterY - imageViewCenterY / scale
-            
-//            let newScaleX = 4.2083
-//            let newScaleY = -4.4668
-//            let newOffsetX = 111.1667
-//            let newOffsetY = 2364.0686
+
             let newScaleX = scaleOffset[0]
             let newScaleY = scaleOffset[1]
             let newOffsetX = scaleOffset[2]
@@ -499,11 +491,7 @@ public class TJLabsNaviView: UIView, UICollectionViewDelegate, UICollectionViewD
             
             let offsetX = imageCenterX - imageViewCenterX / scale
             let offsetY = imageCenterY - imageViewCenterY / scale
-            
-//            let newScaleX = 4.2083
-//            let newScaleY = -4.4668
-//            let newOffsetX = 111.1667
-//            let newOffsetY = 2364.0686
+
             let newScaleX = scaleOffset[0]
             let newScaleY = scaleOffset[1]
             let newOffsetX = scaleOffset[2]
@@ -575,11 +563,7 @@ public class TJLabsNaviView: UIView, UICollectionViewDelegate, UICollectionViewD
             
             let offsetX = imageCenterX - imageViewCenterX / scale
             let offsetY = imageCenterY - imageViewCenterY / scale
-            
-//            let newScaleX = 4.2083
-//            let newScaleY = -4.4668
-//            let newOffsetX = 111.1667
-//            let newOffsetY = 2364.0686
+
             let newScaleX = scaleOffset[0]
             let newScaleY = scaleOffset[1]
             let newOffsetX = scaleOffset[2]

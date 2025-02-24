@@ -50,12 +50,33 @@ public struct EntranceRouteDataIsLoaded {
   public var URL: Swift.String
   public init(isLoaded: Swift.Bool, URL: Swift.String)
 }
+public struct UnitData : Swift.Codable {
+  public let category: Swift.Int
+  public let number: Swift.Int
+  public let name: Swift.String
+  public let accessibility: Swift.String
+  public let restriction: Swift.Bool
+  public let visibility: Swift.Bool
+  public let x: Swift.Double
+  public let y: Swift.Double
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct UnitOutput : Swift.Codable {
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct UnitOutputList : Swift.Codable {
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
 public enum ResourceError {
   case PathPixel
   case BuildingLevel
   case Image
   case Scale
   case Entrance
+  case Unit
   public static func == (a: TJLabsResource.ResourceError, b: TJLabsResource.ResourceError) -> Swift.Bool
   public func hash(into hasher: inout Swift.Hasher)
   public var hashValue: Swift.Int {
@@ -67,6 +88,7 @@ public protocol TJLabsResourceManagerDelegate : AnyObject {
   func onPathPixelData(_ manager: TJLabsResource.TJLabsResourceManager, isOn: Swift.Bool, pathPixelKey: Swift.String, data: TJLabsResource.PathPixelData?)
   func onBuildingLevelImageData(_ manager: TJLabsResource.TJLabsResourceManager, isOn: Swift.Bool, imageKey: Swift.String, data: UIKit.UIImage?)
   func onScaleOffsetData(_ manager: TJLabsResource.TJLabsResourceManager, isOn: Swift.Bool, scaleKey: Swift.String, data: [Swift.Double]?)
+  func onUnitData(_ manager: TJLabsResource.TJLabsResourceManager, isOn: Swift.Bool, unitKey: Swift.String, data: [TJLabsResource.UnitData]?)
   func onEntranceData(_ manager: TJLabsResource.TJLabsResourceManager, isOn: Swift.Bool, entranceKey: Swift.String, data: TJLabsResource.EntranceRouteData?)
   func onError(_ manager: TJLabsResource.TJLabsResourceManager, error: TJLabsResource.ResourceError)
 }
@@ -91,6 +113,7 @@ public class TJLabsResourceManager {
   public func getEntranceRouteData() -> [Swift.String : TJLabsResource.EntranceRouteData]
   public func getEntranceRouteDataIsLoaded() -> [Swift.String : TJLabsResource.EntranceRouteDataIsLoaded]
   public func getEntranceOuterwards() -> [Swift.String]
+  public func getUnitData() -> [Swift.String : [TJLabsResource.UnitData]]
   public func updatePathPixelData(key: Swift.String, URL: Swift.String)
   @objc deinit
 }
@@ -110,6 +133,8 @@ public class TJLabsResourceManager {
   public static func getUserGeoURL() -> Swift.String
   public static func getUserEntranceVersion() -> Swift.String
   public static func getUserEntranceURL() -> Swift.String
+  public static func getUserUnitVersion() -> Swift.String
+  public static func getUserUnitURL() -> Swift.String
   @objc deinit
 }
 extension TJLabsResource.ResourceRegion : Swift.Equatable {}

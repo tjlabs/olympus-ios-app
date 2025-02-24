@@ -4,6 +4,7 @@ import Foundation
 import TJLabsResource
 
 class TJLabsMapManager: TJLabsResourceManagerDelegate {
+    
     func onBuildingLevelData(_ manager: TJLabsResource.TJLabsResourceManager, isOn: Bool, buildingLevelData: [String : [String]]) {
         if isOn {
             self.buildingLevelInfo[self.sectorId] = buildingLevelData
@@ -52,6 +53,15 @@ class TJLabsMapManager: TJLabsResourceManagerDelegate {
         // Do not use in Map SDK
     }
     
+    func onUnitData(_ manager: TJLabsResource.TJLabsResourceManager, isOn: Bool, unitKey: String, data: [TJLabsResource.UnitData]?) {
+        if let unitData = data, isOn {
+            self.buildingLevelUnits[unitKey] = unitData
+            delegate?.onUnitData(self, unitKey: unitKey, data: unitData)
+        } else {
+            
+        }
+    }
+    
     func onError(_ manager: TJLabsResource.TJLabsResourceManager, error: TJLabsResource.ResourceError) {
         print("(TJLabsMap) Error : \(error)")
     }
@@ -62,7 +72,7 @@ class TJLabsMapManager: TJLabsResourceManagerDelegate {
     var buildingLevelPathPixel = [String: PathPixelData]()
     var buildingLevelImages = [String: UIImage]()
     var buildingLevelScaleOffset = [String: [Double]]()
-    var buildingLevelUnits = [String: [Unit]]()
+    var buildingLevelUnits = [String: [UnitData]]()
     
     init() {
         resourceManager.delegate = self
@@ -77,6 +87,7 @@ class TJLabsMapManager: TJLabsResourceManagerDelegate {
     public func loadMap(region: ResourceRegion, sectorId: Int) {
         self.sectorId = sectorId
         resourceManager.loadMapResource(region: region, sectorId: sectorId)
+        resourceManager.loadJupiterResource(region: region, sectorId: sectorId)
     }
     
     func getBuildingLevelInfo(sector_id: Int) -> [String: [String]] {

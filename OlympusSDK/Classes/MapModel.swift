@@ -26,6 +26,7 @@ protocol TJLabsMapManagerDelegate: AnyObject {
     func onPathPixelData(_ manager: TJLabsMapManager, pathPixelKey: String, data: PathPixelData)
     func onBuildingLevelImageData(_ manager: TJLabsMapManager, imageKey: String, data: UIImage)
     func onScaleOffsetData(_ manager: TJLabsMapManager, scaleKey: String, data: [Double])
+    func onUnitData(_ manager: TJLabsMapManager, unitKey: String, data: [UnitData])
 }
 
 enum ZoomMode {
