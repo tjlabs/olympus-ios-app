@@ -1,0 +1,119 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.0.3 effective-5.10 (swiftlang-6.0.3.1.10 clang-1600.0.30.1)
+// swift-module-flags: -target arm64-apple-ios15.6 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-bare-slash-regex -module-name TJLabsResource
+import Foundation
+import Swift
+@_exported import TJLabsResource
+import UIKit
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+public enum ResourceRegion : Swift.String {
+  case KOREA
+  case CANADA
+  case US_EAST
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public struct PathPixelData {
+  public var roadType: [Swift.Int]
+  public var nodeNumber: [Swift.Int]
+  public var road: [[Swift.Double]]
+  public var roadMinMax: [Swift.Double]
+  public var roadScale: [Swift.Double]
+  public var roadHeading: [Swift.String]
+  public init(roadType: [Swift.Int], nodeNumber: [Swift.Int], road: [[Swift.Double]], roadMinMax: [Swift.Double], roadScale: [Swift.Double], roadHeading: [Swift.String])
+}
+public struct PathPixelDataIsLoaded {
+  public var isLoaded: Swift.Bool
+  public var URL: Swift.String
+  public init(isLoaded: Swift.Bool, URL: Swift.String)
+}
+public struct EntranceData {
+  public var number: Swift.Int
+  public var networkStatus: Swift.Bool
+  public var velocityScale: Swift.Double
+  public var innerWardId: Swift.String
+  public var innerWardRssi: Swift.Double
+  public var innerWardCoord: [Swift.Double]
+}
+public struct EntranceRouteData {
+  public var routeLevel: [Swift.String]
+  public var route: [[Swift.Double]]
+  public init(routeLevel: [Swift.String], route: [[Swift.Double]])
+}
+public struct EntranceRouteDataIsLoaded {
+  public var isLoaded: Swift.Bool
+  public var URL: Swift.String
+  public init(isLoaded: Swift.Bool, URL: Swift.String)
+}
+public enum ResourceError {
+  case PathPixel
+  case BuildingLevel
+  case Image
+  case Scale
+  case Entrance
+  public static func == (a: TJLabsResource.ResourceError, b: TJLabsResource.ResourceError) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public protocol TJLabsResourceManagerDelegate : AnyObject {
+  func onBuildingLevelData(_ manager: TJLabsResource.TJLabsResourceManager, isOn: Swift.Bool, buildingLevelData: [Swift.String : [Swift.String]])
+  func onPathPixelData(_ manager: TJLabsResource.TJLabsResourceManager, isOn: Swift.Bool, pathPixelKey: Swift.String, data: TJLabsResource.PathPixelData?)
+  func onBuildingLevelImageData(_ manager: TJLabsResource.TJLabsResourceManager, isOn: Swift.Bool, imageKey: Swift.String, data: UIKit.UIImage?)
+  func onScaleOffsetData(_ manager: TJLabsResource.TJLabsResourceManager, isOn: Swift.Bool, scaleKey: Swift.String, data: [Swift.Double]?)
+  func onEntranceData(_ manager: TJLabsResource.TJLabsResourceManager, isOn: Swift.Bool, entranceKey: Swift.String, data: TJLabsResource.EntranceRouteData?)
+  func onError(_ manager: TJLabsResource.TJLabsResourceManager, error: TJLabsResource.ResourceError)
+}
+@_hasMissingDesignatedInitializers public class TJLabsFileDownloader {
+  public static let shared: TJLabsResource.TJLabsFileDownloader
+  public func downloadCSVFile(from url: Foundation.URL, fname: Swift.String, completion: @escaping (Foundation.URL?, (any Swift.Error)?) -> Swift.Void)
+  @objc deinit
+}
+public class TJLabsResourceManager {
+  public static let shared: TJLabsResource.TJLabsResourceManager
+  weak public var delegate: (any TJLabsResource.TJLabsResourceManagerDelegate)?
+  public init()
+  public func loadMapResource(region: TJLabsResource.ResourceRegion, sectorId: Swift.Int)
+  public func loadJupiterResource(region: TJLabsResource.ResourceRegion, sectorId: Swift.Int)
+  public func getBuildingLevelData() -> [Swift.Int : [Swift.String : [Swift.String]]]
+  public func getPathPixelData() -> [Swift.String : TJLabsResource.PathPixelData]
+  public func getPathPixelDataIsLoaded() -> [Swift.String : TJLabsResource.PathPixelDataIsLoaded]
+  public func getScaleOffset() -> [Swift.String : [Swift.Double]]
+  public func getBuildingLevelImageData() -> [Swift.String : UIKit.UIImage]
+  public func getEntranceNumbers() -> Swift.Int
+  public func getEntranceData() -> [Swift.String : TJLabsResource.EntranceData]
+  public func getEntranceRouteData() -> [Swift.String : TJLabsResource.EntranceRouteData]
+  public func getEntranceRouteDataIsLoaded() -> [Swift.String : TJLabsResource.EntranceRouteDataIsLoaded]
+  public func getEntranceOuterwards() -> [Swift.String]
+  public func updatePathPixelData(key: Swift.String, URL: Swift.String)
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class TJLabsResourceNetworkConstants {
+  public static func setServerURL(region: TJLabsResource.ResourceRegion)
+  public static func getUserBaseURL() -> Swift.String
+  public static func getImageBaseURL() -> Swift.String
+  public static func getUserLevelVersion() -> Swift.String
+  public static func getUserLevelURL() -> Swift.String
+  public static func getUserPathPixelVersion() -> Swift.String
+  public static func getUserPathPixelURL() -> Swift.String
+  public static func getUserScaleVersion() -> Swift.String
+  public static func getUserScaleURL() -> Swift.String
+  public static func getUserParamVersion() -> Swift.String
+  public static func getUserParamURL() -> Swift.String
+  public static func getUserGeoVersion() -> Swift.String
+  public static func getUserGeoURL() -> Swift.String
+  public static func getUserEntranceVersion() -> Swift.String
+  public static func getUserEntranceURL() -> Swift.String
+  @objc deinit
+}
+extension TJLabsResource.ResourceRegion : Swift.Equatable {}
+extension TJLabsResource.ResourceRegion : Swift.Hashable {}
+extension TJLabsResource.ResourceRegion : Swift.RawRepresentable {}
+extension TJLabsResource.ResourceError : Swift.Equatable {}
+extension TJLabsResource.ResourceError : Swift.Hashable {}

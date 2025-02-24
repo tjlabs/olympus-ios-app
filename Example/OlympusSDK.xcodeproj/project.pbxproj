@@ -43,6 +43,7 @@
 		B3A7A5632BBBE2AE00561897 /* JSONConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A7A5622BBBE2AE00561897 /* JSONConverter.swift */; };
 		B3BA95E82BFB2B3A002625FA /* DS_3F.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3BA95E72BFB2B3A002625FA /* DS_3F.csv */; };
 		B3C622942C4107E000371531 /* PG_1F.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3C622932C4107E000371531 /* PG_1F.csv */; };
+		B3FE01292D6C0827000976C4 /* NaviViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FE01282D6C0822000976C4 /* NaviViewController.swift */; };
 		B3FE03582C0043D200039EAC /* G2_2F.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3FE03572C0043D200039EAC /* G2_2F.csv */; };
 		B3FE035D2C04754400039EAC /* S3_7F.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3FE035C2C04754400039EAC /* S3_7F.csv */; };
 /* End PBXBuildFile section */
@@ -101,6 +102,7 @@
 		B3A7A5622BBBE2AE00561897 /* JSONConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONConverter.swift; sourceTree = "<group>"; };
 		B3BA95E72BFB2B3A002625FA /* DS_3F.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = DS_3F.csv; sourceTree = "<group>"; };
 		B3C622932C4107E000371531 /* PG_1F.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = PG_1F.csv; sourceTree = "<group>"; };
+		B3FE01282D6C0822000976C4 /* NaviViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NaviViewController.swift; sourceTree = "<group>"; };
 		B3FE03572C0043D200039EAC /* G2_2F.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = G2_2F.csv; sourceTree = "<group>"; };
 		B3FE035C2C04754400039EAC /* S3_7F.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = S3_7F.csv; sourceTree = "<group>"; };
 		D6BEA357836562D67D800EA2 /* Pods-OlympusSDK_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OlympusSDK_Tests.debug.xcconfig"; path = "Target Support Files/Pods-OlympusSDK_Tests/Pods-OlympusSDK_Tests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -230,6 +232,7 @@
 		B314395D2BAD3043002C072F /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
+				B3FE01282D6C0822000976C4 /* NaviViewController.swift */,
 				607FACD71AFB9204008FA782 /* LoginViewController.swift */,
 				B3A7A5532BBBCAE200561897 /* CardViewController.swift */,
 				B335370C2CC8919900468A95 /* MapViewController.swift */,
@@ -294,6 +297,7 @@
 				607FACCE1AFB9204008FA782 /* Resources */,
 				325EF3297276DEAC9D7FB42F /* [CP] Embed Pods Frameworks */,
 				B3787E572BDA45F800D5EEBC /* ShellScript */,
+				6FC9A14271F0CA30261FF0E2 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -437,7 +441,6 @@
 				"${BUILT_PRODUCTS_DIR}/FirebaseSessions/FirebaseSessions.framework",
 				"${BUILT_PRODUCTS_DIR}/GoogleDataTransport/GoogleDataTransport.framework",
 				"${BUILT_PRODUCTS_DIR}/GoogleUtilities/GoogleUtilities.framework",
-				"${BUILT_PRODUCTS_DIR}/OlympusSDK/OlympusSDK.framework",
 				"${BUILT_PRODUCTS_DIR}/PromisesObjC/FBLPromises.framework",
 				"${BUILT_PRODUCTS_DIR}/PromisesSwift/Promises.framework",
 				"${BUILT_PRODUCTS_DIR}/RxCocoa/RxCocoa.framework",
@@ -447,6 +450,7 @@
 				"${BUILT_PRODUCTS_DIR}/SwiftAlgorithms/Algorithms.framework",
 				"${BUILT_PRODUCTS_DIR}/Then/Then.framework",
 				"${BUILT_PRODUCTS_DIR}/nanopb/nanopb.framework",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/OlympusSDK/TJLabsResource.framework/TJLabsResource",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
@@ -460,7 +464,6 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FirebaseSessions.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleDataTransport.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleUtilities.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OlympusSDK.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FBLPromises.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Promises.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxCocoa.framework",
@@ -470,6 +473,7 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Algorithms.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Then.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/nanopb.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/TJLabsResource.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -496,6 +500,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		6FC9A14271F0CA30261FF0E2 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-OlympusSDK_Example/Pods-OlympusSDK_Example-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/OlympusSDK/OlympusSDK.bundle",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/OlympusSDK.bundle",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-OlympusSDK_Example/Pods-OlympusSDK_Example-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		B3787E572BDA45F800D5EEBC /* ShellScript */ = {
@@ -531,6 +553,7 @@
 				B3A7A5632BBBE2AE00561897 /* JSONConverter.swift in Sources */,
 				B3A7A55F2BBBD11A00561897 /* NetworkConstants.swift in Sources */,
 				B31439742BAD42F2002C072F /* StringExtension.swift in Sources */,
+				B3FE01292D6C0827000976C4 /* NaviViewController.swift in Sources */,
 				B31439722BAD42D5002C072F /* UIViewExtension.swift in Sources */,
 				B3787E4A2BD209C400D5EEBC /* ImageCacheManager.swift in Sources */,
 				B3787E4C2BD20C4D00D5EEBC /* UIImageExtension.swift in Sources */,

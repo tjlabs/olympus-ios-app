@@ -1,6 +1,6 @@
 {
   "name": "OlympusSDK",
-  "version": "0.2.5",
+  "version": "0.2.25",
   "summary": "OlympusSDK for iOS",
   "swift_versions": "5.0",
   "platforms": {
@@ -17,9 +17,11 @@
   },
   "source": {
     "git": "https://github.com/tjlabs/olympus-ios-app.git",
-    "tag": "0.2.5"
+    "tag": "0.2.25"
   },
+  "static_framework": true,
   "source_files": "OlympusSDK/Classes/**/*",
+  "vendored_frameworks": "OlympusSDK/Frameworks/TJLabsResource.xcframework",
   "pod_target_xcconfig": {
     "SWIFT_OPTIMIZATION_LEVEL": "-Owholemodule"
   },

@@ -57,6 +57,13 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         self.navigationController?.pushViewController(cardVC, animated: true)
     }
     
+    func goToNaviViewController(region: String, userId: String) {
+        guard let naviVC = self.storyboard?.instantiateViewController(withIdentifier: "NaviViewController") as? NaviViewController else { return }
+        naviVC.userId = userId
+        
+        self.navigationController?.pushViewController(naviVC, animated: true)
+    }
+    
 //    func goToMapViewController(userId: String) {
 //        guard let mapVC = self.storyboard?.instantiateViewController(withIdentifier: "MapViewController") as? MapViewController else { return }
 //        mapVC.userId = userId
@@ -125,7 +132,8 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         NetworkManager.shared.postUserLogin(url: USER_LOGIN_URL, input: loginInfo, completion: { statusCode, returnedString in
             if (statusCode == 200) {
                 print(getLocalTimeString() + " , (InnerLabs) Success : User Login")
-                self.goToCardViewController(region: "Korea", userId: self.userId)
+//                self.goToCardViewController(region: "Korea", userId: self.userId)
+                self.goToNaviViewController(region: "Korea", userId: self.userId)
 //                self.goToMapViewController(userId: self.userId)
 //                self.goToMapScaleViewController(userId: self.userId)
             } else {
