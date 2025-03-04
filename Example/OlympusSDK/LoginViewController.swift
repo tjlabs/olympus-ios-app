@@ -132,8 +132,8 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         NetworkManager.shared.postUserLogin(url: USER_LOGIN_URL, input: loginInfo, completion: { statusCode, returnedString in
             if (statusCode == 200) {
                 print(getLocalTimeString() + " , (InnerLabs) Success : User Login")
-//                self.goToCardViewController(region: "Korea", userId: self.userId)
-                self.goToNaviViewController(region: "Korea", userId: self.userId)
+                self.goToCardViewController(region: "Korea", userId: self.userId)
+//                self.goToNaviViewController(region: "Korea", userId: self.userId)
 //                self.goToMapViewController(userId: self.userId)
 //                self.goToMapScaleViewController(userId: self.userId)
             } else {
