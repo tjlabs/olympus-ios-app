@@ -271,6 +271,53 @@ public class OlympusNetworkManager {
         dataTask.resume()
     }
     
+    func getUserWard(url: String, input: InputWard, completion: @escaping (Int, String, InputWard) -> Void) {
+        // [http 비동기 방식을 사용해서 http 요청 수행 실시]
+        var urlComponents = URLComponents(string: url)
+        urlComponents?.queryItems = [URLQueryItem(name: "sector_id", value: String(input.sector_id)),
+                                     URLQueryItem(name: "building_name", value: input.building_name),
+                                     URLQueryItem(name: "level_name", value: input.level_name)]
+        
+        print(getLocalTimeString() + " , (Olympus) Ward Check : url = \(url)")
+        print(getLocalTimeString() + " , (Olympus) Ward Check : input = \(input)")
+        var requestURL = URLRequest(url: (urlComponents?.url)!)
+        requestURL.httpMethod = "GET"
+        
+        let sessionConfig = URLSessionConfiguration.default
+        sessionConfig.timeoutIntervalForResource = TIMEOUT_VALUE_POST
+        sessionConfig.timeoutIntervalForRequest = TIMEOUT_VALUE_POST
+        let session = URLSession(configuration: sessionConfig)
+        let dataTask = session.dataTask(with: requestURL, completionHandler: { (data, response, error) in
+            
+            // [error가 존재하면 종료]
+            guard error == nil else {
+                // [콜백 반환]
+                completion(500, error?.localizedDescription ?? "Fail", input)
+                return
+            }
+            
+            let resultCode = (response as? HTTPURLResponse)?.statusCode ?? 500 // [상태 코드]
+            let successsRange = 200..<300
+            guard let statusCode = (response as? HTTPURLResponse)?.statusCode, successsRange.contains(statusCode)
+            else {
+                // [콜백 반환]
+                completion(resultCode, (response as? HTTPURLResponse)?.description ?? "Fail", input)
+                return
+            }
+            
+            let resultLen = data! // [데이터 길이]
+            let resultData = String(data: resultLen, encoding: .utf8) ?? "" // [데이터 확인]
+            
+            // [콜백 반환]
+            DispatchQueue.main.async {
+                completion(resultCode, resultData, input)
+            }
+        })
+        
+        // [network 통신 실행]
+        dataTask.resume()
+    }
+    
     func getUserRssCompensation(url: String, input: Any, isDeviceOs: Bool, completion: @escaping (Int, String) -> Void) {
         // [http 비동기 방식을 사용해서 http 요청 수행 실시]
         var urlComponents = URLComponents(string: url)
