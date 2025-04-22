@@ -116,7 +116,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     // RFD
     var bleTrimed = [String: [[Double]]]()
     var bleAvg = [String: Double]()
-    var lastBleTagTime: Int = 0
     
     // UVD
     var pastUvdTime: Int = 0
