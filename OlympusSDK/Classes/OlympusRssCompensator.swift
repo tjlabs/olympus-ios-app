@@ -19,6 +19,7 @@ public class OlympusRssCompensator {
     var preNormalizationScale: Double = 1.0
     var preSmoothedNormalizationScale: Double = 1.0
     var scaleQueue = [Double]()
+    var validScaleQueue = [Double]()
     
     var timeStackEst: Double = 0
     
@@ -168,10 +169,20 @@ public class OlympusRssCompensator {
             if (isScaleConverged) {
                 OlympusConstants().setNormalizationScale(cur: self.normalizationScale, pre: self.preNormalizationScale)
             }
+        } else if (isGetFirstResponse && isIndoor && self.isScaleLoaded && !self.isScaleConverged) {
+            if validScaleQueue.count > 4 {
+                let scale = validScaleQueue[validScaleQueue.count-1]
+                OlympusConstants().setNormalizationScale(cur: scale, pre: scale)
+                isScaleConverged = true
+            }
         }
     }
     
-    
+    public func stackValidNormalizationScale(scale: Double) {
+        if !isScaleConverged {
+            validScaleQueue.append(scale)
+        }
+    }
     
     public func getMaxRssi() -> Double {
         if (self.wardMaxRssi.isEmpty) {
