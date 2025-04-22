@@ -616,8 +616,20 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         }
                     }
                     buildingLevelChanger.buildingsAndLevels = infoBuildingLevel
-                    let msg = getLocalTimeString() + " , (Olympus) Success : Load Sector Info // Level"
-                    completion(true, msg)
+                    if self.mode != "pdr" {
+                        buildingLevelChanger.loadLevelWards(completion: { isSuccess, msg in
+                            if isSuccess {
+                                let msg = getLocalTimeString() + " , (Olympus) Success : Load Sector & Ward Info // Level"
+                                completion(true, msg)
+                            } else {
+                                let msg = getLocalTimeString() + " , (Olympus) Error : Load Sector & Ward Info // Level"
+                                completion(false, msg)
+                            }
+                        })
+                    } else {
+                        let msg = getLocalTimeString() + " , (Olympus) Success : Load Sector // Level"
+                        completion(true, msg)
+                    }
                 } else {
                     let msg = getLocalTimeString() + " , (Olympus) Error : Load Sector Info // Level \(statusCode)"
                     completion(false, msg)
@@ -896,6 +908,17 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //                }
             }
             
+            if let top3Ble = buildingLevelChanger.extractTop3BleInWindow(currentTime: currentTime, ble: self.bleAvg) {
+                if !isStartRouteTrack && stateManager.isGetFirstResponse && stateManager.isIndoor && !buildingLevelChanger.isOsrRunning  && phaseController.PHASE >= OlympusConstants.PHASE_4 {
+                    let levelByBle = buildingLevelChanger.calculateLevelByBle(data: top3Ble)
+                    let curLevel = removeLevelDirectionString(levelName: self.currentLevel)
+                    if levelByBle != "UNKNOWN" && curLevel != levelByBle {
+                        phaseBreakInPhase4(fltResult: FineLocationTrackingFromServer(), isUpdatePhaseBreakResult: false)
+                    }
+                }
+                
+            }
+            
             if (!self.bleAvg.isEmpty) {
                 stateManager.setVariblesWhenBleIsNotEmpty()
                 let data = ReceivedForce(user_id: self.user_id, mobile_time: currentTime, ble: self.bleAvg, pressure: self.sensorManager.pressure)
@@ -977,6 +1000,17 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //            self.bleAvg = ["TJ-00CB-0000033B-0000":-62.0] // DS 3F
 //            self.bleAvg = ["TJ-00CB-00000389-0000":-62.0] // G2 2F
 //            self.bleAvg = ["TJ-00CB-000003E7-0000":-76.0] // PG
+            
+            if let top3Ble = buildingLevelChanger.extractTop3BleInWindow(currentTime: currentTime, ble: self.bleAvg) {
+                if !isStartRouteTrack && stateManager.isGetFirstResponse && stateManager.isIndoor && !buildingLevelChanger.isOsrRunning  && phaseController.PHASE >= OlympusConstants.PHASE_4 {
+                    let levelByBle = buildingLevelChanger.calculateLevelByBle(data: top3Ble)
+                    let curLevel = removeLevelDirectionString(levelName: self.currentLevel)
+                    if levelByBle != "UNKNOWN" && curLevel != levelByBle {
+                        phaseBreakInPhase4(fltResult: FineLocationTrackingFromServer(), isUpdatePhaseBreakResult: false)
+                    }
+                }
+                
+            }
             
             if (!self.bleAvg.isEmpty) {
                 stateManager.setVariblesWhenBleIsNotEmpty()
@@ -1838,6 +1872,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 self.isInRecoveryProcess = false
             } else {
                 self.isInRecoveryProcess = false
+                phaseBreakInPhase4(fltResult: FineLocationTrackingFromServer(), isUpdatePhaseBreakResult: false)
                 let msg: String = getLocalTimeString() + " , (Olympus) Error : \(statusCode) Fail to request indoor position in Phase 5 // tail_index = \(fltInput.tail_index)"
                 print(msg)
             }
@@ -1990,6 +2025,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     // 임시
                     
                     stackServerResult(serverResult: fltResult)
+                    if fltResult.scc > 0.6 {
+                        rssCompensator.stackValidNormalizationScale(scale: input.normalization_scale)
+                    }
                     let resultPhase = phaseController.controlPhase(serverResultArray: serverResultBuffer, drBuffer: unitDRInfoBuffer, UVD_INTERVAL: UVD_INPUT_NUM, TRAJ_LENGTH: USER_TRAJECTORY_LENGTH, INDEX_THRESHOLD: RQ_IDX, inputPhase: fltInput.phase, inputTrajType: TrajType.DR_UNKNOWN, mode: runMode, isVenusMode: stateManager.isVenusMode)
                     // 임시
                     displayOutput.phase = String(resultPhase.0)
@@ -2066,6 +2104,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 self.isInRecoveryProcess = false
             } else {
                 self.isInRecoveryProcess = false
+                phaseBreakInPhase4(fltResult: FineLocationTrackingFromServer(), isUpdatePhaseBreakResult: false)
 //                let msg: String = getLocalTimeString() + " , (Olympus) Error : \(statusCode) Fail to request indoor position in Phase 6 // tail_index = \(fltInput.tail_index)"
 //                print(msg)
             }
