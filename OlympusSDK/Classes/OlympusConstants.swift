@@ -37,7 +37,7 @@ class OlympusConstants {
     static let PHASE_4: Int = 4
     static let PHASE_5: Int = 5
     static let PHASE_6: Int = 6
-    static let PHASE_BECOME3_SCC: Double = 0.62
+    static let PHASE_BECOME3_SCC: Double = 0.6
     static let PHASE_BREAK_SCC_PDR: Double = 0.45
 //    static let PHASE_BREAK_SCC_DR: Double = 0.45
 //    static let PHASE5_RECOVERY_SCC: Double = 0.5 // 0.55
@@ -71,6 +71,7 @@ class OlympusConstants {
 //    static var BLE_VALID_TIME: Double = 1500 // miliseconds
     static let RFD_INTERVAL: TimeInterval = 1/2 //second
     static var RFD_INPUT_NUM: Int = 4
+    static let BLE_LEVEL_BUFFER_SIZE: Int = 8
     static var DEVICE_MIN_RSSI: Double = -99.0
     static let EST_RC_INTERVAL: Double = 5.0
     static let REQUIRED_RC_CONVERGENCE_TIME: Double = 180 // seconds
