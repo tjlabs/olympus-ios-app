@@ -920,7 +920,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             }
             
             if (!self.bleAvg.isEmpty) {
-                self.lastBleTagTime = getCurrentTimeInMilliseconds()
                 stateManager.setVariblesWhenBleIsNotEmpty()
                 let data = ReceivedForce(user_id: self.user_id, mobile_time: currentTime, ble: self.bleAvg, pressure: self.sensorManager.pressure)
                 self.inputReceivedForce.append(data)
@@ -1014,7 +1013,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             }
             
             if (!self.bleAvg.isEmpty) {
-                self.lastBleTagTime = getCurrentTimeInMilliseconds()
                 stateManager.setVariblesWhenBleIsNotEmpty()
                 let data = ReceivedForce(user_id: self.user_id, mobile_time: currentTime, ble: self.bleAvg, pressure: self.sensorManager.pressure)
                 self.inputReceivedForce.append(data)
