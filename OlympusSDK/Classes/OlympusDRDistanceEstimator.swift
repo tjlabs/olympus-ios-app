@@ -77,11 +77,10 @@ public class OlympusDRDistanceEstimator: NSObject {
         // ACC X, Y, Z, Norm Smoothing
         // Use y, z, norm variance (2sec)
         
-//        if isStopDetect {
-//            self.stopDetectTime = time
-//            print(getLocalTimeString() + " , (Olympus) DRDistanceEstimator : index = \(index) // isStopDetect = \(isStopDetect)")
-//        }
-//        let diffStopDetectTime = time - self.stopDetectTime
+        if isStopDetect {
+            self.stopDetectTime = time
+        }
+        let diffStopDetectTime = time - self.stopDetectTime
         
         let acc = sensorData.acc
         let gyro = sensorData.gyro
@@ -195,12 +194,12 @@ public class OlympusDRDistanceEstimator: NSObject {
         
         let rflowScale: Double = calRflowVelocityScale(rflowForVelocity: self.rflowForVelocity, isSufficientForVelocity: self.isSufficientRfdVelocityBuffer)
         
-//        let velocityStop = velocityInput*self.velocityScale*self.entranceVelocityScale*0.5
+        let velocityStop = velocityInput*self.velocityScale*self.entranceVelocityScale*0.7
         let velocityNotStop = velocityInput*self.velocityScale*self.entranceVelocityScale
         var velocityInputScale = velocityNotStop
-//        if diffStopDetectTime < 1000 {
-//            print(getLocalTimeString() + " , (Olympus) DRDistanceEstimator : index = \(index) // diffStopDetectTime = \(diffStopDetectTime) // velocityStop = \(velocityStop) // velocityNotStop = \(velocityNotStop)")
-//        }
+        if diffStopDetectTime < 5000 {
+            velocityInputScale = velocityStop
+        }
         
         if velocityInputScale < OlympusConstants.VELOCITY_MIN {
             velocityInputScale = 0
@@ -217,16 +216,17 @@ public class OlympusDRDistanceEstimator: NSObject {
         }
         
         let delT = self.preTime == 0 ? 1/OlympusConstants.SAMPLE_HZ : (time-self.preTime)*1e-3
-        velocityAcc += (accMovingDirection + self.biasSmoothing)*delT
-        velocityAcc = velocityAcc < 0 ? 0 : velocityAcc
+//        velocityAcc += (accMovingDirection + self.biasSmoothing)*delT
+//        velocityAcc = velocityAcc < 0 ? 0 : velocityAcc
         
         if (velocityInputScale == 0 && self.isStartRouteTrack) {
             velocityInputScale = OlympusConstants.VELOCITY_MIN
         }
         
         let velocityMps = (velocityInputScale/3.6)*turnScale
-        let velocityCombine = (velocityMps*0.7) + (velocityAcc*0.3)
-        let velocityFinal = isPossibleUseBias ? velocityCombine : velocityMps
+//        let velocityCombine = (velocityMps*0.7) + (velocityAcc*0.3)
+//        let velocityFinal = isPossibleUseBias ? velocityCombine : velocityMps
+        let velocityFinal = velocityMps
         
         finalUnitResult.isIndexChanged = false
         finalUnitResult.velocity = velocityFinal
