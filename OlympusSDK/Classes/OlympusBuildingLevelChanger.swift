@@ -30,11 +30,15 @@ public class OlympusBuildingLevelChanger {
     public var spotCutIndex: Int = 0
     public var buildingLevelChangedTime: Int = 0
     public var buildingsAndLevels = [String:[String]]()
+    public var levelWards = [String: [String]]()
     public var preOutputMobileTime: Int = 0
     
     public var sectorDRModeArea = [String: DRModeArea]()
     public var currentDRModeArea = DRModeArea(number: -1, range: [], direction: 0, nodes: [])
     public var currentDRModeAreaNodeNumber: Int = -1
+    
+    var bleBuffer = [[String: Double]]()
+    var isOsrRunning: Bool = false
     
     var trajEditedObserver: Any!
     
@@ -55,6 +59,130 @@ public class OlympusBuildingLevelChanger {
     
     public func setSectorID(sector_id: Int) {
         self.sector_id = sector_id
+    }
+    
+    public func loadLevelWards(completion: @escaping (Bool, String) -> Void) {
+        var totalRequests = 0
+        var successCount = 0
+        var hasFailed = false
+        var msg = ""
+        
+        let dispatchGroup = DispatchGroup()
+
+        for (key, value) in self.buildingsAndLevels {
+            let buildingName = key
+            for level in value {
+                if !level.contains("_D") {
+                    totalRequests += 1
+                    dispatchGroup.enter()
+
+                    let ward_sector_id: Int = self.sector_id - 1
+                    let input = InputWard(sector_id: ward_sector_id, building_name: buildingName, level_name: level)
+
+                    OlympusNetworkManager.shared.getUserWard(url: USER_WARD_URL, input: input) { [self] statusCode, returnedString, inputWard in
+                        defer { dispatchGroup.leave() }
+                        if statusCode == 200 {
+                            let result = jsonToWardFromServer(jsonString: returnedString)
+                            if result.0 {
+                                let wardIds: [String] = result.1.wards.map { $0.id }
+                                levelWards[level] = wardIds
+                                successCount += 1
+                            } else {
+                                hasFailed = true
+                                msg = getLocalTimeString() + " , (Olympus) Error : Failed to decode wards for \(input)"
+                                print(msg)
+                            }
+                        } else {
+                            hasFailed = true
+                            msg = getLocalTimeString() + " , (Olympus) Error : Load Level Wards // Status Code \(statusCode)"
+                            print(msg)
+                        }
+                    }
+                }
+            }
+        }
+
+        dispatchGroup.notify(queue: .main) {
+            if hasFailed || successCount < totalRequests {
+                completion(false, msg)
+            } else {
+                completion(true, getLocalTimeString() + " , (Olympus) Success : All level wards loaded successfully.")
+            }
+        }
+    }
+    
+    func extractTop3BleInWindow(currentTime: Int, ble: [String: Double]) ->  (Int, [(String, Double)])? {
+        var result: (Int, [(String, Double)])?
+        var mergedBLE: [String: Double] = [:]
+        
+        bleBuffer.append(ble)
+        if (bleBuffer.count >= OlympusConstants.BLE_LEVEL_BUFFER_SIZE) {
+            for data in bleBuffer {
+                let bleDict = data
+                for (deviceId, rssi) in bleDict {
+                    if let existingRSSI = mergedBLE[deviceId] {
+                        if rssi > existingRSSI {
+                            mergedBLE[deviceId] = rssi
+                        }
+                    } else {
+                        mergedBLE[deviceId] = rssi
+                    }
+                }
+            }
+            
+            let top3 = mergedBLE.sorted(by: { $0.value > $1.value }).prefix(3).map { ($0.key, $0.value) }
+            result = ((currentTime, top3))
+            
+            bleBuffer = []
+        }
+        
+        return result
+    }
+    
+    func calculateLevelByBle(data: (Int, [(String, Double)])) -> String {
+        var result: String = "UNKNOWN"
+        
+        var checker = [(String, String, Double)]()
+        let bleData = data.1
+        for (levelName, wardIds) in levelWards {
+            for (id, rssi) in bleData {
+                if wardIds.contains(id) {
+                    if rssi >= -65 {
+                        print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : very strong = \(levelName) // \(id) : \(rssi)")
+                        return levelName
+                    } else if rssi >= -90 {
+                        checker.append((levelName, id, rssi))
+                    }
+                    
+                }
+            }
+        }
+        
+        if checker.count >= 2 {
+            let frequentLevel = mostFrequentCheckerValue(from: checker)
+            result = frequentLevel
+            print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : frequentLevel = \(frequentLevel) // checker = \(checker)")
+        } else if checker.count == 1 {
+            if checker[0].2 >= -80 {
+                result = checker[0].0
+                print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : only one = \(result) // checker = \(checker)")
+            }
+        }
+        
+        return result
+    }
+    
+    func mostFrequentCheckerValue(from checker: [(String, String, Double)]) -> String {
+        var frequency: [String: Int] = [:]
+
+        for (first, _, _) in checker {
+            frequency[first, default: 0] += 1
+        }
+
+        let maxCount = frequency.values.max() ?? 0
+        let mostFrequent = frequency.filter { $0.value == maxCount }
+
+        return mostFrequent.count == 1 ? mostFrequent.first!.key : "UNKNOWN"
     }
     
     func accumulateOsrDistance(unitLength: Double, isGetFirstResponse: Bool, mode: String, result: FineLocationTrackingResult) {
@@ -403,6 +531,7 @@ public class OlympusBuildingLevelChanger {
             if (mode != OlympusConstants.MODE_PDR) {
                 if (phase >= OlympusConstants.PHASE_4) {
                     isRunOsr = self.checkIsPossibleRunOSR(result: result, isDRMode: isDRMode, passedNodes: passedNodes, mode: mode)
+                    self.isOsrRunning = isRunOsr
 //                    print(getLocalTimeString() + " , (Olympus) Run OSR : isRunOsr = \(isRunOsr) // isDRMode = \(isDRMode) // passedNodes = \(passedNodes)")
                 }
                 
