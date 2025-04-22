@@ -116,6 +116,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     // RFD
     var bleTrimed = [String: [[Double]]]()
     var bleAvg = [String: Double]()
+    var lastBleTagTime: Int = 0
     
     // UVD
     var pastUvdTime: Int = 0
@@ -920,6 +921,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             }
             
             if (!self.bleAvg.isEmpty) {
+                self.lastBleTagTime = getCurrentTimeInMilliseconds()
                 stateManager.setVariblesWhenBleIsNotEmpty()
                 let data = ReceivedForce(user_id: self.user_id, mobile_time: currentTime, ble: self.bleAvg, pressure: self.sensorManager.pressure)
                 self.inputReceivedForce.append(data)
@@ -1013,6 +1015,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             }
             
             if (!self.bleAvg.isEmpty) {
+                self.lastBleTagTime = getCurrentTimeInMilliseconds()
                 stateManager.setVariblesWhenBleIsNotEmpty()
                 let data = ReceivedForce(user_id: self.user_id, mobile_time: currentTime, ble: self.bleAvg, pressure: self.sensorManager.pressure)
                 self.inputReceivedForce.append(data)
@@ -1433,16 +1436,31 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 if KF.isRunning && !self.isPhaseBreak {
                     self.isPhaseBreak = true
                 }
-                let phase3Trajectory = trajectoryInfo
-                let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase3Trajectory, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, isKF: KF.isRunning, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult, LENGTH_THRESHOLD: USER_TRAJECTORY_LENGTH)
-                let displaySearchType: Int = trajTypeConverter(trajType: searchInfo.trajType)
-                displayOutput.searchArea = searchInfo.searchArea
-                displayOutput.searchType = displaySearchType
-                displayOutput.userTrajectory = searchInfo.trajShape
-                displayOutput.trajectoryStartCoord = searchInfo.trajStartCoord
-                if (!isStartRouteTrack || isPhaseBreakInRouteTrack) {
-                    processPhase3(currentTime: currentTime, mode: mode, trajectoryInfo: phase3Trajectory, searchInfo: searchInfo)
+                
+                let diffTime = currentTime - self.lastBleTagTime
+                if diffTime < 10*1000 {
+                    if (!isStartRouteTrack || isPhaseBreakInRouteTrack) {
+                        let phase3Trajectory = trajectoryInfo
+                        let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase3Trajectory, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, isKF: KF.isRunning, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult, LENGTH_THRESHOLD: USER_TRAJECTORY_LENGTH)
+                        let displaySearchType: Int = trajTypeConverter(trajType: searchInfo.trajType)
+                        displayOutput.searchArea = searchInfo.searchArea
+                        displayOutput.searchType = displaySearchType
+                        displayOutput.userTrajectory = searchInfo.trajShape
+                        displayOutput.trajectoryStartCoord = searchInfo.trajStartCoord
+                        processPhase3(currentTime: currentTime, mode: mode, trajectoryInfo: phase3Trajectory, searchInfo: searchInfo)
+                    }
                 }
+                
+//                let phase3Trajectory = trajectoryInfo
+//                let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase3Trajectory, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, isKF: KF.isRunning, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult, LENGTH_THRESHOLD: USER_TRAJECTORY_LENGTH)
+//                let displaySearchType: Int = trajTypeConverter(trajType: searchInfo.trajType)
+//                displayOutput.searchArea = searchInfo.searchArea
+//                displayOutput.searchType = displaySearchType
+//                displayOutput.userTrajectory = searchInfo.trajShape
+//                displayOutput.trajectoryStartCoord = searchInfo.trajStartCoord
+//                if (!isStartRouteTrack || isPhaseBreakInRouteTrack) {
+//                    processPhase3(currentTime: currentTime, mode: mode, trajectoryInfo: phase3Trajectory, searchInfo: searchInfo)
+//                }
             }
         }
     }
@@ -1450,21 +1468,37 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     func requestOlympusResultInStop(trajectoryInfo: [TrajectoryInfo], trueHeading: Double, mode: String) {
         let currentTime = getCurrentTimeInMilliseconds()
         let currentTimeDouble = Double(currentTime)
-        if (stateManager.isVenusMode && (currentTimeDouble-self.timeRequest)*1e-3 >= OlympusConstants.MINIMUM_RQ_TIME) {
-            self.timeRequest = currentTimeDouble
-            let phase3Trajectory = trajectoryInfo
-            let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase3Trajectory, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, isKF: KF.isRunning, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult, LENGTH_THRESHOLD: USER_TRAJECTORY_LENGTH)
-//            print(getLocalTimeString() + " , (Olympus) Request Phase 3 in Stop State")
-            processPhase3(currentTime: currentTime, mode: mode, trajectoryInfo: phase3Trajectory, searchInfo: searchInfo)
-        } else {
-            if (!stateManager.isGetFirstResponse && (currentTimeDouble-self.timeRequest)*1e-3 >= OlympusConstants.MINIMUM_RQ_TIME) {
+        
+        let diffTime = currentTime - self.lastBleTagTime
+        if diffTime < 10*1000 {
+            if (stateManager.isVenusMode && (currentTimeDouble-self.timeRequest)*1e-3 >= OlympusConstants.MINIMUM_RQ_TIME) {
                 self.timeRequest = currentTimeDouble
                 let phase3Trajectory = trajectoryInfo
                 let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase3Trajectory, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, isKF: KF.isRunning, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult, LENGTH_THRESHOLD: USER_TRAJECTORY_LENGTH)
-//                print(getLocalTimeString() + " , (Olympus) Request Phase 3 in Stop State (2)")
                 processPhase3(currentTime: currentTime, mode: mode, trajectoryInfo: phase3Trajectory, searchInfo: searchInfo)
+            } else {
+                if (!stateManager.isGetFirstResponse && (currentTimeDouble-self.timeRequest)*1e-3 >= OlympusConstants.MINIMUM_RQ_TIME) {
+                    self.timeRequest = currentTimeDouble
+                    let phase3Trajectory = trajectoryInfo
+                    let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase3Trajectory, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, isKF: KF.isRunning, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult, LENGTH_THRESHOLD: USER_TRAJECTORY_LENGTH)
+                    processPhase3(currentTime: currentTime, mode: mode, trajectoryInfo: phase3Trajectory, searchInfo: searchInfo)
+                }
             }
         }
+        
+//        if (stateManager.isVenusMode && (currentTimeDouble-self.timeRequest)*1e-3 >= OlympusConstants.MINIMUM_RQ_TIME) {
+//            self.timeRequest = currentTimeDouble
+//            let phase3Trajectory = trajectoryInfo
+//            let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase3Trajectory, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, isKF: KF.isRunning, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult, LENGTH_THRESHOLD: USER_TRAJECTORY_LENGTH)
+//            processPhase3(currentTime: currentTime, mode: mode, trajectoryInfo: phase3Trajectory, searchInfo: searchInfo)
+//        } else {
+//            if (!stateManager.isGetFirstResponse && (currentTimeDouble-self.timeRequest)*1e-3 >= OlympusConstants.MINIMUM_RQ_TIME) {
+//                self.timeRequest = currentTimeDouble
+//                let phase3Trajectory = trajectoryInfo
+//                let searchInfo = trajController.makeSearchInfo(trajectoryInfo: phase3Trajectory, serverResultBuffer: serverResultBuffer, unitDRInfoBuffer: unitDRInfoBuffer, isKF: KF.isRunning, mode: mode, PHASE: phaseController.PHASE, isPhaseBreak: isPhaseBreak, phaseBreakResult: phaseBreakResult, LENGTH_THRESHOLD: USER_TRAJECTORY_LENGTH)
+//                processPhase3(currentTime: currentTime, mode: mode, trajectoryInfo: phase3Trajectory, searchInfo: searchInfo)
+//            }
+//        }
     }
     
     private func processPhase3(currentTime: Int, mode: String, trajectoryInfo: [TrajectoryInfo], searchInfo: SearchInfo) {
