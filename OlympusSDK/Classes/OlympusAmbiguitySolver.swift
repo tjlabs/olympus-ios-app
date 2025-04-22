@@ -49,16 +49,16 @@ public class OlympusAmbiguitySolver {
                     if nodeCandidatesInfo.nodeCandidatesInfo.isEmpty {
                         return (false, FineLocationTrackingFromServer())
                     } else {
-                        return (false, firstFltOutput)
-//                        print(getLocalTimeString() + " , (Olympus) selectResult (Ambiguous) : index = \(firstFltOutput.index) // 1st = \(firstFltOutput.scc) // 2nd = \(secondFltOutput.scc) // ratio = \(ratio)")
-//                        let inputNodeNumber = nodeCandidatesInfo.nodeCandidatesInfo[0].nodeNumber
-//                        for output in fltOutputs {
-//                            if inputNodeNumber == output.node_number {
-////                                print(getLocalTimeString() + " , (Olympus) selectResult (Ambiguous & Select) : index = \(firstFltOutput.index) // output = \(output)")
-//                                return (false, output)
-//                            }
-//                        }
-//                        return (false, FineLocationTrackingFromServer())
+//                        return (false, firstFltOutput)
+                        print(getLocalTimeString() + " , (Olympus) selectResult (Ambiguous) : index = \(firstFltOutput.index) // 1st = \(firstFltOutput.scc) // 2nd = \(secondFltOutput.scc) // ratio = \(ratio)")
+                        let inputNodeNumber = nodeCandidatesInfo.nodeCandidatesInfo[0].nodeNumber
+                        for output in fltOutputs {
+                            if inputNodeNumber == output.node_number {
+//                                print(getLocalTimeString() + " , (Olympus) selectResult (Ambiguous & Select) : index = \(firstFltOutput.index) // output = \(output)")
+                                return (false, output)
+                            }
+                        }
+                        return (false, FineLocationTrackingFromServer())
                     }
                 }
             } else {
