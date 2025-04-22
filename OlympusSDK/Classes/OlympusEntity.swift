@@ -181,6 +181,20 @@ public struct OutputLevel: Codable {
     let level_list: [Level]
 }
 
+public struct InputWard: Codable {
+    let sector_id: Int
+    let building_name: String
+    let level_name: String
+}
+
+public struct Ward: Codable {
+    let id: String
+}
+
+public struct OutputWard: Codable {
+    let wards: [Ward]
+}
+
 public struct Unit: Codable {
     let category: Int
     let number: Int
