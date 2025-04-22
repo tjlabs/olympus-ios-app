@@ -16,6 +16,22 @@ public func jsonToLevelFromServer(jsonString: String) -> (Bool, OutputLevel) {
     }
 }
 
+public func jsonToWardFromServer(jsonString: String) -> (Bool, OutputWard) {
+    let result = OutputWard(wards: [])
+    
+    if let jsonData = jsonString.data(using: .utf8) {
+        do {
+            let decodedData: OutputWard = try JSONDecoder().decode(OutputWard.self, from: jsonData)
+            return (true, decodedData)
+        } catch {
+            print("Error decoding JSON: \(error)")
+            return (false, result)
+        }
+    } else {
+        return (false, result)
+    }
+}
+
 public func jsonToUnitFromServer(jsonString: String) -> (Bool, OutputUnit) {
     let result = OutputUnit(unit_list: [])
     
