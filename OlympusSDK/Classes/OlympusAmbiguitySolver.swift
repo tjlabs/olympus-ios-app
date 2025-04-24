@@ -49,12 +49,10 @@ public class OlympusAmbiguitySolver {
                     if nodeCandidatesInfo.nodeCandidatesInfo.isEmpty {
                         return (false, FineLocationTrackingFromServer())
                     } else {
-//                        return (false, firstFltOutput)
-                        print(getLocalTimeString() + " , (Olympus) selectResult (Ambiguous) : index = \(firstFltOutput.index) // 1st = \(firstFltOutput.scc) // 2nd = \(secondFltOutput.scc) // ratio = \(ratio)")
+//                        print(getLocalTimeString() + " , (Olympus) selectResult (Ambiguous) : index = \(firstFltOutput.index) // 1st = \(firstFltOutput.scc) // 2nd = \(secondFltOutput.scc) // ratio = \(ratio)")
                         let inputNodeNumber = nodeCandidatesInfo.nodeCandidatesInfo[0].nodeNumber
                         for output in fltOutputs {
                             if inputNodeNumber == output.node_number {
-//                                print(getLocalTimeString() + " , (Olympus) selectResult (Ambiguous & Select) : index = \(firstFltOutput.index) // output = \(output)")
                                 return (false, output)
                             }
                         }
@@ -74,8 +72,7 @@ public class OlympusAmbiguitySolver {
         let fltOutputs = results.flt_outputs
         var highestSCC: Double = 0
         let sccArray: [Double] = fltOutputs.map { $0.scc }
-//        print(getLocalTimeString() + " , (Olympus) selectBestResult : sccArray = \(sccArray)")
-        
+
         var resultToReturn: FineLocationTrackingFromServer = fltOutputs[0]
         for result in fltOutputs {
             if result.scc > highestSCC {
@@ -83,7 +80,7 @@ public class OlympusAmbiguitySolver {
                 highestSCC = result.scc
             }
         }
-//        print(getLocalTimeString() + " , (Olympus) selectBestResult : \(resultToReturn)")
+        
         return resultToReturn
     }
 }

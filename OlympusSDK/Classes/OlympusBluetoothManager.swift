@@ -54,7 +54,6 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
     
     var bleDictionary = [String: [[Double]]]()
     var bleDiscoveredTime: Double = 0
-    
     public var bleLastScannedTime: Double = 0
     
     override init() {

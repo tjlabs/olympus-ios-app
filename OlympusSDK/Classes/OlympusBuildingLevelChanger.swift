@@ -148,7 +148,7 @@ public class OlympusBuildingLevelChanger {
             for (id, rssi) in bleData {
                 if wardIds.contains(id) {
                     if rssi >= -65 {
-                        print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : very strong = \(levelName) // \(id) : \(rssi)")
+//                        print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : very strong = \(levelName) // \(id) : \(rssi)")
                         return levelName
                     } else if rssi >= -90 {
                         checker.append((levelName, id, rssi))
@@ -161,11 +161,11 @@ public class OlympusBuildingLevelChanger {
         if checker.count >= 2 {
             let frequentLevel = mostFrequentCheckerValue(from: checker)
             result = frequentLevel
-            print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : frequentLevel = \(frequentLevel) // checker = \(checker)")
+//            print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : frequentLevel = \(frequentLevel) // checker = \(checker)")
         } else if checker.count == 1 {
             if checker[0].2 >= -80 {
                 result = checker[0].0
-                print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : only one = \(result) // checker = \(checker)")
+//                print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : only one = \(result) // checker = \(checker)")
             }
         }
         

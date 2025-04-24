@@ -237,7 +237,6 @@ public class OlympusPhaseController {
     
     @objc func onDidReceiveNotification(_ notification: Notification) {
         if let intValue = notification.userInfo?["phase"] as? Int {
-//            print(getLocalTimeString() + " , (Olympus) Phase Controller : Phase Become \(intValue)")
             self.PHASE = intValue
         } else {
             self.PHASE = OlympusConstants.PHASE_1
