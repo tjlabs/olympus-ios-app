@@ -7,8 +7,11 @@ public class OlympusRssCompensator {
     var entranceWardRssi = [String: Double]()
     var allEntranceWardRssi = [String: Double]()
     
-    var wardMinRssi = [Double]()
-    var wardMaxRssi = [Double]()
+    var wardMinRssi: [(timestamp: Int, rssi: Double)] = []
+    var wardMaxRssi: [(timestamp: Int, rssi: Double)] = []
+    
+//    var wardMinRssi = [Double]()
+//    var wardMaxRssi = [Double]()
     var deviceMinValue: Double = -99.0
     var updateMinArrayCount: Int = 0
     var updateMaxArrayCount: Int = 0
@@ -116,147 +119,140 @@ public class OlympusRssCompensator {
         }
     }
     
-    public func estimateNormalizationScale(isGetFirstResponse: Bool, isIndoor: Bool, currentLevel: String, diffMinMaxRssi: Double, minRssi: Double) {
-        self.timeStackEst += OlympusConstants.RFD_INTERVAL
-        
-        if (isGetFirstResponse && isIndoor && diffMinMaxRssi >= 25 && minRssi <= -97 && self.timeStackEst >= OlympusConstants.EST_RC_INTERVAL) {
-//            print(getLocalTimeString() + " , (Olympus) RSS Compensator : timeStackEst = \(timeStackEst) // isScaleLoaded = \(isScaleLoaded)")
-            self.timeStackEst = 0
-            if (self.isScaleLoaded) {
-                if (currentLevel != "B0") {
-                    let normalizationScale = calNormalizationScale(standardMin: OlympusConstants.STANDARD_MIN_RSS, standardMax: OlympusConstants.STANDARD_MAX_RSS)
-//                    print(getLocalTimeString() + " , (Olympus) RSS Compensator : isScaleConverged = \(isScaleConverged)")
-                    if (!self.isScaleConverged) {
-                        if (normalizationScale.0) {
-                            let smoothedScale: Double = smoothNormalizationScale(scale: normalizationScale.1)
-//                            print(getLocalTimeString() + " , (Olympus) RSS Compensator : smoothedScale = \(smoothedScale)")
-                            self.normalizationScale = smoothedScale
-                            let diffScale = abs(smoothedScale - self.preNormalizationScale)
-                            if (diffScale < 1e-3 && self.timeAfterResponse >= OlympusConstants.REQUIRED_RC_CONVERGENCE_TIME && (smoothedScale != self.preNormalizationScale)) {
-                                self.isScaleConverged = true
-                            }
-                            self.preNormalizationScale = smoothedScale
-//                            let estimatedScale = normalizationScale.1
-//                            self.normalizationScale = normalizationScale.1
-//                            let diffScale = abs(estimatedScale - self.preNormalizationScale)
-//                            if (diffScale < 1e-3 && self.timeAfterResponse >= OlympusConstants.REQUIRED_RC_CONVERGENCE_TIME && (estimatedScale != self.preNormalizationScale)) {
+//    public func estimateNormalizationScale(isGetFirstResponse: Bool, isIndoor: Bool, currentLevel: String, diffMinMaxRssi: Double, minRssi: Double) {
+//        self.timeStackEst += OlympusConstants.RFD_INTERVAL
+//        
+//        if (isGetFirstResponse && isIndoor && diffMinMaxRssi >= 25 && minRssi <= -97 && self.timeStackEst >= OlympusConstants.EST_RC_INTERVAL) {
+////            print(getLocalTimeString() + " , (Olympus) RSS Compensator : timeStackEst = \(timeStackEst) // isScaleLoaded = \(isScaleLoaded)")
+//            self.timeStackEst = 0
+//            if (self.isScaleLoaded) {
+//                if (currentLevel != "B0") {
+//                    let normalizationScale = calNormalizationScale(standardMin: OlympusConstants.STANDARD_MIN_RSS, standardMax: OlympusConstants.STANDARD_MAX_RSS)
+////                    print(getLocalTimeString() + " , (Olympus) RSS Compensator : isScaleConverged = \(isScaleConverged)")
+//                    if (!self.isScaleConverged) {
+//                        if (normalizationScale.0) {
+//                            let smoothedScale: Double = smoothNormalizationScale(scale: normalizationScale.1)
+////                            print(getLocalTimeString() + " , (Olympus) RSS Compensator : smoothedScale = \(smoothedScale)")
+//                            self.normalizationScale = smoothedScale
+//                            let diffScale = abs(smoothedScale - self.preNormalizationScale)
+//                            if (diffScale < 1e-3 && self.timeAfterResponse >= OlympusConstants.REQUIRED_RC_CONVERGENCE_TIME && (smoothedScale != self.preNormalizationScale)) {
 //                                self.isScaleConverged = true
 //                            }
-//                            self.preNormalizationScale = estimatedScale
-                        }
-                    }
-                }
-            } else {
-                if (!self.isScaleConverged) {
-                    let normalizationScale = calNormalizationScale(standardMin: OlympusConstants.STANDARD_MIN_RSS, standardMax: OlympusConstants.STANDARD_MAX_RSS)
-//                    print(getLocalTimeString() + " , (Olympus) RSS Compensator : normalizationScale = \(normalizationScale)")
-                    if (normalizationScale.0) {
-                        let smoothedScale: Double = smoothNormalizationScale(scale: normalizationScale.1)
-//                        print(getLocalTimeString() + " , (Olympus) RSS Compensator : smoothedScale = \(smoothedScale)")
-                        self.normalizationScale = smoothedScale
-                        let diffScale = abs(smoothedScale - self.preNormalizationScale)
-                        if (diffScale < 1e-3 && self.timeAfterResponse >= OlympusConstants.REQUIRED_RC_CONVERGENCE_TIME && (smoothedScale != self.preNormalizationScale)) {
-                            self.isScaleConverged = true
-                        }
-                        self.preNormalizationScale = smoothedScale
-                    } else {
-                        let smoothedScale: Double = smoothNormalizationScale(scale: self.preNormalizationScale)
-                        self.normalizationScale = smoothedScale
-                    }
-                }
-            }
-            
-            if (isScaleConverged) {
-                OlympusConstants().setNormalizationScale(cur: self.normalizationScale, pre: self.preNormalizationScale)
-            }
-        } else if (isGetFirstResponse && isIndoor && self.isScaleLoaded && !self.isScaleConverged) {
-            if validScaleQueue.count > 4 {
-                let scale = validScaleQueue[validScaleQueue.count-1]
-                OlympusConstants().setNormalizationScale(cur: scale, pre: scale)
-                isScaleConverged = true
-            }
-        }
-    }
+//                            self.preNormalizationScale = smoothedScale
+////                            let estimatedScale = normalizationScale.1
+////                            self.normalizationScale = normalizationScale.1
+////                            let diffScale = abs(estimatedScale - self.preNormalizationScale)
+////                            if (diffScale < 1e-3 && self.timeAfterResponse >= OlympusConstants.REQUIRED_RC_CONVERGENCE_TIME && (estimatedScale != self.preNormalizationScale)) {
+////                                self.isScaleConverged = true
+////                            }
+////                            self.preNormalizationScale = estimatedScale
+//                        }
+//                    }
+//                }
+//            } else {
+//                if (!self.isScaleConverged) {
+//                    let normalizationScale = calNormalizationScale(standardMin: OlympusConstants.STANDARD_MIN_RSS, standardMax: OlympusConstants.STANDARD_MAX_RSS)
+////                    print(getLocalTimeString() + " , (Olympus) RSS Compensator : normalizationScale = \(normalizationScale)")
+//                    if (normalizationScale.0) {
+//                        let smoothedScale: Double = smoothNormalizationScale(scale: normalizationScale.1)
+////                        print(getLocalTimeString() + " , (Olympus) RSS Compensator : smoothedScale = \(smoothedScale)")
+//                        self.normalizationScale = smoothedScale
+//                        let diffScale = abs(smoothedScale - self.preNormalizationScale)
+//                        if (diffScale < 1e-3 && self.timeAfterResponse >= OlympusConstants.REQUIRED_RC_CONVERGENCE_TIME && (smoothedScale != self.preNormalizationScale)) {
+//                            self.isScaleConverged = true
+//                        }
+//                        self.preNormalizationScale = smoothedScale
+//                    } else {
+//                        let smoothedScale: Double = smoothNormalizationScale(scale: self.preNormalizationScale)
+//                        self.normalizationScale = smoothedScale
+//                    }
+//                }
+//            }
+//            
+//            if (isScaleConverged) {
+//                OlympusConstants().setNormalizationScale(cur: self.normalizationScale, pre: self.preNormalizationScale)
+//            }
+//        } else if (isGetFirstResponse && isIndoor && self.isScaleLoaded && !self.isScaleConverged) {
+//            if validScaleQueue.count > 4 {
+//                let scale = validScaleQueue[validScaleQueue.count-1]
+//                OlympusConstants().setNormalizationScale(cur: scale, pre: scale)
+//                isScaleConverged = true
+//            }
+//        }
+//    }
     
-    public func stackValidNormalizationScale(scale: Double) {
-        if !isScaleConverged {
-            validScaleQueue.append(scale)
-        }
-    }
+//    public func stackValidNormalizationScale(scale: Double) {
+//        if !isScaleConverged {
+//            validScaleQueue.append(scale)
+//        }
+//    }
     
-    public func getMaxRssi() -> Double {
-        if (self.wardMaxRssi.isEmpty) {
-            return -90.0
-        } else {
-            let avgMax = self.wardMaxRssi.average
-            return avgMax
-        }
-    }
-    
-    public func getMinRssi() -> Double {
-        if (self.wardMinRssi.isEmpty) {
-            return -60.0
-        } else {
-            let avgMin = self.wardMinRssi.average
-            return avgMin
-        }
-    }
-    
-    public func refreshWardMinRssi(bleData: [String: Double]) {
-        for (_, value) in bleData {
-            if (value > -100) {
-                if (self.wardMinRssi.isEmpty) {
-                    self.wardMinRssi.append(value)
-                } else {
-                    let newArray = appendAndKeepMin(inputArray: self.wardMinRssi, newValue: value, size: self.ARRAY_SIZE)
-                    self.wardMinRssi = newArray
-                }
-            }
-        }
-    }
-    
-    public func refreshWardMaxRssi(bleData: [String: Double]) {
-        for (_, value) in bleData {
-            if (self.wardMaxRssi.isEmpty) {
-                self.wardMaxRssi.append(value)
-            } else {
-                let newArray = appendAndKeepMax(inputArray: self.wardMaxRssi, newValue: value, size: self.ARRAY_SIZE)
-                self.wardMaxRssi = newArray
-            }
-        }
-    }
-    
-    public func calNormalizationScale(standardMin: Double, standardMax: Double) -> (Bool, Double) {
-        let standardAmplitude: Double = abs(standardMax - standardMin)
-//        print(getLocalTimeString() + " , (Olympus) RSS Compensator : standardMin = \(standardMin) , standardMax = \(standardMax) , amp = \(standardAmplitude)")
-        if (self.wardMaxRssi.isEmpty || self.wardMinRssi.isEmpty) {
-            return (false, 1.0)
-        } else {
-            let avgMax = self.wardMaxRssi.average
-            let avgMin = self.wardMinRssi.average
-            self.deviceMinValue = avgMin
-//            print(getLocalTimeString() + " , (Olympus) RSS Compensator : wardMaxRssi = \(wardMaxRssi) // avgMax = \(avgMax)")
-//            print(getLocalTimeString() + " , (Olympus) RSS Compensator : wardMinRssi = \(wardMinRssi) // avgMin = \(avgMin)")
-//            print(getLocalTimeString() + " , (Olympus) RSS Compensator : deviceMinValue = \(deviceMinValue)")
-            let amplitude: Double = abs(avgMax - avgMin)
-            
-            let digit: Double = pow(10, 4)
-            var normalizationScale: Double = (standardAmplitude/amplitude)*digit/digit
-//            print(getLocalTimeString() + " , (Olympus) RSS Compensator : normalizationScale before = \(normalizationScale)")
-            if normalizationScale > 1.2 {
-                normalizationScale = 1.2
-            } else if normalizationScale < 0.8 {
-                normalizationScale = 0.8
-            }
-//            print(getLocalTimeString() + " , (Olympus) RSS Compensator : amplitude = \(amplitude)")
-//            print(getLocalTimeString() + " , (Olympus) RSS Compensator : normalizationScale after = \(normalizationScale)")
-            updateScaleQueue(data: normalizationScale)
-            return (true, normalizationScale)
-        }
-    }
+//    public func getMaxRssi() -> Double {
+//        if (self.wardMaxRssi.isEmpty) {
+//            return -55.0
+//        } else {
+//            let avgMax = self.wardMaxRssi.average
+//            return avgMax
+//        }
+//    }
+//    
+//    public func getMinRssi() -> Double {
+//        if (self.wardMinRssi.isEmpty) {
+//            return -99.0
+//        } else {
+//            let avgMin = self.wardMinRssi.average
+//            return avgMin
+//        }
+//    }
+//    
+//    public func refreshWardMinRssi(bleTime: Int, bleData: [String: Double]) {
+//        for (_, value) in bleData {
+//            if (value > -100) {
+//                if (self.wardMinRssi.isEmpty) {
+//                    self.wardMinRssi.append(value)
+//                } else {
+//                    let newArray = appendAndKeepMin(inputArray: self.wardMinRssi, newValue: value, size: self.ARRAY_SIZE)
+//                    self.wardMinRssi = newArray
+//                }
+//            }
+//        }
+//    }
+//    
+//    public func refreshWardMaxRssi(bleTime: Int, bleData: [String: Double]) {
+//        for (_, value) in bleData {
+//            if (self.wardMaxRssi.isEmpty) {
+//                self.wardMaxRssi.append(value)
+//            } else {
+//                let newArray = appendAndKeepMax(inputArray: self.wardMaxRssi, newValue: value, size: self.ARRAY_SIZE)
+//                self.wardMaxRssi = newArray
+//            }
+//        }
+//    }
+//    
+//    public func calNormalizationScale(standardMin: Double, standardMax: Double) -> (Bool, Double) {
+//        let standardAmplitude: Double = abs(standardMax - standardMin)
+//        if (self.wardMaxRssi.isEmpty || self.wardMinRssi.isEmpty) {
+//            return (false, 1.0)
+//        } else {
+//            let avgMax = self.wardMaxRssi.average
+//            let avgMin = self.wardMinRssi.average
+//            self.deviceMinValue = avgMin
+//            let amplitude: Double = abs(avgMax - avgMin)
+//            
+//            let digit: Double = pow(10, 4)
+//            var normalizationScale: Double = (standardAmplitude/amplitude)*digit/digit
+//            if normalizationScale > 1.2 {
+//                normalizationScale = 1.2
+//            } else if normalizationScale < 0.8 {
+//                normalizationScale = 0.8
+//            }
+//            updateScaleQueue(data: normalizationScale)
+//            return (true, normalizationScale)
+//        }
+//    }
     
     func updateScaleQueue(data: Double) {
-        if (self.scaleQueue.count >= 10) {
+        if (self.scaleQueue.count >= 5) {
             self.scaleQueue.remove(at: 0)
         }
         self.scaleQueue.append(data)
@@ -431,5 +427,109 @@ public class OlympusRssCompensator {
             }
         }
         return closest
+    }
+    
+    // New
+    func refreshWardMinRssiV2(bleTime: Int, bleData: [String: Double]) {
+        for value in bleData.values {
+            if value > -100 {
+                wardMinRssi.append((bleTime, value))
+                wardMinRssi = filterAndKeepMin(rssiList: wardMinRssi, arraySize: self.ARRAY_SIZE)
+            }
+        }
+    }
+
+    func refreshWardMaxRssiV2(bleTime: Int, bleData: [String: Double]) {
+        for value in bleData.values {
+            wardMaxRssi.append((bleTime, value))
+            wardMaxRssi = filterAndKeepMax(rssiList: wardMaxRssi, arraySize: self.ARRAY_SIZE)
+        }
+    }
+
+    private func filterAndKeepMin(rssiList: [(timestamp: Int, rssi: Double)], arraySize: Int) -> [(timestamp: Int, rssi: Double)] {
+        let currentTime = getCurrentTimeInMilliseconds()
+        var filtered = rssiList.filter { currentTime - $0.timestamp <= 60*1000 }
+
+        if filtered.count < 3 {
+            filtered = rssiList
+        }
+
+        let sorted = filtered.sorted { $0.rssi < $1.rssi }
+        let result = Array(sorted.prefix(arraySize))
+        return result
+    }
+
+    private func filterAndKeepMax(rssiList: [(timestamp: Int, rssi: Double)], arraySize: Int) -> [(timestamp: Int, rssi: Double)] {
+        let currentTime = getCurrentTimeInMilliseconds()
+        var filtered = rssiList.filter { currentTime - $0.timestamp <= 60*1000 }
+
+        if filtered.count < 3 {
+            filtered = rssiList
+        }
+
+        let sorted = filtered.sorted { $0.rssi > $1.rssi }
+        let result = Array(sorted.prefix(arraySize))
+        return result
+    }
+    
+    func getMinRssiV2() -> Double {
+        guard !wardMinRssi.isEmpty else { return -99 }
+        let values = wardMinRssi.map { Double($0.rssi) }
+        return values.reduce(0, +) / Double(values.count)
+    }
+
+    func getMaxRssiV2() -> Double {
+        guard !wardMaxRssi.isEmpty else { return -55 }
+        let values = wardMaxRssi.map { Double($0.rssi) }
+        return values.reduce(0, +) / Double(values.count)
+    }
+    
+    public func estimateNormalizationScaleV2(isGetFirstResponse: Bool, isIndoor: Bool, currentLevel: String, diffMinMaxRssi: Double, minRssi: Double) {
+        self.timeStackEst += OlympusConstants.RFD_INTERVAL
+        
+        if (isGetFirstResponse && isIndoor && diffMinMaxRssi >= 10 && minRssi <= -97 && self.timeStackEst >= OlympusConstants.EST_RC_INTERVAL) {
+            self.timeStackEst = 0
+            
+            let normalizationScale = calNormalizationScaleV2(standardMin: OlympusConstants.STANDARD_MIN_RSS, standardMax: OlympusConstants.STANDARD_MAX_RSS)
+            if (normalizationScale.0) {
+                let smoothedScale: Double = smoothNormalizationScale(scale: normalizationScale.1)
+                self.normalizationScale = smoothedScale
+                let diffScale = abs(smoothedScale - self.preNormalizationScale)
+                if (diffScale < 1e-3 && self.timeAfterResponse >= OlympusConstants.REQUIRED_RC_CONVERGENCE_TIME && (smoothedScale != self.preNormalizationScale)) {
+                    self.isScaleConverged = true
+                }
+                self.preNormalizationScale = smoothedScale
+            } else {
+                let smoothedScale: Double = smoothNormalizationScale(scale: self.preNormalizationScale)
+                self.normalizationScale = smoothedScale
+            }
+            
+            print("(Olympus) RssCompensator : smoothed scale = \(self.normalizationScale) // est scale = \(normalizationScale)")
+            OlympusConstants().setNormalizationScale(cur: self.normalizationScale, pre: self.preNormalizationScale)
+        }
+    }
+    
+    func calNormalizationScaleV2(standardMin: Double, standardMax: Double) -> (Bool, Double) {
+        let standardAmplitude = abs(standardMax - standardMin)
+        if (self.wardMaxRssi.isEmpty || self.wardMinRssi.isEmpty) {
+            return (false, 1.0)
+        }
+        
+        let avgMax = getMaxRssiV2()
+        let avgMin = getMinRssiV2()
+        
+        deviceMinValue = avgMin
+        let amplitude = abs(avgMax - avgMin)
+        
+        guard amplitude != 0 else {
+            updateScaleQueue(data: 1.0)
+            return (false, 1.0)
+        }
+
+        var normalizationScale = standardAmplitude / amplitude
+        normalizationScale = min(max(normalizationScale, 0.5), 2.0)
+
+        updateScaleQueue(data: normalizationScale)
+        return (true, normalizationScale)
     }
 }
