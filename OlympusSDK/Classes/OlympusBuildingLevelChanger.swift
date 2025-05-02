@@ -147,11 +147,12 @@ public class OlympusBuildingLevelChanger {
         for (levelName, wardIds) in levelWards {
             for (id, rssi) in bleData {
                 if wardIds.contains(id) {
-                    if rssi >= -65 {
-//                        print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : very strong = \(levelName) // \(id) : \(rssi)")
+                    let normalized_rssi = (rssi - OlympusConstants.DEVICE_MIN_RSSI)*OlympusConstants.NORMALIZATION_SCALE + OlympusConstants.STANDARD_MIN_RSS
+                    if normalized_rssi >= -65 {
+                        print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : very strong = \(levelName) // \(id) : raw = \(rssi), normalized = \(normalized_rssi)")
                         return levelName
-                    } else if rssi >= -90 {
-                        checker.append((levelName, id, rssi))
+                    } else if normalized_rssi >= -90 {
+                        checker.append((levelName, id, normalized_rssi))
                     }
                     
                 }
@@ -161,11 +162,11 @@ public class OlympusBuildingLevelChanger {
         if checker.count >= 2 {
             let frequentLevel = mostFrequentCheckerValue(from: checker)
             result = frequentLevel
-//            print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : frequentLevel = \(frequentLevel) // checker = \(checker)")
+            print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : frequentLevel = \(frequentLevel) // checker = \(checker)")
         } else if checker.count == 1 {
             if checker[0].2 >= -80 {
                 result = checker[0].0
-//                print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : only one = \(result) // checker = \(checker)")
+                print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : only one = \(result) // checker = \(checker)")
             }
         }
         
@@ -212,7 +213,6 @@ public class OlympusBuildingLevelChanger {
             if (result.building_name != currentBuilding || resultLevelName != currentLevel) {
                 if ((result.mobile_time - self.buildingLevelChangedTime) > TIME_CONDITION) {
                     // Building Level 이 바뀐지 7초 이상 지남 -> 서버 결과를 이용해 바뀌어야 한다고 판단
-                    
                     self.currentSpot = result.spot_id
                     self.lastSpotId = result.spot_id
                     self.travelingOsrDistance = 0
@@ -225,13 +225,11 @@ public class OlympusBuildingLevelChanger {
             self.preOutputMobileTime = currentTime
         } else {
             // Same Spot Detected
-//            print(getLocalTimeString() + " , (Olympus) Run OSR : travelingOsrDistance = \(travelingOsrDistance)")
             if (self.travelingOsrDistance >= spotDistance) {
                 let resultLevelName: String = removeLevelDirectionString(levelName: levelDestination)
                 if (result.building_name != currentBuilding || resultLevelName != currentLevel) {
                     if ((result.mobile_time - self.buildingLevelChangedTime) > TIME_CONDITION) {
                         // Building Level 이 바뀐지 7초 이상 지남 -> 서버 결과를 이용해 바뀌어야 한다고 판단
-                        
                         self.currentSpot = result.spot_id
                         self.lastSpotId = result.spot_id
                         self.travelingOsrDistance = 0
