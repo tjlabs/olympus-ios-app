@@ -142,20 +142,33 @@ public class OlympusBuildingLevelChanger {
     func calculateLevelByBle(data: (Int, [(String, Double)])) -> String {
         var result: String = "UNKNOWN"
         
+        var strongestBleData: (String, String, Double)?
+        
         var checker = [(String, String, Double)]()
         let bleData = data.1
         for (levelName, wardIds) in levelWards {
             for (id, rssi) in bleData {
                 if wardIds.contains(id) {
                     let normalized_rssi = (rssi - OlympusConstants.DEVICE_MIN_RSSI)*OlympusConstants.NORMALIZATION_SCALE + OlympusConstants.STANDARD_MIN_RSS
-                    if normalized_rssi >= -65 {
-                        print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : very strong = \(levelName) // \(id) : raw = \(rssi), normalized = \(normalized_rssi)")
-                        return levelName
-                    } else if normalized_rssi >= -90 {
+                    if normalized_rssi >= -90 {
                         checker.append((levelName, id, normalized_rssi))
                     }
                     
+                    if let stronggest = strongestBleData {
+                        if stronggest.2 < normalized_rssi {
+                            strongestBleData = (levelName, id, normalized_rssi)
+                        }
+                    } else {
+                        strongestBleData = (levelName, id, normalized_rssi)
+                    }
                 }
+            }
+        }
+        
+        if let stronggest = strongestBleData {
+            if stronggest.2 >= -65 {
+                print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : very strong = \(stronggest.0) // \(stronggest.1) : \(stronggest.2)")
+                return stronggest.0
             }
         }
         
