@@ -268,7 +268,7 @@ public class OlympusFileManager {
         var csvText = "time,acc_x,acc_y,acc_z,gyro_x,gyro_y,gyro_z,mag_x,mag_y,mag_z,roll,pitch,yaw,qx,qy,qz,qw,pressure,true_heading,mag_heading,ble\n"
         print(getLocalTimeString() + " , (Olympus) FileManager : collect = \(dataToSave)")
         for record in dataToSave {
-            let bleData = record.bleAvg
+            let bleData = record.bleRaw
             let bleString = (bleData.flatMap({ (key, value) -> String in
                 let str = String(format: "%.2f", value)
                 return "\(key),\(str)"
