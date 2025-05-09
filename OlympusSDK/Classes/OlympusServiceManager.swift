@@ -36,6 +36,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
     }
     
+    
     func reporting(input: Int) {
         for observer in observers {
             if (input != -2 || input != -1) {
