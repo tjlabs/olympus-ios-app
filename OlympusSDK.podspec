@@ -1,7 +1,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'OlympusSDK'
-  s.version          = '0.2.26.1'
+  s.version          = '0.2.26.2'
   s.summary          = 'OlympusSDK for iOS'
   s.swift_version    = '5.0'
   

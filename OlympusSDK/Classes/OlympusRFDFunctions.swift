@@ -8,27 +8,68 @@ public class OlympusRFDFunctions: NSObject {
         case noValidData
     }
 
-    public func trimBleData(bleInput: [String: [[Double]]]?, nowTime: Double, validTime: Double) -> Result<[String: [[Double]]], Error> {
+//    public func trimBleData(bleInput: [String: [[Double]]]?, nowTime: Double, validTime: Double) -> Result<[String: [[Double]]], Error> {
+//        guard let bleInput = bleInput else {
+//            return .failure(TrimBleDataError.invalidInput)
+//        }
+//            
+//        var trimmedData = [String: [[Double]]]()
+//            
+//        for (bleID, bleData) in bleInput {
+//            let newValue = bleData.filter { data in
+//                guard data.count >= 2 else { return false }
+//                let rssi = data[0]
+//                let time = data[1]
+//                
+//                return (nowTime - time <= validTime) && (rssi >= -100)
+//            }
+//            
+//            if !newValue.isEmpty {
+//                trimmedData[bleID] = newValue
+//            }
+//        }
+//        
+//        if trimmedData.isEmpty {
+//            return .failure(TrimBleDataError.noValidData)
+//        } else {
+//            return .success(trimmedData)
+//        }
+//    }
+    
+    public func trimBleData(
+        bleInput: [String: [[Double]]]?,
+        nowTime: Double,
+        validTime: Double
+    ) -> Result<[String: [[Double]]], Error> {
+        
         guard let bleInput = bleInput else {
             return .failure(TrimBleDataError.invalidInput)
         }
-            
+
         var trimmedData = [String: [[Double]]]()
+
+        for (bleID, originalData) in bleInput {
+            // 복사 후 작업하여 안정성 확보
+            let bleData = originalData
             
-        for (bleID, bleData) in bleInput {
-            let newValue = bleData.filter { data in
-                guard data.count >= 2 else { return false }
+            let newValue = bleData.compactMap { data -> [Double]? in
+                guard data.count >= 2 else { return nil }
+                
                 let rssi = data[0]
                 let time = data[1]
                 
-                return (nowTime - time <= validTime) && (rssi >= -100)
+                guard nowTime - time <= validTime, rssi >= -100 else {
+                    return nil
+                }
+
+                return [rssi, time]
             }
-            
+
             if !newValue.isEmpty {
                 trimmedData[bleID] = newValue
             }
         }
-        
+
         if trimmedData.isEmpty {
             return .failure(TrimBleDataError.noValidData)
         } else {
@@ -36,28 +77,62 @@ public class OlympusRFDFunctions: NSObject {
         }
     }
 
-    public func trimBleForCollect(bleData:[String: [[Double]]], nowTime: Double, validTime: Double) -> [String: [[Double]]] {
+
+//    public func trimBleForCollect(bleData:[String: [[Double]]], nowTime: Double, validTime: Double) -> [String: [[Double]]] {
+//        var trimmedData = [String: [[Double]]]()
+//
+//        for (bleID, bleData) in bleData {
+//            var newValue = [[Double]]()
+//            for data in bleData {
+//                let rssi = data[0]
+//                let time = data[1]
+//
+//                if ((nowTime - time <= validTime) && (rssi >= -100)) {
+//                    let dataToAdd: [Double] = [rssi, time]
+//                    newValue.append(dataToAdd)
+//                }
+//            }
+//
+//            if (newValue.count > 0) {
+//                trimmedData[bleID] = newValue
+//            }
+//        }
+//
+//        return trimmedData
+//    }
+    
+    public func trimBleForCollect(
+        bleData: [String: [[Double]]],
+        nowTime: Double,
+        validTime: Double
+    ) -> [String: [[Double]]] {
+        
         var trimmedData = [String: [[Double]]]()
 
-        for (bleID, bleData) in bleData {
+        for (bleID, originalData) in bleData {
+            // 복사하여 강한 참조 회피
+            let dataList = originalData
             var newValue = [[Double]]()
-            for data in bleData {
+
+            for data in dataList {
+                guard data.count >= 2 else { continue }
+
                 let rssi = data[0]
                 let time = data[1]
 
-                if ((nowTime - time <= validTime) && (rssi >= -100)) {
-                    let dataToAdd: [Double] = [rssi, time]
-                    newValue.append(dataToAdd)
+                if (nowTime - time <= validTime) && (rssi >= -100) {
+                    newValue.append([rssi, time])
                 }
             }
 
-            if (newValue.count > 0) {
+            if !newValue.isEmpty {
                 trimmedData[bleID] = newValue
             }
         }
 
         return trimmedData
     }
+
 
     public func avgBleData(bleDictionary: [String: [[Double]]]) -> [String: Double] {
         let digit: Double = pow(10, 2)
