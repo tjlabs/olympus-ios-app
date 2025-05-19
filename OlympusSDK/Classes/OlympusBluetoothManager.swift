@@ -60,9 +60,9 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
     private(set) var bleDictionary = [String: [[Double]]]()
     private var centralManager: CBCentralManager!
     private var discoveredPeripheral: CBPeripheral?
-    private var bluetoothReady = false
+    public var bluetoothReady = false
     private var isScanning = false
-    private var bleDiscoveredTime: Double = 0
+    public var bleDiscoveredTime: Double = 0
     public private(set) var bleLastScannedTime: Double = 0
     
     override init() {
