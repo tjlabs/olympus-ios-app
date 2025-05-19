@@ -36,45 +36,19 @@ public class OlympusRFDFunctions: NSObject {
 //        }
 //    }
     
-    public func trimBleData(
-        bleInput: [String: [[Double]]]?,
-        nowTime: Double,
-        validTime: Double
-    ) -> Result<[String: [[Double]]], Error> {
-        
-        guard let bleInput = bleInput else {
-            return .failure(TrimBleDataError.invalidInput)
-        }
-
-        var trimmedData = [String: [[Double]]]()
-
-        for (bleID, originalData) in bleInput {
-            // 복사 후 작업하여 안정성 확보
-            let bleData = originalData
-            
-            let newValue = bleData.compactMap { data -> [Double]? in
-                guard data.count >= 2 else { return nil }
-                
-                let rssi = data[0]
-                let time = data[1]
-                
-                guard nowTime - time <= validTime, rssi >= -100 else {
-                    return nil
-                }
-
-                return [rssi, time]
+    func trimBleData(bleInput: [String: [[Double]]], nowTime: Double, validTime: Double) -> Result<[String: [[Double]]], Error> {
+        var result = [String: [[Double]]]()
+        for (key, values) in bleInput {
+            let filtered = values.compactMap { item -> [Double]? in
+                guard item.count >= 2 else { return nil }
+                let rssi = item[0], time = item[1]
+                return (nowTime - time <= validTime && rssi >= -100) ? [rssi, time] : nil
             }
-
-            if !newValue.isEmpty {
-                trimmedData[bleID] = newValue
+            if !filtered.isEmpty {
+                result[key] = filtered
             }
         }
-
-        if trimmedData.isEmpty {
-            return .failure(TrimBleDataError.noValidData)
-        } else {
-            return .success(trimmedData)
-        }
+        return result.isEmpty ? .failure(TrimBleDataError.noValidData) : .success(result)
     }
 
 
