@@ -123,17 +123,29 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
                     var bleScanned = self.bleDictionary
                     
                     let rssiValue = RSSI.doubleValue
+//                    if (bleScanned.contains(where: condition)) {
+//                        let data = bleScanned.filter(condition)
+//                        var value:[[Double]] = data[bleName]!
+//                        
+//                        let dataToAdd: [Double] = [rssiValue, bleTime]
+//                        value.append(dataToAdd)
+//                        
+//                        bleScanned.updateValue(value, forKey: bleName)
+//                    } else {
+//                        bleScanned.updateValue([[rssiValue, bleTime]], forKey: bleName)
+//                    }
+                    
                     if (bleScanned.contains(where: condition)) {
-                        let data = bleScanned.filter(condition)
-                        var value:[[Double]] = data[bleName]!
-                        
-                        let dataToAdd: [Double] = [rssiValue, bleTime]
-                        value.append(dataToAdd)
-                        
-                        bleScanned.updateValue(value, forKey: bleName)
+                        if var value = bleScanned[bleName] {
+                            let dataToAdd: [Double] = [rssiValue, bleTime]
+                            value.append(dataToAdd)
+                            bleScanned[bleName] = value
+                        }
                     } else {
-                        bleScanned.updateValue([[rssiValue, bleTime]], forKey: bleName)
+                        bleScanned[bleName] = [[rssiValue, bleTime]]
                     }
+
+                    
                     let trimmedResult = OlympusRFDFunctions.shared.trimBleData(bleInput: bleScanned, nowTime: bleTime, validTime: validTime)
                     switch trimmedResult {
                     case .success(let trimmedData):
