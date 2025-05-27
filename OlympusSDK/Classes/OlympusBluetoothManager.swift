@@ -19,11 +19,11 @@ let NIService      = CBUUID(string: NI_UUID_SERVICE)
 let digit: Double  = pow(10, 2)
 
 class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
-//    var centralManager: CBCentralManager!
-//    var peripherals = [CBPeripheral]()
+    var centralManager: CBCentralManager!
+    var peripherals = [CBPeripheral]()
     var devices = [(name:String, device:CBPeripheral, RSSI:NSNumber)]()
     
-//    var discoveredPeripheral: CBPeripheral!
+    var discoveredPeripheral: CBPeripheral!
     
     var readCharacteristic: CBCharacteristic?
     var writeCharacteristic: CBCharacteristic?
@@ -31,13 +31,13 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
     var identifier:String = ""
     
     var authorized: Bool = false
-//    var bluetoothReady:Bool = false
+    var bluetoothReady:Bool = false
     
     var connected:Bool = false
     var isDeviceReady: Bool = false
     var isTransferring: Bool = false
     
-//    var isScanning: Bool = false
+    var isScanning: Bool = false
     var tryToConnect: Bool = false
     var isNearScan: Bool = false
     
@@ -52,18 +52,9 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
     
     let oneServiceUUID   = CBUUID(string: TJLABS_WARD_UUID)
     
-//    var bleDictionary = [String: [[Double]]]()
-//    var bleDiscoveredTime: Double = 0
-//    public var bleLastScannedTime: Double = 0
-    
-    private let bleQueue = DispatchQueue(label: "com.tjlabs.bleQueue")
-    private(set) var bleDictionary = [String: [[Double]]]()
-    private var centralManager: CBCentralManager!
-    private var discoveredPeripheral: CBPeripheral?
-    public var bluetoothReady = false
-    private var isScanning = false
-    public var bleDiscoveredTime: Double = 0
-    public private(set) var bleLastScannedTime: Double = 0
+    var bleDictionary = [String: [[Double]]]()
+    var bleDiscoveredTime: Double = 0
+    public var bleLastScannedTime: Double = 0
     
     override init() {
         super.init()
@@ -105,41 +96,60 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
         @unknown default:
             print("CBCentralManage: unknown state")
         }
+        
     }
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-            discoveredPeripheral = peripheral
-            bleLastScannedTime = getCurrentTimeInMillisecondsDouble()
+        discoveredPeripheral = peripheral
+        self.bleLastScannedTime = getCurrentTimeInMillisecondsDouble()
 
-            guard let bleName = peripheral.name, bleName.contains("TJ-"), bleName.count >= 15 else { return }
+        guard let bleName = discoveredPeripheral.name else { return }
+
+        // 안전한 문자열 슬라이싱
+        if bleName.contains("TJ-"), bleName.count >= 15 {
             let deviceIDString = String(bleName.dropFirst(8).prefix(7))
+
+            var userInfo = [String: String]()
+            userInfo["Identifier"] = peripheral.identifier.uuidString
+            userInfo["DeviceID"] = deviceIDString
+            userInfo["RSSI"] = String(format: "%d", RSSI.intValue)
 
             let bleTime = getCurrentTimeInMillisecondsDouble()
             let validTime = OlympusConstants.BLE_VALID_TIME * 2
+            self.bleDiscoveredTime = bleTime
 
-            guard RSSI.intValue != 127 else { return }
-            let rssiValue = RSSI.doubleValue
+            if RSSI.intValue != 127 {
+                let rssiValue = RSSI.doubleValue
 
-            bleQueue.async { [weak self] in
-                guard let self = self else { return }
-
-                // 깊은 복사 후 수정
-                var localDict = self.bleDictionary.mapValues { $0.map { $0.map { $0 } } }
-                if var values = localDict[bleName] {
-                    values.append([rssiValue, bleTime])
-                    localDict[bleName] = values
-                } else {
-                    localDict[bleName] = [[rssiValue, bleTime]]
+                // ✅ 깊은 복사: key, value 모두 복제
+                var bleScanned: [String: [[Double]]] = [:]
+                for (key, valueList) in self.bleDictionary {
+                    let copiedList = valueList.map { $0.map { $0 } } // 이중 배열 복사
+                    bleScanned[key] = copiedList
                 }
 
-                switch OlympusRFDFunctions.shared.trimBleData(bleInput: localDict, nowTime: bleTime, validTime: validTime) {
-                case .success(let trimmed):
-                    self.bleDictionary = trimmed
+                // 업데이트 로직
+                if var value = bleScanned[bleName] {
+                    value.append([rssiValue, bleTime])
+                    bleScanned[bleName] = value
+                } else {
+                    bleScanned[bleName] = [[rssiValue, bleTime]]
+                }
+
+                // ✅ 크래시 방지된 필터링
+                let trimmedResult = OlympusRFDFunctions.shared.trimBleData(bleInput: bleScanned, nowTime: bleTime, validTime: validTime)
+                switch trimmedResult {
+                case .success(let trimmedData):
+                    self.bleDictionary = trimmedData
                 case .failure(let error):
                     print(getLocalTimeString() + " , (Olympus) Error : BleManager \(error)")
                 }
             }
+        } else if bleName.contains("NI-") {
+            // 로그 출력은 유지하되 안전한 조건 분기
+            // print("\(getLocalTimeString()) , (Olympus) BLE : name = \(bleName) , rssi = \(RSSI.intValue) , uuid = \(peripheral.identifier.uuidString)")
         }
+    }
 
 //
 //    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
@@ -210,13 +220,13 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
     }
     
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        self.discoveredPeripheral?.delegate = self
+        self.discoveredPeripheral.delegate = self
         self.connected = true
         
         var userInfo = [String:String]()
         userInfo["Identifier"] = peripheral.identifier.uuidString
         NotificationCenter.default.post(name: .deviceConnected, object: nil, userInfo: userInfo)
-        discoveredPeripheral?.discoverServices([UUIDService])
+        discoveredPeripheral.discoverServices([UUIDService])
     }
     
     // MARK: - CBPeripheralDelegate
@@ -227,7 +237,7 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
         }
         
         for service in (peripheral.services)! {
-            discoveredPeripheral?.discoverCharacteristics([UUIDRead, UUIDWrite], for: service)
+            discoveredPeripheral.discoverCharacteristics([UUIDRead, UUIDWrite], for: service)
         }
     }
     
@@ -242,7 +252,7 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
             if characteristic.uuid.isEqual(UUIDRead) {
                 readCharacteristic = characteristic
                 if readCharacteristic!.isNotifying != true {
-                    discoveredPeripheral?.setNotifyValue(true, for: readCharacteristic!)
+                    discoveredPeripheral.setNotifyValue(true, for: readCharacteristic!)
                     
                 }
             }
@@ -263,7 +273,7 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
     
     func disconnectAll() {
         if discoveredPeripheral != nil {
-            centralManager.cancelPeripheralConnection(discoveredPeripheral!)
+            centralManager.cancelPeripheralConnection(discoveredPeripheral)
         }
     }
     
