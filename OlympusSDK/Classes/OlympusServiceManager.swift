@@ -1447,10 +1447,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //        displayOutput.indexTx = unitDRInfoIndex
         var input = FineLocationTracking(user_id: self.user_id, mobile_time: currentTime, sector_id: self.sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM, building_name: self.currentBuilding, level_name_list: levelArray, phase: phaseController.PHASE, search_range: searchInfo.searchRange, search_direction_list: searchInfo.searchDirection, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation_list: [1.0], tail_index: searchInfo.tailIndex, head_section_number: 0, node_number_list: [], node_index: 0, retry: false)
         stateManager.setNetworkCount(value: stateManager.networkCount+1)
-//        print(getLocalTimeString() + " , (Olympus) Request Phase 1 ~ 3 : \(input)")
+        print(getLocalTimeString() + " , (Olympus) Request Phase 1 ~ 3 : \(input)")
         if (REGION_NAME != "Korea" && self.deviceModel == "iPhone SE (2nd generation)") { input.normalization_scale = 1.01 }
         OlympusNetworkManager.shared.postFLT(url: CALC_FLT_URL, input: input, userTraj: trajectoryInfo, searchInfo: searchInfo, completion: { [self] statusCode, returnedString, fltInput, inputTraj, inputSearchInfo in
-//            print(getLocalTimeString() + " , (Olympus) Phase 3 Result : \(statusCode) // \(returnedString)")
+            print(getLocalTimeString() + " , (Olympus) Phase 3 Result : \(statusCode) // \(returnedString)")
             if (!returnedString.contains("timed out")) { stateManager.setNetworkCount(value: 0) }
             if (statusCode == 200) {
                 let results = jsonToFineLocatoinTrackingResultFromServerList(jsonString: returnedString)

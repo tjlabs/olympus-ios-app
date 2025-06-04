@@ -199,7 +199,7 @@ public class OlympusDRDistanceEstimator: NSObject {
         let velocityNotStop = velocityInput*self.velocityScale*self.entranceVelocityScale
         var velocityInputScale = velocityNotStop
         if diffStopDetectTime < 5000 {
-            print(getLocalTimeString() + " , (Olympus) DRDistanceEstimator (2) : index = \(index) // diffStopDetectTime = \(diffStopDetectTime) // velocityStop = \(velocityStop) // velocityNotStop = \(velocityNotStop)")
+//            print(getLocalTimeString() + " , (Olympus) DRDistanceEstimator (2) : index = \(index) // diffStopDetectTime = \(diffStopDetectTime) // velocityStop = \(velocityStop) // velocityNotStop = \(velocityNotStop)")
             velocityInputScale = velocityStop
 //            turnScale = 1.0
         }
