@@ -297,6 +297,38 @@ public class OlympusStateManager: NSObject {
             }
         }
         
+        // Convensia 1
+//        let networkBadEntranceWards = ["TJ-00CB-00000277-0000"]
+        // Convensia 2
+//        let networkBadEntranceWards = ["TJ-00CB-0000012F-0000"]
+        // Convensia 3
+//        let networkBadEntranceWards = ["TJ-00CB-0000012E-0000"]
+//        for (key, value) in bleAvg {
+//            if networkBadEntranceWards.contains(key) {
+//                let rssi = value
+//                if (rssi >= -72.0) { // 82
+//                    print(getLocalTimeString() + " , (Olympus) Route Tracker : findNetworkBadEntrance // activated  rssi = \(value)")
+//                    networkStatus = false
+//                    
+//                    entrance.building_name = "Convensia"
+//                    entrance.level_name = "B0"
+//                    entrance.x = 20
+//                    entrance.y = 199
+//                    entrance.absolute_heading = 0
+//                    
+//                    entrance.x = 390
+//                    entrance.y = 151
+//                    entrance.absolute_heading = 0
+//                    
+//                    entrance.x = 380
+//                    entrance.y = 32
+//                    entrance.absolute_heading = 0
+//                    
+//                    return (networkStatus, entrance)
+//                }
+//            }
+//        }
+        
         return (networkStatus, entrance)
     }
     

@@ -306,8 +306,9 @@ public class OlympusRouteTracker {
                 if let thresholdRSSI = EntranceInnerWardRSSI[currentEntrance] {
                     if let wardCoord = EntranceInnerWardCoord[currentEntrance] {
                         let normalizedRSSI = (scannedRSSI - device_min_rss)*normalization_scale + standard_min_rss
-//                        print(getLocalTimeString() + " , (Olympus) Route Tracker : checkIsEntranceFinished // scannedRSSI [\(bleID) : Raw = \(scannedRSSI) : normalizedRSSI = \(normalizedRSSI) // thresholdRSSI = \(thresholdRSSI)]")
-                        return normalizedRSSI >= thresholdRSSI ? (true, wardCoord) : (false, xyh)
+                        let isSatisfied = normalizedRSSI >= thresholdRSSI ? (true, wardCoord) : (false, xyh)
+//                        print(getLocalTimeString() + " , (Olympus) Route Tracker : checkIsEntranceFinished // \(bleID) // isSatisfied = \(isSatisfied) // scannedRSSI [\(bleID) : Raw = \(scannedRSSI) : normalizedRSSI = \(normalizedRSSI) // thresholdRSSI = \(thresholdRSSI)]")
+                        return isSatisfied
                     } else {
                         return (false, xyh)
                     }

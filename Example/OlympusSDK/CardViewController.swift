@@ -81,7 +81,7 @@ class CardViewController: UIViewController, Observer {
 //    var sector_id: Int = 14 // DS
 //    var mode: String = "pdr"
     
-    var sector_id: Int = 6
+    var sector_id: Int = 20
     var mode: String = "auto"
     
 //    var sector_id: Int = 15 // LG G2
@@ -112,18 +112,17 @@ class CardViewController: UIViewController, Observer {
         super.viewDidLoad()
         headingImage = headingImage?.resize(newWidth: 20)
 
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_05_0910.csv", sensorFileName: "sensor_coex_05_0910.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_02_02_0910.csv", sensorFileName: "sensor_coex_02_02_0910.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_pdr_01_0910.csv", sensorFileName: "sensor_coex_pdr_01_0910.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex03.csv", sensorFileName: "sensor_coex03.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_dr3.csv", sensorFileName: "sensor_dr3.csv")
-//        serviceManager.setSimulationMode(flag: false, bleFileName: "ble_coex_01_0924.csv", sensorFileName: "sensor_coex_01_0924.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_02_0930.csv", sensorFileName: "sensor_coex_02_0930.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_0604_05.csv", sensorFileName: "sensor_coex_0604_05.csv")
+//        serviceManager.setSim1ulationMode(flag: true, bleFileName: "ble_coex_02_0930.csv", sensorFileName: "sensor_coex_02_0930.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_dr_03_1030.csv", sensorFileName: "sensor_coex_dr_03_1030.csv")
     
 //        serviceManager.setDeadReckoningMode(flag: true, buildingName: "Solum", levelName: "0F", x: 5, y: 5, heading: 90)
 //        serviceManager.setDeadReckoningMode(flag: true, buildingName: "S3", levelName: "7F", x: 6, y: 16, heading: 270)
+        
+        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_0519_01.csv", sensorFileName: "sensor_songdo_0519_01.csv")
+        
         // collect
 //        isCollect = true
 //        serviceManager.initCollect(region: self.region)
@@ -150,7 +149,7 @@ class CardViewController: UIViewController, Observer {
     
     @IBAction func tapStopButton(_ sender: UIButton) {
         self.isSaved = serviceManager.saveSimulationFile()
-        if (self.isSaved) {
+        if (self.isSaved) {	
             saveButton.isHidden = true
         }
 //        serviceManager.stopCollect()

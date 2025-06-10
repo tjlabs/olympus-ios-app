@@ -863,6 +863,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     let enterInNetworkBadEntrance = stateManager.checkEnterInNetworkBadEntrance(bleAvg: self.bleAvg)
                     if (enterInNetworkBadEntrance.0) {
                         stateManager.setIsGetFirstResponse(isGetFirstResponse: true)
+                        print(getLocalTimeString() + " , (Olympus) Route Tracker : Start with network bad")
                         let isOn = routeTracker.startRouteTracking(result: enterInNetworkBadEntrance.1, isStartRouteTrack: self.isStartRouteTrack)
                         stackServerResult(serverResult: enterInNetworkBadEntrance.1)
                         makeTemporalResult(input: enterInNetworkBadEntrance.1, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
@@ -951,6 +952,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         let enterInNetworkBadEntrance = stateManager.checkEnterInNetworkBadEntrance(bleAvg: self.bleAvg)
                         if (enterInNetworkBadEntrance.0) {
                             stateManager.setIsGetFirstResponse(isGetFirstResponse: true)
+                            print(getLocalTimeString() + " , (Olympus) Route Tracker : Start with bad network")
                             let isOn = routeTracker.startRouteTracking(result: enterInNetworkBadEntrance.1, isStartRouteTrack: self.isStartRouteTrack)
                             stackServerResult(serverResult: enterInNetworkBadEntrance.1)
                             makeTemporalResult(input: enterInNetworkBadEntrance.1, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
@@ -1394,7 +1396,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 lastServerResult.x = correlationInfo[0]
                 lastServerResult.y = correlationInfo[1]
                 lastServerResult.absolute_heading = correlationInfo[2]
-                
+                print(getLocalTimeString() + " , (Olympus) Route Tracker : lastServerResult = \(lastServerResult)")
                 let newCoord: [Double] = [lastServerResult.x, lastServerResult.y]
                 self.setTemporalResult(coord: newCoord)
                 KF.updateTuResult(x: newCoord[0], y: newCoord[1])
@@ -1505,6 +1507,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                     stateManager.setIsIndoor(isIndoor: true)
                                     stateManager.setIsGetFirstResponse(isGetFirstResponse: true)
                                 } else {
+                                    print(getLocalTimeString() + " , (Olympus) Route Tracker : Start with Phase3 Result")
                                     let isOn = routeTracker.startRouteTracking(result: fltResult, isStartRouteTrack: isStartRouteTrack)
                                     if (isOn.0) {
                                         stateManager.setIsIndoor(isIndoor: true)

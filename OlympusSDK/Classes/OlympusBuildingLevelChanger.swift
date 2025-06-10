@@ -166,7 +166,7 @@ public class OlympusBuildingLevelChanger {
         }
         
         if let stronggest = strongestBleData {
-            if stronggest.2 >= -65 {
+            if stronggest.2 >= -55 {
                 print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : very strong = \(stronggest.0) // \(stronggest.1) : \(stronggest.2)")
                 return stronggest.0
             }
@@ -556,6 +556,7 @@ public class OlympusBuildingLevelChanger {
                             let decodedOsr = osrResult.1
                             if (osrResult.0 && decodedOsr.building_name != "" && decodedOsr.level_name != "") {
                                 let isOnSpot = isOnSpotRecognition(result: decodedOsr, level: currentLevel)
+//                                print(getLocalTimeString() + " , (Olympus) Run OSR : isOnSpot = \(isOnSpot)")
                                 if (isOnSpot.isOn) {
                                     let levelDestination = isOnSpot.levelDestination + isOnSpot.levelDirection
                                     let spotCoord = isDRMode ? [] : getSectorDRModeAreaSpotCoord(fltResult: result, levelDirection: levelDestination)
