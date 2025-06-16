@@ -66,7 +66,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     var deviceOsVersion: Int
     
     var sensorManager = OlympusSensorManager()
-    var bleManager = OlympusBluetoothManager()
+//    var bleManager = OlympusBluetoothManager()
     var rssCompensator = OlympusRssCompensator()
     var phaseController = OlympusPhaseController()
     var stateManager = OlympusStateManager()
@@ -141,6 +141,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     var isPhaseBreakInRouteTrack: Bool = false
     var networkStatus: Bool = true
     var isStartRouteTrack: Bool = false
+    var routeTrackFinishTime: Int = 0
     var isInEntranceLevel: Bool = false
     var isDRMode: Bool = false
     var isDRModeRqInfoSaved: Bool = false
@@ -362,7 +363,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                             print(returnedString)
                                             print(getLocalTimeString() + " , (Olympus) Scale : \(OlympusConstants.NORMALIZATION_SCALE), \(OlympusConstants.PRE_NORMALIZATION_SCALE)")
                                             
-                                            if (!bleManager.bluetoothReady) {
+                                            if (!OlympusBluetoothManager.shared.bluetoothReady) {
                                                 let msg: String = getLocalTimeString() + " , (Olympus) Error : Bluetooth is not enabled"
                                                 completion(false, msg)
                                             } else {
@@ -440,7 +441,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             }
             
             // Init Bluetooth
-            let initBle = bleManager.initBle()
+            let initBle = OlympusBluetoothManager.shared.initBle()
             if (!initBle.0) {
                 isSuccess = initBle.0
                 msg = initBle.1
@@ -529,7 +530,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         
         if (self.isStartComplete) {
             self.stopTimer()
-            self.bleManager.stopScan()
+            OlympusBluetoothManager.shared.stopScan()
             
             if (self.service.contains(OlympusConstants.SERVICE_FLT) && !isSimulationMode) {
                 self.initialize(isStopService: true)
@@ -544,7 +545,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 })
             }
             rssCompensator.setIsScaleLoaded(flag: false)
-            
+            bleLineCount = 0
+            sensorLineCount = 0
             return (true, message)
         } else {
             message = localTime + " , (Olympus) Fail : After the service has fully started, it can be stop "
@@ -907,11 +909,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             }
             
             if let top3Ble = buildingLevelChanger.extractTop3BleInWindow(currentTime: currentTime, ble: self.bleAvg) {
-                if !isStartRouteTrack && stateManager.isGetFirstResponse && stateManager.isIndoor && !buildingLevelChanger.isOsrRunning  && phaseController.PHASE >= OlympusConstants.PHASE_4 {
+                let dTime = currentTime - self.routeTrackFinishTime
+                if !isStartRouteTrack && dTime > 15*1000 && stateManager.isGetFirstResponse && stateManager.isIndoor && !buildingLevelChanger.isOsrRunning  && phaseController.PHASE >= OlympusConstants.PHASE_4 {
                     let levelByBle = buildingLevelChanger.calculateLevelByBle(data: top3Ble)
                     let curLevel = removeLevelDirectionString(levelName: self.currentLevel)
                     if levelByBle != "UNKNOWN" && curLevel != levelByBle {
-                        print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : phaseBreak // curLevel = \(curLevel) , levelByBle = \(levelByBle)")
+//                        print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : phaseBreak // curLevel = \(curLevel) , levelByBle = \(levelByBle)")
                         phaseBreakInPhase4(fltResult: FineLocationTrackingFromServer(), isUpdatePhaseBreakResult: false)
                     }
                 }
@@ -936,12 +939,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 stateManager.checkEnterSleepMode(service: self.service, type: 0)
             }
         } else {
-            stateManager.checkBleOff(bluetoothReady: bleManager.bluetoothReady, bleLastScannedTime: bleManager.bleLastScannedTime)
+            stateManager.checkBleOff(bluetoothReady: OlympusBluetoothManager.shared.bluetoothReady, bleLastScannedTime: OlympusBluetoothManager.shared.bleLastScannedTime)
             stateManager.updateTimeForInit()
             
             let validTime = OlympusConstants.BLE_VALID_TIME_INT
             let currentTime = getCurrentTimeInMilliseconds() - validTime
-            let bleDictionary: [String: [[Double]]]? = bleManager.getBLEData()
+            let bleDictionary: [String: [[Double]]]? = OlympusBluetoothManager.shared.getBLEData()
             if let bleData = bleDictionary {
                 let trimmedResult = OlympusRFDFunctions.shared.trimBleData(bleInput: bleData, nowTime: getCurrentTimeInMillisecondsDouble(), validTime: Double(validTime))
                 switch trimmedResult {
@@ -1001,11 +1004,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //            self.bleAvg = ["TJ-00CB-000003E7-0000":-76.0] // PG
             
             if let top3Ble = buildingLevelChanger.extractTop3BleInWindow(currentTime: currentTime, ble: self.bleAvg) {
-                if !isStartRouteTrack && stateManager.isGetFirstResponse && stateManager.isIndoor && !buildingLevelChanger.isOsrRunning  && phaseController.PHASE >= OlympusConstants.PHASE_4 {
+                let dTime = currentTime - self.routeTrackFinishTime
+                if !isStartRouteTrack && dTime > 15*1000 && stateManager.isGetFirstResponse && stateManager.isIndoor && !buildingLevelChanger.isOsrRunning  && phaseController.PHASE >= OlympusConstants.PHASE_4 {
                     let levelByBle = buildingLevelChanger.calculateLevelByBle(data: top3Ble)
                     let curLevel = removeLevelDirectionString(levelName: self.currentLevel)
                     if levelByBle != "UNKNOWN" && curLevel != levelByBle {
-                        print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : phaseBreak // curLevel = \(curLevel) , levelByBle = \(levelByBle)")
+//                        print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : phaseBreak // curLevel = \(curLevel) , levelByBle = \(levelByBle)")
                         phaseBreakInPhase4(fltResult: FineLocationTrackingFromServer(), isUpdatePhaseBreakResult: false)
                     }
                 }
@@ -1026,7 +1030,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     inputReceivedForce = []
                 }
             } else if (!stateManager.isBackground) {
-                stateManager.checkOutdoorBleEmpty(lastBleDiscoveredTime: bleManager.bleDiscoveredTime, olympusResult: self.olympusResult)
+                stateManager.checkOutdoorBleEmpty(lastBleDiscoveredTime: OlympusBluetoothManager.shared.bleDiscoveredTime, olympusResult: self.olympusResult)
                 stateManager.checkEnterSleepMode(service: self.service, type: 0)
             }
         }
@@ -1344,6 +1348,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     unitDRGenerator.setRouteTrackFinishedTime(value: getCurrentTimeInMillisecondsDouble())
                     unitDRGenerator.setIsStartRouteTrack(isStartRoutTrack: false)
                     isStartRouteTrack = false
+                    routeTrackFinishTime = getCurrentTimeInMilliseconds()
                     isPhaseBreakInRouteTrack = false
                     if (routeTrackResult.1 != RouteTrackFinishType.STABLE) {
                         self.temporalResult = self.routeTrackResult
@@ -1357,7 +1362,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 }
             }
             
-            if (abs(getCurrentTimeInMillisecondsDouble() - bleManager.bleDiscoveredTime) < 1000*10) || isSimulationMode {
+            if (abs(getCurrentTimeInMillisecondsDouble() - OlympusBluetoothManager.shared.bleDiscoveredTime) < 1000*10) || isSimulationMode {
                 requestOlympusResult(trajectoryInfo: trajectoryInfo, trueHeading: sensorData.trueHeading, mode: self.runMode)
             }
         } else {
@@ -1365,7 +1370,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 let isStop = stateManager.checkStopWhenIsIndexNotChanaged()
                 if (isStop) {
                     olympusVelocity = 0
-                    if (abs(getCurrentTimeInMillisecondsDouble() - bleManager.bleDiscoveredTime) < 1000*10) || isSimulationMode {
+                    if (abs(getCurrentTimeInMillisecondsDouble() - OlympusBluetoothManager.shared.bleDiscoveredTime) < 1000*10) || isSimulationMode {
                         requestOlympusResultInStop(trajectoryInfo: trajController.pastTrajectoryInfo, trueHeading: sensorData.trueHeading, mode: self.runMode)
                     }
                 }
@@ -1386,7 +1391,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 var lastServerResult = serverResultBuffer[serverResultBuffer.count-1]
                 
                 unitDRGenerator.setIsStartRouteTrack(isStartRoutTrack: false)
-                isStartRouteTrack = false
+                routeTrackFinishTime = getCurrentTimeInMilliseconds()
                 isPhaseBreakInRouteTrack = false
                 networkStatus = true
                 
@@ -1396,19 +1401,21 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 lastServerResult.x = correlationInfo[0]
                 lastServerResult.y = correlationInfo[1]
                 lastServerResult.absolute_heading = correlationInfo[2]
-                print(getLocalTimeString() + " , (Olympus) Route Tracker : lastServerResult = \(lastServerResult)")
+//                print(getLocalTimeString() + " , (Olympus) Route Tracker : lastServerResult = \(lastServerResult)")
                 let newCoord: [Double] = [lastServerResult.x, lastServerResult.y]
                 self.setTemporalResult(coord: newCoord)
                 KF.updateTuResult(x: newCoord[0], y: newCoord[1])
                 KF.setLinkInfo(coord: newCoord, directions: OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: lastServerResult.building_name, level: lastServerResult.level_name, x: newCoord[0], y: newCoord[1], PADDING_VALUE: 0.0, mode: self.runMode))
                 OlympusPathMatchingCalculator.shared.setBuildingLevelChangedCoord(coord: newCoord)
-                
                 makeTemporalResult(input: lastServerResult, isStableMode: false, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
                 NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_6])
+                
+                isStartRouteTrack = false
                 displayOutput.phase = String(phaseController.PHASE)
                 displayOutput.indexRx = unitDRInfoIndex
                 sectionController.setSectionUserHeading(value: lastServerResult.absolute_heading)
                 KF.activateKalmanFilter(fltResult: lastServerResult)
+                
             }
         }
         
@@ -2815,7 +2822,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     // 3. BLE 여전히 꺼져 있으며 pastReportTime 값 업데이트
                     // 4. 아니면 valid하다고 바꿈
                     if (diffTime > 3) {
-                        if (bleManager.bluetoothReady) {
+                        if (OlympusBluetoothManager.shared.bluetoothReady) {
                             isValid = true
                             validFlag = OlympusConstants.VALID_SOLUTION
                             validMessage = "Valid"
@@ -2887,7 +2894,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 case 8:
                     // 1. 시간 체크
                     // 2. 3초 지났으면 Valid로 수정
-                    if (bleManager.bluetoothReady) {
+                    if (OlympusBluetoothManager.shared.bluetoothReady) {
                         if (diffTime > 3) {
                             isValid = true
                             validFlag = OlympusConstants.VALID_SOLUTION
@@ -2904,7 +2911,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         self.pastReportTime = currentTime
                     }
                 case 9:
-                    if (bleManager.bluetoothReady) {
+                    if (OlympusBluetoothManager.shared.bluetoothReady) {
                         if (diffTime > 5) {
                             isValid = true
                             validFlag = OlympusConstants.VALID_SOLUTION
@@ -2922,7 +2929,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     }
                 case 11:
                     // BLE_SCAN_STOP
-                    if (bleManager.bluetoothReady) {
+                    if (OlympusBluetoothManager.shared.bluetoothReady) {
                         if (diffTime > 5) {
                             isValid = true
                             validFlag = OlympusConstants.VALID_SOLUTION
@@ -2940,7 +2947,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     }
                 case 12:
                     // BLE_ERROR_FLAG
-                    if (bleManager.bluetoothReady) {
+                    if (OlympusBluetoothManager.shared.bluetoothReady) {
                         if (diffTime > 5) {
                             isValid = true
                             validFlag = OlympusConstants.VALID_SOLUTION
@@ -2986,7 +2993,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     private func runBackgroundMode() {
         self.stateManager.setIsBackground(isBackground: true)
         self.unitDRGenerator.setIsBackground(isBackground: true)
-        self.bleManager.stopScan()
+        OlympusBluetoothManager.shared.stopScan()
         self.stopTimer()
             
         if let existingTaskIdentifier = self.backgroundTaskIdentifier {
@@ -3034,7 +3041,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         self.backgroundUpTimer = nil
         self.backgroundUvTimer = nil
             
-        self.bleManager.startScan(option: .Foreground)
+        OlympusBluetoothManager.shared.startScan(option: .Foreground)
         self.startTimer()
             
         self.stateManager.setIsBackground(isBackground: false)
@@ -3082,7 +3089,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     public func initCollect(region: String) {
         unitDRGenerator.setMode(mode: "pdr")
         let initSensors = sensorManager.initSensors()
-        let initBle = bleManager.initBle()
+        let initBle = OlympusBluetoothManager.shared.initBle()
         
         OlympusFileManager.shared.createCollectFile(region: region, deviceModel: deviceModel, osVersion: deviceOsVersion)
         startCollectTimer()
@@ -3093,7 +3100,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     }
     
     public func stopCollect() {
-        bleManager.stopScan()
+        OlympusBluetoothManager.shared.stopScan()
         stopCollectTimer()
         OlympusFileManager.shared.saveCollectData()
         
@@ -3126,7 +3133,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         collectData.time = currentTime
         
         let validTime = OlympusConstants.BLE_VALID_TIME
-        let bleDictionary: [String: [[Double]]]? = bleManager.getBLEData()
+        let bleDictionary: [String: [[Double]]]? = OlympusBluetoothManager.shared.getBLEData()
         if let bleData = bleDictionary {
             let trimmedResult = OlympusRFDFunctions.shared.trimBleData(bleInput: bleData, nowTime: getCurrentTimeInMillisecondsDouble(), validTime: validTime)
             switch trimmedResult {

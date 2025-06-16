@@ -278,8 +278,8 @@ public class OlympusNetworkManager {
                                      URLQueryItem(name: "building_name", value: input.building_name),
                                      URLQueryItem(name: "level_name", value: input.level_name)]
         
-        print(getLocalTimeString() + " , (Olympus) Ward Check : url = \(url)")
-        print(getLocalTimeString() + " , (Olympus) Ward Check : input = \(input)")
+//        print(getLocalTimeString() + " , (Olympus) Ward Check : url = \(url)")
+//        print(getLocalTimeString() + " , (Olympus) Ward Check : input = \(input)")
         var requestURL = URLRequest(url: (urlComponents?.url)!)
         requestURL.httpMethod = "GET"
         

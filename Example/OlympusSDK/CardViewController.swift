@@ -14,6 +14,7 @@ class CardViewController: UIViewController, Observer {
     @IBOutlet weak var resultDirection: UILabel!
     
     @IBOutlet weak var saveButton: UIButton!
+    @IBOutlet weak var stopButton: UIButton!
     
     var headingImage = UIImage(named: "heading")
     var coordToDisplay = CoordToDisplay()
@@ -113,7 +114,7 @@ class CardViewController: UIViewController, Observer {
         headingImage = headingImage?.resize(newWidth: 20)
 
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_dr3.csv", sensorFileName: "sensor_dr3.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_0604_05.csv", sensorFileName: "sensor_coex_0604_05.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_0604_02.csv", sensorFileName: "sensor_coex_0604_02.csv")
 //        serviceManager.setSim1ulationMode(flag: true, bleFileName: "ble_coex_02_0930.csv", sensorFileName: "sensor_coex_02_0930.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_dr_03_1030.csv", sensorFileName: "sensor_coex_dr_03_1030.csv")
@@ -121,7 +122,7 @@ class CardViewController: UIViewController, Observer {
 //        serviceManager.setDeadReckoningMode(flag: true, buildingName: "Solum", levelName: "0F", x: 5, y: 5, heading: 90)
 //        serviceManager.setDeadReckoningMode(flag: true, buildingName: "S3", levelName: "7F", x: 6, y: 16, heading: 270)
         
-        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_0519_01.csv", sensorFileName: "sensor_songdo_0519_01.csv")
+        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_0519_02.csv", sensorFileName: "sensor_songdo_0519_02.csv")
         
         // collect
 //        isCollect = true
@@ -147,15 +148,22 @@ class CardViewController: UIViewController, Observer {
     override func viewWillDisappear(_ animated: Bool) {
     }
     
-    @IBAction func tapStopButton(_ sender: UIButton) {
+
+    @IBAction func tapSaveButton(_ sender: UIButton) {
         self.isSaved = serviceManager.saveSimulationFile()
-        if (self.isSaved) {	
+        if (self.isSaved) {
             saveButton.isHidden = true
         }
 //        serviceManager.stopCollect()
         serviceManager.stopService()
         self.stopTimer()
     }
+    
+    
+    @IBAction func tapStopButton(_ sender: UIButton) {
+        let isStop = serviceManager.stopService()
+    }
+    
     
     private func loadPp(fileName: String) -> [[Double]] {
         guard let path = Bundle.main.path(forResource: fileName, ofType: "csv") else {

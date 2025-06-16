@@ -503,7 +503,7 @@ public class OlympusRssCompensator {
 //                self.normalizationScale = smoothedScale
 //            }
             
-            print(getLocalTimeString() + " , (Olympus) RssCompensator : smoothed scale = \(self.normalizationScale) // est scale = \(normalizationScale)")
+//            print(getLocalTimeString() + " , (Olympus) RssCompensator : smoothed scale = \(self.normalizationScale) // est scale = \(normalizationScale)")
             OlympusConstants().setNormalizationScale(cur: self.normalizationScale, pre: self.preNormalizationScale)
         }
     }
@@ -517,8 +517,8 @@ public class OlympusRssCompensator {
         let avgMax = getMaxRssiV2()
         let avgMin = getMinRssiV2()
         
-        print(getLocalTimeString() + " , (Olympus) RssCompensator : wardMaxRssi = \(self.wardMaxRssi) // avgMax = \(avgMax)")
-        print(getLocalTimeString() + " , (Olympus) RssCompensator : wardMinRssi = \(self.wardMinRssi) // avgMin = \(avgMin)")
+//        print(getLocalTimeString() + " , (Olympus) RssCompensator : wardMaxRssi = \(self.wardMaxRssi) // avgMax = \(avgMax)")
+//        print(getLocalTimeString() + " , (Olympus) RssCompensator : wardMinRssi = \(self.wardMinRssi) // avgMin = \(avgMin)")
         
         deviceMinValue = avgMin
         let amplitude = abs(avgMax - avgMin)

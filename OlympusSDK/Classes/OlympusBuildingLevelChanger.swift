@@ -167,7 +167,7 @@ public class OlympusBuildingLevelChanger {
         
         if let stronggest = strongestBleData {
             if stronggest.2 >= -55 {
-                print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : very strong = \(stronggest.0) // \(stronggest.1) : \(stronggest.2)")
+//                print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : very strong = \(stronggest.0) // \(stronggest.1) : \(stronggest.2)")
                 return stronggest.0
             }
         }
@@ -175,11 +175,11 @@ public class OlympusBuildingLevelChanger {
         if checker.count >= 2 {
             let frequentLevel = mostFrequentCheckerValue(from: checker)
             result = frequentLevel
-            print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : frequentLevel = \(frequentLevel) // checker = \(checker)")
+//            print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : frequentLevel = \(frequentLevel) // checker = \(checker)")
         } else if checker.count == 1 {
             if checker[0].2 >= -80 {
                 result = checker[0].0
-                print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : only one = \(result) // checker = \(checker)")
+//                print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : only one = \(result) // checker = \(checker)")
             }
         }
         

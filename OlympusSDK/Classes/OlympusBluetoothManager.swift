@@ -19,6 +19,8 @@ let NIService      = CBUUID(string: NI_UUID_SERVICE)
 let digit: Double  = pow(10, 2)
 
 class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
+    static let shared = OlympusBluetoothManager()
+    
     var centralManager: CBCentralManager!
     var peripherals = [CBPeripheral]()
     var devices = [(name:String, device:CBPeripheral, RSSI:NSNumber)]()

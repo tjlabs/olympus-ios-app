@@ -204,11 +204,11 @@ public class OlympusRouteTracker {
 
                     self.currentEntrance = entranceKey
                     self.currentEntranceLength = entranceResult.1
-                    print(getLocalTimeString() + " , (Olympus) Route Tracker : EntranceNetworkStatus = \(EntranceNetworkStatus)")
+//                    print(getLocalTimeString() + " , (Olympus) Route Tracker : EntranceNetworkStatus = \(EntranceNetworkStatus)")
                     if let entranceNetworkStatus: Bool = self.EntranceNetworkStatus[entranceKey] {
                         networkStatus = entranceNetworkStatus
                     }
-                    print(getLocalTimeString() + " , (Olympus) Start Route Tracker : entrance = \(currentEntrance) // networkStatus = \(networkStatus) // length = \(currentEntranceLength)")
+//                    print(getLocalTimeString() + " , (Olympus) Start Route Tracker : entrance = \(currentEntrance) // networkStatus = \(networkStatus) // length = \(currentEntranceLength)")
                     return (true, networkStatus)
                 }
             }
