@@ -19,8 +19,8 @@ public class OlympusBuildingLevelChanger {
         observers = observers.filter { $0 !== observer }
     }
     
-    private func notifyObservers(building: String, level: String, coord: [Double]) {
-        observers.forEach { $0.isBuildingLevelChanged(newBuilding: building, newLevel: level, newCoord: coord)}
+    private func notifyObservers(isChanged: Bool, building: String, level: String, coord: [Double]) {
+        observers.forEach { $0.isBuildingLevelChanged(isChanged: isChanged, newBuilding: building, newLevel: level, newCoord: coord)}
     }
     private var sector_id: Int = -1
     public var isDetermineSpot: Bool = false
@@ -230,7 +230,7 @@ public class OlympusBuildingLevelChanger {
                     self.lastSpotId = result.spot_id
                     self.travelingOsrDistance = 0
                     self.buildingLevelChangedTime = currentTime
-                    self.notifyObservers(building: result.building_name, level: levelDestination, coord: spotCoord)
+                    self.notifyObservers(isChanged: true, building: result.building_name, level: levelDestination, coord: spotCoord)
                     self.isDetermineSpot = true
                     self.spotCutIndex = self.determineSpotCutIndex(entranceString: currentEntrance)
                 }
@@ -247,7 +247,7 @@ public class OlympusBuildingLevelChanger {
                         self.lastSpotId = result.spot_id
                         self.travelingOsrDistance = 0
                         self.buildingLevelChangedTime = currentTime
-                        self.notifyObservers(building: result.building_name, level: levelDestination, coord: spotCoord)
+                        self.notifyObservers(isChanged: true, building: result.building_name, level: levelDestination, coord: spotCoord)
                         self.isDetermineSpot = true
                         self.spotCutIndex = self.determineSpotCutIndex(entranceString: currentEntrance)
                     }
@@ -395,7 +395,7 @@ public class OlympusBuildingLevelChanger {
         self.buildingLevelChangedTime = value
     }
     
-    public func updateBuildingAndLevel(fltResult: FineLocationTrackingFromServer, currentBuilding: String, currentLevel: String) -> FineLocationTrackingFromServer {
+    public func updateBuildingAndLevel(fltResult: FineLocationTrackingFromServer, currentBuilding: String, currentLevel: String) -> (Bool, FineLocationTrackingFromServer) {
         var result = fltResult
         
         let currentTime = getCurrentTimeInMilliseconds()
@@ -426,7 +426,7 @@ public class OlympusBuildingLevelChanger {
             result.level_name = currentLevel
         }
         
-        return result
+        return (isBuildingLevelChanged, result)
     }
     
     public func setSectorDRModeArea(building: String, level: String, drModeAreaList: [DRModeArea]) {
