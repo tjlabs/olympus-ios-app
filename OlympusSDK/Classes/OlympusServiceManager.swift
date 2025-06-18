@@ -216,7 +216,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         self.reporting(input: newValue)
     }
     
-    func isBuildingLevelChanged(newBuilding: String, newLevel: String, newCoord: [Double]) {
+    func isBuildingLevelChanged(isChanged: Bool, newBuilding: String, newLevel: String, newCoord: [Double]) {
         self.currentBuilding = newBuilding
         self.currentLevel = newLevel
         KF.updateTuBuildingLevel(building: newBuilding, level: newLevel)
@@ -231,9 +231,11 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             OlympusPathMatchingCalculator.shared.setBuildingLevelChangedCoord(coord: [self.olympusResult.x, self.olympusResult.y])
         }
         
-        ambiguitySolver.setIsAmbiguous(value: false)
-        OlympusPathMatchingCalculator.shared.initPassedNodeInfo()
-        sectionController.setInitialAnchorTailIndex(value: unitDRInfoIndex)
+        if isChanged {
+            ambiguitySolver.setIsAmbiguous(value: false)
+            OlympusPathMatchingCalculator.shared.initPassedNodeInfo()
+            sectionController.setInitialAnchorTailIndex(value: unitDRInfoIndex)
+        }
     }
     
     private func initialize(isStopService: Bool) {
@@ -513,7 +515,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         copiedResult.y = propagatedResult[1]
         copiedResult.absolute_heading = propagatedResult[2]
         
-        let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: copiedResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+        let changerResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: copiedResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+        let updatedResult = changerResult.1
         currentBuilding = updatedResult.building_name
         currentLevel = updatedResult.level_name
         curTemporalResultHeading = updatedResult.absolute_heading
@@ -1565,19 +1568,22 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 copiedResult.y = propagatedResult[1]
                                 
                                 if (resultPhase.0 == OlympusConstants.PHASE_3) {
-                                    let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: copiedResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+                                    let changerResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: copiedResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+                                    let updatedResult = changerResult.1
                                     currentBuilding = updatedResult.building_name
                                     currentLevel = updatedResult.level_name
-                                    self.isBuildingLevelChanged(newBuilding: updatedResult.building_name, newLevel: updatedResult.level_name, newCoord: [])
+                                    self.isBuildingLevelChanged(isChanged: changerResult.0, newBuilding: updatedResult.building_name, newLevel: updatedResult.level_name, newCoord: [])
                                 } else if (resultPhase.0 == OlympusConstants.PHASE_6) {
-                                    sectionController.setInitialAnchorTailIndex(value: unitDRInfoIndex)
+//                                    sectionController.setInitialAnchorTailIndex(value: unitDRInfoIndex)
+                                    sectionController.setInitialAnchorTailIndex(value: searchInfo.tailIndex)
                                     copiedResult.absolute_heading = propagatedResult[2]
-                                    let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: copiedResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+                                    let changerResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: copiedResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+                                    let updatedResult = changerResult.1
                                     currentBuilding = updatedResult.building_name
                                     currentLevel = updatedResult.level_name
                                     
                                     makeTemporalResult(input: updatedResult, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
-                                    self.isBuildingLevelChanged(newBuilding: updatedResult.building_name, newLevel: updatedResult.level_name, newCoord: [])
+                                    self.isBuildingLevelChanged(isChanged: changerResult.0, newBuilding: updatedResult.building_name, newLevel: updatedResult.level_name, newCoord: [])
                                     sectionController.setSectionUserHeading(value: updatedResult.absolute_heading)
                                     KF.refreshTuResult(xyh: [copiedResult.x, copiedResult.y, copiedResult.absolute_heading], inputPhase: fltInput.phase, inputTrajLength: inputTrajLength, mode: runMode)
                                     
@@ -1590,10 +1596,11 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                     }
                                 }
                             } else {
-                                let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: fltResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+                                let changerResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: fltResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+                                let updatedResult = changerResult.1
                                 currentBuilding = updatedResult.building_name
                                 currentLevel = updatedResult.level_name
-                                self.isBuildingLevelChanged(newBuilding: updatedResult.building_name, newLevel: updatedResult.level_name, newCoord: [])
+                                self.isBuildingLevelChanged(isChanged: changerResult.0, newBuilding: updatedResult.building_name, newLevel: updatedResult.level_name, newCoord: [])
                             }
                         } else {
                             if (resultPhase.0 == OlympusConstants.PHASE_6 && !stateManager.isVenusMode) {
@@ -1615,7 +1622,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 copiedResult.y = propagatedResult[1]
                                 copiedResult.absolute_heading = propagatedResult[2]
                                 
-                                let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: copiedResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+                                let changerResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: copiedResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+                                let updatedResult = changerResult.1
                                 currentBuilding = updatedResult.building_name
                                 currentLevel = updatedResult.level_name
                                 curTemporalResultHeading = updatedResult.absolute_heading
@@ -1624,7 +1632,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 KF.activateKalmanFilter(fltResult: updatedResult)
                             } else {
                                 // KF is not running && Phase 1 ~ 3
-                                let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: fltResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+                                let changerResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: fltResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+                                let updatedResult = changerResult.1
                                 currentBuilding = updatedResult.building_name
                                 currentLevel = updatedResult.level_name
                                 makeTemporalResult(input: updatedResult, isStableMode: false, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
@@ -1718,7 +1727,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 propagatedPmFltRsult.absolute_heading = compensateHeading(heading: propagatedPmFltRsult.absolute_heading)
                                 
                                 let muResult = KF.measurementUpdate(fltResult: fltResult, pmFltResult: pmFltRsult, propagatedPmFltResult: propagatedPmFltRsult, unitDRInfoBuffer: unitDRInfoBuffer, isPossibleHeadingCorrection: isPossibleHeadingCorrection, PADDING_VALUES: PADDING_VALUES, mode: runMode)
-                                let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: muResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+                                let changerResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: muResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+                                let updatedResult = changerResult.1
                                 currentBuilding = updatedResult.building_name
                                 currentLevel = updatedResult.level_name
                                 
@@ -1837,7 +1847,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 propagatedPmFltRsult.absolute_heading = compensateHeading(heading: propagatedPmFltRsult.absolute_heading)
                                 
                                 let muResult = KF.measurementUpdate(fltResult: fltResult, pmFltResult: pmFltRsult, propagatedPmFltResult: propagatedPmFltRsult, unitDRInfoBuffer: unitDRInfoBuffer, isPossibleHeadingCorrection: isPossibleHeadingCorrection, PADDING_VALUES: PADDING_VALUES, mode: runMode)
-                                let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: muResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+                                let changerResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: muResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+                                let updatedResult = changerResult.1
                                 currentBuilding = updatedResult.building_name
                                 currentLevel = updatedResult.level_name
                                 OlympusPathMatchingCalculator.shared.updateAnchorNodeAfterRecovery(badCaseNodeInfo: inputNodeCandidatesInfo, nodeNumber: fltResult.node_number)
@@ -1949,7 +1960,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                         propagatedPmFltRsult.absolute_heading = compensateHeading(heading: propagatedPmFltRsult.absolute_heading)
                                         
                                         let muResult = KF.measurementUpdate(fltResult: fltResult, pmFltResult: pmFltRsult, propagatedPmFltResult: propagatedPmFltRsult, unitDRInfoBuffer: unitDRInfoBuffer, isPossibleHeadingCorrection: isPossibleHeadingCorrection, PADDING_VALUES: PADDING_VALUES, mode: runMode)
-                                        let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: muResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+                                        let changerResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: muResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+                                        let updatedResult = changerResult.1
                                         currentBuilding = updatedResult.building_name
                                         currentLevel = updatedResult.level_name
                                         OlympusPathMatchingCalculator.shared.updateAnchorNodeAfterRecovery(badCaseNodeInfo: inputNodeCandidatesInfo, nodeNumber: fltResult.node_number)
@@ -2065,7 +2077,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                     propagatedPmFltRsult.absolute_heading = compensateHeading(heading: propagatedPmFltRsult.absolute_heading)
 
                                     let muResult = KF.measurementUpdate(fltResult: fltResult, pmFltResult: pmFltRsult, propagatedPmFltResult: propagatedPmFltRsult, unitDRInfoBuffer: unitDRInfoBuffer, isPossibleHeadingCorrection: isPossibleHeadingCorrection, PADDING_VALUES: PADDING_VALUES, mode: runMode)
-                                    let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: muResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+                                    let changerResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: muResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+                                    let updatedResult = changerResult.1
                                     currentBuilding = updatedResult.building_name
                                     currentLevel = updatedResult.level_name
                                     makeTemporalResult(input: updatedResult, isStableMode: false, mustInSameLink: false, updateType: .STABLE, pathMatchingType: .WIDE)
@@ -2184,7 +2197,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                     propagatedPmFltRsult.absolute_heading = compensateHeading(heading: propagatedPmFltRsult.absolute_heading)
                                     
                                     let muResult = KF.measurementUpdate(fltResult: fltResult, pmFltResult: pmFltRsult, propagatedPmFltResult: propagatedPmFltRsult, unitDRInfoBuffer: unitDRInfoBuffer, isPossibleHeadingCorrection: isPossibleHeadingCorrection, PADDING_VALUES: PADDING_VALUES, mode: runMode)
-                                    let updatedResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: muResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+                                    let changerResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: muResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
+                                    let updatedResult = changerResult.1
                                     currentBuilding = updatedResult.building_name
                                     currentLevel = updatedResult.level_name
                                     
