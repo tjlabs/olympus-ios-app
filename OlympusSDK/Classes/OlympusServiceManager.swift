@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
-    public static let sdkVersion: String = "0.2.26.5"
+    public static let sdkVersion: String = "0.2.27"
     var isSimulationMode: Bool = false
     var isDeadReckoningMode: Bool = false
     var bleFileName: String = ""
@@ -44,7 +44,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 self.pastReportFlag = input
             }
             self.postReport(report: input)
-            observer.report(flag: input)
+            if input < 9 {
+                observer.report(flag: input)
+            }
         }
     }
     
