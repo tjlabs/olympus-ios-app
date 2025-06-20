@@ -16,6 +16,8 @@ class CardViewController: UIViewController, Observer {
     @IBOutlet weak var saveButton: UIButton!
     @IBOutlet weak var stopButton: UIButton!
     
+    @IBOutlet weak var inOutStatusLabel: UILabel!
+    
     var headingImage = UIImage(named: "heading")
     var coordToDisplay = CoordToDisplay()
     var isSaved: Bool = false
@@ -73,6 +75,16 @@ class CardViewController: UIViewController, Observer {
         print("InnerLabs : Flag = \(flag)")
     }
     
+    func provideInOutStatus(status: OlympusSDK.InOutStatus) {
+        print("InnerLabs : InOutStatus = \(status)")
+        DispatchQueue.main.async {
+            self.inOutStatusLabel.text = "\(status)"
+            self.statusTime = getCurrentTimeInMilliseconds()
+        }
+    }
+    
+    var statusTime: Int = 0
+    
     var region: String = ""
     var userId: String = ""
     
@@ -116,7 +128,7 @@ class CardViewController: UIViewController, Observer {
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_dr3.csv", sensorFileName: "sensor_dr3.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_0604_02.csv", sensorFileName: "sensor_coex_0604_02.csv")
 //        serviceManager.setSim1ulationMode(flag: true, bleFileName: "ble_coex_02_0930.csv", sensorFileName: "sensor_coex_02_0930.csv")
-        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
+        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_02_04_1007.csv", sensorFileName: "sensor_coex_02_04_1007.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_dr_03_1030.csv", sensorFileName: "sensor_coex_dr_03_1030.csv")
     
 //        serviceManager.setDeadReckoningMode(flag: true, buildingName: "Solum", levelName: "0F", x: 5, y: 5, heading: 90)
@@ -679,6 +691,9 @@ class CardViewController: UIViewController, Observer {
             print(getLocalTimeString() + " , (Collect) : bleRaw = \(serviceManager.collectData.bleRaw)")
         } else {
             DispatchQueue.main.async {
+                if getCurrentTimeInMilliseconds() - self.statusTime > 10000 && self.inOutStatusLabel.text != "..." {
+                    self.inOutStatusLabel.text = "..."
+                }
                 self.updateCoord(data: self.coordToDisplay, flag: true)
             }
             if (self.isSaved) {
