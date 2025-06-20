@@ -14,9 +14,13 @@ let UVD_FLAG: Int = 10
 let BLE_SCAN_STOP_FLAG: Int = 11
 let BLE_ERROR_FLAG: Int = 12
 
+public enum InOutStatus {
+    case OUT_TO_IN, INDOOR, IN_TO_OUT, OUTDOOR, UNKNOWN
+}
 
 protocol StateTrackingObserver: AnyObject {
     func isStateDidChange(newValue: Int)
+    func isInOutStatusDidChange(status: InOutStatus)
 }
 
 protocol BuildingLevelChangeObserver: AnyObject {
@@ -31,6 +35,7 @@ public protocol Observable {
 public protocol Observer: class {
     func update(result: FineLocationTrackingResult)
     func report(flag: Int)
+    func provideInOutStatus(status: InOutStatus)
 }
 
 public class Observation: Observable {
