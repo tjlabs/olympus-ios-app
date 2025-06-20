@@ -2,6 +2,7 @@ import Foundation
 import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
+    
     public static let sdkVersion: String = "0.2.27"
     var isSimulationMode: Bool = false
     var isDeadReckoningMode: Bool = false
@@ -60,6 +61,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     print(log)
                 }
             })
+        }
+    }
+    
+    func providing(status: InOutStatus) {
+        for observer in observers {
+            observer.provideInOutStatus(status: status)
         }
     }
     
@@ -213,12 +220,21 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     
     func isStateDidChange(newValue: Int) {
         if (newValue == OUTDOOR_FLAG) {
+            stateManager.setInOutStatus(status: .OUTDOOR)
             self.initialize(isStopService: false)
         }
         self.reporting(input: newValue)
     }
     
+    func isInOutStatusDidChange(status: InOutStatus) {
+        self.providing(status: status)
+    }
+    
     func isBuildingLevelChanged(isChanged: Bool, newBuilding: String, newLevel: String, newCoord: [Double]) {
+//        print("(Olympus) isBuildingLevelChanged : newLevel = \(newLevel) , currentLevel = \(self.currentLevel)")
+        if newLevel.contains("B0") && !self.currentLevel.contains("B0") && !self.currentLevel.isEmpty {
+            stateManager.setInOutStatus(status: .IN_TO_OUT)
+        }
         self.currentBuilding = newBuilding
         self.currentLevel = newLevel
         KF.updateTuBuildingLevel(building: newBuilding, level: newLevel)
@@ -481,6 +497,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         fltResult.absolute_heading = heading
         stateManager.setIsGetFirstResponse(isGetFirstResponse: true)
         stateManager.setIsIndoor(isIndoor: true)
+        stateManager.setInOutStatus(status: .INDOOR)
         stackServerResult(serverResult: fltResult)
         phaseBreakResult = fltResult
         
@@ -869,6 +886,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 if (!stateManager.isGetFirstResponse) {
                     let enterInNetworkBadEntrance = stateManager.checkEnterInNetworkBadEntrance(bleAvg: self.bleAvg)
                     if (enterInNetworkBadEntrance.0) {
+                        stateManager.setIsIndoor(isIndoor: true)
+                        stateManager.setInOutStatus(status: .OUT_TO_IN)
                         stateManager.setIsGetFirstResponse(isGetFirstResponse: true)
                         print(getLocalTimeString() + " , (Olympus) Route Tracker : Start with network bad")
                         let isOn = routeTracker.startRouteTracking(result: enterInNetworkBadEntrance.1, isStartRouteTrack: self.isStartRouteTrack)
@@ -959,6 +978,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     if (!stateManager.isGetFirstResponse) {
                         let enterInNetworkBadEntrance = stateManager.checkEnterInNetworkBadEntrance(bleAvg: self.bleAvg)
                         if (enterInNetworkBadEntrance.0) {
+                            stateManager.setIsIndoor(isIndoor: true)
+                            stateManager.setInOutStatus(status: .OUT_TO_IN)
                             stateManager.setIsGetFirstResponse(isGetFirstResponse: true)
                             print(getLocalTimeString() + " , (Olympus) Route Tracker : Start with bad network")
                             let isOn = routeTracker.startRouteTracking(result: enterInNetworkBadEntrance.1, isStartRouteTrack: self.isStartRouteTrack)
@@ -1353,6 +1374,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     unitDRGenerator.setRouteTrackFinishedTime(value: getCurrentTimeInMillisecondsDouble())
                     unitDRGenerator.setIsStartRouteTrack(isStartRoutTrack: false)
                     isStartRouteTrack = false
+                    stateManager.setInOutStatus(status: .INDOOR)
                     routeTrackFinishTime = getCurrentTimeInMilliseconds()
                     isPhaseBreakInRouteTrack = false
                     if (routeTrackResult.1 != RouteTrackFinishType.STABLE) {
@@ -1416,6 +1438,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_6])
                 
                 isStartRouteTrack = false
+                stateManager.setInOutStatus(status: .INDOOR)
                 displayOutput.phase = String(phaseController.PHASE)
                 displayOutput.indexRx = unitDRInfoIndex
                 sectionController.setSectionUserHeading(value: lastServerResult.absolute_heading)
@@ -1517,12 +1540,14 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             if (!stateManager.isIndoor && (stateManager.timeForInit >= OlympusConstants.TIME_INIT_THRESHOLD)) {
                                 if (levelName != "B0") {
                                     stateManager.setIsIndoor(isIndoor: true)
+                                    stateManager.setInOutStatus(status: .INDOOR)
                                     stateManager.setIsGetFirstResponse(isGetFirstResponse: true)
                                 } else {
                                     print(getLocalTimeString() + " , (Olympus) Route Tracker : Start with Phase3 Result")
                                     let isOn = routeTracker.startRouteTracking(result: fltResult, isStartRouteTrack: isStartRouteTrack)
                                     if (isOn.0) {
                                         stateManager.setIsIndoor(isIndoor: true)
+                                        stateManager.setInOutStatus(status: .OUT_TO_IN)
                                         stateManager.setIsGetFirstResponse(isGetFirstResponse: true)
                                     }
                                     unitDRGenerator.setIsStartRouteTrack(isStartRoutTrack: isOn.0)
