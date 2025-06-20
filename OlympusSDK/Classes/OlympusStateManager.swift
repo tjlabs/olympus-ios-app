@@ -25,6 +25,11 @@ public class OlympusStateManager: NSObject {
         observers.forEach { $0.isStateDidChange(newValue: state) }
     }
     
+    private func notifyInOutStatus(status: InOutStatus) {
+        print(getLocalTimeString() + " , (Olympus) Information : InOutStatus = \(status)")
+        observers.forEach { $0.isInOutStatusDidChange(status: status) }
+    }
+    
     public func initialize(isStopService: Bool) {
         self.lastScannedEntranceOuterWardTime = 0
         self.isGetFirstResponse = false
@@ -471,6 +476,25 @@ public class OlympusStateManager: NSObject {
         
         if notification.name == .trajEditedBecomeForground {
             isBecomeForeground = false
+        }
+    }
+    
+    // IN OUT STATUS
+    func setInOutStatus(status: InOutStatus) {
+        if status == .OUT_TO_IN {
+            notifyInOutStatus(status: status)
+        }
+        
+        if status == .INDOOR {
+            notifyInOutStatus(status: status)
+        }
+        
+        if status == .IN_TO_OUT {
+            notifyInOutStatus(status: status)
+        }
+        
+        if status == .OUTDOOR {
+            notifyInOutStatus(status: status)
         }
     }
 }
