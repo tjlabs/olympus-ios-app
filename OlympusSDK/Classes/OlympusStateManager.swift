@@ -25,11 +25,6 @@ public class OlympusStateManager: NSObject {
         observers.forEach { $0.isStateDidChange(newValue: state) }
     }
     
-    private func notifyInOutStatus(status: InOutStatus) {
-        print(getLocalTimeString() + " , (Olympus) Information : InOutStatus = \(status)")
-        observers.forEach { $0.isInOutStatusDidChange(status: status) }
-    }
-    
     public func initialize(isStopService: Bool) {
         self.lastScannedEntranceOuterWardTime = 0
         self.isGetFirstResponse = false
@@ -40,6 +35,7 @@ public class OlympusStateManager: NSObject {
         self.isStop = false
         self.isVenusMode = false
         self.isNetworkConnectReported = false
+        self.isOutermostWardTaged = false
         
         self.timeBleOff = 0
         self.timeBecomeForeground = 0
@@ -71,6 +67,8 @@ public class OlympusStateManager: NSObject {
     public var isStop: Bool = false
     public var isVenusMode: Bool = false
     private var isNetworkConnectReported: Bool = false
+    var curInOutStatus: InOutStatus = .UNKNOWN
+    var isOutermostWardTaged: Bool = false
     
     public var timeForInit: Double = OlympusConstants.TIME_INIT_THRESHOLD+1
     private var timeBleOff: Double = 0
@@ -142,6 +140,59 @@ public class OlympusStateManager: NSObject {
         }
         
         return isNeedClearBle
+    }
+    
+    public func checkOutermostWardTagged(bleAvg: [String: Double], olympusResult: FineLocationTrackingResult) {
+        let state = self.curInOutStatus
+        if self.isIndoor && self.isGetFirstResponse && !self.isBleOff && !self.isOutermostWardTaged {
+            if state == .IN_TO_OUT {
+                for (key, value) in bleAvg {
+                    if EntranceOuterWards.contains(key) && value >= OlympusConstants.OUTERWARD_TAG_THRESHOLD {
+                        print(getLocalTimeString() + " , (Olympus) checkOutermostWardTagged : \(key), \(value)")
+                        self.isOutermostWardTaged = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + OlympusConstants.OUTERWARD_TAG_DELAY) { [weak self] in
+                            guard let self = self else { return }
+                            self.isIndoor = false
+                            notifyObservers(state: OUTDOOR_FLAG)
+                        }
+                        break
+                    }
+                }
+            }
+        }
+    }
+    
+    public func checkOutermostWardTaggedV2(bleAvg: [String: Double], olympusResult: FineLocationTrackingResult) {
+        guard isIndoor, isGetFirstResponse, !isBleOff, !isOutermostWardTaged else { return }
+
+        let shouldCheckBLE: Bool = {
+            switch curInOutStatus {
+            case .IN_TO_OUT:
+                return true
+            case .INDOOR:
+                return OlympusPathMatchingCalculator.shared
+                    .checkInEntranceMatchingArea(x: olympusResult.x,
+                                                 y: olympusResult.y,
+                                                 building: olympusResult.building_name,
+                                                 level: olympusResult.level_name).0
+            default:
+                return false
+            }
+        }()
+
+        guard shouldCheckBLE else { return }
+
+        for (key, value) in bleAvg where EntranceOuterWards.contains(key) && value >= OlympusConstants.OUTERWARD_TAG_THRESHOLD {
+            print("\(getLocalTimeString()) , (Olympus) checkOutermostWardTagged : \(key), \(value)")
+            isOutermostWardTaged = true
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + OlympusConstants.OUTERWARD_TAG_DELAY) { [weak self] in
+                guard let self = self else { return }
+                self.isIndoor = false
+                notifyObservers(state: OUTDOOR_FLAG)
+            }
+            break
+        }
     }
     
     public func checkOutdoorBleEmpty(lastBleDiscoveredTime: Double, olympusResult: FineLocationTrackingResult) {
@@ -481,20 +532,25 @@ public class OlympusStateManager: NSObject {
     
     // IN OUT STATUS
     func setInOutStatus(status: InOutStatus) {
+        self.curInOutStatus = status
         if status == .OUT_TO_IN {
-            notifyInOutStatus(status: status)
+//            notifyInOutStatus(status: status)
         }
         
         if status == .INDOOR {
-            notifyInOutStatus(status: status)
+//            notifyInOutStatus(status: status)
         }
         
         if status == .IN_TO_OUT {
-            notifyInOutStatus(status: status)
+//            notifyInOutStatus(status: status)
         }
         
         if status == .OUTDOOR {
-            notifyInOutStatus(status: status)
+//            notifyInOutStatus(status: status)
         }
+    }
+    
+    func getInOutStaus() -> InOutStatus {
+        return self.curInOutStatus
     }
 }
