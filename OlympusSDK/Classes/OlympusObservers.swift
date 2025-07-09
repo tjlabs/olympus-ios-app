@@ -20,7 +20,6 @@ public enum InOutStatus {
 
 protocol StateTrackingObserver: AnyObject {
     func isStateDidChange(newValue: Int)
-    func isInOutStatusDidChange(status: InOutStatus)
 }
 
 protocol BuildingLevelChangeObserver: AnyObject {
@@ -35,7 +34,6 @@ public protocol Observable {
 public protocol Observer: class {
     func update(result: FineLocationTrackingResult)
     func report(flag: Int)
-    func provideInOutStatus(status: InOutStatus)
 }
 
 public class Observation: Observable {
