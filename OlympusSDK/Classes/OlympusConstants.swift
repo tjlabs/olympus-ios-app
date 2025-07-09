@@ -164,6 +164,8 @@ class OlympusConstants {
     static var TIME_INIT_THRESHOLD: Double = 25 // seconds
     static var UNKNOWN_TRAJ_CUT_IDX: Int = 25
     static let OUTERWARD_SCAN_THRESHOLD: Double = -85.0
+    static let OUTERWARD_TAG_THRESHOLD: Double = -80.0
+    static let OUTERWARD_TAG_DELAY: Double = 6.0
     static var REQUIRED_LENGTH_FOR_MAJOR_HEADING: Double = 10
     static let COUNT_FOR_PHASE_BREAK_IN_PHASE2: Int = 7
     static let HEADING_BUFFER_SIZE: Int = 5
