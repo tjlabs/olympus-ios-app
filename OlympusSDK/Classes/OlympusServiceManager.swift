@@ -37,7 +37,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
     }
     
-    
     func reporting(input: Int) {
         for observer in observers {
             if (input != -2 || input != -1) {
@@ -64,10 +63,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
     }
     
-    func providing(status: InOutStatus) {
-        for observer in observers {
-            observer.provideInOutStatus(status: status)
-        }
+    public func getInOutStatus() -> InOutStatus {
+        return stateManager.curInOutStatus
     }
     
     var deviceModel: String
@@ -224,10 +221,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             self.initialize(isStopService: false)
         }
         self.reporting(input: newValue)
-    }
-    
-    func isInOutStatusDidChange(status: InOutStatus) {
-        self.providing(status: status)
     }
     
     func isBuildingLevelChanged(isChanged: Bool, newBuilding: String, newLevel: String, newCoord: [Double]) {
@@ -958,6 +951,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     })
                     inputReceivedForce = []
                 }
+                stateManager.checkOutermostWardTagged(bleAvg: self.bleAvg, olympusResult: self.olympusResult)
             } else if (!stateManager.isBackground) {
                 stateManager.checkOutdoorBleEmpty(lastBleDiscoveredTime: self.simulationTime, olympusResult: self.olympusResult)
                 stateManager.checkEnterSleepMode(service: self.service, type: 0)
@@ -1055,6 +1049,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     })
                     inputReceivedForce = []
                 }
+                stateManager.checkOutermostWardTagged(bleAvg: self.bleAvg, olympusResult: self.olympusResult)
             } else if (!stateManager.isBackground) {
                 stateManager.checkOutdoorBleEmpty(lastBleDiscoveredTime: OlympusBluetoothManager.shared.bleDiscoveredTime, olympusResult: self.olympusResult)
                 stateManager.checkEnterSleepMode(service: self.service, type: 0)
@@ -1597,8 +1592,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 if (resultPhase.0 == OlympusConstants.PHASE_3) {
                                     let changerResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: copiedResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
                                     let updatedResult = changerResult.1
-                                    currentBuilding = updatedResult.building_name
-                                    currentLevel = updatedResult.level_name
+                                    if !changerResult.0 {
+                                        currentBuilding = updatedResult.building_name
+                                        currentLevel = updatedResult.level_name
+                                    }
                                     self.isBuildingLevelChanged(isChanged: changerResult.0, newBuilding: updatedResult.building_name, newLevel: updatedResult.level_name, newCoord: [])
                                 } else if (resultPhase.0 == OlympusConstants.PHASE_6) {
 //                                    sectionController.setInitialAnchorTailIndex(value: unitDRInfoIndex)
@@ -1606,9 +1603,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                     copiedResult.absolute_heading = propagatedResult[2]
                                     let changerResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: copiedResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
                                     let updatedResult = changerResult.1
-                                    currentBuilding = updatedResult.building_name
-                                    currentLevel = updatedResult.level_name
-                                    
+                                    if !changerResult.0 {
+                                        currentBuilding = updatedResult.building_name
+                                        currentLevel = updatedResult.level_name
+                                    }
                                     makeTemporalResult(input: updatedResult, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
                                     self.isBuildingLevelChanged(isChanged: changerResult.0, newBuilding: updatedResult.building_name, newLevel: updatedResult.level_name, newCoord: [])
                                     sectionController.setSectionUserHeading(value: updatedResult.absolute_heading)
@@ -1625,8 +1623,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             } else {
                                 let changerResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: fltResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
                                 let updatedResult = changerResult.1
-                                currentBuilding = updatedResult.building_name
-                                currentLevel = updatedResult.level_name
+                                if !changerResult.0 {
+                                    currentBuilding = updatedResult.building_name
+                                    currentLevel = updatedResult.level_name
+                                }
                                 self.isBuildingLevelChanged(isChanged: changerResult.0, newBuilding: updatedResult.building_name, newLevel: updatedResult.level_name, newCoord: [])
                             }
                         } else {
