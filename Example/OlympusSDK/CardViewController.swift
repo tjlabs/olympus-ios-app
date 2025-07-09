@@ -75,13 +75,13 @@ class CardViewController: UIViewController, Observer {
         print("InnerLabs : Flag = \(flag)")
     }
     
-    func provideInOutStatus(status: OlympusSDK.InOutStatus) {
-        print("InnerLabs : InOutStatus = \(status)")
-        DispatchQueue.main.async {
-            self.inOutStatusLabel.text = "\(status)"
-            self.statusTime = getCurrentTimeInMilliseconds()
-        }
-    }
+//    func didStatusChanged(status: OlympusSDK.InOutStatus) {
+//        print("InnerLabs : InOutStatus = \(status)")
+//        DispatchQueue.main.async {
+//            self.inOutStatusLabel.text = "\(status)"
+//            self.statusTime = getCurrentTimeInMilliseconds()
+//        }
+//    }
     
     var statusTime: Int = 0
     
@@ -97,8 +97,8 @@ class CardViewController: UIViewController, Observer {
     var sector_id: Int = 6
     var mode: String = "auto"
     
-//    var sector_id: Int = 15 // LG G2
-//    var mode: String = "pdr"
+//    var sector_id: Int = 20  // Convensia
+//    var mode: String = "auto"
     
 //    var sector_id: Int = 4
 //    var mode: String = "pdr"
@@ -128,13 +128,13 @@ class CardViewController: UIViewController, Observer {
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_dr3.csv", sensorFileName: "sensor_dr3.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_0604_02.csv", sensorFileName: "sensor_coex_0604_02.csv")
 //        serviceManager.setSim1ulationMode(flag: true, bleFileName: "ble_coex_02_0930.csv", sensorFileName: "sensor_coex_02_0930.csv")
-        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_02_04_1007.csv", sensorFileName: "sensor_coex_02_04_1007.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_02_04_1007.csv", sensorFileName: "sensor_coex_02_04_1007.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_dr_03_1030.csv", sensorFileName: "sensor_coex_dr_03_1030.csv")
     
 //        serviceManager.setDeadReckoningMode(flag: true, buildingName: "Solum", levelName: "0F", x: 5, y: 5, heading: 90)
 //        serviceManager.setDeadReckoningMode(flag: true, buildingName: "S3", levelName: "7F", x: 6, y: 16, heading: 270)
         
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_0519_02.csv", sensorFileName: "sensor_songdo_0519_02.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_0519_01.csv", sensorFileName: "sensor_songdo_0519_01.csv")
         
         // collect
 //        isCollect = true
@@ -621,6 +621,10 @@ class CardViewController: UIViewController, Observer {
     
     func updateCoord(data: CoordToDisplay, flag: Bool) {
         DispatchQueue.main.async { [self] in
+            
+            let ioStatus = serviceManager.getInOutStatus()
+            self.inOutStatusLabel.text = "\(ioStatus)"
+            
             indexTx.text = String(serviceManager.displayOutput.indexTx)
             indexRx.text = String(serviceManager.displayOutput.indexRx) + " // " + String(serviceManager.displayOutput.phase)
             scc.text = String(serviceManager.displayOutput.scc)
@@ -691,9 +695,9 @@ class CardViewController: UIViewController, Observer {
             print(getLocalTimeString() + " , (Collect) : bleRaw = \(serviceManager.collectData.bleRaw)")
         } else {
             DispatchQueue.main.async {
-                if getCurrentTimeInMilliseconds() - self.statusTime > 10000 && self.inOutStatusLabel.text != "..." {
-                    self.inOutStatusLabel.text = "..."
-                }
+//                if getCurrentTimeInMilliseconds() - self.statusTime > 10000 && self.inOutStatusLabel.text != "..." {
+//                    self.inOutStatusLabel.text = "..."
+//                }
                 self.updateCoord(data: self.coordToDisplay, flag: true)
             }
             if (self.isSaved) {

@@ -37,6 +37,7 @@ public class OlympusRouteTracker {
         self.EntranceInnerWardID[key] = entranceRF.id
         self.EntranceInnerWardRSSI[key] = Double(entranceRF.rss)
         self.EntranceInnerWardCoord[key] = entranceRF.pos + entranceRF.direction
+        print(getLocalTimeString() + " , (Olympus) setEntranceInnerWardInfo : \(key) , \(entranceRF)")
     }
 
     private func parseRoute(data: String) -> ([String], [[Double]]) {
