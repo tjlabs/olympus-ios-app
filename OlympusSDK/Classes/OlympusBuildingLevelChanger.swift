@@ -42,19 +42,22 @@ public class OlympusBuildingLevelChanger {
     
     var trajEditedObserver: Any!
     
-    public func initialize() {
+    public func initialize(isStopService: Bool) {
         self.isDetermineSpot = false
         self.travelingOsrDistance = 0
         self.lastSpotId = 0
         self.currentSpot = 0
         self.spotCutIndex = 0
         self.buildingLevelChangedTime = 0
-        self.buildingsAndLevels = [String:[String]]()
         self.preOutputMobileTime = 0
         
         self.sectorDRModeArea = [String: DRModeArea]()
         self.currentDRModeArea = DRModeArea(number: -1, range: [], direction: 0, nodes: [])
         self.currentDRModeAreaNodeNumber = -1
+        
+        if isStopService {
+            self.buildingsAndLevels = [String:[String]]()
+        }
     }
     
     public func setSectorID(sector_id: Int) {
