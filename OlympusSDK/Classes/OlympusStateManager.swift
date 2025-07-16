@@ -35,7 +35,7 @@ public class OlympusStateManager: NSObject {
         self.isStop = false
         self.isVenusMode = false
         self.isNetworkConnectReported = false
-        self.isOutermostWardTaged = false
+        self.isOutermostWardTagged = false
         
         self.timeBleOff = 0
         self.timeBecomeForeground = 0
@@ -68,7 +68,7 @@ public class OlympusStateManager: NSObject {
     public var isVenusMode: Bool = false
     private var isNetworkConnectReported: Bool = false
     var curInOutStatus: InOutStatus = .UNKNOWN
-    var isOutermostWardTaged: Bool = false
+    var isOutermostWardTagged: Bool = false
     
     public var timeForInit: Double = OlympusConstants.TIME_INIT_THRESHOLD+1
     private var timeBleOff: Double = 0
@@ -144,12 +144,12 @@ public class OlympusStateManager: NSObject {
     
     public func checkOutermostWardTagged(bleAvg: [String: Double], olympusResult: FineLocationTrackingResult) {
         let state = self.curInOutStatus
-        if self.isIndoor && self.isGetFirstResponse && !self.isBleOff && !self.isOutermostWardTaged {
+        if self.isIndoor && self.isGetFirstResponse && !self.isBleOff && !self.isOutermostWardTagged {
             if state == .IN_TO_OUT {
                 for (key, value) in bleAvg {
                     if EntranceOuterWards.contains(key) && value >= OlympusConstants.OUTERWARD_TAG_THRESHOLD {
                         print(getLocalTimeString() + " , (Olympus) checkOutermostWardTagged : \(key), \(value)")
-                        self.isOutermostWardTaged = true
+                        self.isOutermostWardTagged = true
                         DispatchQueue.main.asyncAfter(deadline: .now() + OlympusConstants.OUTERWARD_TAG_DELAY) { [weak self] in
                             guard let self = self else { return }
                             self.isIndoor = false
@@ -163,7 +163,7 @@ public class OlympusStateManager: NSObject {
     }
     
     public func checkOutermostWardTaggedV2(bleAvg: [String: Double], olympusResult: FineLocationTrackingResult) {
-        guard isIndoor, isGetFirstResponse, !isBleOff, !isOutermostWardTaged else { return }
+        guard isIndoor, isGetFirstResponse, !isBleOff, !isOutermostWardTagged else { return }
 
         let shouldCheckBLE: Bool = {
             switch curInOutStatus {
@@ -184,7 +184,7 @@ public class OlympusStateManager: NSObject {
 
         for (key, value) in bleAvg where EntranceOuterWards.contains(key) && value >= OlympusConstants.OUTERWARD_TAG_THRESHOLD {
             print("\(getLocalTimeString()) , (Olympus) checkOutermostWardTagged : \(key), \(value)")
-            isOutermostWardTaged = true
+            isOutermostWardTagged = true
             
             DispatchQueue.main.asyncAfter(deadline: .now() + OlympusConstants.OUTERWARD_TAG_DELAY) { [weak self] in
                 guard let self = self else { return }
