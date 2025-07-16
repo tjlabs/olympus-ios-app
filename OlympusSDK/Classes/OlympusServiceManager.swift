@@ -259,7 +259,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             stateManager.initialize(isStopService: isStopService)
         }
         
-        buildingLevelChanger.initialize()
+        buildingLevelChanger.initialize(isStopService: isStopService)
         OlympusPathMatchingCalculator.shared.initialize()
         rflowCorrelator.initialize()
         routeTracker.initialize()
@@ -2439,6 +2439,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 stackUserMask(data: data)
                 stackUserUniqueMask(data: data)
                 stackUserMaskForDisplay(data: data)
+                compareDiagonal(index: resultIndex, userMaskBuffer: self.userMaskBuffer, unitDRInfoBuffer: self.unitDRInfoBuffer)
                 if (runMode == OlympusConstants.MODE_PDR) {
                     self.isNeedPathTrajMatching = checkIsNeedPathTrajMatching(userMaskBuffer: self.userMaskBuffer)
                 } else {
@@ -2507,6 +2508,89 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             self.unitDRInfoBuffer.remove(at: 0)
         }
     }
+    
+    private func compareDiagonal(index: Int,
+                                 userMaskBuffer: [UserMask],
+                                 unitDRInfoBuffer: [UnitDRInfo]) -> ([UserMask], [UnitDRInfo])? {
+        let indexCount = 40
+        let tailIndex = max(0, index - indexCount)
+        
+        let userMaskList = userMaskBuffer.filter { $0.index >= tailIndex && $0.index < index }
+        let unitDRInfoList = unitDRInfoBuffer.filter { $0.index >= tailIndex && $0.index < index }
+        
+        guard userMaskList.count == indexCount,
+              unitDRInfoList.count == indexCount else {
+            return nil
+        }
+        
+//        print(getLocalTimeString() + " , (OlympusServiceManager) compareDiagonal : mask \(userMaskList[0].index) ~ \(userMaskList[indexCount-1].index)")
+//        print(getLocalTimeString() + " , (OlympusServiceManager) compareDiagonal : drInfo \(unitDRInfoList[0].index) ~ \(unitDRInfoList[indexCount-1].index)")
+        
+        var maskTrajectory = [[Double]]()
+        let maskDirection = userMaskList[0].absolute_heading
+        let maskStartPoint = [userMaskList[0].x, userMaskList[0].y]
+        for mask in userMaskList {
+            let traj = [Double(mask.x - maskStartPoint[0]), Double(mask.y - maskStartPoint[1])]
+            maskTrajectory.append(traj)
+        }
+        
+        var drTrajectory = [[Double]]()
+        let dirCompensation = unitDRInfoList[0].heading - maskDirection
+        var drX: Double = 0
+        var drY: Double = 0
+        for drInfo in unitDRInfoList {
+            let drDirection = drInfo.heading - dirCompensation
+            drX += drInfo.length*cos(drDirection*OlympusConstants.D2R)
+            drY += drInfo.length*sin(drDirection*OlympusConstants.D2R)
+            drTrajectory.append([drX, drY])
+        }
+        
+        let maskTrajMinMax = getMinMaxValues(for: maskTrajectory)
+        let maskDx = maskTrajMinMax[2] - maskTrajMinMax[0]
+        let maskDy = maskTrajMinMax[3] - maskTrajMinMax[1]
+        let maskDiagonal = sqrt(maskDx*maskDx + maskDy*maskDy)
+        
+        let drTrajMinMax = getMinMaxValues(for: drTrajectory)
+        let drDx = drTrajMinMax[2] - drTrajMinMax[0]
+        let drDy = drTrajMinMax[3] - drTrajMinMax[1]
+        let drDiagonal = sqrt(drDx*drDx + drDy*drDy)
+        
+        print(getLocalTimeString() + " , (OlympusServiceManager) compareDiagonal : mask = \(maskDiagonal) // dr = \(drDiagonal)")
+        
+        return (userMaskList, unitDRInfoList)
+    }
+    
+//    public func calculateAccumulatedDiagonal(traj: [[Double]]) -> Double {
+//        var accumulatedDiagonal = 0.0
+//        
+//        if (!userTrajectory.isEmpty) {
+//            let startHeading = userTrajectory[0].heading
+//            let headInfo = userTrajectory[userTrajectory.count-1]
+//            var xyFromHead: [Double] = [headInfo.userX, headInfo.userY]
+//            
+//            var headingFromHead = [Double] (repeating: 0, count: userTrajectory.count)
+//            for i in 0..<userTrajectory.count {
+//                headingFromHead[i] = compensateHeading(heading: userTrajectory[i].heading  - 180 - startHeading)
+//            }
+//            
+//            var trajectoryFromHead = [[Double]]()
+//            trajectoryFromHead.append(xyFromHead)
+//            for i in (1..<userTrajectory.count).reversed() {
+//                let headAngle = headingFromHead[i]
+//                xyFromHead[0] = xyFromHead[0] + userTrajectory[i].length*cos(headAngle*D2R)
+//                xyFromHead[1] = xyFromHead[1] + userTrajectory[i].length*sin(headAngle*D2R)
+//                trajectoryFromHead.append(xyFromHead)
+//            }
+//            
+//            let trajectoryMinMax = getMinMaxValues(for: trajectoryFromHead)
+//            let dx = trajectoryMinMax[2] - trajectoryMinMax[0]
+//            let dy = trajectoryMinMax[3] - trajectoryMinMax[1]
+//            
+//            accumulatedDiagonal = sqrt(dx*dx + dy*dy)
+//        }
+//        
+//        return accumulatedDiagonal
+//    }
     
     private func stackUnitDRInfoForPhase4(isNeedClear: Bool) {
         if (isNeedClear) {
