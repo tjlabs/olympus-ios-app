@@ -143,6 +143,7 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
                 switch trimmedResult {
                 case .success(let trimmedData):
                     self.bleDictionary = trimmedData
+//                    print(getLocalTimeString() + " , (Olympus) ble = \(trimmedData)")
                 case .failure(let error):
                     print(getLocalTimeString() + " , (Olympus) Error : BleManager \(error)")
                 }
