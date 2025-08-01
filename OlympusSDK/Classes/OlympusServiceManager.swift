@@ -266,7 +266,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         rssCompensator.initialize()
         sectionController.initialize()
         trajController.initialize()
-        OlympusFileManager.shared.initalize()
+        
         ambiguitySolver.initialize()
         
         inputReceivedForce = []
@@ -319,6 +319,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         isInMapEnd = false
         
         if isStopService {
+            OlympusFileManager.shared.initalize()
             isStartComplete = false
             isSaveMobileResult = false
             currentTuResult = FineLocationTrackingFromServer()
@@ -364,6 +365,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         if (statusCode == 200) {
                             self.user_id = user_id
                             OlympusPathMatchingCalculator.shared.setSectorID(sector_id: sector_id)
+                            OlympusAffineConverter.shared.setSectorID(sector_id: sector_id)
                             buildingLevelChanger.setSectorID(sector_id: sector_id)
                             routeTracker.setSectorID(sector_id: sector_id)
                             stateManager.setSectorID(sector_id: sector_id)
@@ -373,24 +375,41 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                         if (isSuccess) {
                                             rssCompensator.setIsScaleLoaded(flag: isSuccess)
                                             OlympusConstants().setNormalizationScale(cur: loadedParam, pre: loadedParam)
-                                            print(returnedString)
                                             print(getLocalTimeString() + " , (Olympus) Scale : \(OlympusConstants.NORMALIZATION_SCALE), \(OlympusConstants.PRE_NORMALIZATION_SCALE)")
                                             
                                             if (!OlympusBluetoothManager.shared.bluetoothReady) {
                                                 let msg: String = getLocalTimeString() + " , (Olympus) Error : Bluetooth is not enabled"
                                                 completion(false, msg)
                                             } else {
-                                                if (!self.isSimulationMode) {
-                                                    OlympusFileManager.shared.setRegion(region: region)
-                                                    OlympusFileManager.shared.createFiles(region: region, sector_id: sector_id, deviceModel: deviceModel, osVersion: deviceOsVersion)
-                                                }
-                                                
-                                                
-                                                self.isStartComplete = true
-                                                self.startTimer()
-                                                NotificationCenter.default.post(name: .serviceStarted, object: nil, userInfo: nil)
-                                                print(getLocalTimeString() + " , (Olympus) Service Start")
-                                                completion(true, getLocalTimeString() + success_msg)
+                                                OlympusNetworkManager.shared.getUserAffineTrans(url: USER_AFFINE_URL, input: sector_id, completion: { statusCode, returnedString, inputSectorId in
+                                                    if statusCode == 200 {
+                                                        let decodedResult = jsonToAffineTransParam(jsonString: returnedString)
+                                                        if decodedResult.0 {
+                                                            OlympusAffineConverter.shared.AffineParam[sector_id] = decodedResult.1
+                                                            print(getLocalTimeString() + " , (Olympus) AffineParam : sector \(sector_id) -> \(OlympusAffineConverter.shared.AffineParam[sector_id])")
+                                                        } else {
+                                                            let msg: String = getLocalTimeString() + " , (Olympus) Error : Cannot decode affine converting param"
+                                                            completion(false, msg)
+                                                        }
+                                                    } else if statusCode >= 400 && statusCode < 500 {
+                                                        print(getLocalTimeString() + " , (Olympus) AffineParam : sector \(sector_id) is not support affine converting")
+                                                    } else {
+                                                        let msg: String = getLocalTimeString() + " , (Olympus) Error : Cannot load affine converting param"
+                                                        completion(false, msg)
+                                                    }
+                                                    
+                                                    if (!self.isSimulationMode) {
+                                                        OlympusFileManager.shared.setRegion(region: region)
+                                                        OlympusFileManager.shared.createFiles(region: region, sector_id: sector_id, deviceModel: deviceModel, osVersion: deviceOsVersion)
+                                                    }
+                                                    
+                                                    
+                                                    self.isStartComplete = true
+                                                    self.startTimer()
+                                                    NotificationCenter.default.post(name: .serviceStarted, object: nil, userInfo: nil)
+                                                    print(getLocalTimeString() + " , (Olympus) Service Start")
+                                                    completion(true, getLocalTimeString() + success_msg)
+                                                })
                                             }
                                         } else {
                                             completion(false, returnedString)
@@ -1598,8 +1617,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                     }
                                     self.isBuildingLevelChanged(isChanged: changerResult.0, newBuilding: updatedResult.building_name, newLevel: updatedResult.level_name, newCoord: [])
                                 } else if (resultPhase.0 == OlympusConstants.PHASE_6) {
-//                                    sectionController.setInitialAnchorTailIndex(value: unitDRInfoIndex)
-                                    sectionController.setInitialAnchorTailIndex(value: searchInfo.tailIndex)
+                                    sectionController.initSection()
+                                    sectionController.setInitialAnchorTailIndex(value: unitDRInfoIndex)
+//                                    sectionController.setInitialAnchorTailIndex(value: searchInfo.tailIndex)
                                     copiedResult.absolute_heading = propagatedResult[2]
                                     let changerResult = buildingLevelChanger.updateBuildingAndLevel(fltResult: copiedResult, currentBuilding: currentBuilding, currentLevel: currentLevel)
                                     let updatedResult = changerResult.1
@@ -2372,6 +2392,15 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 }
             }
             
+//            // Add
+//            if isUseHeading && mustInSameLink && pathMatchingType == .NARROW {
+//                let preResult = self.preTemporalResult
+//                let curResult = result
+//                if preResult.absolute_heading != curResult.absolute_heading {
+//
+//                }
+//            }
+            
             if (isUseHeading && isStableMode && !self.isPhaseBreak) {
                 let diffX = result.x - temporalResult.x
                 let diffY = result.y - temporalResult.y
@@ -2439,7 +2468,25 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 stackUserMask(data: data)
                 stackUserUniqueMask(data: data)
                 stackUserMaskForDisplay(data: data)
-                compareDiagonal(index: resultIndex, userMaskBuffer: self.userMaskBuffer, unitDRInfoBuffer: self.unitDRInfoBuffer)
+//                let diagonals = compare (index: resultIndex, userMaskBuffer: self.userMaskBuffer, unitDRInfoBuffer: self.unitDRInfoBuffer)
+//                if isUseHeading && mustInSameLink && pathMatchingType == .NARROW {
+//                    let preResult = self.preTemporalResult
+//                    let curResult = result
+//                    print(getLocalTimeString() + " , (OlympusServiceManager) compareDiagonal : preH = \(preResult.absolute_heading) // curH = \(curResult.absolute_heading)")
+//                    if preResult.absolute_heading != curResult.absolute_heading {
+//                        let diagonals = compareDiagonal(index: resultIndex, userMaskBuffer: self.userMaskBuffer, unitDRInfoBuffer: self.unitDRInfoBuffer)
+//                    }
+//                }
+                
+//                if let diagonalRatio = compareDiagonal(index: resultIndex, userMaskBuffer: self.userMaskBuffer, unitDRInfoBuffer: self.unitDRInfoBuffer) {
+//                    if diagonalRatio > 5 {
+//                        let isStraight = isStraightTrajectoryFromCumulativeHeading(unitDRInfoBuffer)
+//                        print(getLocalTimeString() + " , (OlympusServiceManager) compareDiagonal : h = \(unitDRInfoBuffer[0].heading) ~ \(unitDRInfoBuffer[unitDRInfoBuffer.count-1].heading)")
+//                        print(getLocalTimeString() + " , (OlympusServiceManager) compareDiagonal : ratio big // isStraight = \(isStraight)")
+//                    }
+//                }
+
+                
                 if (runMode == OlympusConstants.MODE_PDR) {
                     self.isNeedPathTrajMatching = checkIsNeedPathTrajMatching(userMaskBuffer: self.userMaskBuffer)
                 } else {
@@ -2511,8 +2558,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     
     private func compareDiagonal(index: Int,
                                  userMaskBuffer: [UserMask],
-                                 unitDRInfoBuffer: [UnitDRInfo]) -> ([UserMask], [UnitDRInfo])? {
-        let indexCount = 40
+                                 unitDRInfoBuffer: [UnitDRInfo]) -> Double? {
+        let indexCount = 30
         let tailIndex = max(0, index - indexCount)
         
         let userMaskList = userMaskBuffer.filter { $0.index >= tailIndex && $0.index < index }
@@ -2523,41 +2570,51 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             return nil
         }
         
-//        print(getLocalTimeString() + " , (OlympusServiceManager) compareDiagonal : mask \(userMaskList[0].index) ~ \(userMaskList[indexCount-1].index)")
-//        print(getLocalTimeString() + " , (OlympusServiceManager) compareDiagonal : drInfo \(unitDRInfoList[0].index) ~ \(unitDRInfoList[indexCount-1].index)")
+        print(getLocalTimeString() + " , (OlympusServiceManager) compareDiagonal : mask \(userMaskList[0].index) ~ \(userMaskList[indexCount-1].index)")
+        print(getLocalTimeString() + " , (OlympusServiceManager) compareDiagonal : drInfo \(unitDRInfoList[0].index) ~ \(unitDRInfoList[indexCount-1].index)")
         
-        var maskTrajectory = [[Double]]()
-        let maskDirection = userMaskList[0].absolute_heading
-        let maskStartPoint = [userMaskList[0].x, userMaskList[0].y]
-        for mask in userMaskList {
-            let traj = [Double(mask.x - maskStartPoint[0]), Double(mask.y - maskStartPoint[1])]
-            maskTrajectory.append(traj)
-        }
+//        var maskTrajectory = [[Double]]()
+//        let maskDirection = userMaskList[0].absolute_heading
+//        let maskStartPoint = [userMaskList[0].x, userMaskList[0].y]
+//        for mask in userMaskList {
+//            let traj = [Double(mask.x - maskStartPoint[0]), Double(mask.y - maskStartPoint[1])]
+//            maskTrajectory.append(traj)
+//        }
         
-        var drTrajectory = [[Double]]()
-        let dirCompensation = unitDRInfoList[0].heading - maskDirection
+//        var drTrajectory = [[Double]]()
+//        let dirCompensation = unitDRInfoList[0].heading - maskDirection
         var drX: Double = 0
         var drY: Double = 0
         for drInfo in unitDRInfoList {
-            let drDirection = drInfo.heading - dirCompensation
+//            let drDirection = drInfo.heading - dirCompensation
+            let drDirection = drInfo.heading
             drX += drInfo.length*cos(drDirection*OlympusConstants.D2R)
             drY += drInfo.length*sin(drDirection*OlympusConstants.D2R)
-            drTrajectory.append([drX, drY])
+//            drTrajectory.append([drX, drY])
         }
         
-        let maskTrajMinMax = getMinMaxValues(for: maskTrajectory)
-        let maskDx = maskTrajMinMax[2] - maskTrajMinMax[0]
-        let maskDy = maskTrajMinMax[3] - maskTrajMinMax[1]
-        let maskDiagonal = sqrt(maskDx*maskDx + maskDy*maskDy)
+        let drDiagonal = sqrt(drX*drX + drY*drY)
         
-        let drTrajMinMax = getMinMaxValues(for: drTrajectory)
-        let drDx = drTrajMinMax[2] - drTrajMinMax[0]
-        let drDy = drTrajMinMax[3] - drTrajMinMax[1]
-        let drDiagonal = sqrt(drDx*drDx + drDy*drDy)
+        let maskDx = Double(userMaskList[0].x - userMaskList[userMaskList.count-1].x)
+        let maskDy = Double(userMaskList[0].y - userMaskList[userMaskList.count-1].y)
+        let maskDiagonal = max(sqrt(maskDx*maskDx + maskDy*maskDy), 1)
         
-        print(getLocalTimeString() + " , (OlympusServiceManager) compareDiagonal : mask = \(maskDiagonal) // dr = \(drDiagonal)")
+        let diagonalRatio = drDiagonal/maskDiagonal
         
-        return (userMaskList, unitDRInfoList)
+//        let maskTrajMinMax = getMinMaxValues(for: maskTrajectory)
+//        let maskDx = maskTrajMinMax[2] - maskTrajMinMax[0]
+//        let maskDy = maskTrajMinMax[3] - maskTrajMinMax[1]
+//        let maskDiagonal = sqrt(maskDx*maskDx + maskDy*maskDy)
+//        
+//        let drTrajMinMax = getMinMaxValues(for: drTrajectory)
+//        let drDx = drTrajMinMax[2] - drTrajMinMax[0]
+//        let drDy = drTrajMinMax[3] - drTrajMinMax[1]
+//        let drDiagonal = sqrt(drDx*drDx + drDy*drDy)
+        
+        print(getLocalTimeString() + " , (OlympusServiceManager) compareDiagonal : mask = \(maskDiagonal) // dr = \(drDiagonal) // ratio = \(diagonalRatio)")
+        print(getLocalTimeString() + " , (OlympusServiceManager) compareDiagonal : --------------------------------------------")
+        
+        return diagonalRatio
     }
     
 //    public func calculateAccumulatedDiagonal(traj: [[Double]]) -> Double {
@@ -2901,6 +2958,13 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         result.isIndoor = isIndoor
         result.validity = validity
         result.validity_flag = validity_flag
+        
+        // lat, lon
+        if let affineParam = OlympusAffineConverter.shared.AffineParam[self.sector_id] {
+            let (lat, lon) = convertPpToLatLon(x: fromServer.x, y: fromServer.y, param: affineParam)
+            result.lat = lat
+            result.lon = lon
+        }
         
         return result
     }
