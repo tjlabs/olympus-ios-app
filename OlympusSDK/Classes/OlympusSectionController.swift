@@ -165,6 +165,14 @@ public class OlympusSectionController {
         self.anchorTailIndex = value
     }
     
+    public func initSection() {
+        sectionNumber += 1
+        uvdForSection = []
+        uvdSectionLength = 0
+        uvdSectionHeadings = []
+        userStraightIndexes = []
+    }
+    
     public func setDRModeRequestSectionNumber() {
         self.requestSectionNumberInDRMode = self.sectionNumber
 //        print(getLocalTimeString() + " , (Olympus) isDRMode : setDRModeRequestSectionNumber = \(self.requestSectionNumberInDRMode)")
