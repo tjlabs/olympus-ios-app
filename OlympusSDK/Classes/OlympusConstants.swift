@@ -41,7 +41,7 @@ class OlympusConstants {
     static let PHASE_BREAK_SCC_PDR: Double = 0.45
 //    static let PHASE_BREAK_SCC_DR: Double = 0.45
 //    static let PHASE5_RECOVERY_SCC: Double = 0.5 // 0.55
-    static let PHASE_BREAK_SCC_DR: Double = 0.42
+    static var PHASE_BREAK_SCC_DR: Double = 0.42
     static let PHASE5_RECOVERY_SCC: Double = 0.5 // 0.55
     static let PHASE_BREAK_IN_PHASE2_SCC: Double = 0.26
     static let PHASE2_RESULT_USE_SCC: Double = 0.6
@@ -205,5 +205,43 @@ class OlympusConstants {
     public func setNormalizationScale(cur: Double, pre: Double) {
         OlympusConstants.NORMALIZATION_SCALE     = cur
         OlympusConstants.PRE_NORMALIZATION_SCALE = pre
+        
+        let sccTh = computePhaseBreakSCC(from: cur)
+        OlympusConstants.PHASE_BREAK_SCC_DR = sccTh
+    }
+    
+    
+    func computePhaseBreakSCC(from scale: Double) -> Double {
+        // 정상 구간
+        if scale >= 0.9 && scale <= 1.2 {
+            return 0.42
+        }
+        
+        else if scale < 0.9 {
+            return 0.38
+        }
+        
+        // 비정상 구간: 로그함수 모양으로 감소
+        else if scale <= 1.6 {
+            // scale 값 1.2 ~ 1.6 -> 0 ~ 1로 정규화
+            let x = max(0.0, (scale - 1.2) / 0.4)
+
+            // log curve: log(x + 1), range ≈ [0, log(2)]
+            let logValue = log(x + 1)  // ∈ (0, log(2)]
+
+            // 보정: log(1) = 0, log(2) ≈ 0.693
+            let minB = 0.34
+            let maxB = 0.42
+            let logMin = 0.0
+            let logMax = log(2.0)
+
+            // 보간: log scale → B값으로 변환
+            let b = maxB - (logValue - logMin) / (logMax - logMin) * (maxB - minB)
+            return b
+        }
+        // A > 1.6 고정 하한
+        else {
+            return 0.34
+        }
     }
 }
