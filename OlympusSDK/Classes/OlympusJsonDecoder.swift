@@ -144,6 +144,30 @@ public func jsonToScaleFromServer(jsonString: String) -> (Bool, ScaleFromServer)
     }
 }
 
+public func jsonToAffineTransParam(jsonString: String) -> (Bool, AffineTransParamOutput) {
+    let defaultValue = AffineTransParamOutput(
+        xx_scale: 0,
+        xy_shear: 0,
+        x_translation: 0,
+        yx_shear: 0,
+        yy_scale: 0,
+        y_translation: 0
+    )
+
+    guard let jsonData = jsonString.data(using: .utf8) else {
+        return (false, defaultValue)
+    }
+
+    do {
+        let decoded = try JSONDecoder().decode(AffineTransParamOutput.self, from: jsonData)
+        return (true, decoded)
+    } catch {
+        print("Error decoding AffineTransParamOutput: \(error)")
+        return (false, defaultValue)
+    }
+}
+
+
 public func jsonToFineLocatoinTrackingResultFromServer(jsonString: String) -> (Bool, FineLocationTrackingFromServer) {
     let result = FineLocationTrackingFromServer.init()
     

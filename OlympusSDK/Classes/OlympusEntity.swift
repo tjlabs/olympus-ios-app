@@ -328,6 +328,16 @@ public struct ScaleInfo: Codable {
     let image_scale: [Double]
 }
 
+// ---------------- Affine Transform ---------------- //
+public struct AffineTransParamOutput: Codable {
+    let xx_scale: Double
+    let xy_shear: Double
+    let x_translation: Double
+    let yx_shear: Double
+    let yy_scale: Double
+    let y_translation: Double
+}
+
 // ---------------- REC DATA ---------------- //
 struct ReceivedForce: Encodable {
     let user_id: String
@@ -518,6 +528,8 @@ public struct FineLocationTrackingResult: Codable {
     public var scc: Double
     public var x: Double
     public var y: Double
+    public var lat: Double?
+    public var lon: Double?
     public var absolute_heading: Double
     public var phase: Int
     public var calculated_time: Double
@@ -536,6 +548,8 @@ public struct FineLocationTrackingResult: Codable {
         self.scc = 0
         self.x = 0
         self.y = 0
+        self.lat = nil
+        self.lon = nil
         self.absolute_heading = 0
         self.phase = 0
         self.calculated_time = 0

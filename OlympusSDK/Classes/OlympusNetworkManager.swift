@@ -425,6 +425,64 @@ public class OlympusNetworkManager {
         dataTask.resume()
     }
     
+    func getUserAffineTrans(url: String, input: Int, completion: @escaping (Int, String, Int) -> Void) {
+        // 1) {pk} 치환 또는 미존재 시 경로 뒤에 추가
+        let endpoint: String = {
+            if url.contains("{pk}") {
+                return url.replacingOccurrences(of: "{pk}", with: "\(input)")
+            } else {
+                // 마지막 슬래시 중복 방지
+                if url.hasSuffix("/") {
+                    return url + "\(input)"
+                } else {
+                    return url + "/\(input)"
+                }
+            }
+        }()
+
+        // 2) URL 생성
+        guard let finalURL = URL(string: endpoint) else {
+            completion(400, "Invalid URL: \(endpoint)", input)
+            return
+        }
+
+        // 3) URLRequest 구성
+        var request = URLRequest(url: finalURL)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+
+        // 4) 세션 구성 (타임아웃 유지)
+        let sessionConfig = URLSessionConfiguration.default
+        sessionConfig.timeoutIntervalForResource = TIMEOUT_VALUE_POST
+        sessionConfig.timeoutIntervalForRequest = TIMEOUT_VALUE_POST
+        let session = URLSession(configuration: sessionConfig)
+
+        // 5) 비동기 호출
+        let task = session.dataTask(with: request) { data, response, error in
+            // 네트워크 에러
+            if let error = error {
+                completion(500, error.localizedDescription, input)
+                return
+            }
+
+            // 상태 코드 확인
+            let http = response as? HTTPURLResponse
+            let status = http?.statusCode ?? 500
+            guard (200..<300).contains(status) else {
+                completion(status, http?.description ?? "Fail", input)
+                return
+            }
+
+            // 데이터 디코딩 (문자열 그대로 반환)
+            let body = String(data: data ?? Data(), encoding: .utf8) ?? ""
+            DispatchQueue.main.async {
+                completion(status, body, input)
+            }
+        }
+
+        task.resume()
+    }
+    
     func postReceivedForce(url: String, input: [ReceivedForce], completion: @escaping (Int, String, [ReceivedForce]) -> Void){
         // [http 비동기 방식을 사용해서 http 요청 수행 실시]
         let urlComponents = URLComponents(string: url)
