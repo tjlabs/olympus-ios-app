@@ -178,6 +178,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     var userMaskSendCount: Int = 0
     
     var trajMisMatchOccured: Bool = false
+    var trajMisMatchPosted: Bool = false
     var trajMisMatchIndex: Int = 0
     var trajMisMatchSearchInfo = SearchInfo()
     
@@ -958,7 +959,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     let levelByBle = buildingLevelChanger.calculateLevelByBle(data: top3Ble)
                     let curLevel = removeLevelDirectionString(levelName: self.currentLevel)
                     if levelByBle != "UNKNOWN" && curLevel != levelByBle {
-//                        print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : phaseBreak // curLevel = \(curLevel) , levelByBle = \(levelByBle)")
+                        print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : phaseBreak // curLevel = \(curLevel) , levelByBle = \(levelByBle)")
                         phaseBreakInPhase4(fltResult: FineLocationTrackingFromServer(), isUpdatePhaseBreakResult: false)
                     }
                 }
@@ -1062,7 +1063,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     let levelByBle = buildingLevelChanger.calculateLevelByBle(data: top3Ble)
                     let curLevel = removeLevelDirectionString(levelName: self.currentLevel)
                     if levelByBle != "UNKNOWN" && curLevel != levelByBle {
-//                        print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : phaseBreak // curLevel = \(curLevel) , levelByBle = \(levelByBle)")
+                        print(getLocalTimeString() + " , (Olympus) calculateLevelByBle : phaseBreak // curLevel = \(curLevel) , levelByBle = \(levelByBle)")
                         phaseBreakInPhase4(fltResult: FineLocationTrackingFromServer(), isUpdatePhaseBreakResult: false)
                     }
                 }
@@ -1246,10 +1247,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             // Anchor를 바꿔서 Phase4 요청 보내기
                             let badCaseNodeCandidatesResult = OlympusPathMatchingCalculator.shared.getAnchorNodeCandidatesForBadCase(fltResult: tuResult, pathType: pathType)
                             if (badCaseNodeCandidatesResult.isPhaseBreak) {
+                                print(getLocalTimeString() + " , (Olympus) phaseBreak : badCaseNodeCandidatesResult = \(badCaseNodeCandidatesResult)")
                                 phaseBreakInPhase4(fltResult: tuResult, isUpdatePhaseBreakResult: false)
                             } else {
                                 let nodeCandidatesInfo = badCaseNodeCandidatesResult.nodeCandidatesInfo
                                 if (nodeCandidatesInfo.isEmpty) {
+                                    print(getLocalTimeString() + " , (Olympus) phaseBreak : nodeCandidatesInfo = \(nodeCandidatesInfo)")
                                     phaseBreakInPhase4(fltResult: tuResult, isUpdatePhaseBreakResult: false)
                                 } else {
                                     var nodeNumberCandidates = [Int]()
@@ -1265,6 +1268,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                     let uvdBuffer: [UnitDRInfo] = getUnitDRInfoFromUvdIndex(from: unitDRInfoBufferForPhase4, uvdIndex: passedNodeMatchedIndex)
                                     self.isNeedClearBuffer = true
                                     if (uvdBuffer.isEmpty) {
+                                        print(getLocalTimeString() + " , (Olympus) phaseBreak : uvdBuffer = \(uvdBuffer)")
                                         phaseBreakInPhase4(fltResult: tuResult, isUpdatePhaseBreakResult: false)
                                     } else {
                                         var uvRawHeading = [Double]()
@@ -1487,7 +1491,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //                    let phaseBreakSCC = mode == OlympusConstants.MODE_PDR ? OlympusConstants.PHASE_BREAK_SCC_PDR : OlympusConstants.PHASE_BREAK_SCC_DR
                     let phaseBreakSCC = 0.3
                     if (fltResult.scc < phaseBreakSCC) {
-                        trajController.setIsNeedTrajCheck(flag: true)
+                        print(getLocalTimeString() + " , (Olympus) phaseBreak : fltResult.scc < phaseBreakSCC = \(fltResult.scc)")
                         phaseBreakInPhase4(fltResult: fltResult, isUpdatePhaseBreakResult: true)
                     } else {
                         displayOutput.phase = "6"
@@ -1558,6 +1562,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     
                     self.preServerResultMobileTime = fltResult.mobile_time
                 } else {
+                    print(getLocalTimeString() + " , (Olympus) phaseBreak : else 1")
                     phaseBreakInPhase4(fltResult: FineLocationTrackingFromServer(), isUpdatePhaseBreakResult: false)
                 }
             } else {
@@ -1565,6 +1570,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 print(msg)
             }
             self.trajMisMatchOccured = false
+            self.trajMisMatchPosted = false
         })
     }
     
@@ -2662,9 +2668,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     }
                 } else {
                     // 이후에 서버에 저장된 Index와 차이가 크지 않으면 요청보내기
-                    print(getLocalTimeString() + " , (OlympusServiceManager) trajMisMatchOccured : lastPostedUvdIndex = \(lastPostedUvdIndex) // trajMisMatchIndex = \(trajMisMatchIndex) ")
-                    if lastPostedUvdIndex >= self.trajMisMatchIndex {
-                        processPhase3ForAmbiguousTraj(currentTime: getCurrentTimeInMilliseconds(), mode: mode, trajectoryInfo: [], searchInfo: self.trajMisMatchSearchInfo)
+                    if !trajMisMatchPosted {
+                        print(getLocalTimeString() + " , (OlympusServiceManager) trajMisMatchOccured : lastPostedUvdIndex = \(lastPostedUvdIndex) // trajMisMatchIndex = \(trajMisMatchIndex) ")
+                        if lastPostedUvdIndex >= self.trajMisMatchIndex {
+                            trajMisMatchPosted = true
+                            processPhase3ForAmbiguousTraj(currentTime: getCurrentTimeInMilliseconds(), mode: mode, trajectoryInfo: [], searchInfo: self.trajMisMatchSearchInfo)
+                        }
                     }
                 }
                 
