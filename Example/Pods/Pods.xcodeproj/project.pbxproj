@@ -860,6 +860,7 @@
 		B34E224DBF00A8BDEFD2655D341B34B5 /* GULNSData+zlib.m in Sources */ = {isa = PBXBuildFile; fileRef = 944595A716538342FE35F00638EFDB65 /* GULNSData+zlib.m */; };
 		B37811355B3B0A68D923FE9236A1A009 /* SettingsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AF8992D5CDE28B05D8825395E991A62 /* SettingsProvider.swift */; };
 		B3896628D9FDFDA75DDD45699ED47F63 /* GDTCORProductData.m in Sources */ = {isa = PBXBuildFile; fileRef = 6E69C66F67AE81A04FBA4628278F9BCC /* GDTCORProductData.m */; };
+		B3E3235C2E432581002696D9 /* OlympusAffineConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E3235B2E432581002696D9 /* OlympusAffineConverter.swift */; };
 		B3E426DE69DD0F0947B8941210DA0027 /* GDTCORStorageMetadata.h in Headers */ = {isa = PBXBuildFile; fileRef = 1665A61A43C1300AABEA505BC4DF289C /* GDTCORStorageMetadata.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		B49C86FFFA1E820617B514997075116B /* YAxisRendererRadarChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0393213288386E30E1F988EF0B81D2F /* YAxisRendererRadarChart.swift */; };
 		B4D8B6469165B67A1558192A8660EBB3 /* XAxisRendererHorizontalBarChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31FF8071A8A169D47F41834B821F3757 /* XAxisRendererHorizontalBarChart.swift */; };
@@ -2675,6 +2676,7 @@
 		B2597CAE9652505254DDCA598DC7E06F /* FBLPromise+Async.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "FBLPromise+Async.h"; path = "Sources/FBLPromises/include/FBLPromise+Async.h"; sourceTree = "<group>"; };
 		B2780FDCF2B66D5CF7DF00A34F1B41D8 /* FIRCLSDownloadAndSaveSettingsOperation.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSDownloadAndSaveSettingsOperation.h; path = Crashlytics/Crashlytics/Settings/Operations/FIRCLSDownloadAndSaveSettingsOperation.h; sourceTree = "<group>"; };
 		B3AC191E703838F9D8CDB37E2D6EAB81 /* ObservableType+Extensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "ObservableType+Extensions.swift"; path = "RxSwift/ObservableType+Extensions.swift"; sourceTree = "<group>"; };
+		B3E3235B2E432581002696D9 /* OlympusAffineConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusAffineConverter.swift; path = OlympusSDK/Classes/OlympusAffineConverter.swift; sourceTree = "<group>"; };
 		B3E975F4D49C3291C1B1881A85E7206C /* GULNetworkConstants.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = GULNetworkConstants.h; path = GoogleUtilities/Network/Public/GoogleUtilities/GULNetworkConstants.h; sourceTree = "<group>"; };
 		B3EA70C546722B432C34D8EB636A9D32 /* PrimitiveSequence+Concurrency.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "PrimitiveSequence+Concurrency.swift"; path = "RxSwift/Traits/PrimitiveSequence/PrimitiveSequence+Concurrency.swift"; sourceTree = "<group>"; };
 		B3F66BB6E17CA99EADC85F4708D4947D /* FIRCLSRecordHost.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = FIRCLSRecordHost.m; path = Crashlytics/Crashlytics/Models/Record/FIRCLSRecordHost.m; sourceTree = "<group>"; };
@@ -5224,6 +5226,7 @@
 				9FAF07414F1E2C7FE9C4192A01A45677 /* OlympusPathMatchingCalculator.swift */,
 				4CCFD5F80B154AFA364F7D8F6BBC9DA1 /* OlympusPDRDistanceEstimator.swift */,
 				D979D7D168E36EECB6725D1CBB7405CC /* OlympusPeakValleyDetector.swift */,
+				B3E3235B2E432581002696D9 /* OlympusAffineConverter.swift */,
 				2B0B5CA4277326393A63291B28161940 /* OlympusPhaseController.swift */,
 				91D7632764B803393D3419318EB09C73 /* OlympusRFDFunctions.swift */,
 				642DFF8458CE686B31FE185A6E7A80F7 /* OlympusRflowCorrelator.swift */,
@@ -7122,6 +7125,7 @@
 				998A535A95740CFAB4E85C2852D4662B /* NotificationExtension.swift in Sources */,
 				15520D74E83B63AA23ACB58183BCECA7 /* OlympusAmbiguitySolver.swift in Sources */,
 				54929EDEF8CD01B9333B76AE7DC11959 /* OlympusBlacklistChecker.swift in Sources */,
+				B3E3235C2E432581002696D9 /* OlympusAffineConverter.swift in Sources */,
 				9D8BB847136A0ECE885CDBDDB5092F9B /* OlympusBluetoothManager.swift in Sources */,
 				4C1172D01866088C196B579EB6CEC3A4 /* OlympusBuildingLevelChanger.swift in Sources */,
 				C2700FA087C380BA309CD5DEC0545E3B /* OlympusConstants.swift in Sources */,

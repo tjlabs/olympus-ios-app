@@ -123,7 +123,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     // RFD
     var bleTrimed = [String: [[Double]]]()
     var bleAvg = [String: Double]()
-    var checkBleEmptyStateThreshold : Double = 10
+    var checkBleEmptyStateThreshold: Double = 10
     var checkBleEmptyState : Bool = true
     
     // UVD
@@ -965,7 +965,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 
             }
             
-            checkBleEmptyState(bleData = self.bleAvg)
+            checkBleEmptyState(bleData: self.bleAvg)
 
             if (!self.bleAvg.isEmpty) {
                 stateManager.setVariblesWhenBleIsNotEmpty()
@@ -1069,7 +1069,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 
             }
             
-            checkBleEmptyState(bleData = self.bleAvg)
+            checkBleEmptyState(bleData: self.bleAvg)
 
             if (!self.bleAvg.isEmpty) {
                 stateManager.setVariblesWhenBleIsNotEmpty()
@@ -1092,21 +1092,19 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
     }
     
-    fun checkBleEmptyState(bleData : [String: Double]) {
+    func checkBleEmptyState(bleData: [String: Double]) {
         if (bleData.isEmpty) {
-            checkBleEmptyStateThreshold += RFD_INTERVAL
+            checkBleEmptyStateThreshold += OlympusConstants.RFD_INTERVAL
         } else {
-            checkBleEmptyStateThreshold -= RFD_INTERVAL
+            checkBleEmptyStateThreshold -= OlympusConstants.RFD_INTERVAL
         }
 
         checkBleEmptyStateThreshold = min(max(checkBleEmptyStateThreshold, 0), 10) // 최소 0 최대 10
 
-        //checkBleEmptyState 는 outdoor flag 가 발생했을 때 false 로 바뀜
-        //outdoor flag 발생 이후 최소한 10초는 ble 가 없어야함
-        if (checkBleEmptyStateThreshold >= 10 && !checkBleEmptyState) checkBleEmptyState = true   
+        if (checkBleEmptyStateThreshold >= 10 && !checkBleEmptyState) {
+            checkBleEmptyState = true
+        }
     }
-
-
 
     func userVelocityTimerUpdate() {
         let currentTime = getCurrentTimeInMilliseconds()

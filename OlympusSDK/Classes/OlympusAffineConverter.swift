@@ -15,4 +15,3 @@ class OlympusAffineConverter {
         self.sector_id = sector_id
     }
 }
-
