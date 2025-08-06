@@ -821,7 +821,7 @@ public class OlympusTrajectoryController {
         }
     }
     
-    private func getSearchCoordinates(areaMinMax: [Double], interval: Double) -> [[Double]] {
+    func getSearchCoordinates(areaMinMax: [Double], interval: Double) -> [[Double]] {
         var coordinates: [[Double]] = []
         
         let xMin = areaMinMax[0]
