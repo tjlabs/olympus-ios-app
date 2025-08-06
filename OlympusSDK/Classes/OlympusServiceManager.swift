@@ -123,6 +123,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     // RFD
     var bleTrimed = [String: [[Double]]]()
     var bleAvg = [String: Double]()
+    var checkBleEmptyStateThreshold : Double = 10
+    var checkBleEmptyState : Bool = true
     
     // UVD
     var pastUvdTime: Int = 0
@@ -224,6 +226,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         if (newValue == OUTDOOR_FLAG) {
             stateManager.setInOutStatus(status: .OUTDOOR)
             self.initialize(isStopService: false)
+            checkBleEmptyState = false
         }
         self.reporting(input: newValue)
     }
@@ -962,6 +965,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 
             }
             
+            checkBleEmptyState(bleData = self.bleAvg)
+
             if (!self.bleAvg.isEmpty) {
                 stateManager.setVariblesWhenBleIsNotEmpty()
                 let data = ReceivedForce(user_id: self.user_id, mobile_time: currentTime, ble: self.bleAvg, pressure: self.sensorManager.pressure)
@@ -987,6 +992,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             let validTime = OlympusConstants.BLE_VALID_TIME_INT
             let currentTime = getCurrentTimeInMilliseconds() - validTime
             let bleDictionary: [String: [[Double]]]? = OlympusBluetoothManager.shared.getBLEData()
+            
             if let bleData = bleDictionary {
                 let trimmedResult = OlympusRFDFunctions.shared.trimBleData(bleInput: bleData, nowTime: getCurrentTimeInMillisecondsDouble(), validTime: Double(validTime))
                 switch trimmedResult {
@@ -996,17 +1002,19 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     if (!stateManager.isGetFirstResponse) {
                         let enterInNetworkBadEntrance = stateManager.checkEnterInNetworkBadEntrance(bleAvg: self.bleAvg)
                         if (enterInNetworkBadEntrance.0) {
-                            stateManager.setIsIndoor(isIndoor: true)
-                            stateManager.setInOutStatus(status: .OUT_TO_IN)
-                            stateManager.setIsGetFirstResponse(isGetFirstResponse: true)
-                            print(getLocalTimeString() + " , (Olympus) Route Tracker : Start with bad network")
-                            let isOn = routeTracker.startRouteTracking(result: enterInNetworkBadEntrance.1, isStartRouteTrack: self.isStartRouteTrack)
-                            stackServerResult(serverResult: enterInNetworkBadEntrance.1)
-                            makeTemporalResult(input: enterInNetworkBadEntrance.1, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
-                            unitDRGenerator.setIsStartRouteTrack(isStartRoutTrack: isOn.0)
-                            isStartRouteTrack = isOn.0
-                            networkStatus = isOn.1
-                            NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_3])
+                            if (checkBleEmptyState) {
+                                stateManager.setIsIndoor(isIndoor: true)
+                                stateManager.setInOutStatus(status: .OUT_TO_IN)
+                                stateManager.setIsGetFirstResponse(isGetFirstResponse: true)
+                                print(getLocalTimeString() + " , (Olympus) Route Tracker : Start with bad network")
+                                let isOn = routeTracker.startRouteTracking(result: enterInNetworkBadEntrance.1, isStartRouteTrack: self.isStartRouteTrack)
+                                stackServerResult(serverResult: enterInNetworkBadEntrance.1)
+                                makeTemporalResult(input: enterInNetworkBadEntrance.1, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
+                                unitDRGenerator.setIsStartRouteTrack(isStartRoutTrack: isOn.0)
+                                isStartRouteTrack = isOn.0
+                                networkStatus = isOn.1
+                                NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_3])
+                            }
                         }
                     }
                 case .failure(_):
@@ -1032,6 +1040,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 print(msg)
             }
             
+
             OlympusFileManager.shared.writeBleData(time: currentTime, data: bleAvg)
             
             if (!stateManager.isBackground) {
@@ -1060,6 +1069,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 
             }
             
+            checkBleEmptyState(bleData = self.bleAvg)
+
             if (!self.bleAvg.isEmpty) {
                 stateManager.setVariblesWhenBleIsNotEmpty()
                 let data = ReceivedForce(user_id: self.user_id, mobile_time: currentTime, ble: self.bleAvg, pressure: self.sensorManager.pressure)
@@ -1081,6 +1092,22 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
     }
     
+    fun checkBleEmptyState(bleData : [String: Double]) {
+        if (bleData.isEmpty) {
+            checkBleEmptyStateThreshold += RFD_INTERVAL
+        } else {
+            checkBleEmptyStateThreshold -= RFD_INTERVAL
+        }
+
+        checkBleEmptyStateThreshold = min(max(checkBleEmptyStateThreshold, 0), 10) // 최소 0 최대 10
+
+        //checkBleEmptyState 는 outdoor flag 가 발생했을 때 false 로 바뀜
+        //outdoor flag 발생 이후 최소한 10초는 ble 가 없어야함
+        if (checkBleEmptyStateThreshold >= 10 && !checkBleEmptyState) checkBleEmptyState = true   
+    }
+
+
+
     func userVelocityTimerUpdate() {
         let currentTime = getCurrentTimeInMilliseconds()
         
@@ -1681,15 +1708,17 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                     stateManager.setIsGetFirstResponse(isGetFirstResponse: true)
                                 } else {
                                     print(getLocalTimeString() + " , (Olympus) Route Tracker : Start with Phase3 Result")
-                                    let isOn = routeTracker.startRouteTracking(result: fltResult, isStartRouteTrack: isStartRouteTrack)
-                                    if (isOn.0) {
-                                        stateManager.setIsIndoor(isIndoor: true)
-                                        stateManager.setInOutStatus(status: .OUT_TO_IN)
-                                        stateManager.setIsGetFirstResponse(isGetFirstResponse: true)
+                                    if (checkBleEmptyState) {
+                                        let isOn = routeTracker.startRouteTracking(result: fltResult, isStartRouteTrack: isStartRouteTrack)
+                                        if (isOn.0) {
+                                            stateManager.setIsIndoor(isIndoor: true)
+                                            stateManager.setInOutStatus(status: .OUT_TO_IN)
+                                            stateManager.setIsGetFirstResponse(isGetFirstResponse: true)
+                                        }
+                                        unitDRGenerator.setIsStartRouteTrack(isStartRoutTrack: isOn.0)
+                                        isStartRouteTrack = isOn.0
+                                        networkStatus = isOn.1
                                     }
-                                    unitDRGenerator.setIsStartRouteTrack(isStartRoutTrack: isOn.0)
-                                    isStartRouteTrack = isOn.0
-                                    networkStatus = isOn.1
                                 }
                             }
                         }
