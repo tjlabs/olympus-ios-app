@@ -83,10 +83,7 @@ public class OlympusPhaseController {
     
     
     public func controlPhase(serverResultArray: [FineLocationTrackingFromServer], drBuffer: [UnitDRInfo], UVD_INTERVAL: Int, TRAJ_LENGTH: Double, INDEX_THRESHOLD: Int, inputPhase: Int, inputTrajType: TrajType, mode: String, isVenusMode: Bool) -> (Int, Bool) {
-        var phaseBreakSCC = OlympusConstants.PHASE_BREAK_SCC_DR
-        if (mode == OlympusConstants.MODE_PDR) {
-            phaseBreakSCC = OlympusConstants.PHASE_BREAK_SCC_PDR
-        }
+        let phaseBreakSCC = mode == OlympusConstants.MODE_PDR ? OlympusConstants.PHASE_BREAK_SCC_PDR : OlympusConstants.PHASE_BREAK_SCC_DR
         
         var phase: Int = 0
         var isPhaseBreak: Bool = false
@@ -225,6 +222,10 @@ public class OlympusPhaseController {
                 }
             }
         }
+    }
+    
+    func phaseForceUpdate(phase: Int) {
+        self.PHASE = phase
     }
     
     func notificationCenterAddObserver() {
