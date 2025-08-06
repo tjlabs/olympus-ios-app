@@ -116,7 +116,7 @@ class CardViewController: UIViewController, Observer {
     var serviceManager = OlympusServiceManager()
     var isCollect: Bool = false
     
-    var timer: Timer?
+    var timer: DispatchSourceTimer?
     let TIMER_INTERVAL: TimeInterval = 1/10
     var phoenixTime: TimeInterval = 0
     var preServiceTime: Int = 0
@@ -125,7 +125,7 @@ class CardViewController: UIViewController, Observer {
         super.viewDidLoad()
         headingImage = headingImage?.resize(newWidth: 20)
 
-        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_0604_03.csv", sensorFileName: "sensor_coex_0604_03.csv")
+        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_0604_05.csv", sensorFileName: "sensor_coex_0604_05.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_03_0930.csv", sensorFileName: "sensor_coex_03_0930.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_03_05_1007.csv", sensorFileName: "sensor_coex_03_05_1007.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_dr_03_1030.csv", sensorFileName: "sensor_coex_dr_03_1030.csv")
@@ -674,17 +674,21 @@ class CardViewController: UIViewController, Observer {
     
     // Display Outputs
     func startTimer() {
-        if (timer == nil) {
-            timer = Timer.scheduledTimer(timeInterval: TIMER_INTERVAL, target: self, selector: #selector(self.timerUpdate), userInfo: nil, repeats: true)
-            RunLoop.current.add(self.timer!, forMode: .common)
+        if (self.timer == nil) {
+            let queue = DispatchQueue(label: Bundle.main.bundleIdentifier! + ".timer")
+            self.timer = DispatchSource.makeTimerSource(queue: queue)
+            self.timer!.schedule(deadline: .now(), repeating: TIMER_INTERVAL)
+            self.timer!.setEventHandler { [weak self] in
+                guard let self = self else { return }
+                self.timerUpdate()
+            }
+            self.timer!.resume()
         }
     }
     
     func stopTimer() {
-        if (timer != nil) {
-            self.timer!.invalidate()
-            self.timer = nil
-        }
+        self.timer?.cancel()
+        self.timer = nil
     }
     
     @objc func timerUpdate() {
