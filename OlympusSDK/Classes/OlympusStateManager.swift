@@ -67,7 +67,7 @@ public class OlympusStateManager: NSObject {
     public var isStop: Bool = false
     public var isVenusMode: Bool = false
     private var isNetworkConnectReported: Bool = false
-    var curInOutStatus: InOutStatus = .UNKNOWN
+    var curInOutState: InOutState = .UNKNOWN
     var isOutermostWardTagged: Bool = false
     
     public var timeForInit: Double = OlympusConstants.TIME_INIT_THRESHOLD+1
@@ -143,7 +143,7 @@ public class OlympusStateManager: NSObject {
     }
     
     public func checkOutermostWardTagged(bleAvg: [String: Double], olympusResult: FineLocationTrackingResult) {
-        let state = self.curInOutStatus
+        let state = self.curInOutState
         if self.isIndoor && self.isGetFirstResponse && !self.isBleOff && !self.isOutermostWardTagged {
             if state == .IN_TO_OUT {
                 for (key, value) in bleAvg {
@@ -166,7 +166,7 @@ public class OlympusStateManager: NSObject {
         guard isIndoor, isGetFirstResponse, !isBleOff, !isOutermostWardTagged else { return }
 
         let shouldCheckBLE: Bool = {
-            switch curInOutStatus {
+            switch curInOutState {
             case .IN_TO_OUT:
                 return true
             case .INDOOR:
@@ -531,26 +531,26 @@ public class OlympusStateManager: NSObject {
     }
     
     // IN OUT STATUS
-    func setInOutStatus(status: InOutStatus) {
-        self.curInOutStatus = status
-        if status == .OUT_TO_IN {
+    func setInOutState(state: InOutState) {
+        self.curInOutState = state
+        if state == .OUT_TO_IN {
 //            notifyInOutStatus(status: status)
         }
         
-        if status == .INDOOR {
+        if state == .INDOOR {
 //            notifyInOutStatus(status: status)
         }
         
-        if status == .IN_TO_OUT {
+        if state == .IN_TO_OUT {
 //            notifyInOutStatus(status: status)
         }
         
-        if status == .OUTDOOR {
+        if state == .OUTDOOR {
 //            notifyInOutStatus(status: status)
         }
     }
     
-    func getInOutStaus() -> InOutStatus {
-        return self.curInOutStatus
+    func getInOutState() -> InOutState {
+        return self.curInOutState
     }
 }

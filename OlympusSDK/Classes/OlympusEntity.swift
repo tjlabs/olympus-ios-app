@@ -374,6 +374,9 @@ public struct MobileResult: Encodable {
     public var scc: Double
     public var x: Double
     public var y: Double
+    public var latitude: Double?
+    public var longitude: Double?
+    public var in_out_state: Int
     public var absolute_heading: Double
     public var phase: Int
     public var calculated_time: Double
@@ -530,6 +533,7 @@ public struct FineLocationTrackingResult: Codable {
     public var y: Double
     public var lat: Double?
     public var lon: Double?
+    public var in_out_state: InOutState
     public var absolute_heading: Double
     public var phase: Int
     public var calculated_time: Double
@@ -550,6 +554,7 @@ public struct FineLocationTrackingResult: Codable {
         self.y = 0
         self.lat = nil
         self.lon = nil
+        self.in_out_state = .UNKNOWN
         self.absolute_heading = 0
         self.phase = 0
         self.calculated_time = 0

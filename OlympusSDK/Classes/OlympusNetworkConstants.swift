@@ -15,6 +15,7 @@ let USER_AFFINE_SERVER_VERSION = "2025-07-30"
 let CALC_FLT_SERVER_VERSION = "2025-04-28"  // 12-10, 12-12
 let CALC_OSR_SERVER_VERSION = "2024-08-30"
 let REC_SERVER_VERSION = "2024-04-19"
+let REC_MR_SERVER_VERSION = "2025-08-11"
 let BLACK_LIST_URL = "https://ap-northeast-2.client.jupiter.tjlabs.dev/black"
 
 let HTTP_PREFIX = "https://"
@@ -95,7 +96,7 @@ public func setServerURL(region: String) {
     REC_RFD_URL = REC_URL + "/" + REC_SERVER_VERSION + "/rf"
     REC_UVD_URL = REC_URL + "/" + REC_SERVER_VERSION + "/uv"
     REC_UMD_URL = REC_URL + "/" + REC_SERVER_VERSION + "/um"
-    REC_RESULT_URL  = REC_URL + "/" + REC_SERVER_VERSION + "/mr"
+    REC_RESULT_URL  = REC_URL + "/" + REC_MR_SERVER_VERSION + "/mr"
     REC_REPORT_URL  = REC_URL + "/" + REC_SERVER_VERSION + "/mt"
     REC_RC_URL = REC_URL + "/" + REC_SERVER_VERSION + "/rc"
     

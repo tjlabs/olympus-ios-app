@@ -1,7 +1,7 @@
 import UIKit
 import Foundation
 
-public class OlympusFileManager {
+class OlympusFileManager {
     static let shared = OlympusFileManager()
     
     private let dataQueue = DispatchQueue(label: "tjlabs.olmypus.dataQueue", attributes: .concurrent)
@@ -23,7 +23,7 @@ public class OlympusFileManager {
     
     init() {}
     
-    public func initalize() {
+    func initalize() {
         region = ""
         sector_id = 0
         deviceModel = "Unknown"
@@ -37,7 +37,7 @@ public class OlympusFileManager {
         collectData = [OlympusCollectData]()
     }
     
-    public func setRegion(region: String) {
+    func setRegion(region: String) {
         self.region = region
     }
     
@@ -62,7 +62,7 @@ public class OlympusFileManager {
         return exportDirectoryUrl
     }
     
-    public func createFiles(region: String, sector_id: Int, deviceModel: String, osVersion: Int) {
+    func createFiles(region: String, sector_id: Int, deviceModel: String, osVersion: Int) {
         if let exportDir: URL = self.createExportDirectory() {
             self.region = region
             self.sector_id = sector_id
@@ -84,15 +84,16 @@ public class OlympusFileManager {
         }
     }
     
-    public func writeSensorData(currentTime: Double, data: OlympusSensorData) {
+    func writeSensorData(currentTime: Double, data: OlympusSensorData) {
         dataQueue.async(flags: .barrier) {
             var sensorRow = data
             sensorRow.time = currentTime
             self.sensorData.append(sensorRow)
+//            print("write sensorData : \(sensorRow.time) // data = \(self.sensorData)")
         }
     }
     
-    public func writeBleData(time: Int, data: [String: Double]) {
+    func writeBleData(time: Int, data: [String: Double]) {
         dataQueue.async(flags: .barrier) {
             self.bleTime.append(time)
             self.bleData.append(data)
@@ -118,8 +119,6 @@ public class OlympusFileManager {
         } catch {
             print(getLocalTimeString() + " , (Olympus) FileManager : Error: \(error)")
         }
-        
-        sensorData = [OlympusSensorData]()
     }
     
     private func saveBleData() {
@@ -147,17 +146,59 @@ public class OlympusFileManager {
         } catch {
             print(getLocalTimeString() + " , (Olympus) FileManager : Error: \(error)")
         }
+    }
+    
+    func saveFilesForSimulation(completion: @escaping (Bool) -> Void) {
+        let tasks: [(DispatchGroup) -> Void] = [
+            { [self] group in
+                group.enter()
+                dataQueue.async(flags: .barrier) {
+                    self.saveBleData()
+                    group.leave()
+                }
+            }
+            ,{ [self] group in
+                group.enter()
+                dataQueue.async(flags: .barrier) {
+                    self.saveSensorData()
+                    group.leave()
+                }
+            }
+        ]
         
-        bleTime = [Int]()
-        bleData = [[String: Double]]()
+        performTasksWithCounter(tasks: tasks, onComplete: { [self] in
+            sensorData = [OlympusSensorData]()
+            bleTime = [Int]()
+            bleData = [[String: Double]]()
+            completion(true)
+        }, onError: { [self] _ in
+            sensorData = [OlympusSensorData]()
+            bleTime = [Int]()
+            bleData = [[String: Double]]()
+            completion(false)
+        })
     }
     
-    public func saveFilesForSimulation() {
-        saveBleData()
-        saveSensorData()
+    private func performTasksWithCounter(tasks: [(DispatchGroup) -> Void],
+                                         onComplete: @escaping () -> Void,
+                                         onError: @escaping (String) -> Void) {
+        let dispatchGroup = DispatchGroup()
+        var isErrorOccurred = false
+        
+        for task in tasks {
+            task(dispatchGroup)
+        }
+        
+        dispatchGroup.notify(queue: .main) {
+            if !isErrorOccurred {
+                onComplete()
+            } else {
+                onError(getLocalTimeString() + " , (Olympus) FileManager : save file error")
+            }
+        }
     }
     
-    public func loadFilesForSimulation(bleFile: String, sensorFile: String) -> ([[String: Double]], [OlympusSensorData]) {
+    func loadFilesForSimulation(bleFile: String, sensorFile: String) -> ([[String: Double]], [OlympusSensorData]) {
         var loadedBleData = [[String: Double]]()
         var loadedSenorData = [OlympusSensorData]()
         
@@ -238,7 +279,7 @@ public class OlympusFileManager {
         return (loadedBleData, loadedSenorData)
     }
     
-    public func createCollectFile(region: String, deviceModel: String, osVersion: Int) {
+    func createCollectFile(region: String, deviceModel: String, osVersion: Int) {
         if let exportDir: URL = self.createExportDirectory() {
             self.region = region
             self.deviceModel = deviceModel
@@ -257,13 +298,13 @@ public class OlympusFileManager {
         }
     }
     
-    public func writeCollectData(data: OlympusCollectData) {
+    func writeCollectData(data: OlympusCollectData) {
         dataQueue.async(flags: .barrier) {
             self.collectData.append(data)
         }
     }
     
-    public func saveCollectData() {
+    func saveCollectData() {
         let dataToSave = self.collectData
         var csvText = "time,acc_x,acc_y,acc_z,gyro_x,gyro_y,gyro_z,mag_x,mag_y,mag_z,roll,pitch,yaw,qx,qy,qz,qw,pressure,true_heading,mag_heading,ble\n"
         print(getLocalTimeString() + " , (Olympus) FileManager : collect = \(dataToSave)")

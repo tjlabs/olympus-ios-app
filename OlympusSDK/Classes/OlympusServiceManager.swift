@@ -3,7 +3,7 @@ import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
     
-    public static let sdkVersion: String = "0.2.27"
+    public static let sdkVersion: String = "0.2.29"
     var isSimulationMode: Bool = false
     var isDeadReckoningMode: Bool = false
     var bleFileName: String = ""
@@ -21,13 +21,18 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             observer.update(result: result)
             
             if (self.isSaveMobileResult) {
-                let data = MobileResult(user_id: self.user_id, mobile_time: result.mobile_time, sector_id: self.sector_id, building_name: result.building_name, level_name: result.level_name, scc: result.scc, x: result.x, y: result.y, absolute_heading: result.absolute_heading, phase: result.phase, calculated_time: result.calculated_time, index: result.index, velocity: result.velocity, ble_only_position: result.ble_only_position, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation: self.scCompensation, is_indoor: result.isIndoor)
+                let stateValue = result.in_out_state.rawValue
+                let data = MobileResult(user_id: self.user_id, mobile_time: result.mobile_time, sector_id: self.sector_id, building_name: result.building_name, level_name: result.level_name, scc: result.scc, x: result.x, y: result.y, latitude: result.lat, longitude: result.lon, in_out_state: stateValue, absolute_heading: result.absolute_heading, phase: result.phase, calculated_time: result.calculated_time, index: result.index, velocity: result.velocity, ble_only_position: result.ble_only_position, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation: self.scCompensation, is_indoor: result.isIndoor)
                 inputMobileResult.append(data)
                 if (inputMobileResult.count >= OlympusConstants.MR_INPUT_NUM) {
                     OlympusNetworkManager.shared.postMobileResult(url: REC_RESULT_URL, input: inputMobileResult, completion: { statusCode, returnedStrig in
                         if (statusCode != 200) {
                             let localTime = getLocalTimeString()
-                            let log: String = localTime + " , (Olympus) Error \(statusCode) : Fail to send mobile result"
+                            let log: String = localTime + " , (Olympus) Error \(statusCode) : \(returnedStrig)"
+                            print(log)
+                        } else {
+                            let localTime = getLocalTimeString()
+                            let log: String = localTime + " , (Olympus) Success \(statusCode) : Success to send mobile result"
                             print(log)
                         }
                     })
@@ -63,8 +68,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
     }
     
-    public func getInOutStatus() -> InOutStatus {
-        return stateManager.curInOutStatus
+    public func getInOutState() -> InOutState {
+        return stateManager.curInOutState
     }
     
     var deviceModel: String
@@ -225,9 +230,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     
     func isStateDidChange(newValue: Int) {
         if (newValue == OUTDOOR_FLAG) {
-            stateManager.setInOutStatus(status: .OUTDOOR)
+            stateManager.setInOutState(state: .OUTDOOR)
             self.initialize(isStopService: false)
-            checkBleEmptyState = false
+//            checkBleEmptyState = false
         }
         self.reporting(input: newValue)
     }
@@ -235,7 +240,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     func isBuildingLevelChanged(isChanged: Bool, newBuilding: String, newLevel: String, newCoord: [Double]) {
 //        print("(Olympus) isBuildingLevelChanged : newLevel = \(newLevel) , currentLevel = \(self.currentLevel)")
         if newLevel.contains("B0") && !self.currentLevel.contains("B0") && !self.currentLevel.isEmpty {
-            stateManager.setInOutStatus(status: .IN_TO_OUT)
+            stateManager.setInOutState(state: .IN_TO_OUT)
         }
         self.currentBuilding = newBuilding
         self.currentLevel = newLevel
@@ -328,7 +333,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         isInMapEnd = false
         
         if isStopService {
-            OlympusFileManager.shared.initalize()
+//            OlympusFileManager.shared.initalize()
             isStartComplete = false
             isSaveMobileResult = false
             currentTuResult = FineLocationTrackingFromServer()
@@ -518,7 +523,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         fltResult.absolute_heading = heading
         stateManager.setIsGetFirstResponse(isGetFirstResponse: true)
         stateManager.setIsIndoor(isIndoor: true)
-        stateManager.setInOutStatus(status: .INDOOR)
+        stateManager.setInOutState(state: .INDOOR)
         stackServerResult(serverResult: fltResult)
         phaseBreakResult = fltResult
         
@@ -597,9 +602,14 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
     }
     
-    public func saveSimulationFile() -> Bool {
-        OlympusFileManager.shared.saveFilesForSimulation()
-        return true
+    public func saveJupiterDataFiles(completion: @escaping (Bool) -> Void) {
+        OlympusFileManager.shared.saveFilesForSimulation { isDone in
+            if isDone {
+                completion(true)
+            } else {
+                completion(false)
+            }
+        }
     }
     
     private func loadSectorInfo(sector_id: Int, completion: @escaping (Bool, String) -> Void) {
@@ -908,7 +918,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     let enterInNetworkBadEntrance = stateManager.checkEnterInNetworkBadEntrance(bleAvg: self.bleAvg)
                     if (enterInNetworkBadEntrance.0) {
                         stateManager.setIsIndoor(isIndoor: true)
-                        stateManager.setInOutStatus(status: .OUT_TO_IN)
+                        stateManager.setInOutState(state: .OUT_TO_IN)
                         stateManager.setIsGetFirstResponse(isGetFirstResponse: true)
                         print(getLocalTimeString() + " , (Olympus) Route Tracker : Start with network bad")
                         let isOn = routeTracker.startRouteTracking(result: enterInNetworkBadEntrance.1, isStartRouteTrack: self.isStartRouteTrack)
@@ -966,7 +976,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 
             }
             
-            checkBleEmptyState(bleData: self.bleAvg)
+//            checkBleEmptyState(bleData: self.bleAvg)
 
             if (!self.bleAvg.isEmpty) {
                 stateManager.setVariblesWhenBleIsNotEmpty()
@@ -981,7 +991,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     })
                     inputReceivedForce = []
                 }
-                stateManager.checkOutermostWardTagged(bleAvg: self.bleAvg, olympusResult: self.olympusResult)
+                if sector_id_origin != 6 {
+                    stateManager.checkOutermostWardTagged(bleAvg: self.bleAvg, olympusResult: self.olympusResult)
+                }
             } else if (!stateManager.isBackground) {
                 stateManager.checkOutdoorBleEmpty(lastBleDiscoveredTime: self.simulationTime, olympusResult: self.olympusResult)
                 stateManager.checkEnterSleepMode(service: self.service, type: 0)
@@ -1005,7 +1017,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         if (enterInNetworkBadEntrance.0) {
                             if (checkBleEmptyState) {
                                 stateManager.setIsIndoor(isIndoor: true)
-                                stateManager.setInOutStatus(status: .OUT_TO_IN)
+                                stateManager.setInOutState(state: .OUT_TO_IN)
                                 stateManager.setIsGetFirstResponse(isGetFirstResponse: true)
                                 print(getLocalTimeString() + " , (Olympus) Route Tracker : Start with bad network")
                                 let isOn = routeTracker.startRouteTracking(result: enterInNetworkBadEntrance.1, isStartRouteTrack: self.isStartRouteTrack)
@@ -1070,7 +1082,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 
             }
             
-            checkBleEmptyState(bleData: self.bleAvg)
+//            checkBleEmptyState(bleData: self.bleAvg)
 
             if (!self.bleAvg.isEmpty) {
                 stateManager.setVariblesWhenBleIsNotEmpty()
@@ -1085,7 +1097,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     })
                     inputReceivedForce = []
                 }
-                stateManager.checkOutermostWardTagged(bleAvg: self.bleAvg, olympusResult: self.olympusResult)
+                if sector_id_origin != 6 {
+                    stateManager.checkOutermostWardTagged(bleAvg: self.bleAvg, olympusResult: self.olympusResult)
+                }
             } else if (!stateManager.isBackground) {
                 stateManager.checkOutdoorBleEmpty(lastBleDiscoveredTime: OlympusBluetoothManager.shared.bleDiscoveredTime, olympusResult: self.olympusResult)
                 stateManager.checkEnterSleepMode(service: self.service, type: 0)
@@ -1424,7 +1438,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     unitDRGenerator.setRouteTrackFinishedTime(value: getCurrentTimeInMillisecondsDouble())
                     unitDRGenerator.setIsStartRouteTrack(isStartRoutTrack: false)
                     isStartRouteTrack = false
-                    stateManager.setInOutStatus(status: .INDOOR)
+                    stateManager.setInOutState(state: .INDOOR)
                     routeTrackFinishTime = getCurrentTimeInMilliseconds()
                     isPhaseBreakInRouteTrack = false
                     if (routeTrackResult.1 != RouteTrackFinishType.STABLE) {
@@ -1606,7 +1620,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_6])
                 
                 isStartRouteTrack = false
-                stateManager.setInOutStatus(status: .INDOOR)
+                stateManager.setInOutState(state: .INDOOR)
                 displayOutput.phase = String(phaseController.PHASE)
                 displayOutput.indexRx = unitDRInfoIndex
                 sectionController.setSectionUserHeading(value: lastServerResult.absolute_heading)
@@ -1708,7 +1722,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             if (!stateManager.isIndoor && (stateManager.timeForInit >= OlympusConstants.TIME_INIT_THRESHOLD)) {
                                 if (levelName != "B0") {
                                     stateManager.setIsIndoor(isIndoor: true)
-                                    stateManager.setInOutStatus(status: .INDOOR)
+                                    stateManager.setInOutState(state: .INDOOR)
                                     stateManager.setIsGetFirstResponse(isGetFirstResponse: true)
                                 } else {
                                     print(getLocalTimeString() + " , (Olympus) Route Tracker : Start with Phase3 Result")
@@ -1716,7 +1730,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                         let isOn = routeTracker.startRouteTracking(result: fltResult, isStartRouteTrack: isStartRouteTrack)
                                         if (isOn.0) {
                                             stateManager.setIsIndoor(isIndoor: true)
-                                            stateManager.setInOutStatus(status: .OUT_TO_IN)
+                                            stateManager.setInOutState(state: .OUT_TO_IN)
                                             stateManager.setIsGetFirstResponse(isGetFirstResponse: true)
                                         }
                                         unitDRGenerator.setIsStartRouteTrack(isStartRoutTrack: isOn.0)
@@ -2663,13 +2677,13 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             self.trajMisMatchIndex = resultIndex
                             
                             self.trajMisMatchOccured = true
-                            print(getLocalTimeString() + " , (OlympusServiceManager) trajMisMatchOccured : trajMisMatchSearchInfo = \(trajMisMatchSearchInfo.tailIndex) , \(trajMisMatchSearchInfo.searchRange)")
+//                            print(getLocalTimeString() + " , (OlympusServiceManager) trajMisMatchOccured : trajMisMatchSearchInfo = \(trajMisMatchSearchInfo.tailIndex) , \(trajMisMatchSearchInfo.searchRange)")
                         }
                     }
                 } else {
                     // 이후에 서버에 저장된 Index와 차이가 크지 않으면 요청보내기
                     if !trajMisMatchPosted {
-                        print(getLocalTimeString() + " , (OlympusServiceManager) trajMisMatchOccured : lastPostedUvdIndex = \(lastPostedUvdIndex) // trajMisMatchIndex = \(trajMisMatchIndex) ")
+//                        print(getLocalTimeString() + " , (OlympusServiceManager) trajMisMatchOccured : lastPostedUvdIndex = \(lastPostedUvdIndex) // trajMisMatchIndex = \(trajMisMatchIndex) ")
                         if lastPostedUvdIndex >= self.trajMisMatchIndex {
                             trajMisMatchPosted = true
                             processPhase3ForAmbiguousTraj(currentTime: getCurrentTimeInMilliseconds(), mode: mode, trajectoryInfo: [], searchInfo: self.trajMisMatchSearchInfo)
@@ -2796,7 +2810,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //        let maskDx = maskTrajMinMax[2] - maskTrajMinMax[0]
 //        let maskDy = maskTrajMinMax[3] - maskTrajMinMax[1]
 //        let maskDiagonal = sqrt(maskDx*maskDx + maskDy*maskDy)
-//        
+//
 //        let drTrajMinMax = getMinMaxValues(for: drTrajectory)
 //        let drDx = drTrajMinMax[2] - drTrajMinMax[0]
 //        let drDy = drTrajMinMax[3] - drTrajMinMax[1]
@@ -2810,17 +2824,17 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     
 //    public func calculateAccumulatedDiagonal(traj: [[Double]]) -> Double {
 //        var accumulatedDiagonal = 0.0
-//        
+//
 //        if (!userTrajectory.isEmpty) {
 //            let startHeading = userTrajectory[0].heading
 //            let headInfo = userTrajectory[userTrajectory.count-1]
 //            var xyFromHead: [Double] = [headInfo.userX, headInfo.userY]
-//            
+//
 //            var headingFromHead = [Double] (repeating: 0, count: userTrajectory.count)
 //            for i in 0..<userTrajectory.count {
 //                headingFromHead[i] = compensateHeading(heading: userTrajectory[i].heading  - 180 - startHeading)
 //            }
-//            
+//
 //            var trajectoryFromHead = [[Double]]()
 //            trajectoryFromHead.append(xyFromHead)
 //            for i in (1..<userTrajectory.count).reversed() {
@@ -2829,14 +2843,14 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //                xyFromHead[1] = xyFromHead[1] + userTrajectory[i].length*sin(headAngle*D2R)
 //                trajectoryFromHead.append(xyFromHead)
 //            }
-//            
+//
 //            let trajectoryMinMax = getMinMaxValues(for: trajectoryFromHead)
 //            let dx = trajectoryMinMax[2] - trajectoryMinMax[0]
 //            let dy = trajectoryMinMax[3] - trajectoryMinMax[1]
-//            
+//
 //            accumulatedDiagonal = sqrt(dx*dx + dy*dy)
 //        }
-//        
+//
 //        return accumulatedDiagonal
 //    }
     
@@ -3156,6 +3170,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             result.lat = lat
             result.lon = lon
         }
+        
+        result.in_out_state = stateManager.getInOutState()
         
         return result
     }

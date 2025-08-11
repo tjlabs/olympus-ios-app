@@ -968,74 +968,49 @@ public class OlympusNetworkManager {
     }
     
     func postMobileResult(url: String, input: [MobileResult], completion: @escaping (Int, String) -> Void) {
-        // [http 비동기 방식을 사용해서 http 요청 수행 실시]
-        let urlComponents = URLComponents(string: url)
-        var requestURL = URLRequest(url: (urlComponents?.url)!)
-        
-        requestURL.httpMethod = "POST"
-        let encodingData = JSONConverter.encodeJson(param: input)
-        if (encodingData != nil) {
-            requestURL.httpBody = encodingData
-            requestURL.addValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
-            
-//            print("")
-//            print("====================================")
-//            print("POST Mobile Result URL :: ", url)
-//            print("POST Mobile Result 데이터 :: ", input)
-//            print("====================================")
-//            print("")
-            
-            let mrSession = self.mrSessions[self.mrSessionCount%3]
-            self.mrSessionCount+=1
-            let dataTask = mrSession.dataTask(with: requestURL, completionHandler: { (data, response, error) in
-                
-                // [error가 존재하면 종료]
-                guard error == nil else {
-                    if let timeoutError = error as? URLError, timeoutError.code == .timedOut {
-                        DispatchQueue.main.async {
-                            completion(timeoutError.code.rawValue, error?.localizedDescription ?? "timed out")
-                        }
-                    } else {
-                        DispatchQueue.main.async {
-                            completion(500, error?.localizedDescription ?? "Fail")
-                        }
-                    }
-                    return
-                }
-                
-                // [status 코드 체크 실시]
-                let successsRange = 200..<300
-                guard let statusCode = (response as? HTTPURLResponse)?.statusCode, successsRange.contains(statusCode)
-                else {
-                    DispatchQueue.main.async {
-                        completion(500, (response as? HTTPURLResponse)?.description ?? "Fail")
-                    }
-                    return
-                }
-                
-                // [response 데이터 획득]
-                let resultCode = (response as? HTTPURLResponse)?.statusCode ?? 500 // [상태 코드]
-                guard let resultLen = data else {
-                    DispatchQueue.main.async {
-                        completion(500, (response as? HTTPURLResponse)?.description ?? "Fail")
-                    }
-                    return
-                }
-                let resultData = String(data: resultLen, encoding: .utf8) ?? "" // [데이터 확인]
-                
-                // [콜백 반환]
-                DispatchQueue.main.async {
-                    completion(resultCode, resultData)
-                }
-            })
-            
-            // [network 통신 실행]
-            dataTask.resume()
-        } else {
-            DispatchQueue.main.async {
-                completion(500, "Fail to encode")
-            }
+        guard let u = URL(string: url) else {
+            completion(-1, "Invalid URL"); return
         }
+        var req = URLRequest(url: u)
+        req.httpMethod = "POST"
+        req.addValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
+
+        guard let body = JSONConverter.encodeJson(param: input) else {
+            completion(-1, "Fail to encode"); return
+        }
+        req.httpBody = body
+
+        let session = self.mrSessions[self.mrSessionCount % 3]
+        self.mrSessionCount += 1
+        
+        print("")
+        print("====================================")
+        print("POST Mobile Result URL :: ", url)
+        print("POST Mobile Result 데이터 :: ", input)
+        print("====================================")
+        print("")
+        
+        session.dataTask(with: req) { data, response, error in
+            if let urlErr = error as? URLError {
+                DispatchQueue.main.async { completion(urlErr.errorCode, urlErr.localizedDescription) }
+                return
+            } else if let err = error {
+                DispatchQueue.main.async { completion(-1, err.localizedDescription) }
+                return
+            }
+
+            guard let http = response as? HTTPURLResponse else {
+                DispatchQueue.main.async { completion(-1, "No HTTPURLResponse") }
+                return
+            }
+
+            let code = http.statusCode
+            let bodyStr = data.flatMap { String(data: $0, encoding: .utf8) } ?? ""
+
+            // 성공/실패 모두 실제 status code 그대로 반환
+            let message = bodyStr.isEmpty ? HTTPURLResponse.localizedString(forStatusCode: code) : bodyStr
+            DispatchQueue.main.async { completion(code, message) }
+        }.resume()
     }
     
     func postMobileReport(url: String, input: MobileReport, completion: @escaping (Int, String) -> Void) {

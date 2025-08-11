@@ -94,11 +94,11 @@ class CardViewController: UIViewController, Observer {
 //    var sector_id: Int = 14 // DS
 //    var mode: String = "pdr"
     
-    var sector_id: Int = 6
-    var mode: String = "auto"
-    
-//    var sector_id: Int = 20  // Convensia
+//    var sector_id: Int = 6
 //    var mode: String = "auto"
+    
+    var sector_id: Int = 20  // Convensia
+    var mode: String = "auto"
     
 //    var sector_id: Int = 2
 //    var mode: String = "pdr"
@@ -125,15 +125,16 @@ class CardViewController: UIViewController, Observer {
         super.viewDidLoad()
         headingImage = headingImage?.resize(newWidth: 20)
 
-        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_0604_05.csv", sensorFileName: "sensor_coex_0604_05.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_io_0811.csv", sensorFileName: "sensor_coex_io_0811.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_0604_05.csv", sensorFileName: "sensor_coex_0604_05.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_03_0930.csv", sensorFileName: "sensor_coex_03_0930.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_03_05_1007.csv", sensorFileName: "sensor_coex_03_05_1007.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_02_0811.csv", sensorFileName: "sensor_coex_02_0811.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_dr_03_1030.csv", sensorFileName: "sensor_coex_dr_03_1030.csv")
     
 //        serviceManager.setDeadReckoningMode(flag: true, buildingName: "Solum", levelName: "0F", x: 5, y: 5, heading: 90)
 //        serviceManager.setDeadReckoningMode(flag: true, buildingName: "S3", levelName: "7F", x: 6, y: 16, heading: 270)
         
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_0519_01.csv", sensorFileName: "sensor_songdo_0519_01.csv")
+        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_0519_01.csv", sensorFileName: "sensor_songdo_0519_01.csv")
         
         // collect
 //        isCollect = true
@@ -161,12 +162,22 @@ class CardViewController: UIViewController, Observer {
     
 
     @IBAction func tapSaveButton(_ sender: UIButton) {
-        self.isSaved = serviceManager.saveSimulationFile()
-        if (self.isSaved) {
-            saveButton.isHidden = true
+        DispatchQueue.main.async { [self] in
+            saveButton.isUserInteractionEnabled = false
+            saveButton.titleLabel?.text = "ing..."
+            saveButton.titleLabel?.textColor = .red1
+        }
+        
+        serviceManager.saveJupiterDataFiles { [self] isDone in
+            DispatchQueue.main.async { [self] in
+                saveButton.isHidden = true
+                saveButton.isUserInteractionEnabled = true
+                saveButton.titleLabel?.text = "Save"
+                saveButton.titleLabel?.textColor = .black
+                serviceManager.stopService()
+            }
         }
 //        serviceManager.stopCollect()
-        serviceManager.stopService()
         self.stopTimer()
     }
     
@@ -621,7 +632,7 @@ class CardViewController: UIViewController, Observer {
     func updateCoord(data: CoordToDisplay, flag: Bool) {
         DispatchQueue.main.async { [self] in
             
-            let ioStatus = serviceManager.getInOutStatus()
+            let ioStatus = serviceManager.getInOutState()
             self.inOutStatusLabel.text = "\(ioStatus)"
             
             indexTx.text = String(serviceManager.displayOutput.indexTx)

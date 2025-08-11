@@ -352,13 +352,13 @@ func compareTraj(index: Int,
     var t_index: Int = 0
     var p_xyh: [Double] = []
     var alignedTraj: [[Double]] = []
-    print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : mask len = \(userMaskList.count)")
-    print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : \(changeIndices.count-1) segments")
+//    print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : mask len = \(userMaskList.count)")
+//    print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : \(changeIndices.count-1) segments")
     for i in 0..<changeIndices.count - 1 {
         let start = changeIndices[i]
         let end = changeIndices[i + 1]
         guard end - start >= 2 else {
-            print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : \(i+1) seg too short")
+//            print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : \(i+1) seg too short")
             continue
         }
         
@@ -369,8 +369,9 @@ func compareTraj(index: Int,
         let m_seg = Array(userMaskList[start..<end])
         let p_seg = Array(unitDRInfoList[start..<end])
         let majorHeading = m_seg.first!.absolute_heading
-        print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : \(i+1) seg = \(start) ~ \(end)")
-        print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : majorHeading = \(majorHeading)")
+//        print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : \(i+1) seg = \(start) ~ \(end)")
+//        print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : majorHeading = \(majorHeading)")
+        
         // mask 거리 계산 (bounding box 기준)
         let mxs = m_seg.map { Double($0.x) }
         let mys = m_seg.map { Double($0.y) }
@@ -382,10 +383,10 @@ func compareTraj(index: Int,
         // 회전 + 이동 보정
         let aligned = alignPsegToMseg(m_seg: m_seg, p_seg: p_seg, majorHeading: majorHeading, seg_counts: changeIndices.count-1)
         
-        print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : mask x // \(mxs)")
-        print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : mask y // \(mys)")
-        print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : aligned.x // \(aligned.x)")
-        print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : aligned.y // \(aligned.y)")
+//        print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : mask x // \(mxs)")
+//        print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : mask y // \(mys)")
+//        print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : aligned.x // \(aligned.x)")
+//        print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : aligned.y // \(aligned.y)")
         let pxs = aligned.x
         let pys = aligned.y
         let phs = aligned.h
@@ -395,13 +396,11 @@ func compareTraj(index: Int,
         let p_dist = hypot(pxs.last! - pxs.first!, pys.last! - pys.first!)
         p_xyh = [pxs.last!, pys.last!, phs.last!]
         
-        print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : aligned.h = \(phs)")
+//        print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : aligned.h = \(phs)")
         p_total_dist += p_dist
     }
-    print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : p_xyh = \(p_xyh)")
-    print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : alignedTraj = \(alignedTraj)")
-//        print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : m_total_dist // \(m_total_dist)")
-//        print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : p_total_dist // \(p_total_dist)")
+//    print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : p_xyh = \(p_xyh)")
+//    print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : alignedTraj = \(alignedTraj)")
     
     let ratio = max(p_total_dist, 1.0) / max(m_total_dist, 1.0)
 //        print(getLocalTimeString() + " , (OlympusServiceManager) compareTraj : ratio = \(ratio)")
