@@ -125,7 +125,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     var bleTrimed = [String: [[Double]]]()
     var bleAvg = [String: Double]()
     var checkBleEmptyStateThreshold: Double = 10
-    var checkBleEmptyState : Bool = true
+    var isBleEmptyState : Bool = true
     
     // UVD
     var pastUvdTime: Int = 0
@@ -228,7 +228,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         if (newValue == OUTDOOR_FLAG) {
             stateManager.setInOutState(state: .OUTDOOR)
             self.initialize(isStopService: false)
-//            checkBleEmptyState = false
+            self.isBleEmptyState = false
         }
         self.reporting(input: newValue)
     }
@@ -328,6 +328,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         scCompensation = 1.0
         isInMapEnd = false
         
+        trajMisMatchOccured = false
+        trajMisMatchPosted = false
         if isStopService {
 //            OlympusFileManager.shared.initalize()
             isStartComplete = false
@@ -972,7 +974,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 
             }
             
-//            checkBleEmptyState(bleData: self.bleAvg)
+            checkBleEmptyState(bleData: self.bleAvg)
 
             if (!self.bleAvg.isEmpty) {
                 stateManager.setVariblesWhenBleIsNotEmpty()
@@ -990,6 +992,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 if sector_id_origin != 6 {
                     stateManager.checkOutermostWardTagged(bleAvg: self.bleAvg, olympusResult: self.olympusResult)
                 }
+//                stateManager.checkOutermostWardTagged(bleAvg: self.bleAvg, olympusResult: self.olympusResult)
             } else if (!stateManager.isBackground) {
                 stateManager.checkOutdoorBleEmpty(lastBleDiscoveredTime: self.simulationTime, olympusResult: self.olympusResult)
                 stateManager.checkEnterSleepMode(service: self.service, type: 0)
@@ -1011,7 +1014,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     if (!stateManager.isGetFirstResponse) {
                         let enterInNetworkBadEntrance = stateManager.checkEnterInNetworkBadEntrance(bleAvg: self.bleAvg)
                         if (enterInNetworkBadEntrance.0) {
-                            if (checkBleEmptyState) {
+                            if (isBleEmptyState) {
                                 stateManager.setIsIndoor(isIndoor: true)
                                 stateManager.setInOutState(state: .OUT_TO_IN)
                                 stateManager.setIsGetFirstResponse(isGetFirstResponse: true)
@@ -1078,7 +1081,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 
             }
             
-//            checkBleEmptyState(bleData: self.bleAvg)
+            checkBleEmptyState(bleData: self.bleAvg)
 
             if (!self.bleAvg.isEmpty) {
                 stateManager.setVariblesWhenBleIsNotEmpty()
@@ -1096,6 +1099,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 if sector_id_origin != 6 {
                     stateManager.checkOutermostWardTagged(bleAvg: self.bleAvg, olympusResult: self.olympusResult)
                 }
+//                stateManager.checkOutermostWardTagged(bleAvg: self.bleAvg, olympusResult: self.olympusResult)
             } else if (!stateManager.isBackground) {
                 stateManager.checkOutdoorBleEmpty(lastBleDiscoveredTime: OlympusBluetoothManager.shared.bleDiscoveredTime, olympusResult: self.olympusResult)
                 stateManager.checkEnterSleepMode(service: self.service, type: 0)
@@ -1112,8 +1116,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 
         checkBleEmptyStateThreshold = min(max(checkBleEmptyStateThreshold, 0), 10) // 최소 0 최대 10
 
-        if (checkBleEmptyStateThreshold >= 10 && !checkBleEmptyState) {
-            checkBleEmptyState = true
+        if (checkBleEmptyStateThreshold >= 10 && !isBleEmptyState) {
+            isBleEmptyState = true
         }
     }
 
@@ -1722,7 +1726,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                     stateManager.setIsGetFirstResponse(isGetFirstResponse: true)
                                 } else {
                                     print(getLocalTimeString() + " , (Olympus) Route Tracker : Start with Phase3 Result")
-                                    if (checkBleEmptyState) {
+                                    if (isBleEmptyState) {
                                         let isOn = routeTracker.startRouteTracking(result: fltResult, isStartRouteTrack: isStartRouteTrack)
                                         if (isOn.0) {
                                             stateManager.setIsIndoor(isIndoor: true)
@@ -2625,7 +2629,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 stackUserUniqueMask(data: data)
                 stackUserMaskForDisplay(data: data)
                 
-                if !trajMisMatchOccured {
+                if !trajMisMatchOccured && self.stateManager.isIndoor {
                     // Triggering 하고 Tail Index 설정
                     if let comparingResult = compareTraj(index: resultIndex, userMaskBuffer: self.userMaskBuffer, unitDRInfoBuffer: self.unitDRInfoBuffer) {
                         if resultIndex - self.trajMisMatchIndex > 20 {
