@@ -3,7 +3,7 @@ import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
     
-    public static let sdkVersion: String = "0.2.29"
+    public static let sdkVersion: String = "0.2.30"
     var isSimulationMode: Bool = false
     var isDeadReckoningMode: Bool = false
     var bleFileName: String = ""
@@ -29,10 +29,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         if (statusCode != 200) {
                             let localTime = getLocalTimeString()
                             let log: String = localTime + " , (Olympus) Error \(statusCode) : \(returnedStrig)"
-                            print(log)
-                        } else {
-                            let localTime = getLocalTimeString()
-                            let log: String = localTime + " , (Olympus) Success \(statusCode) : Success to send mobile result"
                             print(log)
                         }
                     })
@@ -1332,7 +1328,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 }
                                 
                             }
-                        } else if (!isNeedPathTrajMatching.straight) {
+                        } else if (!isNeedPathTrajMatching.straight) && !trajMisMatchOccured {
                             // Phase 6 요청 보내야하는 상황이면 요쳥 보내기
                             let isNeedRq = sectionController.checkIsNeedRequestFlt(isAmbiguous: ambiguitySolver.getIsAmbiguous())
                             if (isNeedRq.0 && phaseController.PHASE == OlympusConstants.PHASE_6) {
@@ -2470,7 +2466,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         let resultIndex = unitDRInfoIndex
         let resultMobileTime = getCurrentTimeInMilliseconds()
         result.index = resultIndex
-        var correctedXYH = [Double]()
         preTemporalResult.index = resultIndex
         
         var isUseHeading: Bool = false
@@ -2562,15 +2557,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 }
             }
             
-//            // Add
-//            if isUseHeading && mustInSameLink && pathMatchingType == .NARROW {
-//                let preResult = self.preTemporalResult
-//                let curResult = result
-//                if preResult.absolute_heading != curResult.absolute_heading {
-//
-//                }
-//            }
-            
             if (isUseHeading && isStableMode && !self.isPhaseBreak) {
                 let diffX = result.x - temporalResult.x
                 let diffY = result.y - temporalResult.y
@@ -2638,23 +2624,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 stackUserMask(data: data)
                 stackUserUniqueMask(data: data)
                 stackUserMaskForDisplay(data: data)
-//                let diagonals = compareDiagonal(index: resultIndex, userMaskBuffer: self.userMaskBuffer, unitDRInfoBuffer: self.unitDRInfoBuffer)
-//                if isUseHeading && mustInSameLink && pathMatchingType == .NARROW {
-//                    let preResult = self.preTemporalResult
-//                    let curResult = result
-//                    print(getLocalTimeString() + " , (OlympusServiceManager) compareDiagonal : preH = \(preResult.absolute_heading) // curH = \(curResult.absolute_heading)")
-//                    if preResult.absolute_heading != curResult.absolute_heading {
-//                        let diagonals = compareDiagonal(index: resultIndex, userMaskBuffer: self.userMaskBuffer, unitDRInfoBuffer: self.unitDRInfoBuffer)
-//                    }
-//                }
-                
-//                if let diagonalRatio = compareDiagonal(index: resultIndex, userMaskBuffer: self.userMaskBuffer, unitDRInfoBuffer: self.unitDRInfoBuffer) {
-//                    if diagonalRatio > 5 {
-//                        let isStraight = isStraightTrajectoryFromCumulativeHeading(unitDRInfoBuffer)
-//                        print(getLocalTimeString() + " , (OlympusServiceManager) compareDiagonal : h = \(unitDRInfoBuffer[0].heading) ~ \(unitDRInfoBuffer[unitDRInfoBuffer.count-1].heading)")
-//                        print(getLocalTimeString() + " , (OlympusServiceManager) compareDiagonal : ratio big // isStraight = \(isStraight)")
-//                    }
-//                }
                 
                 if !trajMisMatchOccured {
                     // Triggering 하고 Tail Index 설정
