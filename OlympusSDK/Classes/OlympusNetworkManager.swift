@@ -983,12 +983,12 @@ public class OlympusNetworkManager {
         let session = self.mrSessions[self.mrSessionCount % 3]
         self.mrSessionCount += 1
         
-        print("")
-        print("====================================")
-        print("POST Mobile Result URL :: ", url)
-        print("POST Mobile Result 데이터 :: ", input)
-        print("====================================")
-        print("")
+//        print("")
+//        print("====================================")
+//        print("POST Mobile Result URL :: ", url)
+//        print("POST Mobile Result 데이터 :: ", input)
+//        print("====================================")
+//        print("")
         
         session.dataTask(with: req) { data, response, error in
             if let urlErr = error as? URLError {

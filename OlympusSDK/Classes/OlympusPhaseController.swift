@@ -214,6 +214,9 @@ public class OlympusPhaseController {
                         }
                         
                         let rendezvousDistance = sqrt(diffX*diffX + diffY*diffY)
+                        
+//                        print(getLocalTimeString() + " , (Olympus) Check Phase3->6 : rendezvousDistance = \(rendezvousDistance) // diffH = \(diffH)")
+                        
                         if (rendezvousDistance <= distanceCondition) && diffH <= headingCondition {
                             phase = OlympusConstants.PHASE_6
                         }

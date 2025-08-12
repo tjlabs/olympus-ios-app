@@ -544,7 +544,7 @@ public struct FineLocationTrackingResult: Codable {
     public var isIndoor: Bool
     public var validity: Bool
     public var validity_flag: Int
-    
+
     public init() {
         self.mobile_time = 0
         self.building_name = ""
