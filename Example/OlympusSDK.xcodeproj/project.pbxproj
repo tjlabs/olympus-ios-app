@@ -43,8 +43,8 @@
 		B3A7A5632BBBE2AE00561897 /* JSONConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A7A5622BBBE2AE00561897 /* JSONConverter.swift */; };
 		B3BA95E82BFB2B3A002625FA /* DS_3F.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3BA95E72BFB2B3A002625FA /* DS_3F.csv */; };
 		B3C622942C4107E000371531 /* PG_1F.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3C622932C4107E000371531 /* PG_1F.csv */; };
-		B3F51B682DFFAEFF0069CD8A /* Convensia_B1.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3F51B672DFFAEFF0069CD8A /* Convensia_B1.csv */; };
-		B3F51B692DFFAEFF0069CD8A /* Convensia_B0.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3F51B662DFFAEFF0069CD8A /* Convensia_B0.csv */; };
+		B3DF54DB2E5302670000CBD6 /* Convensia_B0.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3DF54D92E5302670000CBD6 /* Convensia_B0.csv */; };
+		B3DF54DC2E5302670000CBD6 /* Convensia_B1.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3DF54DA2E5302670000CBD6 /* Convensia_B1.csv */; };
 		B3FE03582C0043D200039EAC /* G2_2F.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3FE03572C0043D200039EAC /* G2_2F.csv */; };
 		B3FE035D2C04754400039EAC /* S3_7F.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3FE035C2C04754400039EAC /* S3_7F.csv */; };
 /* End PBXBuildFile section */
@@ -103,8 +103,8 @@
 		B3A7A5622BBBE2AE00561897 /* JSONConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONConverter.swift; sourceTree = "<group>"; };
 		B3BA95E72BFB2B3A002625FA /* DS_3F.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = DS_3F.csv; sourceTree = "<group>"; };
 		B3C622932C4107E000371531 /* PG_1F.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = PG_1F.csv; sourceTree = "<group>"; };
-		B3F51B662DFFAEFF0069CD8A /* Convensia_B0.csv */ = {isa = PBXFileReference; lastKnownFileType = text; path = Convensia_B0.csv; sourceTree = "<group>"; };
-		B3F51B672DFFAEFF0069CD8A /* Convensia_B1.csv */ = {isa = PBXFileReference; lastKnownFileType = text; path = Convensia_B1.csv; sourceTree = "<group>"; };
+		B3DF54D92E5302670000CBD6 /* Convensia_B0.csv */ = {isa = PBXFileReference; lastKnownFileType = text; path = Convensia_B0.csv; sourceTree = "<group>"; };
+		B3DF54DA2E5302670000CBD6 /* Convensia_B1.csv */ = {isa = PBXFileReference; lastKnownFileType = text; path = Convensia_B1.csv; sourceTree = "<group>"; };
 		B3FE03572C0043D200039EAC /* G2_2F.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = G2_2F.csv; sourceTree = "<group>"; };
 		B3FE035C2C04754400039EAC /* S3_7F.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = S3_7F.csv; sourceTree = "<group>"; };
 		D6BEA357836562D67D800EA2 /* Pods-OlympusSDK_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OlympusSDK_Tests.debug.xcconfig"; path = "Target Support Files/Pods-OlympusSDK_Tests/Pods-OlympusSDK_Tests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -171,11 +171,11 @@
 				B3FE03572C0043D200039EAC /* G2_2F.csv */,
 				B388C21C2D053A9A00B522BA /* Solum_0F.csv */,
 				B39C2D592C0D49E400A34D0C /* COEX_B0.csv */,
-				B3F51B662DFFAEFF0069CD8A /* Convensia_B0.csv */,
-				B3F51B672DFFAEFF0069CD8A /* Convensia_B1.csv */,
 				B39C2D5A2C0D49E400A34D0C /* COEX_B3.csv */,
 				B39C2D5B2C0D49E400A34D0C /* COEX_B4.csv */,
 				B39464A32BE3315400A929CC /* COEX_B2.csv */,
+				B3DF54D92E5302670000CBD6 /* Convensia_B0.csv */,
+				B3DF54DA2E5302670000CBD6 /* Convensia_B1.csv */,
 				B3C622932C4107E000371531 /* PG_1F.csv */,
 				607FACD91AFB9204008FA782 /* Main.storyboard */,
 				607FACDE1AFB9204008FA782 /* LaunchScreen.xib */,
@@ -378,8 +378,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */,
-				B3F51B682DFFAEFF0069CD8A /* Convensia_B1.csv in Resources */,
-				B3F51B692DFFAEFF0069CD8A /* Convensia_B0.csv in Resources */,
+				B3DF54DB2E5302670000CBD6 /* Convensia_B0.csv in Resources */,
+				B3DF54DC2E5302670000CBD6 /* Convensia_B1.csv in Resources */,
 				B39C2D5C2C0D49E400A34D0C /* COEX_B0.csv in Resources */,
 				B31439872BAD5B76002C072F /* Colors.xcassets in Resources */,
 				B3BA95E82BFB2B3A002625FA /* DS_3F.csv in Resources */,
