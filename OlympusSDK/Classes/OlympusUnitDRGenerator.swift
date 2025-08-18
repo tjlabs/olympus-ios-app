@@ -18,7 +18,7 @@ public class OlympusUnitDRGenerator: NSObject {
     var autoMode: Int = 0
     var lastModeChangedTime: Double = 0
     var lastStepChangedTime: Double = 0
-    var routeTrackFinishedTime: Double = 0
+    var routeTrackFinishTime: Double = 0
     var lastHighRfSccTime: Double = 0
     var isPdrMode: Bool = false
     var trackIsPdrMode: Bool = true
@@ -144,7 +144,7 @@ public class OlympusUnitDRGenerator: NSObject {
                     }
                 }
                 
-                let diffRouteTrackTime = currentTime - self.routeTrackFinishedTime
+                let diffRouteTrackTime = currentTime - self.routeTrackFinishTime
                 if (self.isInEntranceLevel || self.isStartRoutTrack) {
                     self.isPdrMode = false
                     self.lastModeChangedTime = currentTime
@@ -272,8 +272,8 @@ public class OlympusUnitDRGenerator: NSObject {
         self.isBackground = isBackground
     }
     
-    public func setRouteTrackFinishedTime(value: Double) {
-        self.routeTrackFinishedTime = value
+    public func setRouteTrackFinishTime(value: Double) {
+        self.routeTrackFinishTime = value
     }
     
     public func calAccBias(unitDRInfoBuffer: [UnitDRInfo], resultIndex: Int, scCompensation: Double) {
