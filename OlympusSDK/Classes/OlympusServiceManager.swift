@@ -22,7 +22,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             
             if (self.isSaveMobileResult) {
                 let stateValue = result.in_out_state.rawValue
-                let data = MobileResult(user_id: self.user_id, mobile_time: result.mobile_time, sector_id: self.sector_id, building_name: result.building_name, level_name: result.level_name, scc: result.scc, x: result.x, y: result.y, latitude: result.lat, longitude: result.lon, in_out_state: stateValue, absolute_heading: result.absolute_heading, phase: result.phase, calculated_time: result.calculated_time, index: result.index, velocity: result.velocity, ble_only_position: result.ble_only_position, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation: self.scCompensation, is_indoor: result.isIndoor)
+                let data = MobileResult(user_id: self.user_id, mobile_time: result.mobile_time, sector_id: self.sector_id, building_name: result.building_name, level_name: result.level_name, scc: result.scc, x: result.x, y: result.y, latitude: result.llh?.lat, longitude: result.llh?.lon, in_out_state: stateValue, absolute_heading: result.absolute_heading, phase: result.phase, calculated_time: result.calculated_time, index: result.index, velocity: result.velocity, ble_only_position: result.ble_only_position, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation: self.scCompensation, is_indoor: result.isIndoor)
                 inputMobileResult.append(data)
                 if (inputMobileResult.count >= OlympusConstants.MR_INPUT_NUM) {
                     OlympusNetworkManager.shared.postMobileResult(url: REC_RESULT_URL, input: inputMobileResult, completion: { statusCode, returnedStrig in
@@ -137,6 +137,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     // Collect
     public var collectData = OlympusCollectData()
     var isStartCollect: Bool = false
+    var debugOption: Bool = false
     
     // ----- State Observer ----- //
     var runMode: String = OlympusConstants.MODE_DR
@@ -359,6 +360,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         OlympusPDRDistanceEstimator.fixedStepLength = value
     }
     
+    public func setDebugOption(flag: Bool) {
+        self.debugOption = flag
+    }
+    
     public func startService(user_id: String, region: String, sector_id: Int, service: String, mode: String, completion: @escaping (Bool, String) -> Void) {
         self.initialize(isStopService: true)
         let success_msg: String =  " , (Olympus) Success : Service Start"
@@ -570,34 +575,85 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_6])
     }
     
-    public func stopService() -> (Bool, String) {
-        print(getLocalTimeString() + " , (Olympus) Information : Stop Service")
-        let localTime: String = getLocalTimeString()
-        var message: String = localTime + " , (Olympus) Success : Stop Service"
-        
-        if (self.isStartComplete) {
-            self.stopTimer()
-            OlympusBluetoothManager.shared.stopScan()
-            
-            if (self.service.contains(OlympusConstants.SERVICE_FLT) && !isSimulationMode) {
-                self.initialize(isStopService: true)
-                rssCompensator.saveNormalizationScale(scale: rssCompensator.normalizationScale, sector_id: self.sector_id)
-                let rcInfoSave =  RcInfoSave(sector_id: self.sector_id, device_model: self.deviceModel, os_version: self.deviceOsVersion, normalization_scale: rssCompensator.normalizationScale)
-                OlympusNetworkManager.shared.postParam(url: REC_RC_URL, input: rcInfoSave, completion: { statusCode, returnedString in
-                    if statusCode == 200 {
-                        print(getLocalTimeString() + " , (Olympus) Success : save RSS Compensation parameter \(rcInfoSave.normalization_scale)")
-                    } else {
-                        print(getLocalTimeString() + " , (Olympus) Fail : save RSS Compensation parameter")
-                    }
-                })
+//    public func stopService() -> (Bool, String) {
+//        print(getLocalTimeString() + " , (Olympus) Information : Stop Service")
+//        let localTime: String = getLocalTimeString()
+//        var message: String = localTime + " , (Olympus) Success : Stop Service"
+//        
+//        if (self.isStartComplete) {
+//            self.stopTimer()
+//            OlympusBluetoothManager.shared.stopScan()
+//            
+//            if (self.service.contains(OlympusConstants.SERVICE_FLT) && !isSimulationMode) {
+//                self.initialize(isStopService: true)
+//                rssCompensator.saveNormalizationScale(scale: rssCompensator.normalizationScale, sector_id: self.sector_id)
+//                let rcInfoSave =  RcInfoSave(sector_id: self.sector_id, device_model: self.deviceModel, os_version: self.deviceOsVersion, normalization_scale: rssCompensator.normalizationScale)
+//                OlympusNetworkManager.shared.postParam(url: REC_RC_URL, input: rcInfoSave, completion: { statusCode, returnedString in
+//                    if statusCode == 200 {
+//                        print(getLocalTimeString() + " , (Olympus) Success : save RSS Compensation parameter \(rcInfoSave.normalization_scale)")
+//                    } else {
+//                        print(getLocalTimeString() + " , (Olympus) Fail : save RSS Compensation parameter")
+//                    }
+//                })
+//            }
+//            rssCompensator.setIsScaleLoaded(flag: false)
+//            bleLineCount = 0
+//            sensorLineCount = 0
+//            return (true, message)
+//        } else {
+//            message = localTime + " , (Olympus) Fail : After the service has fully started, it can be stop "
+//            return (false, message)
+//        }
+//    }
+    
+    public func stopService(completion: @escaping (Bool, String) -> Void) {
+        let localTime = getLocalTimeString()
+        print("\(localTime) , (Olympus) Information : Stop Service")
+
+        guard isStartComplete else {
+            let message = "\(localTime) , (Olympus) Fail : After the service has fully started, it can be stop"
+            completion(false, message)
+            return
+        }
+
+        stopTimer()
+        OlympusBluetoothManager.shared.stopScan()
+
+        if service.contains(OlympusConstants.SERVICE_FLT), !isSimulationMode {
+            initialize(isStopService: true)
+
+            let scale = rssCompensator.normalizationScale
+            rssCompensator.saveNormalizationScale(scale: scale, sector_id: sector_id)
+
+            let rcInfoSave = RcInfoSave(
+                sector_id: sector_id,
+                device_model: deviceModel,
+                os_version: deviceOsVersion,
+                normalization_scale: scale
+            )
+
+            OlympusNetworkManager.shared.postParam(url: REC_RC_URL, input: rcInfoSave) { statusCode, _ in
+                let result = statusCode == 200 ? "Success" : "Fail"
+                print("\(getLocalTimeString()) , (Olympus) \(result) : save RSS Compensation parameter \(scale)")
             }
-            rssCompensator.setIsScaleLoaded(flag: false)
-            bleLineCount = 0
-            sensorLineCount = 0
-            return (true, message)
+        }
+
+        rssCompensator.setIsScaleLoaded(flag: false)
+        bleLineCount = 0
+        sensorLineCount = 0
+
+        let resultMessage = "\(localTime) , (Olympus) Success : Stop Service"
+
+        if debugOption {
+            saveJupiterDataFiles { isDone in
+                let debugMessage = isDone
+                    ? "\(localTime) , (Olympus) Success : save debug file"
+                    : "\(localTime) , (Olympus) Warning : save debug file"
+                print(debugMessage)
+                completion(true, resultMessage)
+            }
         } else {
-            message = localTime + " , (Olympus) Fail : After the service has fully started, it can be stop "
-            return (false, message)
+            completion(true, resultMessage)
         }
     }
     
@@ -1441,7 +1497,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 let routeTrackResult = routeTracker.getRouteTrackResult(temporalResult: self.temporalResult, currentLevel: currentLevel, isVenusMode: stateManager.isVenusMode, isKF: KF.isRunning, isPhaseBreakInRouteTrack: isPhaseBreakInRouteTrack)
                 if (routeTrackResult.isRouteTrackFinished) {
                     buildingLevelChanger.setBuildingLevelChangedTime(value: getCurrentTimeInMilliseconds())
-                    unitDRGenerator.setRouteTrackFinishedTime(value: getCurrentTimeInMillisecondsDouble())
+                    unitDRGenerator.setRouteTrackFinishTime(value: getCurrentTimeInMillisecondsDouble())
                     unitDRGenerator.setIsStartRouteTrack(isStartRoutTrack: false)
                     isStartRouteTrack = false
                     stateManager.setInOutState(state: .INDOOR)
@@ -1600,7 +1656,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             let isCorrelation = routeTracker.checkIsEntranceFinished(bleData: self.bleAvg, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: OlympusConstants.DEVICE_MIN_RSSI, standard_min_rss: OlympusConstants.STANDARD_MIN_RSS)
             if isCorrelation.0 {
                 buildingLevelChanger.setBuildingLevelChangedTime(value: getCurrentTimeInMilliseconds())
-                unitDRGenerator.setRouteTrackFinishedTime(value: getCurrentTimeInMillisecondsDouble())
+                unitDRGenerator.setRouteTrackFinishTime(value: getCurrentTimeInMillisecondsDouble())
                 
                 let correlationInfo = isCorrelation.1
                 var lastServerResult = serverResultBuffer[serverResultBuffer.count-1]
@@ -3149,9 +3205,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         
         // lat, lon
         if let affineParam = OlympusAffineConverter.shared.AffineParam[self.sector_id] {
-            let (lat, lon) = convertPpToLatLon(x: fromServer.x, y: fromServer.y, param: affineParam)
-            result.lat = lat
-            result.lon = lon
+            let llh = convertPpToLLH(x: fromServer.x, y: fromServer.y, heading: fromServer.absolute_heading, param: affineParam)
+            result.llh = llh
         }
         
         result.in_out_state = stateManager.getInOutState()
