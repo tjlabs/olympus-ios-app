@@ -137,6 +137,8 @@ public class OlympusStateManager: NSObject {
 //                    self.bleAvg = [String: Double]()
                 }
             }
+        } else if self.isIndoor {
+            isNeedClearBle = true
         }
         
         return isNeedClearBle
@@ -159,39 +161,6 @@ public class OlympusStateManager: NSObject {
                     }
                 }
             }
-        }
-    }
-    
-    public func checkOutermostWardTaggedV2(bleAvg: [String: Double], olympusResult: FineLocationTrackingResult) {
-        guard isIndoor, isGetFirstResponse, !isBleOff, !isOutermostWardTagged else { return }
-
-        let shouldCheckBLE: Bool = {
-            switch curInOutState {
-            case .IN_TO_OUT:
-                return true
-            case .INDOOR:
-                return OlympusPathMatchingCalculator.shared
-                    .checkInEntranceMatchingArea(x: olympusResult.x,
-                                                 y: olympusResult.y,
-                                                 building: olympusResult.building_name,
-                                                 level: olympusResult.level_name).0
-            default:
-                return false
-            }
-        }()
-
-        guard shouldCheckBLE else { return }
-
-        for (key, value) in bleAvg where EntranceOuterWards.contains(key) && value >= OlympusConstants.OUTERWARD_TAG_THRESHOLD {
-            print("\(getLocalTimeString()) , (Olympus) checkOutermostWardTagged : \(key), \(value)")
-            isOutermostWardTagged = true
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + OlympusConstants.OUTERWARD_TAG_DELAY) { [weak self] in
-                guard let self = self else { return }
-                self.isIndoor = false
-                notifyObservers(state: OUTDOOR_FLAG)
-            }
-            break
         }
     }
     

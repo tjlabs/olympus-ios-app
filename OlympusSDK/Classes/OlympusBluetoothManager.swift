@@ -312,6 +312,10 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
         NotificationCenter.default.post(name: .stopScan, object: nil)
     }
     
+    func initBleData() {
+        self.bleDictionary = [String: [[Double]]]()
+    }
+    
     // timer
     func startWaitTimer() {
         waitTimerCounter = 0
