@@ -108,7 +108,7 @@ class OlympusFileManager {
         for record in dataToSave {
             csvText += "\(record.time),\(record.acc[0]),\(record.acc[1]),\(record.acc[2]),\(record.userAcc[0]),\(record.userAcc[1]),\(record.userAcc[2]),\(record.gyro[0]),\(record.gyro[1]),\(record.gyro[2]),\(record.mag[0]),\(record.mag[1]),\(record.mag[2]),\(record.grav[0]),\(record.grav[1]),\(record.grav[2]),\(record.att[0]),\(record.att[1]),\(record.att[2]),\(record.quaternion[0]),\(record.quaternion[1]),\(record.quaternion[2]),\(record.quaternion[3]),\(record.rotationMatrix[0][0]),\(record.rotationMatrix[0][1]),\(record.rotationMatrix[0][2]),\(record.rotationMatrix[1][0]),\(record.rotationMatrix[1][1]),\(record.rotationMatrix[1][2]),\(record.rotationMatrix[2][0]),\(record.rotationMatrix[2][1]),\(record.rotationMatrix[2][2]),\(record.gameVector[0]),\(record.gameVector[1]),\(record.gameVector[2]),\(record.gameVector[3]),\(record.rotVector[0]),\(record.rotVector[1]),\(record.rotVector[2]),\(record.rotVector[3]),\(record.rotVector[4]),\(record.pressure[0]),\(record.trueHeading),\(record.magneticHeading)\n"
         }
-        print(getLocalTimeString() + " , (Olympus) FileManager : sensor csvText = \(csvText)")
+//        print(getLocalTimeString() + " , (Olympus) FileManager : sensor csvText = \(csvText)")
         do {
             if let fileUrl = sensorFileUrl {
                 try csvText.write(to: fileUrl, atomically: true, encoding: .utf8)
@@ -126,7 +126,7 @@ class OlympusFileManager {
         let dataToSave = bleData
         
         var csvText = "time,ble\n"
-        print(getLocalTimeString() + " , (Olympus) FileManager : bleData = \(dataToSave)")
+//        print(getLocalTimeString() + " , (Olympus) FileManager : bleData = \(dataToSave)")
         for i in 0..<dataTime.count {
             csvText += "\(dataTime[i]),"
             let record = dataToSave[i]
