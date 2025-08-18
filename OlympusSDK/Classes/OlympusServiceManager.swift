@@ -1488,7 +1488,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         var input = FineLocationTracking(user_id: self.user_id, mobile_time: currentTime, sector_id: self.sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM, building_name: self.currentBuilding, level_name_list: levelArray, phase: 3, search_range: searchInfo.searchRange, search_direction_list: searchInfo.searchDirection, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation_list: [1.0], tail_index: searchInfo.tailIndex, head_section_number: 0, node_number_list: [], node_index: 0, retry: false)
         stateManager.setNetworkCount(value: stateManager.networkCount+1)
         
-        print(getLocalTimeString() + " , (Olympus) Request Phase 3 For Ambiguous Traj: \(input)")
+        print(getLocalTimeString() + " , (Olympus) Request Phase 3 For Ambiguous Traj: \(input) // index = \(unitDRInfoIndex)")
         if (REGION_NAME != "Korea" && self.deviceModel == "iPhone SE (2nd generation)") { input.normalization_scale = 1.01 }
         OlympusNetworkManager.shared.postFLT(url: CALC_FLT_URL, input: input, userTraj: trajectoryInfo, searchInfo: searchInfo, completion: { [self] statusCode, returnedString, fltInput, inputTraj, inputSearchInfo in
             if (!returnedString.contains("timed out")) { stateManager.setNetworkCount(value: 0) }
@@ -2635,11 +2635,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 stackUserUniqueMask(data: data)
                 stackUserMaskForDisplay(data: data)
                 
-                if !trajMisMatchOccured && self.stateManager.isIndoor && phaseController.PHASE > 4 {
+                if !trajMisMatchOccured {
                     // Triggering 하고 Tail Index 설정
                     if let comparingResult = compareTraj(index: resultIndex, userMaskBuffer: self.userMaskBuffer, unitDRInfoBuffer: self.unitDRInfoBuffer) {
+                        let dTime = getCurrentTimeInMilliseconds() - self.routeTrackFinishTime
                         let isInLevelChangeArea = buildingLevelChanger.checkInLevelChangeArea(result: self.olympusResult, mode: self.runMode)
-                        if resultIndex - self.trajMisMatchIndex > 20 && isInLevelChangeArea {
+                        if resultIndex - self.trajMisMatchIndex > 20 && !isInLevelChangeArea && dTime > 15*1000 && self.stateManager.isIndoor && phaseController.PHASE > 4 {
                             let tailIndex = comparingResult.2
                             let tailDirection = Int(comparingResult.3[0][2])
                             let centerPos = [Double(userMaskBuffer[userMaskBuffer.count-1].x), Double(userMaskBuffer[userMaskBuffer.count-1].y)]
