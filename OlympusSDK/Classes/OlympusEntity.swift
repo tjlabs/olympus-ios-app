@@ -531,8 +531,7 @@ public struct FineLocationTrackingResult: Codable {
     public var scc: Double
     public var x: Double
     public var y: Double
-    public var lat: Double?
-    public var lon: Double?
+    public var llh: LLH?
     public var in_out_state: InOutState
     public var absolute_heading: Double
     public var phase: Int
@@ -552,8 +551,7 @@ public struct FineLocationTrackingResult: Codable {
         self.scc = 0
         self.x = 0
         self.y = 0
-        self.lat = nil
-        self.lon = nil
+        self.llh = nil
         self.in_out_state = .UNKNOWN
         self.absolute_heading = 0
         self.phase = 0

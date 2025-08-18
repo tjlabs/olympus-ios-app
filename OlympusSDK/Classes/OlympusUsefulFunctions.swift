@@ -304,9 +304,9 @@ func isStraightTrajectoryFromCumulativeHeading(_ list: [UnitDRInfo], thresholdRM
     return (rmse < thresholdRMSE, rmse)
 }
 
-func convertPpToLatLon(x: Double, y: Double, param: AffineTransParamOutput) -> (lat: Double?, lon: Double?) {
-    var lat: Double?
-    var lon: Double?
+func convertPpToLatLon(x: Double, y: Double, param: AffineTransParamOutput) -> (lat: Double, lon: Double) {
+    var lat: Double
+    var lon: Double
     
     lon = param.xx_scale*x + param.xy_shear*y + param.x_translation
     lat = param.yx_shear*x + param.yy_scale*y + param.y_translation
