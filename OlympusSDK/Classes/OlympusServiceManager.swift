@@ -286,6 +286,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         
         bleTrimed = [String: [[Double]]]()
         bleAvg = [String: Double]()
+        OlympusBluetoothManager.shared.initBleData()
         
         pastUvdTime = 0
         pastUvdHeading = 0
@@ -1031,9 +1032,13 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     }
                 case .failure(_):
                     let isNeedClearBle = stateManager.checkBleError(olympusResult: self.olympusResult)
-                    if (isNeedClearBle) {
-                        self.bleAvg = [String: Double]()
-                    }
+                    OlympusBluetoothManager.shared.initBleData()
+                    self.bleAvg = [String: Double]()
+                    let msg: String = localTime + " , (Olympus) Warnings : Fail to trimming BLE // bleData = \(bleData) // isNeedClearBle = \(isNeedClearBle)"
+                    print(msg)
+//                    if (isNeedClearBle) {
+//                        
+//                    }
                 }
 
                 rssCompensator.refreshWardMinRssiV2(bleTime: currentTime, bleData: self.bleAvg)
@@ -1097,6 +1102,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     inputReceivedForce = []
                 }
                 if sector_id_origin != 6 {
+//                    print(getLocalTimeString() + " , (Olympus) run checkOutermostWardTagged")
                     stateManager.checkOutermostWardTagged(bleAvg: self.bleAvg, olympusResult: self.olympusResult)
                 }
 //                stateManager.checkOutermostWardTagged(bleAvg: self.bleAvg, olympusResult: self.olympusResult)
@@ -2629,10 +2635,11 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 stackUserUniqueMask(data: data)
                 stackUserMaskForDisplay(data: data)
                 
-                if !trajMisMatchOccured && self.stateManager.isIndoor {
+                if !trajMisMatchOccured && self.stateManager.isIndoor && phaseController.PHASE > 4 {
                     // Triggering 하고 Tail Index 설정
                     if let comparingResult = compareTraj(index: resultIndex, userMaskBuffer: self.userMaskBuffer, unitDRInfoBuffer: self.unitDRInfoBuffer) {
-                        if resultIndex - self.trajMisMatchIndex > 20 {
+                        let isInLevelChangeArea = buildingLevelChanger.checkInLevelChangeArea(result: self.olympusResult, mode: self.runMode)
+                        if resultIndex - self.trajMisMatchIndex > 20 && isInLevelChangeArea {
                             let tailIndex = comparingResult.2
                             let tailDirection = Int(comparingResult.3[0][2])
                             let centerPos = [Double(userMaskBuffer[userMaskBuffer.count-1].x), Double(userMaskBuffer[userMaskBuffer.count-1].y)]
@@ -3079,6 +3086,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_1])
         isInRecoveryProcess = false
         isPhaseBreak = true
+        trajMisMatchOccured = false
+        trajMisMatchPosted = false
     }
     
     // 임시
