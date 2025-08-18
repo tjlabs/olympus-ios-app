@@ -304,14 +304,16 @@ func isStraightTrajectoryFromCumulativeHeading(_ list: [UnitDRInfo], thresholdRM
     return (rmse < thresholdRMSE, rmse)
 }
 
-func convertPpToLatLon(x: Double, y: Double, param: AffineTransParamOutput) -> (lat: Double, lon: Double) {
-    var lat: Double
-    var lon: Double
-    
-    lon = param.xx_scale*x + param.xy_shear*y + param.x_translation
-    lat = param.yx_shear*x + param.yy_scale*y + param.y_translation
-    
-    return (lat, lon)
+func convertPpToLLH(x: Double, y: Double, heading: Double, param: AffineTransParamOutput) -> LLH {
+    let lon = param.xx_scale * x + param.xy_shear * y + param.x_translation
+    let lat = param.yx_shear * x + param.yy_scale * y + param.y_translation
+
+    let headingOffsetRad = atan2(param.yx_shear, param.xx_scale)
+    let headingOffsetDeg = headingOffsetRad * 180.0 / .pi
+
+    let correctedHeading = fmod((heading + headingOffsetDeg + 360.0), 360.0)
+
+    return LLH(lat: lat, lon: lon, heading: correctedHeading)
 }
 
 func compareTraj(index: Int,

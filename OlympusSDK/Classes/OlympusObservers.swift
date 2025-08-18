@@ -22,12 +22,6 @@ public enum InOutState: Int, Codable {
     case UNKNOWN = -1
 }
 
-public struct LLH: Codable {
-    let lat: Double
-    let lon: Double
-    let heading: Double
-}
-
 protocol StateTrackingObserver: AnyObject {
     func isStateDidChange(newValue: Int)
 }

@@ -736,6 +736,12 @@ public enum RouteTrackFinishType {
         NOT_STABLE
 }
 
+public struct LLH: Codable {
+    let lat: Double
+    let lon: Double
+    let heading: Double
+}
+
 public struct SearchInfo {
     public var searchRange: [Int] = []
     public var searchArea: [[Double]] = [[0, 0]]
