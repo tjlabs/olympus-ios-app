@@ -737,9 +737,9 @@ public enum RouteTrackFinishType {
 }
 
 public struct LLH: Codable {
-    let lat: Double
-    let lon: Double
-    let heading: Double
+    public let lat: Double
+    public let lon: Double
+    public let heading: Double
 }
 
 public struct SearchInfo {
