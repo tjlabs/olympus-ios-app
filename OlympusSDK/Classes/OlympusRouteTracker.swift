@@ -4,24 +4,24 @@ public class OlympusRouteTracker {
     init() { }
     
     private var sector_id: Int = -1
-    public var EntranceRouteURL = [String: String]()
-    public var EntranceRouteLevel = [String: [String]]()
-    public var EntranceRouteCoord = [String: [[Double]]]()
-    public var EntranceNetworkStatus = [String: Bool]()
-    public var EntranceVelocityScales = [String: Double]()
-    public var EntranceIsLoaded = [String: Bool]()
-    public var EntranceNumbers: Int = 0
-    public var EntranceInnerWardID = [String: String]()
-    public var EntranceInnerWardRSSI = [String: Double]()
-    public var EntranceInnerWardCoord = [String: [Double]]()
+    var EntranceRouteURL = [String: String]()
+    var EntranceRouteLevel = [String: [String]]()
+    var EntranceRouteCoord = [String: [[Double]]]()
+    var EntranceNetworkStatus = [String: Bool]()
+    var EntranceVelocityScales = [String: Double]()
+    var EntranceIsLoaded = [String: Bool]()
+    var EntranceNumbers: Int = 0
+    var EntranceInnerWardID = [String: String]()
+    var EntranceInnerWardRSSI = [String: Double]()
+    var EntranceInnerWardCoord = [String: [Double]]()
     
     var indexAfterRouteTrack: Int = 0
-    public var entranceVelocityScale: Double = 1.0
-    public var currentEntrance: String = ""
+    var entranceVelocityScale: Double = 1.0
+    var currentEntrance: String = ""
     var currentEntranceIndex: Int = 0
     var currentEntranceLength: Int = 0
     
-    public func initialize() {
+    func initialize() {
         self.indexAfterRouteTrack = 0
         self.entranceVelocityScale = 1.0
         self.currentEntrance = ""
@@ -29,11 +29,11 @@ public class OlympusRouteTracker {
         self.currentEntranceLength = 0
     }
     
-    public func setSectorID(sector_id: Int) {
+    func setSectorID(sector_id: Int) {
         self.sector_id = sector_id
     }
     
-    public func setEntranceInnerWardInfo(key: String, entranceRF: EntranceRF) {
+    func setEntranceInnerWardInfo(key: String, entranceRF: EntranceRF) {
         self.EntranceInnerWardID[key] = entranceRF.id
         self.EntranceInnerWardRSSI[key] = Double(entranceRF.rss)
         self.EntranceInnerWardCoord[key] = entranceRF.pos + entranceRF.direction
@@ -58,7 +58,7 @@ public class OlympusRouteTracker {
         return (entracneLevelArray, entranceArray)
     }
     
-    public func saveEntranceRouteLocalUrl(key: String, url: URL?) {
+    func saveEntranceRouteLocalUrl(key: String, url: URL?) {
         if let _ = url {
             do {
                 let key: String = "OlympusEntranceRouteLocalUrl_\(key)"
@@ -69,7 +69,7 @@ public class OlympusRouteTracker {
         }
     }
     
-    public func loadEntranceRouteLocalUrl(key: String) -> (Bool, URL?) {
+    func loadEntranceRouteLocalUrl(key: String) -> (Bool, URL?) {
         do {
             let documentsURL = try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
             let savedURL = documentsURL.appendingPathComponent("\(key).csv")
@@ -85,7 +85,7 @@ public class OlympusRouteTracker {
         }
     }
     
-    public func saveEntranceRouteURL(key: String, routeURL: String) {
+    func saveEntranceRouteURL(key: String, routeURL: String) {
         print(getLocalTimeString() + " , (Olympus) Save \(key) Entrance Route URL : \(routeURL)")
         do {
             let key: String = "OlympusEntranceRouteURL_\(key)"
@@ -93,7 +93,7 @@ public class OlympusRouteTracker {
         }
     }
     
-    public func loadEntranceRoute(sector_id: Int, RouteURL: [String: String]) {
+    func loadEntranceRoute(sector_id: Int, RouteURL: [String: String]) {
         for (key, value) in RouteURL {
             // Cache를 통해 PP 버전을 확인
             let keyRouteVersion: String = "OlympusEntranceRouteURL_\(key)"
@@ -186,7 +186,7 @@ public class OlympusRouteTracker {
         }
     }
     
-    public func startRouteTracking(result: FineLocationTrackingFromServer, isStartRouteTrack: Bool) -> (Bool, Bool) {
+    func startRouteTracking(result: FineLocationTrackingFromServer, isStartRouteTrack: Bool) -> (Bool, Bool) {
         var networkStatus: Bool = false
         
         for i in 0..<self.EntranceNumbers {
@@ -217,7 +217,7 @@ public class OlympusRouteTracker {
         return (false, networkStatus)
     }
     
-    public func getRouteTrackResult(temporalResult: FineLocationTrackingFromServer, currentLevel: String, isVenusMode: Bool, isKF: Bool, isPhaseBreakInRouteTrack: Bool) -> (isRouteTrackFinished: Bool, RouteTrackFinishType, FineLocationTrackingFromServer) {
+    func getRouteTrackResult(temporalResult: FineLocationTrackingFromServer, currentLevel: String, isVenusMode: Bool, isKF: Bool, isPhaseBreakInRouteTrack: Bool) -> (isRouteTrackFinished: Bool, RouteTrackFinishType, FineLocationTrackingFromServer) {
         var isRouteTrackFinished: Bool = false
         var finishType = RouteTrackFinishType.NOT_STABLE
         
@@ -281,7 +281,7 @@ public class OlympusRouteTracker {
         return result
     }
     
-    public func getRouteTrackEndLevel() -> String {
+    func getRouteTrackEndLevel() -> String {
         if let entranceRouteLevel: [String] = self.EntranceRouteLevel[self.currentEntrance] {
             let levelName = entranceRouteLevel[currentEntranceLength-1]
             return levelName
@@ -290,7 +290,7 @@ public class OlympusRouteTracker {
         }
     }
     
-    public func getEntranceVelocityScale(isGetFirstResponse: Bool, isStartRouteTrack: Bool) -> Double {
+    func getEntranceVelocityScale(isGetFirstResponse: Bool, isStartRouteTrack: Bool) -> Double {
         var scale: Double = 1.0
         if (isStartRouteTrack) {
             self.indexAfterRouteTrack += 1
@@ -300,7 +300,7 @@ public class OlympusRouteTracker {
         return scale
     }
     
-    public func checkIsEntranceFinished(bleData: [String: Double], normalization_scale: Double, device_min_rss: Double, standard_min_rss: Double) -> (Bool, [Double]) {
+    func checkIsEntranceFinished(bleData: [String: Double], normalization_scale: Double, device_min_rss: Double, standard_min_rss: Double) -> (Bool, [Double]) {
         let xyh: [Double] = [0, 0, 0]
         if let bleID = EntranceInnerWardID[currentEntrance] {
             if let scannedRSSI = bleData[bleID] {
@@ -324,7 +324,7 @@ public class OlympusRouteTracker {
         }
     }
     
-    public func findEntrance(result: FineLocationTrackingFromServer, entrance: Int) -> (Int, Int) {
+    func findEntrance(result: FineLocationTrackingFromServer, entrance: Int) -> (Int, Int) {
         var entranceNumber: Int = 0
         var entranceLength: Int = 0
         
@@ -379,7 +379,7 @@ public class OlympusRouteTracker {
         return (entranceNumber, entranceLength)
     }
     
-    public func getCurrentEntranceNumber() -> Int {
+    func getCurrentEntranceNumber() -> Int {
         let entranceString = self.currentEntrance.split(separator: "_")
         if entranceString.count == 3 {
             let entranceNumber = Int(entranceString[entranceString.count-1])

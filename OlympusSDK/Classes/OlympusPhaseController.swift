@@ -9,12 +9,12 @@ public class OlympusPhaseController {
     var PHASE3_LENGTH_THRESHOLD_DR: Double = 60
     var PHASE2_LENGTH_THRESHOLD_DR: Double = 50
     
-    public var phase2BadCount: Int = 0
+    var phase2BadCount: Int = 0
     var phase2count: Int = 0
     var phase3count: Int = 0
     
     private var phaseObserver: Any!
-    public var PHASE: Int = 1
+    var PHASE: Int = 1
     
     init() {
         self.notificationCenterAddObserver()
@@ -26,14 +26,14 @@ public class OlympusPhaseController {
         self.notificationCenterRemoveObserver()
     }
     
-    public func initialize() {
+    func initialize() {
         self.phase2BadCount = 0
         self.phase2count = 0
         self.phase3count = 0
         self.PHASE = 1
     }
     
-    public func setPhaseLengthParam(lengthConditionPdr: Double, lengthConditionDr: Double) {
+    func setPhaseLengthParam(lengthConditionPdr: Double, lengthConditionDr: Double) {
         self.PHASE3_LENGTH_THRESHOLD_PDR = lengthConditionPdr
         self.PHASE3_LENGTH_THRESHOLD_DR = lengthConditionDr
         
@@ -41,11 +41,11 @@ public class OlympusPhaseController {
         self.PHASE2_LENGTH_THRESHOLD_DR = self.PHASE3_LENGTH_THRESHOLD_DR - Double(OlympusConstants.DR_LENGTH_MARGIN)
     }
     
-    public func setPhase2BadCount(value: Int) {
+    func setPhase2BadCount(value: Int) {
         self.phase2BadCount = value
     }
      
-    public func phase1control(serverResult: FineLocationTrackingFromServer, mode: String) -> Int {
+    func phase1control(serverResult: FineLocationTrackingFromServer, mode: String) -> Int {
         var phase: Int = 0
         
         let building_name = serverResult.building_name
@@ -63,7 +63,7 @@ public class OlympusPhaseController {
         return phase
     }
     
-    public func phaseControlInStable(serverResult: FineLocationTrackingFromServer, mode: String, inputPhase: Int) -> Int {
+    func phaseControlInStable(serverResult: FineLocationTrackingFromServer, mode: String, inputPhase: Int) -> Int {
         var phaseBreakSCC = OlympusConstants.PHASE_BREAK_SCC_DR
         if (mode == OlympusConstants.MODE_PDR) {
             phaseBreakSCC = OlympusConstants.PHASE_BREAK_SCC_PDR
@@ -82,7 +82,7 @@ public class OlympusPhaseController {
     }
     
     
-    public func controlPhase(serverResultArray: [FineLocationTrackingFromServer], drBuffer: [UnitDRInfo], UVD_INTERVAL: Int, TRAJ_LENGTH: Double, INDEX_THRESHOLD: Int, inputPhase: Int, inputTrajType: TrajType, mode: String, isVenusMode: Bool) -> (Int, Bool) {
+    func controlPhase(serverResultArray: [FineLocationTrackingFromServer], drBuffer: [UnitDRInfo], UVD_INTERVAL: Int, TRAJ_LENGTH: Double, INDEX_THRESHOLD: Int, inputPhase: Int, inputTrajType: TrajType, mode: String, isVenusMode: Bool) -> (Int, Bool) {
         let phaseBreakSCC = mode == OlympusConstants.MODE_PDR ? OlympusConstants.PHASE_BREAK_SCC_PDR : OlympusConstants.PHASE_BREAK_SCC_DR
         
         var phase: Int = 0
@@ -124,7 +124,7 @@ public class OlympusPhaseController {
         return (phase, isPhaseBreak)
     }
     
-    public func checkScResultConnectionForStable(inputPhase: Int, serverResultArray: [FineLocationTrackingFromServer], drBuffer: [UnitDRInfo], inputTrajType: TrajType, UVD_INTERVAL: Int, TRAJ_LENGTH: Double, INDEX_THRESHOLD: Int, mode: String) -> Int {
+    func checkScResultConnectionForStable(inputPhase: Int, serverResultArray: [FineLocationTrackingFromServer], drBuffer: [UnitDRInfo], inputTrajType: TrajType, UVD_INTERVAL: Int, TRAJ_LENGTH: Double, INDEX_THRESHOLD: Int, mode: String) -> Int {
         var phase: Int = inputPhase
         
         // Conditions //
