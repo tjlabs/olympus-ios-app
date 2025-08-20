@@ -827,3 +827,15 @@ public struct ServiceResult {
     
     public var serverResult: [Double] = [0, 0, 0]
 }
+
+public enum InOutState: Int, Codable {
+    case OUT_TO_IN = 0
+    case INDOOR = 1
+    case IN_TO_OUT = 2
+    case OUTDOOR = 3
+    case UNKNOWN = -1
+}
+
+enum SleepModeType {
+    case UVD, RFD
+}
