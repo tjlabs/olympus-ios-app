@@ -1009,14 +1009,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 bleLineCount += 1
             } else {
                 self.bleAvg = [String: Double]()
-                
-                // Connect Simulation
-//                if stateManager.timeForInit >= OlympusConstants.TIME_INIT_THRESHOLD+1 && !stateManager.isIndoor {
-//                    self.bleLineCount = 0
-//                    self.sensorLineCount = 0
-//                    setSimulationMode(flag: true, bleFileName: "ble_coex_04_05_1007.csv", sensorFileName: "sensor_coex_04_05_1007.csv")
-//                }
             }
+            
+            stateManager.checkEnterSleepMode(service: self.service, type: .RFD, isSleep: self.bleAvg.isEmpty)
             
             if let top3Ble = buildingLevelChanger.extractTop3BleInWindow(currentTime: currentTime, ble: self.bleAvg) {
                 let dTime = currentTime - self.routeTrackFinishTime
@@ -1031,9 +1026,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             }
             
             checkBleEmptyState(bleData: self.bleAvg)
-
+            
             if (!self.bleAvg.isEmpty) {
-                stateManager.setVariblesWhenBleIsNotEmpty()
                 let data = ReceivedForce(user_id: self.user_id, mobile_time: currentTime, ble: self.bleAvg, pressure: self.sensorManager.pressure)
                 self.inputReceivedForce.append(data)
                 if ((inputReceivedForce.count) >= OlympusConstants.RFD_INPUT_NUM) {
@@ -1051,7 +1045,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //                stateManager.checkOutermostWardTagged(bleAvg: self.bleAvg, olympusResult: self.olympusResult)
             } else if (!stateManager.isBackground) {
                 stateManager.checkOutdoorBleEmpty(lastBleDiscoveredTime: self.simulationTime, olympusResult: self.olympusResult)
-                stateManager.checkEnterSleepMode(service: self.service, type: 0)
             }
         } else {
             stateManager.checkBleOff(bluetoothReady: OlympusBluetoothManager.shared.bluetoothReady, bleLastScannedTime: OlympusBluetoothManager.shared.bleLastScannedTime)
@@ -1091,9 +1084,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     self.bleAvg = [String: Double]()
                     let msg: String = localTime + " , (Olympus) Warnings : Fail to trimming BLE // bleData = \(bleData) // isNeedClearBle = \(isNeedClearBle)"
                     print(msg)
-//                    if (isNeedClearBle) {
-//                        
-//                    }
                 }
 
                 rssCompensator.refreshWardMinRssiV2(bleTime: currentTime, bleData: self.bleAvg)
@@ -1144,7 +1134,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             checkBleEmptyState(bleData: self.bleAvg)
 
             if (!self.bleAvg.isEmpty) {
-                stateManager.setVariblesWhenBleIsNotEmpty()
                 let data = ReceivedForce(user_id: self.user_id, mobile_time: currentTime, ble: self.bleAvg, pressure: self.sensorManager.pressure)
                 self.inputReceivedForce.append(data)
                 if ((inputReceivedForce.count) >= OlympusConstants.RFD_INPUT_NUM) {
@@ -1163,7 +1152,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //                stateManager.checkOutermostWardTagged(bleAvg: self.bleAvg, olympusResult: self.olympusResult)
             } else if (!stateManager.isBackground) {
                 stateManager.checkOutdoorBleEmpty(lastBleDiscoveredTime: OlympusBluetoothManager.shared.bleDiscoveredTime, olympusResult: self.olympusResult)
-                stateManager.checkEnterSleepMode(service: self.service, type: 0)
             }
         }
     }
@@ -1202,6 +1190,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             unitDRInfo = unitDRGenerator.generateDRInfo(sensorData: sensorData)
             OlympusFileManager.shared.writeSensorData(currentTime: getCurrentTimeInMillisecondsDouble(), data: sensorData)
         }
+        
+        stateManager.checkEnterSleepMode(service: self.service, type: .UVD, isSleep: !unitDRInfo.isIndexChanged)
         
         var backgroundScale: Double = 1.0
         if (stateManager.isBackground && runMode == OlympusConstants.MODE_DR) {
@@ -1417,14 +1407,16 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                         let isSectionChanged = isNeedRq.1
                                         let multipleNodeCandidates = OlympusPathMatchingCalculator.shared.getMultipleAnchorNodeCandidates(fltResult: tuResult, pathType: 1, maskBuffer: self.userUniqueMaskBuffer)
                                         var prevPassedNodeInfo = OlympusPathMatchingCalculator.shared.getPreviousPassedNode(nodeCandidateInfo: multipleNodeCandidates)
-                                        
+                                        print(getLocalTimeString() + " , (Olympus) flt check : ---------------------------------")
+                                        print(getLocalTimeString() + " , (Olympus) flt check : isSectionChanged = \(isSectionChanged) // index = \(unitDRInfoIndex)")
                                         if isSectionChanged {
                                             inputNodeCandidates = multipleNodeCandidates
                                             for item in multipleNodeCandidates.nodeCandidatesInfo {
                                                 nodeNumberCandidates.append(item.nodeNumber)
                                             }
                                             let stableInfo = StableInfo(tail_index: nodeCandidatesInfo[0].matchedIndex, head_section_number: sectionController.getSectionNumber(), node_number_list: nodeNumberCandidates)
-                                            
+                                            print(getLocalTimeString() + " , (Olympus) flt check : prevPassedNodeInfo = \(prevPassedNodeInfo)")
+                                            print(getLocalTimeString() + " , (Olympus) flt check : nodeNumberCandidates = \(nodeNumberCandidates)")
                                             if nodeNumberCandidates.count > 1 {
                                                 if prevPassedNodeInfo.nodeNumber == -1 {
                                                     prevPassedNodeInfo.matchedIndex = sectionController.getAnchorTailIndex()
@@ -1525,7 +1517,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 
                 let isStop = stateManager.checkStopWhenIsIndexNotChanged()
                 if (isStop) { olympusVelocity = 0 }
-                stateManager.checkEnterSleepMode(service: self.service, type: 1)
             }
         }
     }
@@ -1560,7 +1551,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     displayOutput.serverResult[0] = fltResult.x
                     displayOutput.serverResult[1] = fltResult.y
                     displayOutput.serverResult[2] = fltResult.absolute_heading
-                    
+                    print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : ----------------------------------------------")
+                    print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : fltResult = \(fltResult.x),\(fltResult.y),\(fltResult.absolute_heading)")
                     // 임시
 //                    let phaseBreakSCC = mode == OlympusConstants.MODE_PDR ? OlympusConstants.PHASE_BREAK_SCC_PDR : OlympusConstants.PHASE_BREAK_SCC_DR
                     let phaseBreakSCC = 0.3
@@ -1588,11 +1580,15 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             let isResultStraight = isResultHeadingStraight(unitDRInfoBuffer: self.unitDRInfoBuffer, fltResult: fltResult)
                             if (!isResultStraight) { pmResult.absolute_heading = compensateHeading(heading: fltResult.absolute_heading) }
                         }
+                        print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : pmResult = \(pmResult.x),\(pmResult.y),\(pmResult.absolute_heading)")
                         
                         var copiedResult: FineLocationTrackingFromServer = fltResult
                         let propagationResult = propagateUsingUvd(unitDRInfoBuffer: unitDRInfoBuffer, fltResult: fltResult)
                         let propagationValues: [Double] = propagationResult.1
                         var propagatedResult: [Double] = [pmResult.x+propagationValues[0] , pmResult.y+propagationValues[1], pmResult.absolute_heading+propagationValues[2]]
+                        
+                        print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : dxdydh = \(propagationResult)")
+                        print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : propagatedResult = \(propagatedResult)")
                         
                         if (propagationResult.0) {
                             if (runMode == OlympusConstants.MODE_PDR) {
@@ -1606,13 +1602,15 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         copiedResult.x = propagatedResult[0]
                         copiedResult.y = propagatedResult[1]
                         
-                        if copiedResult.x == olympusResult.x || copiedResult.y == olympusResult.y {
-                            print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : keep current state")
-                            self.trajMisMatchOccured = false
-                            self.trajMisMatchPosted = false
-                            return
-                        }
+                        print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : \(copiedResult.x),\(copiedResult.y) and \(olympusResult.x),\(olympusResult.y)")
+//                        if copiedResult.x == olympusResult.x || copiedResult.y == olympusResult.y {
+//                            print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : keep current state \(unitDRInfoIndex)")
+//                            self.trajMisMatchOccured = false
+//                            self.trajMisMatchPosted = false
+//                            return
+//                        }
                         
+                        print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : do \(unitDRInfoIndex)")
                         sectionController.initSection()
                         sectionController.setInitialAnchorTailIndex(value: unitDRInfoIndex)
 
@@ -2775,6 +2773,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     }
     
     func osrTimerUpdate() {
+        if stateManager.isSleepMode {
+            return
+        }
+        
         if !isStartRouteTrack {
             buildingLevelChanger.estimateBuildingLevel(user_id: self.user_id, mode: self.runMode, phase: phaseController.PHASE, isGetFirstResponse: stateManager.isGetFirstResponse, networkStatus: self.networkStatus, isDRMode: self.isDRMode, passedNodes: OlympusPathMatchingCalculator.shared.getPassedNodeInfoBuffer(), result: self.olympusResult, currentBuilding: self.currentBuilding, currentLevel: self.currentLevel, currentEntrance: routeTracker.currentEntrance)
         }
