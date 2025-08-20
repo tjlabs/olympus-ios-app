@@ -1519,13 +1519,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             }
         } else {
             if (!unitDRInfo.isIndexChanged) {
-                let isStop = stateManager.checkStopWhenIsIndexNotChanaged()
-                if (isStop) {
-                    olympusVelocity = 0
-                    if (abs(getCurrentTimeInMillisecondsDouble() - OlympusBluetoothManager.shared.bleDiscoveredTime) < 1000*10) || isSimulationMode {
-                        requestOlympusResultInStop(trajectoryInfo: trajController.pastTrajectoryInfo, trueHeading: sensorData.trueHeading, mode: self.runMode)
-                    }
+                if (abs(getCurrentTimeInMillisecondsDouble() - OlympusBluetoothManager.shared.bleDiscoveredTime) < 1000*10) || isSimulationMode {
+                    requestOlympusResultInStop(trajectoryInfo: trajController.pastTrajectoryInfo, trueHeading: sensorData.trueHeading, mode: self.runMode)
                 }
+                
+                let isStop = stateManager.checkStopWhenIsIndexNotChanged()
+                if (isStop) { olympusVelocity = 0 }
                 stateManager.checkEnterSleepMode(service: self.service, type: 1)
             }
         }
