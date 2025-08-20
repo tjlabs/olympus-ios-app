@@ -25,7 +25,7 @@ public class OlympusStateManager: NSObject {
         observers.forEach { $0.isStateDidChange(newValue: state) }
     }
     
-    public func initialize(isStopService: Bool) {
+    func initialize(isStopService: Bool) {
         self.lastScannedEntranceOuterWardTime = 0
         self.isGetFirstResponse = false
         self.isIndoor = false
@@ -56,31 +56,31 @@ public class OlympusStateManager: NSObject {
     }
     
     private var sector_id: Int = -1
-    public var EntranceOuterWards = [String]()
-    public var lastScannedEntranceOuterWardTime: Double = 0
+    var EntranceOuterWards = [String]()
+    var lastScannedEntranceOuterWardTime: Double = 0
     
-    public var isGetFirstResponse: Bool = false
-    public var isIndoor: Bool = false
-    public var isBleOff: Bool = false
-    public var isBackground: Bool = false
-    public var isBecomeForeground: Bool = false
-    public var isStop: Bool = false
-    public var isVenusMode: Bool = false
+    var isGetFirstResponse: Bool = false
+    var isIndoor: Bool = false
+    var isBleOff: Bool = false
+    var isBackground: Bool = false
+    var isBecomeForeground: Bool = false
+    var isStop: Bool = false
+    var isVenusMode: Bool = false
     private var isNetworkConnectReported: Bool = false
     var curInOutState: InOutState = .UNKNOWN
     var isOutermostWardTagged: Bool = false
     
-    public var timeForInit: Double = OlympusConstants.TIME_INIT_THRESHOLD+1
+    var timeForInit: Double = OlympusConstants.TIME_INIT_THRESHOLD+1
     private var timeBleOff: Double = 0
     private var timeBecomeForeground: Double = 0
     private var timeEmptyRF: Double = 0
     private var timeTrimFailRF: Double = 0
     
-    public var isSleepMode: Bool = true
+    var isSleepMode: Bool = true
     private var timeSleepRF: Double = 0
     private var timeSleepUV: Double = 0
     private var timeIndexNotChanged: Double = 0
-    public var networkCount: Int = 0
+    var networkCount: Int = 0
 
     private var startObserver: Any!
     private var venusObserver: Any!
@@ -91,19 +91,11 @@ public class OlympusStateManager: NSObject {
     private var foregroundObserver: Any!
     private var trajEditedObserver: Any!
     
-    public func setSectorID(sector_id: Int) {
+    func setSectorID(sector_id: Int) {
         self.sector_id = sector_id
     }
     
-    public func setVariblesWhenBleIsNotEmpty() {
-        self.timeBleOff = 0
-        self.timeEmptyRF = 0
-        self.timeSleepRF = 0
-        self.isBleOff = false
-        self.isSleepMode = false
-    }
-    
-    public func checkBleOff(bluetoothReady: Bool, bleLastScannedTime: Double) {
+    func checkBleOff(bluetoothReady: Bool, bleLastScannedTime: Double) {
         let currentTime: Double = getCurrentTimeInMillisecondsDouble()
         if (!bluetoothReady) {
             self.timeBleOff += OlympusConstants.RFD_INTERVAL
@@ -123,7 +115,7 @@ public class OlympusStateManager: NSObject {
         }
     }
     
-    public func checkBleError(olympusResult: FineLocationTrackingResult) -> Bool {
+    func checkBleError(olympusResult: FineLocationTrackingResult) -> Bool {
         var isNeedClearBle: Bool = false
         let currentTime: Double = getCurrentTimeInMillisecondsDouble()
         if (self.isIndoor && self.isGetFirstResponse && !self.isBackground) {
@@ -144,7 +136,7 @@ public class OlympusStateManager: NSObject {
         return isNeedClearBle
     }
     
-    public func checkOutermostWardTagged(bleAvg: [String: Double], olympusResult: FineLocationTrackingResult) {
+    func checkOutermostWardTagged(bleAvg: [String: Double], olympusResult: FineLocationTrackingResult) {
         let state = self.curInOutState
         if self.isIndoor && self.isGetFirstResponse && !self.isBleOff && !self.isOutermostWardTagged {
             if state == .IN_TO_OUT {
@@ -164,7 +156,7 @@ public class OlympusStateManager: NSObject {
         }
     }
     
-    public func checkOutdoorBleEmpty(lastBleDiscoveredTime: Double, olympusResult: FineLocationTrackingResult) {
+    func checkOutdoorBleEmpty(lastBleDiscoveredTime: Double, olympusResult: FineLocationTrackingResult) {
         let currentTime = getCurrentTimeInMillisecondsDouble()
 //        print(getLocalTimeString() + " , (Olympus) checkOutdoorBleEmpty : dTime = \(currentTime - lastBleDiscoveredTime) // timeEmptyRF = \(timeEmptyRF)")
         if (currentTime - lastBleDiscoveredTime > OlympusConstants.BLE_VALID_TIME && lastBleDiscoveredTime != 0) {
@@ -214,7 +206,7 @@ public class OlympusStateManager: NSObject {
         return false
     }
     
-    public func checkInEntranceLevel(result: FineLocationTrackingResult, isStartRouteTrack: Bool) -> Bool {
+    func checkInEntranceLevel(result: FineLocationTrackingResult, isStartRouteTrack: Bool) -> Bool {
         if (!self.isGetFirstResponse) {
             return true
         }
@@ -255,21 +247,38 @@ public class OlympusStateManager: NSObject {
         }
     }
     
-    public func checkEnterSleepMode(service: String, type: Int) {
+    func checkEnterSleepMode(service: String, type: SleepModeType, isSleep: Bool) {
         if (service.contains(OlympusConstants.SERVICE_FLT)) {
-            if (type == 0) {
-                self.timeSleepRF += OlympusConstants.RFD_INTERVAL
+            
+            if isSleep {
+                if type == .RFD {
+                    self.timeSleepRF += OlympusConstants.RFD_INTERVAL
+                } else {
+                    self.timeSleepUV += OlympusConstants.UVD_INTERVAL
+                }
             } else {
-                self.timeSleepUV += OlympusConstants.UVD_INTERVAL
+                if type == .RFD {
+                    self.timeBleOff = 0
+                    self.timeEmptyRF = 0
+                    self.timeSleepRF = 0
+                    self.isBleOff = false
+                } else {
+                    self.timeIndexNotChanged = 0
+                    self.timeSleepUV = 0
+                    self.isStop = false
+                }
             }
             
+//            print(getLocalTimeString() + " , (Olympus) checkEnterSleepMode : timeSleepRF = \(timeSleepRF) // timeSleepUV = \(timeSleepUV)")
             if (self.timeSleepRF >= OlympusConstants.SLEEP_THRESHOLD || self.timeSleepUV >= OlympusConstants.SLEEP_THRESHOLD) {
                 self.isSleepMode = true
+            } else {
+                self.isSleepMode = false
             }
         }
     }
     
-    public func getLastScannedEntranceOuterWardTime(bleAvg: [String: Double], entranceOuterWards: [String]) {
+    func getLastScannedEntranceOuterWardTime(bleAvg: [String: Double], entranceOuterWards: [String]) {
         var scannedTime: Double = 0
 
         for (key, value) in bleAvg {
@@ -282,7 +291,7 @@ public class OlympusStateManager: NSObject {
         }
     }
     
-    public func checkEnterInNetworkBadEntrance(bleAvg: [String: Double]) -> (Bool, FineLocationTrackingFromServer) {
+    func checkEnterInNetworkBadEntrance(bleAvg: [String: Double]) -> (Bool, FineLocationTrackingFromServer) {
         let emptyEntrance = FineLocationTrackingFromServer()
         
         if (!self.isGetFirstResponse) {
@@ -357,20 +366,20 @@ public class OlympusStateManager: NSObject {
         return (networkStatus, entrance)
     }
     
-    public func updateTimeForInit() {
+    func updateTimeForInit() {
         if (!self.isIndoor) {
             self.timeForInit += OlympusConstants.RFD_INTERVAL
         }
     }
     
-    public func setVariblesWhenIsIndexChanged() {
+    func setVariblesWhenIsIndexChanged() {
         self.timeIndexNotChanged = 0
         self.timeSleepUV = 0
         self.isStop = false
         self.isSleepMode = false
     }
     
-    public func checkNetworkConnection() {
+    func checkNetworkConnection() {
         if (self.networkCount >= 5 && OlympusNetworkChecker.shared.isConnectedToInternet()) {
             self.notifyObservers(state: NETWORK_WAITING_FLAG)
         }
@@ -385,26 +394,24 @@ public class OlympusStateManager: NSObject {
         }
     }
     
-    public func setNetworkCount(value: Int) {
+    func setNetworkCount(value: Int) {
         self.networkCount = value
     }
     
-    public func checkStopWhenIsIndexNotChanaged() -> Bool {
-        var isStop: Bool = false
-        self.timeIndexNotChanged += OlympusConstants.UVD_INTERVAL
-        if (self.timeIndexNotChanged >= OlympusConstants.STOP_THRESHOLD) {
-            if (self.isVenusMode) {
-                isStop = false
-            } else {
-                isStop = true
-            }
-            self.timeIndexNotChanged = 0
+    func checkStopWhenIsIndexNotChanged() -> Bool {
+        timeIndexNotChanged += OlympusConstants.UVD_INTERVAL
+
+        if timeIndexNotChanged >= OlympusConstants.STOP_THRESHOLD {
+            timeIndexNotChanged = 0
+            isStop = true
+        } else {
+            isStop = false
         }
-        self.isStop = isStop
+
         return isStop
     }
     
-    public func setIsBackground(isBackground: Bool) {
+    func setIsBackground(isBackground: Bool) {
         self.isBackground = isBackground
         if (isBackground) {
             self.notifyObservers(state: BACKGROUND_FLAG)
@@ -413,7 +420,7 @@ public class OlympusStateManager: NSObject {
         }
     }
     
-    public func setIsIndoor(isIndoor: Bool) {
+    func setIsIndoor(isIndoor: Bool) {
         self.isIndoor = isIndoor
         if (isIndoor) {
             self.notifyObservers(state: INDOOR_FLAG)
@@ -422,11 +429,11 @@ public class OlympusStateManager: NSObject {
         }
     }
     
-    public func setIsGetFirstResponse(isGetFirstResponse: Bool) {
+    func setIsGetFirstResponse(isGetFirstResponse: Bool) {
         self.isGetFirstResponse = isGetFirstResponse
     }
     
-    public func setBecomeForeground(isBecomeForeground: Bool, time: Double) {
+    func setBecomeForeground(isBecomeForeground: Bool, time: Double) {
         self.isBecomeForeground = isBecomeForeground
         self.timeBecomeForeground = time
     }
