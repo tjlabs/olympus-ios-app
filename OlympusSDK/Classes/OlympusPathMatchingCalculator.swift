@@ -201,6 +201,7 @@ public class OlympusPathMatchingCalculator {
             // Cache를 통해 PP 버전을 확인
             let keyPpURL: String = "OlympusPathPixelURL_\(key)"
             if let loadedPpURL: String = UserDefaults.standard.object(forKey: keyPpURL) as? String {
+                print(getLocalTimeString() + " , (Olympus) Path-Pixel : \(key) \(loadedPpURL) version")
                 if value == loadedPpURL {
                     // 만약 버전이 같다면 파일을 가져오기
                     let ppLocalUrl = loadPathPixelLocalUrl(key: key)
@@ -1578,6 +1579,7 @@ public class OlympusPathMatchingCalculator {
                         x += cos(direction*OlympusConstants.D2R)
                         y += sin(direction*OlympusConstants.D2R)
                         let matchedNodeResult = getMatchedNodeWithCoord(fltResult: fltResult, originCoord: nodeCoord, coordToCheck: [x, y], pathType: pathType, PADDING_VALUES: paddingValues)
+//                        print(getLocalTimeString() + " , (Olympus) Node Find : matchedNodeResult [\(x), \(y)] // \(matchedNodeResult)")
                         if (matchedNodeResult.0) {
                             break
                         } else {
@@ -1585,8 +1587,13 @@ public class OlympusPathMatchingCalculator {
                                 let nearestHeading = getNearestNodeHeading(userHeading: heading, nodeHeadings: matchedNodeResult.2)
                                 let coordToCheck: [Double] = [x+cos(nearestHeading*OlympusConstants.D2R), y+sin(nearestHeading*OlympusConstants.D2R)]
                                 
+//                                print(getLocalTimeString() + " , (Olympus) Node Find : nearestHeading = \(nearestHeading)")
+//                                print(getLocalTimeString() + " , (Olympus) Node Find : coordToCheck = \(coordToCheck)")
+                                
                                 let isMultiplePassedNode = checkIsMultiplePassedNode(nodeCoord: [x, y], targetCoord: coordToCheck, userMask: maskBuffer)
+//                                print(getLocalTimeString() + " , (Olympus) Node Find : isMultiplePassedNode = \(isMultiplePassedNode)")
                                 let isPossibleNode = checkPathPixelHasCoords(fltResult: fltResult, coordToCheck: coordToCheck)
+//                                print(getLocalTimeString() + " , (Olympus) Node Find : isPossibleNode = \(isPossibleNode)")
                                 if (isPossibleNode && isMultiplePassedNode) {
                                     let nodeInfo = PassedNodeInfo(nodeNumber: matchedNodeResult.1, nodeCoord: [x, y], nodeHeadings: matchedNodeResult.2, matchedIndex: nodeMatchedIndex, userHeading: heading)
                                     nodeCandidatesInfo.append(nodeInfo)
@@ -1868,7 +1875,6 @@ public class OlympusPathMatchingCalculator {
                                             }
                                             diffHeading.append(diffValue)
                                         }
-                                        
                                         if let minHeading = diffHeading.min() {
                                             if minHeading < OlympusConstants.HEADING_RANGE-10 {
                                                 return (false, node, matchedNodeHeadings)

@@ -546,20 +546,20 @@ public class OlympusBuildingLevelChanger {
                 if (phase >= OlympusConstants.PHASE_4) {
                     isRunOsr = self.checkIsPossibleRunOSR(result: result, isDRMode: isDRMode, passedNodes: passedNodes, mode: mode)
                     self.isOsrRunning = isRunOsr
-                    print(getLocalTimeString() + " , (Olympus) Run OSR : isRunOsr = \(isRunOsr) // isDRMode = \(isDRMode) // passedNodes = \(passedNodes)")
+//                    print(getLocalTimeString() + " , (Olympus) Run OSR : isRunOsr = \(isRunOsr) // isDRMode = \(isDRMode) // passedNodes = \(passedNodes)")
                 }
                 
                 if (isRunOsr) {
                     let input = OnSpotRecognition(operating_system: OlympusConstants.OPERATING_SYSTEM, user_id: user_id, mobile_time: currentTime, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), standard_min_rss: Int(OlympusConstants.STANDARD_MIN_RSS))
-                    print(getLocalTimeString() + " , (Olympus) Run OSR : input = \(input)")
+//                    print(getLocalTimeString() + " , (Olympus) Run OSR : input = \(input)")
                     OlympusNetworkManager.shared.postOSR(url: CALC_OSR_URL, input: input, completion: { [self] statusCode, returnedString in
-                        print(getLocalTimeString() + " , (Olympus) Run OSR : result = \(returnedString)")
+//                        print(getLocalTimeString() + " , (Olympus) Run OSR : result = \(returnedString)")
                         if (statusCode == 200) {
                             let osrResult = jsonToOnSpotRecognitionResult(jsonString: returnedString)
                             let decodedOsr = osrResult.1
                             if (osrResult.0 && decodedOsr.building_name != "" && decodedOsr.level_name != "") {
                                 let isOnSpot = isOnSpotRecognition(result: decodedOsr, level: currentLevel)
-                                print(getLocalTimeString() + " , (Olympus) Run OSR : isOnSpot = \(isOnSpot)")
+//                                print(getLocalTimeString() + " , (Olympus) Run OSR : isOnSpot = \(isOnSpot)")
                                 if (isOnSpot.isOn) {
                                     let levelDestination = isOnSpot.levelDestination + isOnSpot.levelDirection
                                     let spotCoord = isDRMode ? [] : getSectorDRModeAreaSpotCoord(fltResult: result, levelDirection: levelDestination)

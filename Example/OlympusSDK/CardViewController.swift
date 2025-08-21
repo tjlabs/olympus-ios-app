@@ -27,7 +27,8 @@ class CardViewController: UIViewController, Observer {
     var phoenixRecords = [PhoenixRecord]()
     
     override func viewDidDisappear(_ animated: Bool) {
-        serviceManager.stopService()
+        serviceManager.stopService(completion: { _,_ in
+        })
         serviceManager.removeObserver(self)
     }
     
@@ -134,7 +135,10 @@ class CardViewController: UIViewController, Observer {
 //        serviceManager.setDeadReckoningMode(flag: true, buildingName: "Solum", levelName: "0F", x: 5, y: 5, heading: 90)
 //        serviceManager.setDeadReckoningMode(flag: true, buildingName: "S3", levelName: "7F", x: 6, y: 16, heading: 270)
         
-        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_0519_01.csv", sensorFileName: "sensor_songdo_0519_01.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_0519_03.csv", sensorFileName: "sensor_songdo_0519_03.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250818_test2.csv", sensorFileName: "sensor_songdo_250818_test2.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250818_test8.csv", sensorFileName: "sensor_songdo_250818_test8.csv")
+        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250818_test9.csv", sensorFileName: "sensor_songdo_250818_test9.csv")
         
         // collect
 //        isCollect = true
@@ -147,6 +151,7 @@ class CardViewController: UIViewController, Observer {
 //        let uniqueId = "coex01_olympus"
         // service
         serviceManager.addObserver(self)
+        serviceManager.setDebugOption(flag: true)
         serviceManager.startService(user_id: uniqueId, region: self.region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
 //        serviceManager.startService(user_id: uniqueId, region: "Korea", sector_id: 16, service: "FLT", mode: "pdr", completion: { [self] isStart, returnedString in
             if (isStart) {
@@ -174,7 +179,6 @@ class CardViewController: UIViewController, Observer {
                 saveButton.isUserInteractionEnabled = true
                 saveButton.titleLabel?.text = "Save"
                 saveButton.titleLabel?.textColor = .black
-                serviceManager.stopService()
             }
         }
 //        serviceManager.stopCollect()
@@ -183,7 +187,9 @@ class CardViewController: UIViewController, Observer {
     
     
     @IBAction func tapStopButton(_ sender: UIButton) {
-        let isStop = serviceManager.stopService()
+        let isStop = serviceManager.stopService { [self] isSuccess, message in
+            print(message)
+        }
     }
     
     

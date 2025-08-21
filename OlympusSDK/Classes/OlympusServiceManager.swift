@@ -3,7 +3,7 @@ import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
     
-    public static let sdkVersion: String = "0.2.30"
+    public static let sdkVersion: String = "0.2.33"
     var isSimulationMode: Bool = false
     var isDeadReckoningMode: Bool = false
     var bleFileName: String = ""
@@ -235,7 +235,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     }
     
     func isBuildingLevelChanged(isChanged: Bool, newBuilding: String, newLevel: String, newCoord: [Double]) {
-        print("(Olympus) Building Level Changed : \(self.currentLevel) -> \(newLevel)")
+//        print("(Olympus) Building Level Changed : \(self.currentLevel) -> \(newLevel)")
         if newLevel.contains("B0") && !self.currentLevel.contains("B0") && !self.currentLevel.isEmpty {
             stateManager.setInOutState(state: .IN_TO_OUT)
         }
@@ -243,7 +243,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         self.currentLevel = newLevel
         KF.updateTuBuildingLevel(building: newBuilding, level: newLevel)
         if !newCoord.isEmpty {
-            print(getLocalTimeString() + " , (Olympus) Building Level Changed : spot coord = \(newCoord)")
+//            print(getLocalTimeString() + " , (Olympus) Building Level Changed : spot coord = \(newCoord)")
             self.setTemporalResult(coord: newCoord)
             self.isDRMode = true
             KF.updateTuResult(x: newCoord[0], y: newCoord[1])
@@ -1533,7 +1533,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         var input = FineLocationTracking(user_id: self.user_id, mobile_time: currentTime, sector_id: self.sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM, building_name: self.currentBuilding, level_name_list: levelArray, phase: 3, search_range: searchInfo.searchRange, search_direction_list: searchInfo.searchDirection, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation_list: [1.0], tail_index: searchInfo.tailIndex, head_section_number: 0, node_number_list: [], node_index: 0, retry: false)
         stateManager.setNetworkCount(value: stateManager.networkCount+1)
         
-        print(getLocalTimeString() + " , (Olympus) Request Phase 3 For Ambiguous Traj: \(input) // index = \(unitDRInfoIndex)")
+//        print(getLocalTimeString() + " , (Olympus) Request Phase 3 For Ambiguous Traj: \(input) // index = \(unitDRInfoIndex)")
         if (REGION_NAME != "Korea" && self.deviceModel == "iPhone SE (2nd generation)") { input.normalization_scale = 1.01 }
         OlympusNetworkManager.shared.postFLT(url: CALC_FLT_URL, input: input, userTraj: trajectoryInfo, searchInfo: searchInfo, completion: { [self] statusCode, returnedString, fltInput, inputTraj, inputSearchInfo in
             if (!returnedString.contains("timed out")) { stateManager.setNetworkCount(value: 0) }
@@ -1551,13 +1551,13 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     displayOutput.serverResult[0] = fltResult.x
                     displayOutput.serverResult[1] = fltResult.y
                     displayOutput.serverResult[2] = fltResult.absolute_heading
-                    print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : ----------------------------------------------")
-                    print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : fltResult = \(fltResult.x),\(fltResult.y),\(fltResult.absolute_heading)")
+//                    print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : ----------------------------------------------")
+//                    print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : fltResult = \(fltResult.x),\(fltResult.y),\(fltResult.absolute_heading)")
                     // 임시
 //                    let phaseBreakSCC = mode == OlympusConstants.MODE_PDR ? OlympusConstants.PHASE_BREAK_SCC_PDR : OlympusConstants.PHASE_BREAK_SCC_DR
                     let phaseBreakSCC = 0.3
                     if (fltResult.scc < phaseBreakSCC) {
-                        print(getLocalTimeString() + " , (Olympus) phaseBreak : fltResult.scc < phaseBreakSCC = \(fltResult.scc)")
+//                        print(getLocalTimeString() + " , (Olympus) phaseBreak : fltResult.scc < phaseBreakSCC = \(fltResult.scc)")
                         phaseBreakInPhase4(fltResult: fltResult, isUpdatePhaseBreakResult: true)
                     } else {
                         displayOutput.phase = "6"
@@ -1580,15 +1580,15 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             let isResultStraight = isResultHeadingStraight(unitDRInfoBuffer: self.unitDRInfoBuffer, fltResult: fltResult)
                             if (!isResultStraight) { pmResult.absolute_heading = compensateHeading(heading: fltResult.absolute_heading) }
                         }
-                        print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : pmResult = \(pmResult.x),\(pmResult.y),\(pmResult.absolute_heading)")
+//                        print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : pmResult = \(pmResult.x),\(pmResult.y),\(pmResult.absolute_heading)")
                         
                         var copiedResult: FineLocationTrackingFromServer = fltResult
                         let propagationResult = propagateUsingUvd(unitDRInfoBuffer: unitDRInfoBuffer, fltResult: fltResult)
                         let propagationValues: [Double] = propagationResult.1
                         var propagatedResult: [Double] = [pmResult.x+propagationValues[0] , pmResult.y+propagationValues[1], pmResult.absolute_heading+propagationValues[2]]
                         
-                        print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : dxdydh = \(propagationResult)")
-                        print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : propagatedResult = \(propagatedResult)")
+//                        print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : dxdydh = \(propagationResult)")
+//                        print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : propagatedResult = \(propagatedResult)")
                         
                         if (propagationResult.0) {
                             if (runMode == OlympusConstants.MODE_PDR) {
@@ -1602,15 +1602,15 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         copiedResult.x = propagatedResult[0]
                         copiedResult.y = propagatedResult[1]
                         
-                        print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : \(copiedResult.x),\(copiedResult.y) and \(olympusResult.x),\(olympusResult.y)")
-//                        if copiedResult.x == olympusResult.x || copiedResult.y == olympusResult.y {
-//                            print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : keep current state \(unitDRInfoIndex)")
-//                            self.trajMisMatchOccured = false
-//                            self.trajMisMatchPosted = false
-//                            return
-//                        }
+//                        print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : \(copiedResult.x),\(copiedResult.y) and \(olympusResult.x),\(olympusResult.y)")
+                        if copiedResult.x == olympusResult.x || copiedResult.y == olympusResult.y {
+                            print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : keep current state \(unitDRInfoIndex)")
+                            self.trajMisMatchOccured = false
+                            self.trajMisMatchPosted = false
+                            return
+                        }
                         
-                        print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : do \(unitDRInfoIndex)")
+//                        print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : do \(unitDRInfoIndex)")
                         sectionController.initSection()
                         sectionController.setInitialAnchorTailIndex(value: unitDRInfoIndex)
 
@@ -1641,7 +1641,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     
                     self.preServerResultMobileTime = fltResult.mobile_time
                 } else {
-                    print(getLocalTimeString() + " , (Olympus) phaseBreak : else 1")
                     phaseBreakInPhase4(fltResult: FineLocationTrackingFromServer(), isUpdatePhaseBreakResult: false)
                 }
             } else {
@@ -2581,8 +2580,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 isUseHeading = stateManager.isVenusMode ? false : true
                 let paddings = levelName == "B0" ? OlympusConstants.PADDING_VALUES : paddingValues
                 let correctedResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: isUseHeading, pathType: 1, PADDING_VALUES: paddings)
-                print(getLocalTimeString() + " , (Olympus) Building Level Changed : \(buildingName),\(levelName),\(resultIndex):\(result.x),\(result.y),\(result.absolute_heading)")
-                print(getLocalTimeString() + " , (Olympus) Building Level Changed : correctedResult = \(correctedResult)")
+//                print(getLocalTimeString() + " , (Olympus) Building Level Changed : \(buildingName),\(levelName),\(resultIndex):\(result.x),\(result.y),\(result.absolute_heading)")
+//                print(getLocalTimeString() + " , (Olympus) Building Level Changed : correctedResult = \(correctedResult)")
                 if (correctedResult.isSuccess) {
                     unitDRGenerator.setVelocityScale(scale: correctedResult.xyhs[3])
                     result.x = correctedResult.xyhs[0]
@@ -2631,7 +2630,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 let diffX = result.x - temporalResult.x
                 let diffY = result.y - temporalResult.y
                 let diffNorm = sqrt(diffX*diffX + diffY*diffY)
-                print(getLocalTimeString() + " , (Olympus) Building Level Changed : diffX = \(diffX), diffY = \(diffY) , diffNorm = \(diffNorm)")
+//                print(getLocalTimeString() + " , (Olympus) Building Level Changed : diffX = \(diffX), diffY = \(diffY) , diffNorm = \(diffNorm)")
                 if diffNorm >= 2 {
                     currentTuResult.x = result.x
                     currentTuResult.y = result.y
@@ -2748,7 +2747,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 }
             }
             
-            print(getLocalTimeString() + " , (Olympus) Building Level Changed : result = \(result)")
+//            print(getLocalTimeString() + " , (Olympus) Building Level Changed : result = \(result)")
             self.temporalResult = result
             self.preTemporalResult = result
             self.preTemporalResultHeading = temporalResultHeading
