@@ -140,8 +140,9 @@ public class OlympusStateManager: NSObject {
         let state = self.curInOutState
         if self.isIndoor && self.isGetFirstResponse && !self.isBleOff && !self.isOutermostWardTagged {
             if state == .IN_TO_OUT {
+                let OUTERWARD_TAG_THRESHOLD = bleAvg.keys.count == 1 ? -88.0 : OlympusConstants.OUTERWARD_TAG_THRESHOLD
                 for (key, value) in bleAvg {
-                    if EntranceOuterWards.contains(key) && value >= OlympusConstants.OUTERWARD_TAG_THRESHOLD {
+                    if EntranceOuterWards.contains(key) && value >= OUTERWARD_TAG_THRESHOLD {
                         print(getLocalTimeString() + " , (Olympus) checkOutermostWardTagged : \(key), \(value)")
                         self.isOutermostWardTagged = true
                         DispatchQueue.main.asyncAfter(deadline: .now() + OlympusConstants.OUTERWARD_TAG_DELAY) { [weak self] in
@@ -269,12 +270,13 @@ public class OlympusStateManager: NSObject {
                 }
             }
             
-//            print(getLocalTimeString() + " , (Olympus) checkEnterSleepMode : timeSleepRF = \(timeSleepRF) // timeSleepUV = \(timeSleepUV)")
             if (self.timeSleepRF >= OlympusConstants.SLEEP_THRESHOLD || self.timeSleepUV >= OlympusConstants.SLEEP_THRESHOLD) {
                 self.isSleepMode = true
             } else {
                 self.isSleepMode = false
             }
+            
+//            print(getLocalTimeString() + " , (Olympus) checkEnterSleepMode : isSleepMode \(isSleepMode) // timeSleepRF = \(timeSleepRF) // timeSleepUV = \(timeSleepUV)")
         }
     }
     
