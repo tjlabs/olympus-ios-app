@@ -307,12 +307,10 @@ func isStraightTrajectoryFromCumulativeHeading(_ list: [UnitDRInfo], thresholdRM
 func convertPpToLLH(x: Double, y: Double, heading: Double, param: AffineTransParamOutput) -> LLH {
     let lon = param.xx_scale * x + param.xy_shear * y + param.x_translation
     let lat = param.yx_shear * x + param.yy_scale * y + param.y_translation
-
-    let headingOffsetRad = atan2(param.yx_shear, param.xx_scale)
-    let headingOffsetDeg = headingOffsetRad * 180.0 / .pi
-
-    let correctedHeading = fmod((heading + headingOffsetDeg + 360.0), 360.0)
-
+    
+    let headingOffsetDeg = param.heading_offset // songdo : 36.92
+    let correctedHeading = fmod(-heading + headingOffsetDeg + 360.0, 360.0)
+    
     return LLH(lat: lat, lon: lon, heading: correctedHeading)
 }
 

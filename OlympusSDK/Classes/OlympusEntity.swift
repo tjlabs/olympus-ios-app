@@ -336,6 +336,7 @@ public struct AffineTransParamOutput: Codable {
     let yx_shear: Double
     let yy_scale: Double
     let y_translation: Double
+    let heading_offset: Double
 }
 
 // ---------------- REC DATA ---------------- //
