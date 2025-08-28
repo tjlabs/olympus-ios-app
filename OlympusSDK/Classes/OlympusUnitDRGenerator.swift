@@ -275,8 +275,4 @@ public class OlympusUnitDRGenerator: NSObject {
     public func setRouteTrackFinishTime(value: Double) {
         self.routeTrackFinishTime = value
     }
-    
-    public func calAccBias(unitDRInfoBuffer: [UnitDRInfo], resultIndex: Int, scCompensation: Double) {
-        drDistanceEstimator.calAccBias(unitDRInfoBuffer: unitDRInfoBuffer, resultIndex: resultIndex, scCompensation: scCompensation)
-    }
 }

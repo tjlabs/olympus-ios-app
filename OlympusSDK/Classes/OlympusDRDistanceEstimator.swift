@@ -21,6 +21,9 @@ public class OlympusDRDistanceEstimator: NSObject {
     public var magNormSmoothingQueue = [Double]()
     public var magNormVarQueue = [Double]()
     public var velocityQueue = [Double]()
+    var accNormBuffer = [Double]()
+    var gyroNormBuffer = [Double]()
+    var drStateBuffer = [DrState]()
     
     public var mlpEpochCount: Double = 0
     public var featureExtractionCount: Double = 0
@@ -49,15 +52,6 @@ public class OlympusDRDistanceEstimator: NSObject {
     public var isSufficientRfdVelocityBuffer: Bool = false
     public var isSufficientRfdAutoModeBuffer: Bool = false
     public var isStartRouteTrack: Bool = false
-    
-    public var movingDirectionInfoBuffer = [MovingDirectionInfo]()
-    public var clearIndex: Int = 0
-    public var isNeedClearBuffer: Bool = false
-    private var movingDirectionAccBiasQueue = [Double]()
-    private var biasSmoothing: Double = 0
-    private var preBiasSmoothing: Double = 0
-    private var biasBuffer = [Double]()
-    private var isPossibleUseBias: Bool = false
     
     private var stopDetectTime: Double = 0
     
@@ -102,12 +96,21 @@ public class OlympusDRDistanceEstimator: NSObject {
         }
         
         let accAttitude = Attitude(Roll: accRoll, Pitch: accPitch, Yaw: 0)
-        let accMovingDirection = MF.transBody2Nav(att: accAttitude, data: acc)[1]
         let gyroNav = MF.transBody2Nav(att: accAttitude, data: gyro)[2]
         let gyroNavZ = abs(gyroNav)
         
         let accNorm = MF.l2Normalize(originalVector: sensorData.acc)
+        let gyroNorm = MF.l2Normalize(originalVector: sensorData.gyro)
         let magNorm = MF.l2Normalize(originalVector: sensorData.mag)
+        
+//        updateAccNormBuffer(value: accNorm)
+//        updateGyroNormBuffer(value: gyroNorm)
+//        let accRMS = calRMS(buffer: accNormBuffer)
+//        let gyroRMS = calRMS(buffer: gyroNormBuffer)
+//        let temporalDrState: DrState = accRMS > OlympusConstants.ACC_STOP_THRESHOLD || gyroRMS > OlympusConstants.GYRO_STOP_THRESHOLD ? .MOVE : .STOP
+//        updateDrStateBuffer(value: temporalDrState)
+//        let drState = determineDrState(drStateBuffer: drStateBuffer)
+        let drState: DrState = .UNKNOWN
         
         // ----- Acc ----- //
         var accNormSmoothing: Double = 0
@@ -120,8 +123,6 @@ public class OlympusDRDistanceEstimator: NSObject {
         }
         preAccNormSmoothing = accNormSmoothing
         updateAccNormQueue(data: accNormSmoothing)
-        
-        let accNormVar = MF.calVariance(buffer: accNormQueue, bufferMean: accNormQueue.average)
         // --------------- //
         
         // ----- Gyro ----- //
@@ -216,16 +217,17 @@ public class OlympusDRDistanceEstimator: NSObject {
         }
         
         let delT = self.preTime == 0 ? 1/OlympusConstants.SAMPLE_HZ : (time-self.preTime)*1e-3
-//        velocityAcc += (accMovingDirection + self.biasSmoothing)*delT
-//        velocityAcc = velocityAcc < 0 ? 0 : velocityAcc
-        
+
         if (velocityInputScale == 0 && self.isStartRouteTrack) {
             velocityInputScale = OlympusConstants.VELOCITY_MIN
         }
         
+        if velocityInputScale != 0 && drState == .STOP {
+            print(getLocalTimeString() + " , (Olympus) DRDistanceEstimator : DR State : \((velocityInputScale/3.6)*turnScale) -> STOP")
+            velocityInputScale = 0
+        }
+        
         let velocityMps = (velocityInputScale/3.6)*turnScale
-//        let velocityCombine = (velocityMps*0.7) + (velocityAcc*0.3)
-//        let velocityFinal = isPossibleUseBias ? velocityCombine : velocityMps
         let velocityFinal = velocityMps
         
         finalUnitResult.isIndexChanged = false
@@ -240,8 +242,7 @@ public class OlympusDRDistanceEstimator: NSObject {
 
             distance = 0
         }
-        controlMovingDirectionInfoBuffer(time: time, index: index, acc: accMovingDirection, velocity: velocityMps)
-        
+
         featureExtractionCount += 1
         preTime = time
         return finalUnitResult
@@ -329,69 +330,71 @@ public class OlympusDRDistanceEstimator: NSObject {
         self.isStartRouteTrack = isStartRouteTrack
     }
     
-    private func controlMovingDirectionInfoBuffer(time: Double, index: Int, acc: Double, velocity: Double) {
-        self.movingDirectionInfoBuffer.append(MovingDirectionInfo(time: time, index: index, acc: acc, velocity: velocity))
-        
-        if isNeedClearBuffer {
-            let pastBuffer = self.movingDirectionInfoBuffer
-            var newBuffer = [MovingDirectionInfo]()
-            for i in 0..<pastBuffer.count {
-                if pastBuffer[i].index >= clearIndex {
-                    newBuffer.append(pastBuffer[i])
-                }
-            }
-            isNeedClearBuffer = false
+    // DR STATE
+    func updateAccNormBuffer(value: Double) {
+        if (accNormBuffer.count >= OlympusConstants.STOP_STATE_WINDOW) {
+            accNormBuffer.remove(at: 0)
         }
-    }
-        
-    public func calAccBias(unitDRInfoBuffer: [UnitDRInfo], resultIndex: Int, scCompensation: Double) {
-        if !unitDRInfoBuffer.isEmpty {
-            let movingDirectionBuffer = self.movingDirectionInfoBuffer
-            
-            let startIndex = unitDRInfoBuffer[0].index
-            let endIndex = resultIndex
-            
-            self.clearIndex = startIndex
-            self.isNeedClearBuffer = true
-            
-            for i in 1..<movingDirectionBuffer.count {
-                if movingDirectionBuffer[i].index <= endIndex {
-                    if movingDirectionBuffer[i].velocity > 2 && movingDirectionBuffer[i-1].velocity > 2 {
-                        let delT = (movingDirectionBuffer[i].time - movingDirectionBuffer[i-1].time)*1e-3 // Seconds
-                        let trueAcc = ((movingDirectionBuffer[i].velocity - movingDirectionBuffer[i-1].velocity)*scCompensation)/delT
-                        let accBias = trueAcc - movingDirectionBuffer[i].acc
-                        
-                        updateMovingDirectionAccBiasQueue(data: accBias)
-                        if (movingDirectionAccBiasQueue.count == 1) {
-                            self.biasSmoothing = accBias
-                        } else if (movingDirectionAccBiasQueue.count < Int(OlympusConstants.SAMPLE_HZ*10)) {
-                            self.biasSmoothing = MF.exponentialMovingAverage(preEMA: preBiasSmoothing, curValue: accBias, windowSize: movingDirectionAccBiasQueue.count)
-                        } else {
-                            self.biasSmoothing = MF.exponentialMovingAverage(preEMA: preBiasSmoothing, curValue: accBias, windowSize: Int(OlympusConstants.SAMPLE_HZ*10))
-                        }
-                        controlBiasBuffer(data: self.biasSmoothing)
-                        self.preBiasSmoothing = self.biasSmoothing
-//                        print(getLocalTimeString() + " , (Olympus) Acc Bias : index = \(movingDirectionBuffer[i].index) , accBias = \(accBias) , accBiasSmoothed = \(self.biasSmoothing) , isPossibleUseBias = \(isPossibleUseBias)")
-                    }
-                }
-            }
-        }
+        accNormBuffer.append(value)
     }
     
-    public func updateMovingDirectionAccBiasQueue(data: Double) {
-        if (movingDirectionAccBiasQueue.count >= Int(OlympusConstants.SAMPLE_HZ)*10) {
-            movingDirectionAccBiasQueue.remove(at: 0)
+    func updateGyroNormBuffer(value: Double) {
+        if (gyroNormBuffer.count >= OlympusConstants.STOP_STATE_WINDOW) {
+            gyroNormBuffer.remove(at: 0)
         }
-        movingDirectionAccBiasQueue.append(data)
+        gyroNormBuffer.append(value)
     }
     
-    public func controlBiasBuffer(data: Double) {
-        if (biasBuffer.count >= Int(OlympusConstants.SAMPLE_HZ)*10) {
-            biasBuffer.remove(at: 0)
-            let biasVar = MF.calVariance(buffer: biasBuffer, bufferMean: biasBuffer.average)
-//            print(getLocalTimeString() + " , (Olympus) Acc Bias : Var = \(biasVar)")
-            isPossibleUseBias = biasVar < 0.015 && index >= 100 ? true : false
+    func updateDrStateBuffer(value: DrState) {
+        if (drStateBuffer.count >= OlympusConstants.STOP_STATE_WINDOW) {
+            drStateBuffer.remove(at: 0)
         }
-        biasBuffer.append(data)
+        drStateBuffer.append(value)
+    }
+    
+    func calRMS(buffer: [Double]) -> Double {
+        guard !buffer.isEmpty, buffer.count >= 10 else { return 1.0 }
+        
+        let slice: [Double] = buffer
+        let squaredSum = slice.reduce(0.0) { $0 + $1 * $1 }
+        let mean = squaredSum / Double(slice.count)
+        let rms = sqrt(mean)
+        return rms
+    }
+    
+    func determineDrState(drStateBuffer: [DrState]) -> DrState {
+        let windowSize = drStateBuffer.count
+        guard windowSize >= 10 else {
+            return .UNKNOWN
+        }
+        
+        let stopCount = drStateBuffer.filter { $0 == .STOP }.count
+        let stopRatio = Double(stopCount) / Double(windowSize)
+        print(getLocalTimeString() + " , (Olympus) determineDrState : stopCount = \(stopCount) // stopRatio = \(stopRatio)")
+        
+        // 버퍼 내에서 가장 긴 연속 STOP 길이 계산
+        var maxConsecutiveStop = 0
+        var currentConsecutive = 0
+        for state in drStateBuffer {
+            if state == .STOP {
+                currentConsecutive += 1
+                maxConsecutiveStop = max(maxConsecutiveStop, currentConsecutive)
+            } else {
+                currentConsecutive = 0
+            }
+        }
+        
+        print(getLocalTimeString() + " , (Olympus) determineDrState : maxConsecutiveStop = \(maxConsecutiveStop)")
+        
+        // 최근 5개가 모두 STOP인지 확인
+        let last5 = drStateBuffer.suffix(5)
+        let allLast5Stop = last5.allSatisfy { $0 == .STOP }
+        print(getLocalTimeString() + " , (Olympus) determineDrState : allLast5Stop = \(allLast5Stop)")
+        print(getLocalTimeString() + " , (Olympus) determineDrState : ----------------------------------------")
+        if stopRatio >= 0.7, maxConsecutiveStop >= 10, allLast5Stop {
+            return .STOP
+        } else {
+            return .MOVE
+        }
     }
 }

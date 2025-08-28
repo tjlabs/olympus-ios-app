@@ -106,6 +106,7 @@ class OlympusConstants {
     static let LOOKING_FLAG_STEP_CHECK_SIZE: Int = 3
     static let AVG_ATTITUDE_WINDOW: Int = 20
     static let AVG_NORM_ACC_WINDOW: Int = 20
+    static let STOP_STATE_WINDOW: Int = 40
     static let ACC_PV_QUEUE_SIZE: Int = 3
     static let ACC_NORM_EMA_QUEUE_SIZE: Int = 3
     static let STEP_LENGTH_QUEUE_SIZE: Int = 5
@@ -145,6 +146,8 @@ class OlympusConstants {
     static let STOP_TIME_THRESHOLD: Double = 2000
     static let STEP_VALID_TIME: Double = 1000
     static let RF_SC_THRESHOLD_PDR: Double = 0.55
+    static let ACC_STOP_THRESHOLD: Double = 0.12
+    static let GYRO_STOP_THRESHOLD: Double = 0.03
     
     static let MODE_CHANGE_TIME_CONDITION: Double = 10*1000 // miliseconds
     static let MODE_CHANGE_RFLOW_TIME_OVER: Double = 0.1

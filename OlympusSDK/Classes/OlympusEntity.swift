@@ -117,13 +117,9 @@ public struct UnitDRInfo {
     }
 }
 
-public struct MovingDirectionInfo {
-    var time: Double
-    var index: Int
-    var acc: Double
-    var velocity: Double
+public enum DrState {
+    case MOVE, STOP, UNKNOWN
 }
-
 
 public struct BlackListDevices: Codable {
     let android: [String: [String]]
