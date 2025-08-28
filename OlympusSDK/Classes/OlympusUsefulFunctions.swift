@@ -331,8 +331,9 @@ func compareTraj(index: Int,
     
     // 전체 DR heading 분산
     let totalHeadings = unitDRInfoList.map { $0.heading }
+
     let headingVar = variance(totalHeadings)
-    if headingVar < 50 {
+    if headingVar < 225 {
         return nil
     }
     
