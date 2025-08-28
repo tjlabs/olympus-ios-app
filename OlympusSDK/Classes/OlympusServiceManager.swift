@@ -3,7 +3,7 @@ import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
     
-    public static let sdkVersion: String = "0.2.34"
+    public static let sdkVersion: String = "0.2.35"
     var isSimulationMode: Bool = false
     var isDeadReckoningMode: Bool = false
     var bleFileName: String = ""
@@ -1614,6 +1614,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         }
                         
 //                        print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : do \(unitDRInfoIndex)")
+                        OlympusPathMatchingCalculator.shared.initPassedNodeInfo()
                         sectionController.initSection()
                         sectionController.setInitialAnchorTailIndex(value: unitDRInfoIndex)
 
