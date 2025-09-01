@@ -1754,6 +1754,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
 //        print(getLocalTimeString() + " , (Olympus) Request Phase 1 ~ 3 : \(input)")
         if (REGION_NAME != "Korea" && self.deviceModel == "iPhone SE (2nd generation)") { input.normalization_scale = 1.01 }
         OlympusNetworkManager.shared.postFLT(url: CALC_FLT_URL, input: input, userTraj: trajectoryInfo, searchInfo: searchInfo, completion: { [self] statusCode, returnedString, fltInput, inputTraj, inputSearchInfo in
+//            print(getLocalTimeString() + " , (Olympus) Request Phase 1 ~ 3 : \(statusCode) , \(returnedString)")
             if (!returnedString.contains("timed out")) { stateManager.setNetworkCount(value: 0) }
             if (statusCode == 200) {
                 let results = jsonToFineLocatoinTrackingResultFromServerList(jsonString: returnedString)
