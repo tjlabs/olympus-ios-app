@@ -3,7 +3,7 @@ import UIKit
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
     
-    public static let sdkVersion: String = "0.2.35"
+    public static let sdkVersion: String = "0.3.0"
     var isSimulationMode: Bool = false
     var isDeadReckoningMode: Bool = false
     var bleFileName: String = ""
@@ -1607,7 +1607,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         
 //                        print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : \(copiedResult.x),\(copiedResult.y) and \(olympusResult.x),\(olympusResult.y)")
                         if copiedResult.x == olympusResult.x || copiedResult.y == olympusResult.y {
-                            print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : keep current state \(unitDRInfoIndex)")
+//                            print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : keep current state \(unitDRInfoIndex)")
                             self.trajMisMatchOccured = false
                             self.trajMisMatchPosted = false
                             return
@@ -2706,9 +2706,58 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         let dTime = getCurrentTimeInMilliseconds() - self.routeTrackFinishTime
                         let isInLevelChangeArea = buildingLevelChanger.checkInLevelChangeArea(result: self.olympusResult, mode: self.runMode)
                         if resultIndex - self.trajMisMatchIndex > 20 && !isInLevelChangeArea && dTime > 15*1000 && self.stateManager.isIndoor && phaseController.PHASE > 4 {
+                            let alignedTraj = comparingResult.3
                             let tailIndex = comparingResult.2
-                            let tailDirection = Int(comparingResult.3[0][2])
+                            let tailDirection = Int(alignedTraj[0][2])
+                            let headDirection = Int(alignedTraj[alignedTraj.count-1][2])
+                            
                             let centerPos = [Double(userMaskBuffer[userMaskBuffer.count-1].x), Double(userMaskBuffer[userMaskBuffer.count-1].y)]
+
+                            let xValues = alignedTraj.map { $0[0] }
+                            let yValues = alignedTraj.map { $0[1] }
+
+                            var xMin = xValues.min() ?? centerPos[0] - 40
+                            var xMax = xValues.max() ?? centerPos[0] + 40
+                            var yMin = yValues.min() ?? centerPos[1] - 40
+                            var yMax = yValues.max() ?? centerPos[1] + 40
+                            
+                            let startCos = cos(Double(tailDirection)*OlympusConstants.D2R)
+                            let startSin = sin(Double(tailDirection)*OlympusConstants.D2R)
+                            let endCos = cos(Double(headDirection)*OlympusConstants.D2R)
+                            let endSin = sin(Double(headDirection)*OlympusConstants.D2R)
+                            let trajLength = unitDRInfoBuffer.map { $0.length }.reduce(0.0, +)
+                            let searchLength = trajLength*0.6
+                            if startCos > 0 {
+                                xMin -= searchLength*0.8*startCos
+                                xMax += searchLength*startCos
+                            } else {
+                                xMin += searchLength*startCos
+                                xMax -= searchLength*0.8*startCos
+                            }
+                            
+                            if startSin > 0 {
+                                yMin -= searchLength*0.8*startSin
+                                yMax += searchLength*startSin
+                            } else {
+                                yMin += searchLength*startSin
+                                yMax -= searchLength*0.8*startSin
+                            }
+                            
+                            if endCos > 0 {
+                                xMin -= searchLength*0.8*endCos
+                                xMax += searchLength*endCos
+                            } else {
+                                xMin += searchLength*endCos
+                                xMax -= searchLength*0.8*endCos
+                            }
+                            
+                            if endSin > 0 {
+                                yMin -= searchLength*0.8*endSin
+                                yMax += searchLength*endSin
+                            } else {
+                                yMin += searchLength*endSin
+                                yMax -= searchLength*0.8*endSin
+                            }
                             
                             var searchDirection: [Int] = [tailDirection-10, tailDirection-5, tailDirection, tailDirection+5, tailDirection+10]
                             for i in 0..<searchDirection.count {
@@ -2716,13 +2765,16 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             }
                             
                             self.trajMisMatchSearchInfo.searchDirection = searchDirection
-                            let searchRange: [Double] = [centerPos[0] - 40, centerPos[1] - 40, centerPos[0] + 40, centerPos[1] + 40]
+                            let searchRange: [Double] = [xMin, yMin, xMax, yMax]
                             self.trajMisMatchSearchInfo.searchRange = searchRange.map { Int($0) }
                             self.trajMisMatchSearchInfo.searchArea = trajController.getSearchCoordinates(areaMinMax: searchRange, interval: 1.0)
                             self.trajMisMatchSearchInfo.tailIndex = tailIndex
                             self.trajMisMatchIndex = resultIndex
                             
                             self.trajMisMatchOccured = true
+                            
+                            displayOutput.searchDirection = self.trajMisMatchSearchInfo.searchDirection
+                            displayOutput.searchArea = self.trajMisMatchSearchInfo.searchArea
 //                            print(getLocalTimeString() + " , (OlympusServiceManager) trajMisMatchOccured : trajMisMatchSearchInfo = \(trajMisMatchSearchInfo.tailIndex) , \(trajMisMatchSearchInfo.searchRange)")
                         }
                     }
