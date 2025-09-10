@@ -53,8 +53,6 @@ public class OlympusDRDistanceEstimator: NSObject {
     public var isSufficientRfdAutoModeBuffer: Bool = false
     public var isStartRouteTrack: Bool = false
     
-    private var stopDetectTime: Double = 0
-    
     public func argmax(array: [Float]) -> Int {
         let output1 = array[0]
         let output2 = array[1]
@@ -66,16 +64,10 @@ public class OlympusDRDistanceEstimator: NSObject {
         }
     }
     
-    public func estimateDistanceInfo(time: Double, sensorData: OlympusSensorData, isStopDetect: Bool) -> UnitDistance {
+    public func estimateDistanceInfo(time: Double, sensorData: OlympusSensorData) -> UnitDistance {
         // feature extraction
         // ACC X, Y, Z, Norm Smoothing
         // Use y, z, norm variance (2sec)
-        
-        if isStopDetect {
-            self.stopDetectTime = time
-        }
-        let diffStopDetectTime = time - self.stopDetectTime
-        
         let acc = sensorData.acc
         let gyro = sensorData.gyro
         let mag = sensorData.mag
@@ -100,16 +92,18 @@ public class OlympusDRDistanceEstimator: NSObject {
         let gyroNavZ = abs(gyroNav)
         
         let accNorm = MF.l2Normalize(originalVector: sensorData.acc)
+        let userAccNorm = accNorm - OlympusConstants.G
         let gyroNorm = MF.l2Normalize(originalVector: sensorData.gyro)
         let magNorm = MF.l2Normalize(originalVector: sensorData.mag)
         
-//        updateAccNormBuffer(value: accNorm)
+//        updateAccNormBuffer(value: userAccNorm)
 //        updateGyroNormBuffer(value: gyroNorm)
 //        let accRMS = calRMS(buffer: accNormBuffer)
 //        let gyroRMS = calRMS(buffer: gyroNormBuffer)
 //        let temporalDrState: DrState = accRMS > OlympusConstants.ACC_STOP_THRESHOLD || gyroRMS > OlympusConstants.GYRO_STOP_THRESHOLD ? .MOVE : .STOP
 //        updateDrStateBuffer(value: temporalDrState)
 //        let drState = determineDrState(drStateBuffer: drStateBuffer)
+        
         let drState: DrState = .UNKNOWN
         
         // ----- Acc ----- //
@@ -198,9 +192,6 @@ public class OlympusDRDistanceEstimator: NSObject {
         let velocityStop = velocityInput*self.velocityScale*self.entranceVelocityScale*0.7
         let velocityNotStop = velocityInput*self.velocityScale*self.entranceVelocityScale
         var velocityInputScale = velocityNotStop
-        if diffStopDetectTime < 5000 {
-            velocityInputScale = velocityStop
-        }
         
         if velocityInputScale < OlympusConstants.VELOCITY_MIN {
             velocityInputScale = 0
@@ -370,7 +361,7 @@ public class OlympusDRDistanceEstimator: NSObject {
         
         let stopCount = drStateBuffer.filter { $0 == .STOP }.count
         let stopRatio = Double(stopCount) / Double(windowSize)
-        print(getLocalTimeString() + " , (Olympus) determineDrState : stopCount = \(stopCount) // stopRatio = \(stopRatio)")
+//        print(getLocalTimeString() + " , (Olympus) determineDrState : stopCount = \(stopCount) // stopRatio = \(stopRatio)")
         
         // 버퍼 내에서 가장 긴 연속 STOP 길이 계산
         var maxConsecutiveStop = 0
@@ -384,13 +375,13 @@ public class OlympusDRDistanceEstimator: NSObject {
             }
         }
         
-        print(getLocalTimeString() + " , (Olympus) determineDrState : maxConsecutiveStop = \(maxConsecutiveStop)")
+//        print(getLocalTimeString() + " , (Olympus) determineDrState : maxConsecutiveStop = \(maxConsecutiveStop)")
         
         // 최근 5개가 모두 STOP인지 확인
         let last5 = drStateBuffer.suffix(5)
         let allLast5Stop = last5.allSatisfy { $0 == .STOP }
-        print(getLocalTimeString() + " , (Olympus) determineDrState : allLast5Stop = \(allLast5Stop)")
-        print(getLocalTimeString() + " , (Olympus) determineDrState : ----------------------------------------")
+//        print(getLocalTimeString() + " , (Olympus) determineDrState : allLast5Stop = \(allLast5Stop)")
+//        print(getLocalTimeString() + " , (Olympus) determineDrState : ----------------------------------------")
         if stopRatio >= 0.7, maxConsecutiveStop >= 10, allLast5Stop {
             return .STOP
         } else {

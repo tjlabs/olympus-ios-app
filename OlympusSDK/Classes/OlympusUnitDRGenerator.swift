@@ -11,7 +11,6 @@ public class OlympusUnitDRGenerator: NSObject {
     public let unitStatusEstimator = OlympusUnitStatusEstimator()
     public let pdrDistanceEstimator = OlympusPDRDistanceEstimator()
     public let drDistanceEstimator = OlympusDRDistanceEstimator()
-    public let stopDetector = OlympusStopDetector()
     
     var pdrQueue = LinkedList<DistanceInfo>()
     var drQueue = LinkedList<DistanceInfo>()
@@ -94,7 +93,7 @@ public class OlympusUnitDRGenerator: NSObject {
             
             return UnitDRInfo(time: currentTime, index: unitDistancePdr.index, length: unitDistancePdr.length, heading: heading, velocity: unitDistancePdr.velocity, lookingFlag: unitStatus, isIndexChanged: unitDistancePdr.isIndexChanged, autoMode: 0)
         case OlympusConstants.MODE_DR:
-            unitDistanceDr = drDistanceEstimator.estimateDistanceInfo(time: currentTime, sensorData: sensorData, isStopDetect: false)
+            unitDistanceDr = drDistanceEstimator.estimateDistanceInfo(time: currentTime, sensorData: sensorData)
             self.autoMode = 1
             curAttitudeDr = unitAttitudeEstimator.estimateAtt(time: currentTime, acc: sensorData.acc, gyro: sensorData.gyro, rotMatrix: sensorData.rotationMatrix)
             
@@ -104,11 +103,8 @@ public class OlympusUnitDRGenerator: NSObject {
             return UnitDRInfo(time: currentTime, index: unitDistanceDr.index, length: unitDistanceDr.length, heading: heading, velocity: unitDistanceDr.velocity, lookingFlag: unitStatus, isIndexChanged: unitDistanceDr.isIndexChanged, autoMode: 0)
         case OlympusConstants.MODE_AUTO:
             pdrDistanceEstimator.isAutoMode(autoMode: true)
-            unitStop = stopDetector.estimateDistanceInfo(time: currentTime, sensorData: sensorData)
-            let isStopDetect = (self.isInEntranceLevel || self.isStartRoutTrack) ? false : unitStop.isIndexChanged
             unitDistancePdr = pdrDistanceEstimator.estimateDistanceInfo(time: currentTime, sensorData: sensorData)
-            unitDistanceDr = drDistanceEstimator.estimateDistanceInfo(time: currentTime, sensorData: sensorData, isStopDetect: isStopDetect)
-//            unitDistanceDr = drDistanceEstimator.estimateDistanceInfo(time: currentTime, sensorData: sensorData, isStopDetect: false)
+            unitDistanceDr = drDistanceEstimator.estimateDistanceInfo(time: currentTime, sensorData: sensorData)
             
             if (self.isSufficientRfdBuffer) {
                 if (self.isPdrMode && self.rflow >= OlympusConstants.RF_SC_THRESHOLD_PDR) {
@@ -210,7 +206,7 @@ public class OlympusUnitDRGenerator: NSObject {
             }
         default:
             // (Default : DR Mode)
-            unitDistanceDr = drDistanceEstimator.estimateDistanceInfo(time: currentTime, sensorData: sensorData, isStopDetect: false)
+            unitDistanceDr = drDistanceEstimator.estimateDistanceInfo(time: currentTime, sensorData: sensorData)
             self.autoMode = 1
             curAttitudeDr = unitAttitudeEstimator.estimateAtt(time: currentTime, acc: sensorData.acc, gyro: sensorData.gyro, rotMatrix: sensorData.rotationMatrix)
             
