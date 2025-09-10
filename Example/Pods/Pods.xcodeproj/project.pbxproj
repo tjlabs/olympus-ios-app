@@ -156,7 +156,6 @@
 		15520D74E83B63AA23ACB58183BCECA7 /* OlympusAmbiguitySolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29DB2CF2EC6D89871AFE2BDEF0A60962 /* OlympusAmbiguitySolver.swift */; };
 		1562E90D046F03C47888A67769BB0DAF /* ReplaySubject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DDF1B675DDF35D034E335F2F1FC5FF6 /* ReplaySubject.swift */; };
 		15638B4680D9D3D630794D0249130AE4 /* FIRCurrentDateProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = B660D4E7E0799468B41396034F55EC8D /* FIRCurrentDateProvider.m */; };
-		156FC4550C561D4BD44E92C57B2435D0 /* OlympusStopDectector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F3FF0120C3383AD0E6317E2406F033F /* OlympusStopDectector.swift */; };
 		159A89E8B1FD42CD83B0312A95B1BB48 /* RxTextViewDelegateProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2030601898DC284C6C3BC084A250D24C /* RxTextViewDelegateProxy.swift */; };
 		15A46DB543ADD6859480AF62E2FA923E /* CombineLatest+Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3FF8DE2D0EBD642905B2C7411D46273 /* CombineLatest+Collection.swift */; };
 		16061F2E55E9B419765F41212BEE61D2 /* PieHighlighter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B053D8AA12FE33D639C44042D4E0940 /* PieHighlighter.swift */; };
@@ -866,7 +865,6 @@
 		B4D8B6469165B67A1558192A8660EBB3 /* XAxisRendererHorizontalBarChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31FF8071A8A169D47F41834B821F3757 /* XAxisRendererHorizontalBarChart.swift */; };
 		B4E9B42319F53289F6824DF122B9638D /* FIRCLSUserLogging.h in Headers */ = {isa = PBXBuildFile; fileRef = DA14C76003D16FAC9D6921F5F7ADFCF9 /* FIRCLSUserLogging.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		B4F74723E0CB7B508FE878428297BDE5 /* FIRCLSMetricKitManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CE31466ABA0AF78F58ECB6EF6119E56 /* FIRCLSMetricKitManager.m */; };
-		B5499B006102542662C53DB2726972EA /* OlympusStopPeakValleyDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95853FDDB3838C81881480DC3AC5B8A4 /* OlympusStopPeakValleyDetector.swift */; };
 		B549A4E6587D99A6E95ED0CAC4488742 /* NSObject+Rx+RawRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E612097C3983AE2F9D7E34D023C0AD /* NSObject+Rx+RawRepresentable.swift */; };
 		B5629D214CEAA6F8D3121FEA53967FE1 /* FIRComponentType.h in Headers */ = {isa = PBXBuildFile; fileRef = 53D99D7D019E30921CCA3B41C999CF68 /* FIRComponentType.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B588A4FEC7F123F5514ADD95E7232483 /* FIRCLSUnwind_arm.c in Sources */ = {isa = PBXBuildFile; fileRef = AA5AA23201CF5BD0762CCE33C5910B70 /* FIRCLSUnwind_arm.c */; };
@@ -2525,7 +2523,6 @@
 		95202A97DFD80A9D416045B21756EE3B /* BehaviorRelay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BehaviorRelay.swift; path = RxRelay/BehaviorRelay.swift; sourceTree = "<group>"; };
 		9520AC7D09D38342DF0AA50E71E72FA0 /* FIRCLSSymbolResolver.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSSymbolResolver.h; path = Crashlytics/Crashlytics/Models/FIRCLSSymbolResolver.h; sourceTree = "<group>"; };
 		954EB64CF8DC9ABF276EF3C34D360F59 /* LockOwnerType.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LockOwnerType.swift; path = RxSwift/Concurrency/LockOwnerType.swift; sourceTree = "<group>"; };
-		95853FDDB3838C81881480DC3AC5B8A4 /* OlympusStopPeakValleyDetector.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OlympusStopPeakValleyDetector.swift; path = OlympusSDK/Classes/OlympusStopPeakValleyDetector.swift; sourceTree = "<group>"; };
 		95D1AC59FED2B5C367684266C9C881C7 /* Pods_OlympusSDK_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OlympusSDK_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		95DA626DF0F0AF6AC718880617AF1B54 /* FIRCLSMachOBinary.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = FIRCLSMachOBinary.m; path = Crashlytics/Shared/FIRCLSMachO/FIRCLSMachOBinary.m; sourceTree = "<group>"; };
 		961488262BE6985E483C44461DC40037 /* FIRCLSDataCollectionArbiter.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSDataCollectionArbiter.h; path = Crashlytics/Crashlytics/DataCollection/FIRCLSDataCollectionArbiter.h; sourceTree = "<group>"; };
@@ -2583,7 +2580,6 @@
 		9E6B23E757572ACB8282155F5A5E5B60 /* dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = dummy.m; path = FirebaseCore/Extension/dummy.m; sourceTree = "<group>"; };
 		9EB7C56B9200B05D16CDAF013753BDD9 /* FIRCrashlytics.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCrashlytics.h; path = Crashlytics/Crashlytics/Public/FirebaseCrashlytics/FIRCrashlytics.h; sourceTree = "<group>"; };
 		9EBEDA431759055E91C3A66298192AC8 /* LineRadarRenderer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LineRadarRenderer.swift; path = Source/Charts/Renderers/LineRadarRenderer.swift; sourceTree = "<group>"; };
-		9F3FF0120C3383AD0E6317E2406F033F /* OlympusStopDectector.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OlympusStopDectector.swift; path = OlympusSDK/Classes/OlympusStopDectector.swift; sourceTree = "<group>"; };
 		9F49B693BB7955B01A3ED36756F1197F /* Promise+Race.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Promise+Race.swift"; path = "Sources/Promises/Promise+Race.swift"; sourceTree = "<group>"; };
 		9F51C96BC9B9034F792EB019FE5BF387 /* OlympusSDK.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = OlympusSDK.modulemap; sourceTree = "<group>"; };
 		9F6EEBA055DE6DF2088071F867F36F25 /* ResourceBundle-FirebaseCrashlytics_Privacy-FirebaseCrashlytics-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "ResourceBundle-FirebaseCrashlytics_Privacy-FirebaseCrashlytics-Info.plist"; sourceTree = "<group>"; };
@@ -5237,8 +5233,6 @@
 				E8DE39EF3A2E5DDC309E22CC0CF471B7 /* OlympusServiceManager.swift */,
 				D3DB82AAFAD3586C2F4486890ACDC199 /* OlympusStateManager.swift */,
 				B807FC6AD160FFFBEBA008CEFF69E665 /* OlympusStepLengthEstimator.swift */,
-				9F3FF0120C3383AD0E6317E2406F033F /* OlympusStopDectector.swift */,
-				95853FDDB3838C81881480DC3AC5B8A4 /* OlympusStopPeakValleyDetector.swift */,
 				C9A9BC8AC7D9C4AEDE3958B81285F51C /* OlympusTrajectoryController.swift */,
 				0292472CB116E25EEF0696AEFF4CAAC0 /* OlympusUnitAttitudeEstimator.swift */,
 				089A79260183A480CE005F6BF5FB304F /* OlympusUnitDRGenerator.swift */,
@@ -7155,8 +7149,6 @@
 				39F4AE972055073797CFB048F50B57DE /* OlympusServiceManager.swift in Sources */,
 				356F2BE01E13CD85B96775637A3487BE /* OlympusStateManager.swift in Sources */,
 				D41705173FC72C204CCAFB2E364BCDAB /* OlympusStepLengthEstimator.swift in Sources */,
-				156FC4550C561D4BD44E92C57B2435D0 /* OlympusStopDectector.swift in Sources */,
-				B5499B006102542662C53DB2726972EA /* OlympusStopPeakValleyDetector.swift in Sources */,
 				AFA4839765C04936F3EADCD115C8D12C /* OlympusTrajectoryController.swift in Sources */,
 				D411C7E0DDB1645A4D87D8CF9A091846 /* OlympusUnitAttitudeEstimator.swift in Sources */,
 				12C3F93DF7E16EEFF570215C51ADDDEA /* OlympusUnitDRGenerator.swift in Sources */,

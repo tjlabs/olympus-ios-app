@@ -4,7 +4,7 @@ import simd
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
     
-    public static let sdkVersion: String = "0.3.0"
+    public static let sdkVersion: String = "0.3.1"
     var isSimulationMode: Bool = false
     var isDeadReckoningMode: Bool = false
     var bleFileName: String = ""
@@ -236,7 +236,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     }
     
     func isBuildingLevelChanged(isChanged: Bool, newBuilding: String, newLevel: String, newCoord: [Double]) {
-//        print("(Olympus) Building Level Changed : \(self.currentLevel) -> \(newLevel)")
+//        print("(Olympus) Building Level Changed : \(self.currentLevel) -> \(newLevel) // \(newCoord)")
         if newLevel.contains("B0") && !self.currentLevel.contains("B0") && !self.currentLevel.isEmpty {
             stateManager.setInOutState(state: .IN_TO_OUT)
         }
@@ -1610,15 +1610,15 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         displayOutput.serverResult[1] = propagatedResult[1]
                         displayOutput.serverResult[2] = propagatedResult[2]
                         
-                        print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : \(copiedResult.x),\(copiedResult.y) and \(olympusResult.x),\(olympusResult.y)")
+//                        print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : \(copiedResult.x),\(copiedResult.y) and \(olympusResult.x),\(olympusResult.y)")
                         if copiedResult.x == olympusResult.x || copiedResult.y == olympusResult.y {
-                            print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : keep current state \(unitDRInfoIndex)")
+//                            print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : keep current state \(unitDRInfoIndex)")
                             self.trajMisMatchOccured = false
                             self.trajMisMatchPosted = false
                             return
                         }
                         
-                        print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : do \(unitDRInfoIndex)")
+//                        print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : do \(unitDRInfoIndex)")
                         OlympusPathMatchingCalculator.shared.initPassedNodeInfo()
                         sectionController.initSection()
                         sectionController.setInitialAnchorTailIndex(value: unitDRInfoIndex)
@@ -2646,8 +2646,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 pathTypeForNodeAndLink = 1
                 isUseHeading = stateManager.isVenusMode ? false : true
                 let paddings = levelName == "B0" ? OlympusConstants.PADDING_VALUES : paddingValues
-                print(getLocalTimeString() + " , (Olympus) pathMatching : -------------------------")
-                print(getLocalTimeString() + " , (Olympus) pathMatching : index \(unitDRInfoIndex)")
+//                print(getLocalTimeString() + " , (Olympus) pathMatching : -------------------------")
+//                print(getLocalTimeString() + " , (Olympus) pathMatching : index \(unitDRInfoIndex)")
                 let correctedResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: isUseHeading, pathType: 1, PADDING_VALUES: paddings)
                 if (correctedResult.isSuccess) {
                     unitDRGenerator.setVelocityScale(scale: correctedResult.xyhs[3])
@@ -2768,7 +2768,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         let dTime = getCurrentTimeInMilliseconds() - self.routeTrackFinishTime
                         let isInLevelChangeArea = buildingLevelChanger.checkInLevelChangeArea(result: self.olympusResult, mode: self.runMode)
                         let isInPhase3ForAmbiguousTraj = checkInPhase3ForAmbiguousTraj(result: self.olympusResult, mode: self.runMode)
-                        print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : isInPhase3ForAmbiguousTraj = \(isInPhase3ForAmbiguousTraj)")
+//                        print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : isInPhase3ForAmbiguousTraj = \(isInPhase3ForAmbiguousTraj)")
                         if resultIndex - self.trajMisMatchIndex > 20 && !isInLevelChangeArea && isInPhase3ForAmbiguousTraj && dTime > 20*1000 && self.stateManager.isIndoor && phaseController.PHASE > 4 {
                             let alignedTraj = comparingResult.3
                             let tailIndex = comparingResult.2
