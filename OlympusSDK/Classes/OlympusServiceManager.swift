@@ -1,5 +1,6 @@
 import Foundation
 import UIKit
+import simd
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
     
@@ -569,7 +570,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         currentBuilding = updatedResult.building_name
         currentLevel = updatedResult.level_name
         curTemporalResultHeading = updatedResult.absolute_heading
-        makeTemporalResult(input: updatedResult, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
+        makeTemporalResult(input: updatedResult, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE, jumpedNodes: [])
         sectionController.setSectionUserHeading(value: updatedResult.absolute_heading)
         KF.activateKalmanFilter(fltResult: updatedResult)
         NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_6])
@@ -978,7 +979,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         print(getLocalTimeString() + " , (Olympus) Route Tracker : Start with network bad")
                         let isOn = routeTracker.startRouteTracking(result: enterInNetworkBadEntrance.1, isStartRouteTrack: self.isStartRouteTrack)
                         stackServerResult(serverResult: enterInNetworkBadEntrance.1)
-                        makeTemporalResult(input: enterInNetworkBadEntrance.1, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
+                        makeTemporalResult(input: enterInNetworkBadEntrance.1, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE, jumpedNodes: [])
                         unitDRGenerator.setIsStartRouteTrack(isStartRoutTrack: isOn.0)
                         isStartRouteTrack = isOn.0
                         networkStatus = isOn.1
@@ -1070,7 +1071,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 print(getLocalTimeString() + " , (Olympus) Route Tracker : Start with bad network")
                                 let isOn = routeTracker.startRouteTracking(result: enterInNetworkBadEntrance.1, isStartRouteTrack: self.isStartRouteTrack)
                                 stackServerResult(serverResult: enterInNetworkBadEntrance.1)
-                                makeTemporalResult(input: enterInNetworkBadEntrance.1, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
+                                makeTemporalResult(input: enterInNetworkBadEntrance.1, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE, jumpedNodes: [])
                                 unitDRGenerator.setIsStartRouteTrack(isStartRoutTrack: isOn.0)
                                 isStartRouteTrack = isOn.0
                                 networkStatus = isOn.1
@@ -1300,7 +1301,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 currentTuResult = tuResult
                 KF.updateTuResultNow(result: currentTuResult)
                 KF.updateTuInformation(unitDRInfo: unitDRInfo)
-                makeTemporalResult(input: tuResult, isStableMode: true, mustInSameLink: mustInSameLink, updateType: updateType, pathMatchingType: .NARROW)
+                makeTemporalResult(input: tuResult, isStableMode: true, mustInSameLink: mustInSameLink, updateType: updateType, pathMatchingType: .NARROW, jumpedNodes: [])
                 
                 timeUpdateResult[0] = currentTuResult.x
                 timeUpdateResult[1] = currentTuResult.y
@@ -1551,9 +1552,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     displayOutput.indexRx = fltResult.index
                     displayOutput.scc = fltResult.scc
                     displayOutput.resultDirection = fltResult.search_direction
-                    displayOutput.serverResult[0] = fltResult.x
-                    displayOutput.serverResult[1] = fltResult.y
-                    displayOutput.serverResult[2] = fltResult.absolute_heading
+//                    displayOutput.serverResult[0] = fltResult.x
+//                    displayOutput.serverResult[1] = fltResult.y
+//                    displayOutput.serverResult[2] = fltResult.absolute_heading
 //                    print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : ----------------------------------------------")
 //                    print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : fltResult = \(fltResult.x),\(fltResult.y),\(fltResult.absolute_heading)")
                     // 임시
@@ -1567,15 +1568,15 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         
                         let buildingName = fltResult.building_name
                         let levelName = fltResult.level_name
-
+                        
                         var pmResult: FineLocationTrackingFromServer = fltResult
                         if (runMode == OlympusConstants.MODE_PDR) {
-                            let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: fltResult.x, y: fltResult.y, heading: fltResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 0, PADDING_VALUES: paddingValues)
+                            let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: fltResult.x, y: fltResult.y, heading: fltResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 0, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
                             pmResult.x = pathMatchingResult.xyhs[0]
                             pmResult.y = pathMatchingResult.xyhs[1]
                             pmResult.absolute_heading = pathMatchingResult.xyhs[2]
                         } else {
-                            let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: fltResult.x, y: fltResult.y, heading: fltResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, PADDING_VALUES: paddingValues)
+                            let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: fltResult.x, y: fltResult.y, heading: fltResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
                             pmResult.x = pathMatchingResult.xyhs[0]
                             pmResult.y = pathMatchingResult.xyhs[1]
                             pmResult.absolute_heading = pathMatchingResult.xyhs[2]
@@ -1595,15 +1596,19 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         
                         if (propagationResult.0) {
                             if (runMode == OlympusConstants.MODE_PDR) {
-                                let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: propagatedResult[0], y: propagatedResult[1], heading: propagatedResult[2], HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 0, PADDING_VALUES: paddingValues)
+                                let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: propagatedResult[0], y: propagatedResult[1], heading: propagatedResult[2], HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 0, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
                                 propagatedResult = pathMatchingResult.xyhs
                             } else {
-                                let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: propagatedResult[0], y: propagatedResult[1], heading: propagatedResult[2], HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, PADDING_VALUES: paddingValues)
+                                let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: propagatedResult[0], y: propagatedResult[1], heading: propagatedResult[2], HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 1, PADDING_VALUES: OlympusConstants.PADDING_VALUES)
                                 propagatedResult = pathMatchingResult.xyhs
                             }
                         }
                         copiedResult.x = propagatedResult[0]
                         copiedResult.y = propagatedResult[1]
+                        
+                        displayOutput.serverResult[0] = propagatedResult[0]
+                        displayOutput.serverResult[1] = propagatedResult[1]
+                        displayOutput.serverResult[2] = propagatedResult[2]
                         
 //                        print(getLocalTimeString() + " , (Olympus) processPhase3ForAmbiguousTraj : \(copiedResult.x),\(copiedResult.y) and \(olympusResult.x),\(olympusResult.y)")
                         if copiedResult.x == olympusResult.x || copiedResult.y == olympusResult.y {
@@ -1625,7 +1630,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             currentBuilding = updatedResult.building_name
                             currentLevel = updatedResult.level_name
                         }
-                        makeTemporalResult(input: updatedResult, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
+                        makeTemporalResult(input: updatedResult, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE, jumpedNodes: [])
                         self.isBuildingLevelChanged(isChanged: changerResult.0, newBuilding: updatedResult.building_name, newLevel: updatedResult.level_name, newCoord: [])
                         
                         let inputTrajLength: Double = 20
@@ -1684,7 +1689,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 KF.updateTuResult(x: newCoord[0], y: newCoord[1])
                 KF.setLinkInfo(coord: newCoord, directions: OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: lastServerResult.building_name, level: lastServerResult.level_name, x: newCoord[0], y: newCoord[1], PADDING_VALUE: 0.0, mode: self.runMode))
                 OlympusPathMatchingCalculator.shared.setBuildingLevelChangedCoord(coord: newCoord)
-                makeTemporalResult(input: lastServerResult, isStableMode: false, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
+                makeTemporalResult(input: lastServerResult, isStableMode: false, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE, jumpedNodes: [])
                 NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_6])
                 
                 isStartRouteTrack = false
@@ -1866,7 +1871,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                         currentBuilding = updatedResult.building_name
                                         currentLevel = updatedResult.level_name
                                     }
-                                    makeTemporalResult(input: updatedResult, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
+                                    makeTemporalResult(input: updatedResult, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE, jumpedNodes: [])
                                     self.isBuildingLevelChanged(isChanged: changerResult.0, newBuilding: updatedResult.building_name, newLevel: updatedResult.level_name, newCoord: [])
                                     sectionController.setSectionUserHeading(value: updatedResult.absolute_heading)
                                     KF.refreshTuResult(xyh: [copiedResult.x, copiedResult.y, copiedResult.absolute_heading], inputPhase: fltInput.phase, inputTrajLength: inputTrajLength, mode: runMode)
@@ -1913,7 +1918,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 currentBuilding = updatedResult.building_name
                                 currentLevel = updatedResult.level_name
                                 curTemporalResultHeading = updatedResult.absolute_heading
-                                makeTemporalResult(input: updatedResult, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
+                                makeTemporalResult(input: updatedResult, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE, jumpedNodes: [])
                                 sectionController.setSectionUserHeading(value: updatedResult.absolute_heading)
                                 KF.activateKalmanFilter(fltResult: updatedResult)
                             } else {
@@ -1922,7 +1927,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 let updatedResult = changerResult.1
                                 currentBuilding = updatedResult.building_name
                                 currentLevel = updatedResult.level_name
-                                makeTemporalResult(input: updatedResult, isStableMode: false, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
+                                makeTemporalResult(input: updatedResult, isStableMode: false, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE, jumpedNodes: [])
                             }
                         }
                     }
@@ -2020,7 +2025,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 
                                 // 서버에서 전달해주는 파라미터 하나 추가 필요! 결정한 노드 관련
                                 OlympusPathMatchingCalculator.shared.updateAnchorNodeAfterRecovery(badCaseNodeInfo: inputNodeCandidatesInfo, nodeNumber: fltResult.node_number)
-                                makeTemporalResult(input: updatedResult, isStableMode: false, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
+                                makeTemporalResult(input: updatedResult, isStableMode: false, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE, jumpedNodes: [])
                             }
                         } else if (fltResult.x == 0 && fltResult.y == 0) {
                             phaseBreakInPhase4(fltResult: fltResult, isUpdatePhaseBreakResult: false)
@@ -2138,7 +2143,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 currentBuilding = updatedResult.building_name
                                 currentLevel = updatedResult.level_name
                                 OlympusPathMatchingCalculator.shared.updateAnchorNodeAfterRecovery(badCaseNodeInfo: inputNodeCandidatesInfo, nodeNumber: fltResult.node_number)
-                                makeTemporalResult(input: updatedResult, isStableMode: false, mustInSameLink: false, updateType: .STABLE, pathMatchingType: .WIDE)
+                                makeTemporalResult(input: updatedResult, isStableMode: false, mustInSameLink: false, updateType: .STABLE, pathMatchingType: .WIDE, jumpedNodes: [])
                             }
                         } else if (fltResult.x == 0 && fltResult.y == 0) {
                             phaseBreakInPhase4(fltResult: fltResult, isUpdatePhaseBreakResult: false)
@@ -2251,7 +2256,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                         currentBuilding = updatedResult.building_name
                                         currentLevel = updatedResult.level_name
                                         OlympusPathMatchingCalculator.shared.updateAnchorNodeAfterRecovery(badCaseNodeInfo: inputNodeCandidatesInfo, nodeNumber: fltResult.node_number)
-                                        makeTemporalResult(input: updatedResult, isStableMode: false, mustInSameLink: false, updateType: .STABLE, pathMatchingType: .WIDE)
+                                        makeTemporalResult(input: updatedResult, isStableMode: false, mustInSameLink: false, updateType: .STABLE, pathMatchingType: .WIDE, jumpedNodes: [])
                                     }
                                 } else if (fltResult.x == 0 && fltResult.y == 0) {
                                     phaseBreakInPhase4(fltResult: fltResult, isUpdatePhaseBreakResult: false)
@@ -2367,7 +2372,20 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                     let updatedResult = changerResult.1
                                     currentBuilding = updatedResult.building_name
                                     currentLevel = updatedResult.level_name
-                                    makeTemporalResult(input: updatedResult, isStableMode: false, mustInSameLink: false, updateType: .STABLE, pathMatchingType: .WIDE)
+                                    
+                                    // 위치 점프를 확인함
+                                    let intermediatePoints = checkResultJump(olympusResult: self.olympusResult, fltResult: muResult)
+                                    var jumpedNodes = [PassedNodeInfo]()
+                                    for point in intermediatePoints {
+                                        let pathType = runMode == OlympusConstants.MODE_PDR ? 0 : 1
+                                        let matchedNodeResult = OlympusPathMatchingCalculator.shared.getMatchedNodeWithCoord(fltResult: muResult, originCoord: point, coordToCheck: point, pathType: pathType, PADDING_VALUES: [1, 1, 1, 1])
+                                        if matchedNodeResult.1 != -1 {
+                                            let nodeInfo = PassedNodeInfo(nodeNumber: matchedNodeResult.1, nodeCoord: point, nodeHeadings: matchedNodeResult.2, matchedIndex: muResult.index, userHeading: olympusResult.absolute_heading)
+                                            jumpedNodes.append(nodeInfo)
+                                        }
+                                    }
+                                    
+                                    makeTemporalResult(input: updatedResult, isStableMode: false, mustInSameLink: false, updateType: .STABLE, pathMatchingType: .WIDE, jumpedNodes: jumpedNodes)
                                 }
                             }
                         } else if (fltResult.x == 0 && fltResult.y == 0) {
@@ -2389,6 +2407,50 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 phaseBreakInPhase4(fltResult: FineLocationTrackingFromServer(), isUpdatePhaseBreakResult: false)
             }
         })
+    }
+    
+    private func checkResultJump(olympusResult: FineLocationTrackingResult, fltResult: FineLocationTrackingFromServer) -> [[Double]]  {
+        var isJumped: Bool = false
+        var intermediatePoints: [[Double]] = []
+        
+        let userX = olympusResult.x
+        let userY = olympusResult.y
+        let userDir = olympusResult.absolute_heading
+        
+        let resultX = fltResult.x
+        let resultY = fltResult.y
+        let resultDir = fltResult.absolute_heading
+        
+        let deltaDir = abs(userDir - resultDir).truncatingRemainder(dividingBy: 360)
+        let angleDiff = deltaDir > 180 ? 360 - deltaDir : deltaDir
+        let isDirectionAligned = angleDiff <= 10.0
+        
+        let dx = resultX - userX
+        let dy = resultY - userY
+        let distance = sqrt(dx * dx + dy * dy)
+        
+        let headingRad = userDir * .pi / 180.0
+        let dirVector = SIMD2(x: cos(headingRad), y: sin(headingRad))
+        let movementVector = SIMD2(x: dx, y: dy)
+        let dotProduct = simd_dot(dirVector, movementVector)
+        let isSameDirection = dotProduct > 0.0
+        
+        isJumped = distance >= 2.0 && isDirectionAligned && isSameDirection
+        if isJumped {
+//            print(getLocalTimeString() + " , (Olympus) checkResultJump : \(unitDRInfoIndex) , \(userDir) degree , [\(userX),\(userY)] -> [\(resultX),\(resultY)] with dist \(distance) // isJumped \(isJumped)")
+            
+            let unitVector = simd_normalize(dirVector)
+            let stepCount = Int(distance)
+            for i in 1..<stepCount {
+                let step = Double(i)
+                let x = userX + step * unitVector.x
+                let y = userY + step * unitVector.y
+                intermediatePoints.append([x, y])
+            }
+            print(getLocalTimeString() + " , (Olympus) checkResultJump : intermediatePoints = \(intermediatePoints)")
+        }
+        
+        return intermediatePoints
     }
     
     private func processRecovery(currentTime: Int, mode: String, fltInput: FineLocationTracking, fltResult: FineLocationTrackingFromServer, trajectoryInfo: [TrajectoryInfo], inputNodeCandidateInfo: NodeCandidateInfo) {
@@ -2491,7 +2553,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                     if (!isUsePreResult) {
                                         OlympusPathMatchingCalculator.shared.updateAnchorNodeAfterRecovery(badCaseNodeInfo: inputNodeCandidateInfo, nodeNumber: fltResult.node_number)
                                     }
-                                    makeTemporalResult(input: updatedResult, isStableMode: false, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
+                                    makeTemporalResult(input: updatedResult, isStableMode: false, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE, jumpedNodes: [])
                                 }
                             } else if (fltResult.x == 0 && fltResult.y == 0) {
                                 phaseBreakInPhase4(fltResult: fltResult, isUpdatePhaseBreakResult: false)
@@ -2534,7 +2596,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
     }
     
-    func makeTemporalResult(input: FineLocationTrackingFromServer, isStableMode: Bool, mustInSameLink: Bool, updateType: UpdateNodeLinkType, pathMatchingType: PathMatchingType) {
+    func makeTemporalResult(input: FineLocationTrackingFromServer, isStableMode: Bool, mustInSameLink: Bool, updateType: UpdateNodeLinkType, pathMatchingType: PathMatchingType, jumpedNodes: [PassedNodeInfo]) {
         var result = input
         let resultIndex = unitDRInfoIndex
         let resultMobileTime = getCurrentTimeInMilliseconds()
@@ -2584,9 +2646,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 pathTypeForNodeAndLink = 1
                 isUseHeading = stateManager.isVenusMode ? false : true
                 let paddings = levelName == "B0" ? OlympusConstants.PADDING_VALUES : paddingValues
+                print(getLocalTimeString() + " , (Olympus) pathMatching : -------------------------")
+                print(getLocalTimeString() + " , (Olympus) pathMatching : index \(unitDRInfoIndex)")
                 let correctedResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: isUseHeading, pathType: 1, PADDING_VALUES: paddings)
-//                print(getLocalTimeString() + " , (Olympus) Building Level Changed : \(buildingName),\(levelName),\(resultIndex):\(result.x),\(result.y),\(result.absolute_heading)")
-//                print(getLocalTimeString() + " , (Olympus) Building Level Changed : correctedResult = \(correctedResult)")
                 if (correctedResult.isSuccess) {
                     unitDRGenerator.setVelocityScale(scale: correctedResult.xyhs[3])
                     result.x = correctedResult.xyhs[0]
@@ -2635,7 +2697,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 let diffX = result.x - temporalResult.x
                 let diffY = result.y - temporalResult.y
                 let diffNorm = sqrt(diffX*diffX + diffY*diffY)
-//                print(getLocalTimeString() + " , (Olympus) Building Level Changed : diffX = \(diffX), diffY = \(diffY) , diffNorm = \(diffNorm)")
                 if diffNorm >= 2 {
                     currentTuResult.x = result.x
                     currentTuResult.y = result.y
@@ -2659,7 +2720,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             }
             
             if (KF.isRunning) {
-                OlympusPathMatchingCalculator.shared.updateNodeAndLinkInfo(uvdIndex: resultIndex, currentResult: result, currentResultHeading: self.curTemporalResultHeading, pastResult: preTemporalResult, pastResultHeading: preTemporalResultHeading, pathType: pathTypeForNodeAndLink, updateType: updateType)
+                OlympusPathMatchingCalculator.shared.updateNodeAndLinkInfo(uvdIndex: resultIndex, currentResult: result, currentResultHeading: self.curTemporalResultHeading, pastResult: preTemporalResult, pastResultHeading: preTemporalResultHeading, pathType: pathTypeForNodeAndLink, updateType: updateType, jumpedNodes: jumpedNodes)
                 KF.setLinkInfo(coord: OlympusPathMatchingCalculator.shared.linkCoord, directions: OlympusPathMatchingCalculator.shared.linkDirections)
                 self.paddingValues = OlympusPathMatchingCalculator.shared.getPaddingValues(mode: runMode, isPhaseBreak: isPhaseBreak, PADDING_VALUE: PADDING_VALUE)
             }
@@ -2700,95 +2761,96 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 stackUserUniqueMask(data: data)
                 stackUserMaskForDisplay(data: data)
                 
-                if !trajMisMatchOccured {
-                    // Triggering 하고 Tail Index 설정
-                    if let comparingResult = compareTraj(index: resultIndex, userMaskBuffer: self.userMaskBuffer, unitDRInfoBuffer: self.unitDRInfoBuffer) {
-                        let dTime = getCurrentTimeInMilliseconds() - self.routeTrackFinishTime
-                        let isInLevelChangeArea = buildingLevelChanger.checkInLevelChangeArea(result: self.olympusResult, mode: self.runMode)
-                        if resultIndex - self.trajMisMatchIndex > 20 && !isInLevelChangeArea && dTime > 15*1000 && self.stateManager.isIndoor && phaseController.PHASE > 4 {
-                            let alignedTraj = comparingResult.3
-                            let tailIndex = comparingResult.2
-                            let tailDirection = Int(alignedTraj[0][2])
-                            let headDirection = Int(alignedTraj[alignedTraj.count-1][2])
-                            
-                            let centerPos = [Double(userMaskBuffer[userMaskBuffer.count-1].x), Double(userMaskBuffer[userMaskBuffer.count-1].y)]
-
-                            let xValues = alignedTraj.map { $0[0] }
-                            let yValues = alignedTraj.map { $0[1] }
-
-                            var xMin = xValues.min() ?? centerPos[0] - 40
-                            var xMax = xValues.max() ?? centerPos[0] + 40
-                            var yMin = yValues.min() ?? centerPos[1] - 40
-                            var yMax = yValues.max() ?? centerPos[1] + 40
-                            
-                            let startCos = cos(Double(tailDirection)*OlympusConstants.D2R)
-                            let startSin = sin(Double(tailDirection)*OlympusConstants.D2R)
-                            let endCos = cos(Double(headDirection)*OlympusConstants.D2R)
-                            let endSin = sin(Double(headDirection)*OlympusConstants.D2R)
-                            let trajLength = unitDRInfoBuffer.map { $0.length }.reduce(0.0, +)
-                            let searchLength = trajLength*0.6
-                            if startCos > 0 {
-                                xMin -= searchLength*0.8*startCos
-                                xMax += searchLength*startCos
-                            } else {
-                                xMin += searchLength*startCos
-                                xMax -= searchLength*0.8*startCos
-                            }
-                            
-                            if startSin > 0 {
-                                yMin -= searchLength*0.8*startSin
-                                yMax += searchLength*startSin
-                            } else {
-                                yMin += searchLength*startSin
-                                yMax -= searchLength*0.8*startSin
-                            }
-                            
-                            if endCos > 0 {
-                                xMin -= searchLength*0.8*endCos
-                                xMax += searchLength*endCos
-                            } else {
-                                xMin += searchLength*endCos
-                                xMax -= searchLength*0.8*endCos
-                            }
-                            
-                            if endSin > 0 {
-                                yMin -= searchLength*0.8*endSin
-                                yMax += searchLength*endSin
-                            } else {
-                                yMin += searchLength*endSin
-                                yMax -= searchLength*0.8*endSin
-                            }
-                            
-                            var searchDirection: [Int] = [tailDirection-10, tailDirection-5, tailDirection, tailDirection+5, tailDirection+10]
-                            for i in 0..<searchDirection.count {
-                                searchDirection[i] = Int(compensateHeading(heading: Double(searchDirection[i])))
-                            }
-                            
-                            self.trajMisMatchSearchInfo.searchDirection = searchDirection
-                            let searchRange: [Double] = [xMin, yMin, xMax, yMax]
-                            self.trajMisMatchSearchInfo.searchRange = searchRange.map { Int($0) }
-                            self.trajMisMatchSearchInfo.searchArea = trajController.getSearchCoordinates(areaMinMax: searchRange, interval: 1.0)
-                            self.trajMisMatchSearchInfo.tailIndex = tailIndex
-                            self.trajMisMatchIndex = resultIndex
-                            
-                            self.trajMisMatchOccured = true
-                            
-                            displayOutput.searchDirection = self.trajMisMatchSearchInfo.searchDirection
-                            displayOutput.searchArea = self.trajMisMatchSearchInfo.searchArea
-//                            print(getLocalTimeString() + " , (OlympusServiceManager) trajMisMatchOccured : trajMisMatchSearchInfo = \(trajMisMatchSearchInfo.tailIndex) , \(trajMisMatchSearchInfo.searchRange)")
-                        }
-                    }
-                } else {
-                    // 이후에 서버에 저장된 Index와 차이가 크지 않으면 요청보내기
-                    if !trajMisMatchPosted {
-//                        print(getLocalTimeString() + " , (OlympusServiceManager) trajMisMatchOccured : lastPostedUvdIndex = \(lastPostedUvdIndex) // trajMisMatchIndex = \(trajMisMatchIndex) ")
-                        if lastPostedUvdIndex >= self.trajMisMatchIndex {
-                            trajMisMatchPosted = true
-                            processPhase3ForAmbiguousTraj(currentTime: getCurrentTimeInMilliseconds(), mode: mode, trajectoryInfo: [], searchInfo: self.trajMisMatchSearchInfo)
-                        }
-                    }
-                }
-                
+                // MARK: processPhase3ForAmbiguousTraj
+//                if !trajMisMatchOccured {
+//                    // Triggering 하고 Tail Index 설정
+//                    if let comparingResult = compareTraj(index: resultIndex, userMaskBuffer: self.userMaskBuffer, unitDRInfoBuffer: self.unitDRInfoBuffer) {
+//                        let dTime = getCurrentTimeInMilliseconds() - self.routeTrackFinishTime
+//                        let isInLevelChangeArea = buildingLevelChanger.checkInLevelChangeArea(result: self.olympusResult, mode: self.runMode)
+//                        if resultIndex - self.trajMisMatchIndex > 20 && !isInLevelChangeArea && dTime > 30*1000 && self.stateManager.isIndoor && phaseController.PHASE > 4 {
+//                            let alignedTraj = comparingResult.3
+//                            let tailIndex = comparingResult.2
+//                            let tailDirection = Int(alignedTraj[0][2])
+//                            let headDirection = Int(alignedTraj[alignedTraj.count-1][2])
+//                            
+//                            let centerPos = [Double(userMaskBuffer[userMaskBuffer.count-1].x), Double(userMaskBuffer[userMaskBuffer.count-1].y)]
+//
+//                            let xValues = alignedTraj.map { $0[0] }
+//                            let yValues = alignedTraj.map { $0[1] }
+//
+//                            var xMin = xValues.min() ?? centerPos[0] - 40
+//                            var xMax = xValues.max() ?? centerPos[0] + 40
+//                            var yMin = yValues.min() ?? centerPos[1] - 40
+//                            var yMax = yValues.max() ?? centerPos[1] + 40
+//                            
+//                            let startCos = cos(Double(tailDirection)*OlympusConstants.D2R)
+//                            let startSin = sin(Double(tailDirection)*OlympusConstants.D2R)
+//                            let endCos = cos(Double(headDirection)*OlympusConstants.D2R)
+//                            let endSin = sin(Double(headDirection)*OlympusConstants.D2R)
+//                            let trajLength = unitDRInfoBuffer.map { $0.length }.reduce(0.0, +)
+//                            let searchLength = trajLength*0.6
+//                            if startCos > 0 {
+//                                xMin -= searchLength*0.8*startCos
+//                                xMax += searchLength*startCos
+//                            } else {
+//                                xMin += searchLength*startCos
+//                                xMax -= searchLength*0.8*startCos
+//                            }
+//                            
+//                            if startSin > 0 {
+//                                yMin -= searchLength*0.8*startSin
+//                                yMax += searchLength*startSin
+//                            } else {
+//                                yMin += searchLength*startSin
+//                                yMax -= searchLength*0.8*startSin
+//                            }
+//                            
+//                            if endCos > 0 {
+//                                xMin -= searchLength*0.8*endCos
+//                                xMax += searchLength*endCos
+//                            } else {
+//                                xMin += searchLength*endCos
+//                                xMax -= searchLength*0.8*endCos
+//                            }
+//                            
+//                            if endSin > 0 {
+//                                yMin -= searchLength*0.8*endSin
+//                                yMax += searchLength*endSin
+//                            } else {
+//                                yMin += searchLength*endSin
+//                                yMax -= searchLength*0.8*endSin
+//                            }
+//                            
+//                            var searchDirection: [Int] = [tailDirection-10, tailDirection-5, tailDirection, tailDirection+5, tailDirection+10]
+//                            for i in 0..<searchDirection.count {
+//                                searchDirection[i] = Int(compensateHeading(heading: Double(searchDirection[i])))
+//                            }
+//                            
+//                            self.trajMisMatchSearchInfo.searchDirection = searchDirection
+//                            let searchRange: [Double] = [xMin, yMin, xMax, yMax]
+//                            self.trajMisMatchSearchInfo.searchRange = searchRange.map { Int($0) }
+//                            self.trajMisMatchSearchInfo.searchArea = trajController.getSearchCoordinates(areaMinMax: searchRange, interval: 1.0)
+//                            self.trajMisMatchSearchInfo.tailIndex = tailIndex
+//                            self.trajMisMatchIndex = resultIndex
+//                            
+//                            self.trajMisMatchOccured = true
+//                            
+//                            displayOutput.searchDirection = self.trajMisMatchSearchInfo.searchDirection
+//                            displayOutput.searchArea = self.trajMisMatchSearchInfo.searchArea
+////                            print(getLocalTimeString() + " , (OlympusServiceManager) trajMisMatchOccured : trajMisMatchSearchInfo = \(trajMisMatchSearchInfo.tailIndex) , \(trajMisMatchSearchInfo.searchRange)")
+//                        }
+//                    }
+//                } else {
+//                    // 이후에 서버에 저장된 Index와 차이가 크지 않으면 요청보내기
+//                    if !trajMisMatchPosted {
+////                        print(getLocalTimeString() + " , (OlympusServiceManager) trajMisMatchOccured : lastPostedUvdIndex = \(lastPostedUvdIndex) // trajMisMatchIndex = \(trajMisMatchIndex) ")
+//                        if lastPostedUvdIndex >= self.trajMisMatchIndex {
+//                            trajMisMatchPosted = true
+//                            processPhase3ForAmbiguousTraj(currentTime: getCurrentTimeInMilliseconds(), mode: mode, trajectoryInfo: [], searchInfo: self.trajMisMatchSearchInfo)
+//                        }
+//                    }
+//                }
+                // MARK: processPhase3ForAmbiguousTraj
                 
                 if (runMode == OlympusConstants.MODE_PDR) {
                     self.isNeedPathTrajMatching = checkIsNeedPathTrajMatching(userMaskBuffer: self.userMaskBuffer)
