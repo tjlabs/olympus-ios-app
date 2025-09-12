@@ -4,7 +4,7 @@ import simd
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
     
-    public static let sdkVersion: String = "0.3.1"
+    public static let sdkVersion: String = "0.3.2"
     var isSimulationMode: Bool = false
     var isDeadReckoningMode: Bool = false
     var bleFileName: String = ""
@@ -1045,9 +1045,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 }
 //                stateManager.checkOutermostWardTagged(bleAvg: self.bleAvg, olympusResult: self.olympusResult)
             } else if (!stateManager.isBackground) {
-                let isPhaseBreak = stateManager.checkOutdoorBleEmpty(lastBleDiscoveredTime: self.simulationTime, olympusResult: self.olympusResult)
-                if isPhaseBreak {
-                    print(getLocalTimeString() + " , (Olympus) checkOutdoorBleEmpty : isPhaseBreak = \(isPhaseBreak)")
+                let needBreak = stateManager.checkOutdoorBleEmpty(lastBleDiscoveredTime: self.simulationTime, olympusResult: self.olympusResult)
+                if needBreak {
+//                    print(getLocalTimeString() + " , (Olympus) checkOutdoorBleEmpty : isPhaseBreak = \(isPhaseBreak)")
                     phaseBreakInPhase4(fltResult: FineLocationTrackingFromServer(), isUpdatePhaseBreakResult: false)
                 }
             }
@@ -1158,8 +1158,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 }
 //                stateManager.checkOutermostWardTagged(bleAvg: self.bleAvg, olympusResult: self.olympusResult)
             } else if (!stateManager.isBackground) {
-                let isPhaseBreak = stateManager.checkOutdoorBleEmpty(lastBleDiscoveredTime: OlympusBluetoothManager.shared.bleDiscoveredTime, olympusResult: self.olympusResult)
-                if isPhaseBreak {
+                let needBreak = stateManager.checkOutdoorBleEmpty(lastBleDiscoveredTime: OlympusBluetoothManager.shared.bleDiscoveredTime, olympusResult: self.olympusResult)
+                if needBreak {
                     phaseBreakInPhase4(fltResult: FineLocationTrackingFromServer(), isUpdatePhaseBreakResult: false)
                 }
             }
@@ -1170,7 +1170,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         if (bleData.isEmpty) {
             checkBleEmptyStateThreshold += OlympusConstants.RFD_INTERVAL
         } else {
-            checkBleEmptyStateThreshold -= OlympusConstants.RFD_INTERVAL
+            checkBleEmptyStateThreshold -= (OlympusConstants.RFD_INTERVAL*2)
         }
 
         checkBleEmptyStateThreshold = min(max(checkBleEmptyStateThreshold, 0), 10) // 최소 0 최대 10
@@ -1236,7 +1236,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             stackUnitDRInfoForPhase4(isNeedClear: isNeedClearBuffer)
             self.unitDRInfoIndex = unitDRInfo.index
             
-//            OlympusPathMatchingCalculator.shared.controlUVDforAccBias(unitDRInfo: unitDRInfo)
             let data = UserVelocity(user_id: self.user_id, mobile_time: currentTime, index: unitDRInfo.index, length: unitUvdLength, heading: round(unitDRInfo.heading*100)/100, looking: unitDRInfo.lookingFlag)
             inputUserVelocity.append(data)
             
@@ -1944,6 +1943,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_1])
                 }
             } else {
+//                phaseBreakInPhase4(fltResult: FineLocationTrackingFromServer(), isUpdatePhaseBreakResult: false)
 //                let msg: String = getLocalTimeString() + " , (Olympus) Error : \(statusCode) Fail to request indoor position in Phase 3"
 //                print(msg)
             }
@@ -2302,7 +2302,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         displayOutput.searchDirection = []
         var input = FineLocationTracking(user_id: self.user_id, mobile_time: currentTime, sector_id: self.sector_id, operating_system: OlympusConstants.OPERATING_SYSTEM, building_name: self.currentBuilding, level_name_list: levelArray, phase: 6, search_range: [], search_direction_list: [], normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation_list: [1.01], tail_index: stableInfo.tail_index, head_section_number: stableInfo.head_section_number, node_number_list: stableInfo.node_number_list, node_index: 0, retry: false)
         ambiguitySolver.setIsAmbiguous(value: false)
-//        print(getLocalTimeString() + " , (Olympus) Request Phase 6 : input = \(input)")
         stateManager.setNetworkCount(value: stateManager.networkCount+1)
         if (REGION_NAME != "Korea" && self.deviceModel == "iPhone SE (2nd generation)") { input.normalization_scale = 1.01 }
         OlympusNetworkManager.shared.postStableFLT(url: CALC_FLT_URL, input: input, userTraj: trajectoryInfo, nodeCandidateInfo: nodeCandidatesInfo, completion: { [self] statusCode, returnedString, fltInput, inputTraj, inputNodeCandidatesInfo in

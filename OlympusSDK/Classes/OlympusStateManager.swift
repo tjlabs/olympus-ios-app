@@ -160,7 +160,7 @@ public class OlympusStateManager: NSObject {
     func checkOutdoorBleEmpty(lastBleDiscoveredTime: Double, olympusResult: FineLocationTrackingResult) -> Bool {
         var isPhaseBreak: Bool = false
         let currentTime = getCurrentTimeInMillisecondsDouble()
-        print(getLocalTimeString() + " , (Olympus) checkOutdoorBleEmpty : dTime = \(currentTime - lastBleDiscoveredTime) // timeEmptyRF = \(timeEmptyRF)")
+//        print(getLocalTimeString() + " , (Olympus) checkOutdoorBleEmpty : dTime = \(currentTime - lastBleDiscoveredTime) // timeEmptyRF = \(timeEmptyRF)")
         if (currentTime - lastBleDiscoveredTime > OlympusConstants.BLE_VALID_TIME && lastBleDiscoveredTime != 0) {
             self.timeEmptyRF += OlympusConstants.RFD_INTERVAL
         } else {

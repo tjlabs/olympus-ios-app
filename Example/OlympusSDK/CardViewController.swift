@@ -99,11 +99,11 @@ class CardViewController: UIViewController, Observer {
 //    var sector_id: Int = 14 // DS
 //    var mode: String = "pdr"
     
-//    var sector_id: Int = 6
-//    var mode: String = "auto"
-    
-    var sector_id: Int = 20  // Convensia
+    var sector_id: Int = 6
     var mode: String = "auto"
+    
+//    var sector_id: Int = 20  // Convensia
+//    var mode: String = "auto"
     
 //    var sector_id: Int = 2
 //    var mode: String = "pdr"
@@ -131,7 +131,7 @@ class CardViewController: UIViewController, Observer {
         headingImage = headingImage?.resize(newWidth: 20)
 
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_io_0811.csv", sensorFileName: "sensor_coex_io_0811.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_0604_04.csv", sensorFileName: "sensor_coex_0604_04.csv")
+        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_0604_05.csv", sensorFileName: "sensor_coex_0604_05.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_03_0930.csv", sensorFileName: "sensor_coex_03_0930.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_05_0811.csv", sensorFileName: "sensor_coex_05_0811.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_dr_03_1030.csv", sensorFileName: "sensor_coex_dr_03_1030.csv")
@@ -142,7 +142,8 @@ class CardViewController: UIViewController, Observer {
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250818_test2.csv", sensorFileName: "sensor_songdo_250818_test2.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250818_test8.csv", sensorFileName: "sensor_songdo_250818_test8.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250822_km01.csv", sensorFileName: "sensor_songdo_250822_km01.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_250829_test01_ent2.csv", sensorFileName: "sensor_250829_test01_ent2.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_250829_test02_ent1.csv", sensorFileName: "sensor_250829_test02_ent1.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_250911_songdo_test3.csv", sensorFileName: "sensor_250911_songdo_test3.csv")
         
         // Ent3
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250818_test6.csv", sensorFileName: "sensor_songdo_250818_test6.csv")
