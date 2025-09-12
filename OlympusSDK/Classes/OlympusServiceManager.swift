@@ -1045,7 +1045,11 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 }
 //                stateManager.checkOutermostWardTagged(bleAvg: self.bleAvg, olympusResult: self.olympusResult)
             } else if (!stateManager.isBackground) {
-                stateManager.checkOutdoorBleEmpty(lastBleDiscoveredTime: self.simulationTime, olympusResult: self.olympusResult)
+                let isPhaseBreak = stateManager.checkOutdoorBleEmpty(lastBleDiscoveredTime: self.simulationTime, olympusResult: self.olympusResult)
+                if isPhaseBreak {
+                    print(getLocalTimeString() + " , (Olympus) checkOutdoorBleEmpty : isPhaseBreak = \(isPhaseBreak)")
+                    phaseBreakInPhase4(fltResult: FineLocationTrackingFromServer(), isUpdatePhaseBreakResult: false)
+                }
             }
         } else {
             stateManager.checkBleOff(bluetoothReady: OlympusBluetoothManager.shared.bluetoothReady, bleLastScannedTime: OlympusBluetoothManager.shared.bleLastScannedTime)
@@ -1154,7 +1158,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 }
 //                stateManager.checkOutermostWardTagged(bleAvg: self.bleAvg, olympusResult: self.olympusResult)
             } else if (!stateManager.isBackground) {
-                stateManager.checkOutdoorBleEmpty(lastBleDiscoveredTime: OlympusBluetoothManager.shared.bleDiscoveredTime, olympusResult: self.olympusResult)
+                let isPhaseBreak = stateManager.checkOutdoorBleEmpty(lastBleDiscoveredTime: OlympusBluetoothManager.shared.bleDiscoveredTime, olympusResult: self.olympusResult)
+                if isPhaseBreak {
+                    phaseBreakInPhase4(fltResult: FineLocationTrackingFromServer(), isUpdatePhaseBreakResult: false)
+                }
             }
         }
     }
@@ -1167,7 +1174,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
 
         checkBleEmptyStateThreshold = min(max(checkBleEmptyStateThreshold, 0), 10) // 최소 0 최대 10
-
+//        print(getLocalTimeString() + " , (Olympus) checkBleEmptyState : isIndoor = \(stateManager.isIndoor) // checkBleEmptyStateThreshold = \(checkBleEmptyStateThreshold) // bleData = \(bleData)")
         if (checkBleEmptyStateThreshold >= 10 && !isBleEmptyState) {
             isBleEmptyState = true
         }

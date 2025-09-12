@@ -157,9 +157,10 @@ public class OlympusStateManager: NSObject {
         }
     }
     
-    func checkOutdoorBleEmpty(lastBleDiscoveredTime: Double, olympusResult: FineLocationTrackingResult) {
+    func checkOutdoorBleEmpty(lastBleDiscoveredTime: Double, olympusResult: FineLocationTrackingResult) -> Bool {
+        var isPhaseBreak: Bool = false
         let currentTime = getCurrentTimeInMillisecondsDouble()
-//        print(getLocalTimeString() + " , (Olympus) checkOutdoorBleEmpty : dTime = \(currentTime - lastBleDiscoveredTime) // timeEmptyRF = \(timeEmptyRF)")
+        print(getLocalTimeString() + " , (Olympus) checkOutdoorBleEmpty : dTime = \(currentTime - lastBleDiscoveredTime) // timeEmptyRF = \(timeEmptyRF)")
         if (currentTime - lastBleDiscoveredTime > OlympusConstants.BLE_VALID_TIME && lastBleDiscoveredTime != 0) {
             self.timeEmptyRF += OlympusConstants.RFD_INTERVAL
         } else {
@@ -175,8 +176,15 @@ public class OlympusStateManager: NSObject {
                         notifyObservers(state: OUTDOOR_FLAG)
                     }
                 }
+            } else {
+                print(getLocalTimeString() + " , (Olympus) checkOutdoorBleEmpty : phase \(olympusResult.phase)")
+                if olympusResult.phase > 1 {
+                    isPhaseBreak = true
+                }
             }
         }
+        
+        return isPhaseBreak
     }
     
     private func determineIsOutdoor(olympusResult: FineLocationTrackingResult, currentTime: Double, inFailCondition: Bool) -> Bool {
