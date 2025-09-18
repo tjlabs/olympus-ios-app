@@ -796,6 +796,14 @@ public struct DRModeRequestInfo {
     var prevNodeInfo: PassedNodeInfo
 }
 
+struct AlignmentTransform {
+    let rotateDeg: Double
+    let drCenterX: Double
+    let drCenterY: Double
+    let maskCenterX: Double
+    let maskCenterY: Double
+}
+
 // 임시
 public struct ServiceResult {
     public var isIndexChanged: Bool = false
