@@ -792,6 +792,16 @@ func checkForTrajMatching(index: Int,
                     for node in nodes {
                         group.enter()
                         queue.async {
+                            defer { group.leave() }
+
+                            // Index bounds check for alignedTraj and heading
+                            guard alignedTraj.x.indices.contains(idx),
+                                  alignedTraj.y.indices.contains(idx),
+                                  alignedHeading.indices.contains(idx) else {
+                                print("🚨 Index out of bounds in alignedTraj or heading")
+                                return
+                            }
+
                             let nodeCoord = node.nodeCoord
                             let offsetX = nodeCoord[0] - alignedTraj.x[idx]
                             let offsetY = nodeCoord[1] - alignedTraj.y[idx]
@@ -811,21 +821,21 @@ func checkForTrajMatching(index: Int,
                                 PADDING_VALUES: OlympusConstants.PADDING_VALUES
                             )
 
-                            if pmResult.isSuccess {
-                                let dx = linkCoord[0] - pmResult.xyhs[0]
-                                let dy = linkCoord[1] - pmResult.xyhs[1]
-                                let dist = sqrt(dx*dx + dy*dy)
-
-                                lock.lock()
-                                if dist < minDist {
-                                    minDist = dist
-                                    bestXYHS = pmResult.xyhs
-                                    bestNodeNumber = node.nodeNumber
-                                }
-                                lock.unlock()
+                            guard pmResult.isSuccess, pmResult.xyhs.count >= 2 else {
+                                print("🚨 Invalid pmResult"); return
                             }
+                            let dx = linkCoord[0] - pmResult.xyhs[0]
+                            let dy = linkCoord[1] - pmResult.xyhs[1]
+                            let dist = sqrt(dx*dx + dy*dy)
 
-                            group.leave()
+                            lock.lock()
+                            let localCopy = pmResult.xyhs
+                            if dist < minDist {
+                                minDist = dist
+                                bestXYHS = localCopy
+                                bestNodeNumber = node.nodeNumber
+                            }
+                            lock.unlock()
                         }
                     }
 
