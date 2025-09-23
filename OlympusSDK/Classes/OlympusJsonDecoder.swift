@@ -222,6 +222,24 @@ public func jsonToOnSpotRecognitionResult(jsonString: String) -> (Bool, OnSpotRe
     } else {
         return (false, result)
     }
+}
+
+public func jsonToOnPointEstimationResult(jsonString: String) -> (Bool, OnPointEstimationResult) {
+    let result = OnPointEstimationResult.init(point_results: [])
+    
+    if let jsonData = jsonString.data(using: .utf8) {
+        do {
+            let decodedData: OnPointEstimationResult = try JSONDecoder().decode(OnPointEstimationResult.self, from: jsonData)
+            
+            return (true, decodedData)
+        } catch {
+            print("Error decoding JSON: \(error)")
+            
+            return (false, result)
+        }
+    } else {
+        return (false, result)
+    }
     
 }
 
