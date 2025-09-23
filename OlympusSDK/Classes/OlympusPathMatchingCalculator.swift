@@ -1436,6 +1436,7 @@ public class OlympusPathMatchingCalculator {
     
     public func findPropagatedPoints(fltResult: FineLocationTrackingFromServer, originCoord: [Double], candidateDirections: [Double], majorHeading: Double, length: Double, pathType: Int) -> [[Double]] {
         var allPoints = [[Double]]()
+        var validPoints = [[Double]]()
         
         enum FindType {
             case NODE, PP, NONE
@@ -1450,6 +1451,7 @@ public class OlympusPathMatchingCalculator {
         
         for direction in candidateDirections {
             group.enter()
+            print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : direction = \(direction)")
             queue.async {
                 var localPoints = [[Double]]()
                     
@@ -1467,8 +1469,10 @@ public class OlympusPathMatchingCalculator {
                 var x = originCoord[0]
                 var y = originCoord[1]
                 var type: FindType = .NONE
-
+                
+                var pointAppended = false
                 for pixel in 0..<PIXELS_TO_CHECK {
+                    if pointAppended { break }
                     x += cos(direction * OlympusConstants.D2R)
                     y += sin(direction * OlympusConstants.D2R)
 
@@ -1486,7 +1490,9 @@ public class OlympusPathMatchingCalculator {
                         } else {
                             type = .NODE
                             if matchedNodeResult.1 != -1 {
+                                pointAppended = true
                                 localPoints.append([x, y])
+                                print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : point added Node (1) \([x, y])")
                                 break
                             }
                         }
@@ -1494,13 +1500,18 @@ public class OlympusPathMatchingCalculator {
                         switch type {
                         case .PP:
                             if !matchedNodeResult.0 {
+                                pointAppended = true
                                 localPoints.append([x, y])
+                                print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : point added PP \([x, y])")
+                                break
                             }
                         case .NODE:
                             if matchedNodeResult.0 {
                                 break
                             } else if matchedNodeResult.1 != -1 {
+                                pointAppended = true
                                 localPoints.append([x, y])
+                                print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : point added Node (2) \([x, y])")
                                 break
                             }
                         default:
@@ -1517,6 +1528,7 @@ public class OlympusPathMatchingCalculator {
         }
         group.wait()
         
+        print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : allPoints = \(allPoints)")
         for point in allPoints {
             let dx = length*cos(majorHeading*OlympusConstants.D2R)
             let dy = length*sin(majorHeading*OlympusConstants.D2R)
@@ -1525,13 +1537,14 @@ public class OlympusPathMatchingCalculator {
             
             let hasCoord = self.checkPathPixelHasCoords(fltResult: fltResult, coordToCheck: propagtedPoint)
             if hasCoord {
+                validPoints.append(propagtedPoint)
                 print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : propagtedPoint = \(propagtedPoint)")
             }
         }
         
-//        print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : propagationStartPoints = \(allPoints)")
+        print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : validPoints = \(validPoints)")
         
-        return allPoints
+        return validPoints
     }
     
     public func getAnchorNodeCandidatesForRecovery(fltResult: FineLocationTrackingFromServer, inputNodeCandidateInfo: NodeCandidateInfo, pathType: Int) -> NodeCandidateInfo {
