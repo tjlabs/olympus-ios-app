@@ -635,6 +635,38 @@ public struct OnSpotRecognitionResult: Codable {
     }
 }
 
+struct OnPointEstimation: Encodable {
+    var user_id: String
+    var mobile_time: Int
+    var sector_id: Int
+    var building_name: String
+    var level_name: String
+    var operating_system: String
+    var normalization_scale: Double
+    var device_min_rssi: Int
+    var standard_min_rssi: Int
+    var points: [OnPoint]
+}
+
+struct OnPoint: Codable {
+    var x: Int
+    var y: Int
+}
+
+public struct OnPointEstimationResult: Codable {
+    var point_results: [PointResult]
+    
+    public init(point_results: [PointResult]) {
+        self.point_results = point_results
+    }
+}
+
+public struct PointResult: Codable {
+    var x: Int
+    var y: Int
+    var ccs: Double
+}
+
 // On Spot Authorizationds
 struct OnSpotAuthorization: Encodable {
     var user_id: String
