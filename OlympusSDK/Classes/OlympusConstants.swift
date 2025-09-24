@@ -146,8 +146,13 @@ class OlympusConstants {
     static let STOP_TIME_THRESHOLD: Double = 2000
     static let STEP_VALID_TIME: Double = 1000
     static let RF_SC_THRESHOLD_PDR: Double = 0.55
-    static let ACC_STOP_THRESHOLD: Double = 0.12
-    static let GYRO_STOP_THRESHOLD: Double = 0.03
+    
+    static var ACC_STOP_THRESHOLD: Double = 0.12
+    static var GYRO_STOP_THRESHOLD: Double = 0.03
+    static let ACC_VAR_STOP_THRESHOLD: Double = 0.005
+    static let GYRO_VAR_STOP_THRESHOLD: Double = 0.001
+    static let ACC_STOP_MAX: Double = 0.20
+    static let GYRO_STOP_MAX: Double = 0.05
     
     static let MODE_CHANGE_TIME_CONDITION: Double = 10*1000 // miliseconds
     static let MODE_CHANGE_RFLOW_TIME_OVER: Double = 0.1
@@ -213,7 +218,18 @@ class OlympusConstants {
         OlympusConstants.PHASE_BREAK_SCC_DR = sccTh
     }
     
+    enum RMS_STOP_TH_UPDATE_TYPE {
+        case ACC, GYRO
+    }
     
+    static func setRmsStopThreshold(type: RMS_STOP_TH_UPDATE_TYPE, value: Double) {
+        if type == .ACC {
+            OlympusConstants.ACC_STOP_THRESHOLD = min(value, OlympusConstants.ACC_STOP_MAX)
+        } else if type == .GYRO {
+            OlympusConstants.GYRO_STOP_THRESHOLD = min(value, OlympusConstants.GYRO_STOP_MAX)
+        }
+    }
+
     func computePhaseBreakSCC(from scale: Double) -> Double {
         // 정상 구간
         if scale >= 0.9 && scale <= 1.2 {

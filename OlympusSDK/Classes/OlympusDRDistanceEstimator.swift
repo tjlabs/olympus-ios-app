@@ -96,15 +96,37 @@ public class OlympusDRDistanceEstimator: NSObject {
         let gyroNorm = MF.l2Normalize(originalVector: sensorData.gyro)
         let magNorm = MF.l2Normalize(originalVector: sensorData.mag)
         
-//        updateAccNormBuffer(value: userAccNorm)
-//        updateGyroNormBuffer(value: gyroNorm)
-//        let accRMS = calRMS(buffer: accNormBuffer)
-//        let gyroRMS = calRMS(buffer: gyroNormBuffer)
+        updateAccNormBuffer(value: userAccNorm)
+        updateGyroNormBuffer(value: gyroNorm)
+        let accRMS = calRMS(buffer: accNormBuffer)
+        let gyroRMS = calRMS(buffer: gyroNormBuffer)
+        let accVar = variance(accNormBuffer)
+        let gyroVar = variance(gyroNormBuffer)
+        
+        if accRMS > OlympusConstants.ACC_STOP_THRESHOLD && accVar <= OlympusConstants.ACC_VAR_STOP_THRESHOLD && gyroVar <= OlympusConstants.GYRO_VAR_STOP_THRESHOLD {
+            let curValue = accRMS
+            let preValue = OlympusConstants.ACC_STOP_THRESHOLD
+            let newValue = (curValue + preValue)*0.5
+            OlympusConstants.setRmsStopThreshold(type: .ACC, value: newValue)
+        }
+        if gyroRMS > OlympusConstants.GYRO_STOP_THRESHOLD && accVar <= OlympusConstants.ACC_VAR_STOP_THRESHOLD && gyroVar <= OlympusConstants.GYRO_VAR_STOP_THRESHOLD {
+            let curValue = gyroRMS
+            let preValue = OlympusConstants.GYRO_STOP_THRESHOLD
+            let newValue = (curValue + preValue)*0.5
+            OlympusConstants.setRmsStopThreshold(type: .GYRO, value: newValue)
+        }
+        
+        var temporalDrState: DrState = .UNKNOWN
+        if accRMS <= OlympusConstants.ACC_STOP_THRESHOLD && gyroRMS <= OlympusConstants.GYRO_STOP_THRESHOLD && accVar <= OlympusConstants.ACC_VAR_STOP_THRESHOLD && gyroVar <= OlympusConstants.GYRO_VAR_STOP_THRESHOLD {
+            temporalDrState = .STOP
+        } else {
+            temporalDrState = .MOVE
+        }
+        updateDrStateBuffer(value: temporalDrState)
 //        let temporalDrState: DrState = accRMS > OlympusConstants.ACC_STOP_THRESHOLD || gyroRMS > OlympusConstants.GYRO_STOP_THRESHOLD ? .MOVE : .STOP
 //        updateDrStateBuffer(value: temporalDrState)
-//        let drState = determineDrState(drStateBuffer: drStateBuffer)
-        
-        let drState: DrState = .UNKNOWN
+        let drState = determineDrState(drStateBuffer: drStateBuffer)
+//        let drState: DrState = .UNKNOWN
         
         // ----- Acc ----- //
         var accNormSmoothing: Double = 0
