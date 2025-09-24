@@ -2900,7 +2900,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 }
             }
             
-            print(getLocalTimeString() + " , (Olympus) MTF : \(resultIndex) // \(result.x), \(result.y), \(result.absolute_heading)")
             self.temporalResult = result
             self.preTemporalResult = result
             self.preTemporalResultHeading = temporalResultHeading
