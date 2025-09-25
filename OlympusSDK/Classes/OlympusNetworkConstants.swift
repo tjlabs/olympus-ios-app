@@ -14,6 +14,8 @@ let USER_AFFINE_SERVER_VERSION = "2025-08-25"
 
 let CALC_FLT_SERVER_VERSION = "2025-09-01"  // 04-28
 let CALC_OSR_SERVER_VERSION = "2024-08-30"
+let CALC_OPE_SERVER_VERSION = "2025-09-23"
+
 let REC_SERVER_VERSION = "2024-04-19"
 let REC_MR_SERVER_VERSION = "2025-08-11"
 let BLACK_LIST_URL = "https://ap-northeast-2.client.jupiter.tjlabs.dev/black"
@@ -54,6 +56,7 @@ var REC_RC_URL = ""
 
 var CALC_OSR_URL = ""
 var CALC_FLT_URL = ""
+var CALC_OPE_URL = ""
 
 public func setServerURL(region: String) {
     switch (region) {
@@ -102,4 +105,5 @@ public func setServerURL(region: String) {
     
     CALC_OSR_URL = CALC_URL + "/" + CALC_OSR_SERVER_VERSION + "/osr"
     CALC_FLT_URL = CALC_URL + "/" + CALC_FLT_SERVER_VERSION + "/flt"
+    CALC_OPE_URL = CALC_URL + "/" + CALC_OPE_SERVER_VERSION + "/ope"
 }

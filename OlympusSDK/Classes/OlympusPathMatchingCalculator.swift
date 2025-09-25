@@ -1394,6 +1394,159 @@ public class OlympusPathMatchingCalculator {
         return badCaseNodeInfo
     }
     
+    public func findNodesUsingCandidateDirections(fltResult: FineLocationTrackingFromServer, originCoord: [Double], candidateDirections: [Double], pathType: Int) -> [PassedNodeInfo] {
+        let PIXEL_LENGTH = OlympusConstants.PIXEL_LENGTH_TO_FIND_NODE*2
+        let PIXELS_TO_CHECK = Int(PIXEL_LENGTH)
+        
+        var nodeCandidatesInfo = [PassedNodeInfo]()
+
+        for direction in candidateDirections {
+            var paddingValues = [Double] (repeating: Double(PIXELS_TO_CHECK), count: 4)
+            if (direction == 0) {
+                paddingValues = [0, PIXEL_LENGTH, 1, 1]
+            } else if (direction == 90) {
+                paddingValues = [1, 1, 0, PIXEL_LENGTH]
+            } else if (direction == 180) {
+                paddingValues = [PIXEL_LENGTH, 0, 1, 1]
+            } else if (direction == 270) {
+                paddingValues = [1, 1, PIXEL_LENGTH, 0]
+            }
+            
+            var x: Double = originCoord[0]
+            var y: Double = originCoord[1]
+            
+            for _ in 0..<PIXELS_TO_CHECK {
+                x += cos(direction*OlympusConstants.D2R)
+                y += sin(direction*OlympusConstants.D2R)
+                let matchedNodeResult = getMatchedNodeWithCoord(fltResult: fltResult, originCoord: originCoord, coordToCheck: [x, y], pathType: pathType, PADDING_VALUES: paddingValues)
+                
+                if (matchedNodeResult.0) {
+                    break
+                } else {
+                    if (matchedNodeResult.1 != -1) {
+                        let nodeInfo = PassedNodeInfo(nodeNumber: matchedNodeResult.1, nodeCoord: [x, y], nodeHeadings: matchedNodeResult.2, matchedIndex: 0, userHeading: 0)
+                        nodeCandidatesInfo.append(nodeInfo)
+                    }
+                }
+            }
+        }
+        
+        return nodeCandidatesInfo
+    }
+    
+    public func findPropagatedPoints(fltResult: FineLocationTrackingFromServer, originCoord: [Double], candidateDirections: [Double], majorHeading: Double, length: Double, pathType: Int) -> [[Double]] {
+        var allPoints = [[Double]]()
+        var validPoints = [[Double]]()
+        
+        enum FindType {
+            case NODE, PP, NONE
+        }
+        
+        let PIXEL_LENGTH = OlympusConstants.PIXEL_LENGTH_TO_FIND_NODE*2
+        let PIXELS_TO_CHECK = Int(PIXEL_LENGTH)
+        
+        let queue = DispatchQueue(label: "traj.propagation.queue", attributes: .concurrent)
+        let group = DispatchGroup()
+        let lock = NSLock()
+        
+        for direction in candidateDirections {
+            group.enter()
+            print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : direction = \(direction)")
+            queue.async {
+                var localPoints = [[Double]]()
+                    
+                var paddingValues = [Double](repeating: Double(PIXELS_TO_CHECK), count: 4)
+                if direction == 0 {
+                    paddingValues = [0, PIXEL_LENGTH, 1, 1]
+                } else if direction == 90 {
+                    paddingValues = [1, 1, 0, PIXEL_LENGTH]
+                } else if direction == 180 {
+                    paddingValues = [PIXEL_LENGTH, 0, 1, 1]
+                } else if direction == 270 {
+                    paddingValues = [1, 1, PIXEL_LENGTH, 0]
+                }
+
+                var x = originCoord[0]
+                var y = originCoord[1]
+                var type: FindType = .NONE
+                
+                var pointAppended = false
+                for pixel in 0..<PIXELS_TO_CHECK {
+                    if pointAppended { break }
+                    x += cos(direction * OlympusConstants.D2R)
+                    y += sin(direction * OlympusConstants.D2R)
+
+                    let matchedNodeResult = self.getMatchedNodeWithCoord(
+                        fltResult: fltResult,
+                        originCoord: originCoord,
+                        coordToCheck: [x, y],
+                        pathType: pathType,
+                        PADDING_VALUES: paddingValues
+                    )
+
+                    if pixel == 0 {
+                        if matchedNodeResult.0 {
+                            type = .PP
+                        } else {
+                            type = .NODE
+                            if matchedNodeResult.1 != -1 {
+                                pointAppended = true
+                                localPoints.append([x, y])
+                                print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : point added Node (1) \([x, y])")
+                                break
+                            }
+                        }
+                    } else {
+                        switch type {
+                        case .PP:
+                            if !matchedNodeResult.0 {
+                                pointAppended = true
+                                localPoints.append([x, y])
+                                print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : point added PP \([x, y])")
+                                break
+                            }
+                        case .NODE:
+                            if matchedNodeResult.0 {
+                                break
+                            } else if matchedNodeResult.1 != -1 {
+                                pointAppended = true
+                                localPoints.append([x, y])
+                                print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : point added Node (2) \([x, y])")
+                                break
+                            }
+                        default:
+                            break
+                        }
+                    }
+                }
+
+                lock.lock()
+                allPoints.append(contentsOf: localPoints)
+                lock.unlock()
+                group.leave()
+            }
+        }
+        group.wait()
+        
+        print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : allPoints = \(allPoints)")
+        for point in allPoints {
+            let dx = length*cos(majorHeading*OlympusConstants.D2R)
+            let dy = length*sin(majorHeading*OlympusConstants.D2R)
+            
+            let propagtedPoint = [point[0] + dx, point[1] + dy]
+            
+            let hasCoord = self.checkPathPixelHasCoords(fltResult: fltResult, coordToCheck: propagtedPoint)
+            if hasCoord {
+                validPoints.append(propagtedPoint)
+                print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : propagtedPoint = \(propagtedPoint)")
+            }
+        }
+        
+        print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : validPoints = \(validPoints)")
+        
+        return validPoints
+    }
+    
     public func getAnchorNodeCandidatesForRecovery(fltResult: FineLocationTrackingFromServer, inputNodeCandidateInfo: NodeCandidateInfo, pathType: Int) -> NodeCandidateInfo {
         var recoveryCaseNodeInfo = NodeCandidateInfo(isPhaseBreak: false, nodeCandidatesInfo: [])
         let nodeCandidatesInfo = inputNodeCandidateInfo.nodeCandidatesInfo
