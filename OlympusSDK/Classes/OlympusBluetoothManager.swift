@@ -153,68 +153,6 @@ class OlympusBluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
             // print("\(getLocalTimeString()) , (Olympus) BLE : name = \(bleName) , rssi = \(RSSI.intValue) , uuid = \(peripheral.identifier.uuidString)")
         }
     }
-
-//
-//    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-//        discoveredPeripheral = peripheral
-//        self.bleLastScannedTime = getCurrentTimeInMillisecondsDouble()
-//        if let bleName = discoveredPeripheral.name {
-//            if bleName.contains("TJ-") {
-//                let deviceIDString = bleName.substring(from: 8, to: 15)
-//
-//                var userInfo = [String:String]()
-//                userInfo["Identifier"] = peripheral.identifier.uuidString
-//                userInfo["DeviceID"] = deviceIDString
-//                userInfo["RSSI"] = String(format: "%d", RSSI.intValue )
-//
-//                let bleTime = getCurrentTimeInMillisecondsDouble()
-//                let validTime = (OlympusConstants.BLE_VALID_TIME*2)
-//                self.bleDiscoveredTime = bleTime
-//
-//                if RSSI.intValue != 127 {
-//                    let condition: ((String, [[Double]])) -> Bool = {
-//                        $0.0.contains(bleName)
-//                    }
-//
-//                    var bleScanned = self.bleDictionary
-//
-//                    let rssiValue = RSSI.doubleValue
-////                    if (bleScanned.contains(where: condition)) {
-////                        let data = bleScanned.filter(condition)
-////                        var value:[[Double]] = data[bleName]!
-////
-////                        let dataToAdd: [Double] = [rssiValue, bleTime]
-////                        value.append(dataToAdd)
-////
-////                        bleScanned.updateValue(value, forKey: bleName)
-////                    } else {
-////                        bleScanned.updateValue([[rssiValue, bleTime]], forKey: bleName)
-////                    }
-//
-//                    if (bleScanned.contains(where: condition)) {
-//                        if var value = bleScanned[bleName] {
-//                            let dataToAdd: [Double] = [rssiValue, bleTime]
-//                            value.append(dataToAdd)
-//                            bleScanned[bleName] = value
-//                        }
-//                    } else {
-//                        bleScanned[bleName] = [[rssiValue, bleTime]]
-//                    }
-//
-//
-//                    let trimmedResult = OlympusRFDFunctions.shared.trimBleData(bleInput: bleScanned, nowTime: bleTime, validTime: validTime)
-//                    switch trimmedResult {
-//                    case .success(let trimmedData):
-//                        self.bleDictionary = trimmedData
-//                    case .failure(let error):
-//                        print(getLocalTimeString() + " , (Olympus) Error : BleManager \(error)")
-//                    }
-//                }
-//            } else if bleName.contains("NI-") {
-////                print(getLocalTimeString() + " , (Olympus) BLE : name = \(bleName) , rssi = \(RSSI.intValue) , uuid = \(peripheral.identifier.uuidString)")
-//            }
-//        }
-//    }
     
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         print("Failed to connect to \(peripheral).(\(error!.localizedDescription))")
