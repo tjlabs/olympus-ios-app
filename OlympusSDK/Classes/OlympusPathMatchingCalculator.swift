@@ -1537,6 +1537,7 @@ public class OlympusPathMatchingCalculator {
             
             let hasCoord = self.checkPathPixelHasCoords(fltResult: fltResult, coordToCheck: propagtedPoint)
             if hasCoord {
+                validPoints.append(point)
                 validPoints.append(propagtedPoint)
                 print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : propagtedPoint = \(propagtedPoint)")
             }
