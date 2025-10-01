@@ -23,7 +23,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             
             if (self.isSaveMobileResult) {
                 let stateValue = result.in_out_state.rawValue
-                let data = MobileResult(user_id: self.user_id, mobile_time: result.mobile_time, sector_id: self.sector_id, building_name: result.building_name, level_name: result.level_name, scc: result.scc, x: result.x, y: result.y, latitude: result.llh?.lat, longitude: result.llh?.lon, in_out_state: stateValue, absolute_heading: result.absolute_heading, phase: result.phase, calculated_time: result.calculated_time, index: result.index, velocity: result.velocity, ble_only_position: result.ble_only_position, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation: self.scCompensation, is_indoor: result.isIndoor)
+                let mobileTime = result.mobile_time
+                let data = MobileResult(user_id: self.user_id, mobile_time: mobileTime, sector_id: self.sector_id, building_name: result.building_name, level_name: result.level_name, scc: result.scc, x: result.x, y: result.y, latitude: result.llh?.lat, longitude: result.llh?.lon, in_out_state: stateValue, absolute_heading: result.absolute_heading, phase: result.phase, calculated_time: result.calculated_time, index: result.index, velocity: result.velocity, ble_only_position: result.ble_only_position, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation: self.scCompensation, is_indoor: result.isIndoor)
                 inputMobileResult.append(data)
                 if (inputMobileResult.count >= OlympusConstants.MR_INPUT_NUM) {
                     OlympusNetworkManager.shared.postMobileResult(url: REC_RESULT_URL, input: inputMobileResult, completion: { statusCode, returnedStrig in
@@ -427,7 +428,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                                     self.isStartComplete = true
                                                     self.startTimer()
                                                     NotificationCenter.default.post(name: .serviceStarted, object: nil, userInfo: nil)
-                                                    print(getLocalTimeString() + " , (Olympus) Service Start")
+                                                    print(getLocalTimeString() + " , (Olympus) Service Start : \(user_id)")
                                                     completion(true, getLocalTimeString() + success_msg)
                                                 })
                                             }
