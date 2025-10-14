@@ -2786,13 +2786,13 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 if !trajMisMatchOccured && !isMatchingInProgress && !isOnPointInProgress && resultIndex - self.trajMisMatchIndex > 30 && runInUvdTimer {
                     isMatchingInProgress = true
                     
-                    DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-                        guard let self = self else {
-                            DispatchQueue.main.async {
-                                self?.isMatchingInProgress = false
-                            }
-                            return
-                        }
+                    DispatchQueue.global(qos: .userInitiated).async { [self] in
+//                        guard let self = self else {
+////                            DispatchQueue.main.async {
+////                                self?.isMatchingInProgress = false
+////                            }
+//                            return
+//                        }
                         guard let comparingResult = checkForTrajMatching(index: resultIndex,
                                                                                    ambiguitySolvedIndex: ambiguitySolvedIndex,
                                                                                    fltResult: result,

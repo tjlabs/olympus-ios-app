@@ -3,17 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyCPBV5ZX0uSLL8Ghzhj3vYCF8aMRb2z-qY</string>
+	<string>AIzaSyDbU0T0PZVv37EhZsEsKajHa1kI57rgnbY</string>
 	<key>GCM_SENDER_ID</key>
-	<string>965338651990</string>
+	<string>1036547019381</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>org.cocoapods.demo.OlympusSDK-Example</string>
+	<string>com.tjlabscorp.ios.olympus-demo</string>
 	<key>PROJECT_ID</key>
-	<string>olympus-demo-d94c3</string>
+	<string>olympus-demo-app</string>
 	<key>STORAGE_BUCKET</key>
-	<string>olympus-demo-d94c3.appspot.com</string>
+	<string>olympus-demo-app.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:965338651990:ios:379e4ef81325b4a273caf7</string>
+	<string>1:1036547019381:ios:15a3d7aabac85060ee5e3c</string>
 </dict>
 </plist>
