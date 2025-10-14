@@ -148,13 +148,13 @@ class CardViewController: UIViewController, Observer {
         // Analysis
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_250829_test02_ent1.csv", sensorFileName: "sensor_250829_test02_ent1.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_250829_test08_ent2.csv", sensorFileName: "sensor_250829_test08_ent2.csv")
-        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_250829_test06_ent3.csv", sensorFileName: "sensor_250829_test06_ent3.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_250829_test06_ent3.csv", sensorFileName: "sensor_250829_test06_ent3.csv")
         
         // Ent3
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250818_test6.csv", sensorFileName: "sensor_songdo_250818_test6.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250818_test10.csv", sensorFileName: "sensor_songdo_250818_test10.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250822_stop.csv", sensorFileName: "sensor_songdo_250822_stop.csv")
-        
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test06_ent3.csv", sensorFileName: "sensor_251013_songdo_test06_ent3.csv")
         
         // collect
 //        isCollect = true
