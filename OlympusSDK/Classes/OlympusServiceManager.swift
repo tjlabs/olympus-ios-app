@@ -122,7 +122,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     var outputTimer: DispatchSourceTimer?
     var osrTimer: DispatchSourceTimer?
     var collectTimer: DispatchSourceTimer?
-    private let temporalResultQueue = DispatchQueue(label: "com.tjlabs.temporalResultQueue")
+    private var temporalResultQueue = DispatchQueue(label: "tjlabs.temporal.queue.\(UUID().uuidString)", qos: .utility)
     
     // RFD
     var bleTrimed = [String: [[Double]]]()
@@ -574,53 +574,22 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         currentLevel = updatedResult.level_name
         curTemporalResultHeading = updatedResult.absolute_heading
         safeMakeTemporalResultWrapper(input: updatedResult, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
-//        makeTemporalResult(input: updatedResult, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
         sectionController.setSectionUserHeading(value: updatedResult.absolute_heading)
         KF.activateKalmanFilter(fltResult: updatedResult)
         NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_6])
     }
     
-//    public func stopService() -> (Bool, String) {
-//        print(getLocalTimeString() + " , (Olympus) Information : Stop Service")
-//        let localTime: String = getLocalTimeString()
-//        var message: String = localTime + " , (Olympus) Success : Stop Service"
-//
-//        if (self.isStartComplete) {
-//            self.stopTimer()
-//            OlympusBluetoothManager.shared.stopScan()
-//
-//            if (self.service.contains(OlympusConstants.SERVICE_FLT) && !isSimulationMode) {
-//                self.initialize(isStopService: true)
-//                rssCompensator.saveNormalizationScale(scale: rssCompensator.normalizationScale, sector_id: self.sector_id)
-//                let rcInfoSave =  RcInfoSave(sector_id: self.sector_id, device_model: self.deviceModel, os_version: self.deviceOsVersion, normalization_scale: rssCompensator.normalizationScale)
-//                OlympusNetworkManager.shared.postParam(url: REC_RC_URL, input: rcInfoSave, completion: { statusCode, returnedString in
-//                    if statusCode == 200 {
-//                        print(getLocalTimeString() + " , (Olympus) Success : save RSS Compensation parameter \(rcInfoSave.normalization_scale)")
-//                    } else {
-//                        print(getLocalTimeString() + " , (Olympus) Fail : save RSS Compensation parameter")
-//                    }
-//                })
-//            }
-//            rssCompensator.setIsScaleLoaded(flag: false)
-//            bleLineCount = 0
-//            sensorLineCount = 0
-//            return (true, message)
-//        } else {
-//            message = localTime + " , (Olympus) Fail : After the service has fully started, it can be stop "
-//            return (false, message)
-//        }
-//    }
-    
     public func stopService(completion: @escaping (Bool, String) -> Void) {
         let localTime = getLocalTimeString()
         print("\(localTime) , (Olympus) Information : Stop Service")
-
+        
         guard isStartComplete else {
             let message = "\(localTime) , (Olympus) Fail : After the service has fully started, it can be stop"
             completion(false, message)
             return
         }
-
+        
+        temporalResultQueue = DispatchQueue(label: "tjlabs.temporal.queue.\(UUID().uuidString)", qos: .utility)
         stopTimer()
         OlympusBluetoothManager.shared.stopScan()
 
@@ -984,7 +953,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         let isOn = routeTracker.startRouteTracking(result: enterInNetworkBadEntrance.1, isStartRouteTrack: self.isStartRouteTrack)
                         stackServerResult(serverResult: enterInNetworkBadEntrance.1)
                         safeMakeTemporalResultWrapper(input: enterInNetworkBadEntrance.1, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
-//                        makeTemporalResult(input: enterInNetworkBadEntrance.1, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
                         unitDRGenerator.setIsStartRouteTrack(isStartRoutTrack: isOn.0)
                         isStartRouteTrack = isOn.0
                         networkStatus = isOn.1
@@ -1311,7 +1279,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 KF.updateTuResultNow(result: currentTuResult)
                 KF.updateTuInformation(unitDRInfo: unitDRInfo)
                 safeMakeTemporalResultWrapper(input: tuResult, isStableMode: true, mustInSameLink: mustInSameLink, updateType: updateType, pathMatchingType: .NARROW, runInUvdTimer: true)
-//                makeTemporalResult(input: tuResult, isStableMode: true, mustInSameLink: mustInSameLink, updateType: updateType, pathMatchingType: .NARROW, runInUvdTimer: true)
                 
                 timeUpdateResult[0] = currentTuResult.x
                 timeUpdateResult[1] = currentTuResult.y
@@ -1638,7 +1605,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             currentLevel = updatedResult.level_name
                         }
                         safeMakeTemporalResultWrapper(input: updatedResult, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
-//                        makeTemporalResult(input: updatedResult, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
                         self.isBuildingLevelChanged(isChanged: changerResult.0, newBuilding: updatedResult.building_name, newLevel: updatedResult.level_name, newCoord: [])
                         
                         let inputTrajLength: Double = 20
@@ -1697,7 +1663,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 KF.setLinkInfo(coord: newCoord, directions: OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: lastServerResult.building_name, level: lastServerResult.level_name, x: newCoord[0], y: newCoord[1], PADDING_VALUE: 0.0, mode: self.runMode))
                 OlympusPathMatchingCalculator.shared.setBuildingLevelChangedCoord(coord: newCoord)
                 safeMakeTemporalResultWrapper(input: lastServerResult, isStableMode: false, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
-//                makeTemporalResult(input: lastServerResult, isStableMode: false, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
                 NotificationCenter.default.post(name: .phaseChanged, object: nil, userInfo: ["phase": OlympusConstants.PHASE_6])
                 
                 isStartRouteTrack = false
@@ -1881,7 +1846,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                     }
                                     self.ambiguitySolvedIndex = self.unitDRInfoIndex
                                     safeMakeTemporalResultWrapper(input: updatedResult, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
-//                                    makeTemporalResult(input: updatedResult, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
                                     self.isBuildingLevelChanged(isChanged: changerResult.0, newBuilding: updatedResult.building_name, newLevel: updatedResult.level_name, newCoord: [])
                                     sectionController.setSectionUserHeading(value: updatedResult.absolute_heading)
                                     KF.refreshTuResult(xyh: [copiedResult.x, copiedResult.y, copiedResult.absolute_heading], inputPhase: fltInput.phase, inputTrajLength: inputTrajLength, mode: runMode)
@@ -1929,7 +1893,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 currentLevel = updatedResult.level_name
                                 curTemporalResultHeading = updatedResult.absolute_heading
                                 safeMakeTemporalResultWrapper(input: updatedResult, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
-//                                makeTemporalResult(input: updatedResult, isStableMode: true, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
                                 sectionController.setSectionUserHeading(value: updatedResult.absolute_heading)
                                 KF.activateKalmanFilter(fltResult: updatedResult)
                             } else {
@@ -1939,7 +1902,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 currentBuilding = updatedResult.building_name
                                 currentLevel = updatedResult.level_name
                                 safeMakeTemporalResultWrapper(input: updatedResult, isStableMode: false, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
-//                                makeTemporalResult(input: updatedResult, isStableMode: false, mustInSameLink: false, updateType: .NONE, pathMatchingType: .WIDE)
                             }
                         }
                     }
@@ -2158,7 +2120,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 OlympusPathMatchingCalculator.shared.updateAnchorNodeAfterRecovery(badCaseNodeInfo: inputNodeCandidatesInfo, nodeNumber: fltResult.node_number)
                                 self.ambiguitySolvedIndex = self.unitDRInfoIndex
                                 safeMakeTemporalResultWrapper(input: updatedResult, isStableMode: false, mustInSameLink: false, updateType: .STABLE, pathMatchingType: .WIDE)
-//                                makeTemporalResult(input: updatedResult, isStableMode: false, mustInSameLink: false, updateType: .STABLE, pathMatchingType: .WIDE)
                             }
                         } else if (fltResult.x == 0 && fltResult.y == 0) {
                             phaseBreakInPhase4(fltResult: fltResult, isUpdatePhaseBreakResult: false)
@@ -2400,7 +2361,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                         }
                                     }
                                     safeMakeTemporalResultWrapper(input: updatedResult, isStableMode: false, mustInSameLink: false, updateType: .STABLE, pathMatchingType: .WIDE, jumpedNodes: jumpedNodes)
-//                                    makeTemporalResult(input: updatedResult, isStableMode: false, mustInSameLink: false, updateType: .STABLE, pathMatchingType: .WIDE, jumpedNodes: jumpedNodes)
                                 }
                             }
                         } else if (fltResult.x == 0 && fltResult.y == 0) {
