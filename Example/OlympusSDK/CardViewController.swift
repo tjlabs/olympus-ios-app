@@ -126,6 +126,7 @@ class CardViewController: UIViewController, Observer {
     var phoenixTime: TimeInterval = 0
     var preServiceTime: Int = 0
     
+    var serviceState: Bool = false
     override func viewDidLoad() {
         super.viewDidLoad()
         headingImage = headingImage?.resize(newWidth: 20)
@@ -133,12 +134,12 @@ class CardViewController: UIViewController, Observer {
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_io_0811.csv", sensorFileName: "sensor_coex_io_0811.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_0604_05.csv", sensorFileName: "sensor_coex_0604_05.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_03_0930.csv", sensorFileName: "sensor_coex_03_0930.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_05_0811.csv", sensorFileName: "sensor_coex_05_0811.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_dr_03_1030.csv", sensorFileName: "sensor_coex_dr_03_1030.csv")
     
 //        serviceManager.setDeadReckoningMode(flag: true, buildingName: "S3", levelName: "7F", x: 6, y: 16, heading: 270)
         
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_0519_03.csv", sensorFileName: "sensor_songdo_0519_03.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_05_0811.csv", sensorFileName: "sensor_coex_05_0811.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250818_test2.csv", sensorFileName: "sensor_songdo_250818_test2.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250818_test8.csv", sensorFileName: "sensor_songdo_250818_test8.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250822_km01.csv", sensorFileName: "sensor_songdo_250822_km01.csv")
@@ -155,7 +156,7 @@ class CardViewController: UIViewController, Observer {
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250818_test10.csv", sensorFileName: "sensor_songdo_250818_test10.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250822_stop.csv", sensorFileName: "sensor_songdo_250822_stop.csv")
         
-        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test06_ent3.csv", sensorFileName: "sensor_251013_songdo_test06_ent3.csv")
+        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
         
         // collect
 //        isCollect = true
@@ -172,6 +173,7 @@ class CardViewController: UIViewController, Observer {
         serviceManager.startService(user_id: uniqueId, region: self.region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
 //        serviceManager.startService(user_id: uniqueId, region: "Korea", sector_id: 16, service: "FLT", mode: "pdr", completion: { [self] isStart, returnedString in
             if (isStart) {
+                serviceState = true
                 self.startTimer()
             } else {
                 print(returnedString)
@@ -204,8 +206,20 @@ class CardViewController: UIViewController, Observer {
     
     
     @IBAction func tapStopButton(_ sender: UIButton) {
-        let isStop = serviceManager.stopService { [self] isSuccess, message in
-            print(message)
+        if serviceState {
+            let isStop = serviceManager.stopService { [self] isSuccess, message in
+                serviceState = false
+                print(message)
+            }
+        } else {
+            let uniqueId = makeUniqueId(uuid: self.userId)
+            serviceManager.startService(user_id: uniqueId, region: self.region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
+                if (isStart) {
+                    serviceState = true
+                } else {
+                    print(returnedString)
+                }
+            })
         }
     }
     

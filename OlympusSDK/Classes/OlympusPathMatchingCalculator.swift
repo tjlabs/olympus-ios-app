@@ -1451,7 +1451,7 @@ public class OlympusPathMatchingCalculator {
         
         for direction in candidateDirections {
             group.enter()
-            print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : direction = \(direction)")
+//            print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : direction = \(direction)")
             queue.async {
                 var localPoints = [[Double]]()
                     
@@ -1492,7 +1492,7 @@ public class OlympusPathMatchingCalculator {
                             if matchedNodeResult.1 != -1 {
                                 pointAppended = true
                                 localPoints.append([x, y])
-                                print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : point added Node (1) \([x, y])")
+//                                print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : point added Node (1) \([x, y])")
                                 break
                             }
                         }
@@ -1502,7 +1502,7 @@ public class OlympusPathMatchingCalculator {
                             if !matchedNodeResult.0 {
                                 pointAppended = true
                                 localPoints.append([x, y])
-                                print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : point added PP \([x, y])")
+//                                print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : point added PP \([x, y])")
                                 break
                             }
                         case .NODE:
@@ -1511,7 +1511,7 @@ public class OlympusPathMatchingCalculator {
                             } else if matchedNodeResult.1 != -1 {
                                 pointAppended = true
                                 localPoints.append([x, y])
-                                print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : point added Node (2) \([x, y])")
+//                                print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : point added Node (2) \([x, y])")
                                 break
                             }
                         default:
@@ -1528,7 +1528,7 @@ public class OlympusPathMatchingCalculator {
         }
         group.wait()
         
-        print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : allPoints = \(allPoints)")
+//        print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : allPoints = \(allPoints)")
         for point in allPoints {
             let dx = length*cos(majorHeading*OlympusConstants.D2R)
             let dy = length*sin(majorHeading*OlympusConstants.D2R)
@@ -1539,11 +1539,10 @@ public class OlympusPathMatchingCalculator {
             if hasCoord {
                 validPoints.append(point)
                 validPoints.append(propagtedPoint)
-                print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : propagtedPoint = \(propagtedPoint)")
+//                print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : propagtedPoint = \(propagtedPoint)")
             }
         }
-        
-        print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : validPoints = \(validPoints)")
+//        print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : validPoints = \(validPoints)")
         
         return validPoints
     }

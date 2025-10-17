@@ -440,7 +440,6 @@
 		54495454062BA8A001A0016600241224 /* _RXObjCRuntime.h in Headers */ = {isa = PBXBuildFile; fileRef = C782508E5CBB24F18320B6F39738DD80 /* _RXObjCRuntime.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5477BBD392EA4DAB6EFA8D95C4510B25 /* AnonymousDisposable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E2B511A8CC6B1A017282517712630ED /* AnonymousDisposable.swift */; };
 		547F79A3B76868CA0CFF9AC4A41A02E4 /* GULAppDelegateSwizzler_Private.h in Headers */ = {isa = PBXBuildFile; fileRef = AA459F71418A581AD78B755A26F413C8 /* GULAppDelegateSwizzler_Private.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		54929EDEF8CD01B9333B76AE7DC11959 /* OlympusBlacklistChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0015FBE6D439EB2AB9853FA2B5C5E55E /* OlympusBlacklistChecker.swift */; };
 		554517CFF7C1BD9375AD020F3C8DD74B /* Time.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D4D6AA214AA0FF69EA2EA03E9A1A51D /* Time.swift */; };
 		555577E73D928FBBED51B90DAE5B0583 /* FIRCLSDataParsing.c in Sources */ = {isa = PBXBuildFile; fileRef = 1B3FF779133F5C3F0D0C3C564C59E36A /* FIRCLSDataParsing.c */; };
 		557ACD842015DE29118B48DBE245FC2C /* Disposables.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E05EFEB74EEC266C169A19673D9B42 /* Disposables.swift */; };
@@ -1761,7 +1760,6 @@
 
 /* Begin PBXFileReference section */
 		000CC5B1B913ECF3BE70145880EA3DAC /* Promise+Always.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Promise+Always.swift"; path = "Sources/Promises/Promise+Always.swift"; sourceTree = "<group>"; };
-		0015FBE6D439EB2AB9853FA2B5C5E55E /* OlympusBlacklistChecker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OlympusBlacklistChecker.swift; path = OlympusSDK/Classes/OlympusBlacklistChecker.swift; sourceTree = "<group>"; };
 		005F22158811A8D8BA45CA620ED5C97B /* GDTCCTUploadOperation.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = GDTCCTUploadOperation.m; path = GoogleDataTransport/GDTCCTLibrary/GDTCCTUploadOperation.m; sourceTree = "<group>"; };
 		0109385BFD6C1587E6D72FC7A3F5401A /* GDTCOREventDropReason.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = GDTCOREventDropReason.h; path = GoogleDataTransport/GDTCORLibrary/Internal/GDTCOREventDropReason.h; sourceTree = "<group>"; };
 		01115CE7FFD74A35A1A4071DF3043EE5 /* FIRCLSConstants.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = FIRCLSConstants.m; path = Crashlytics/Shared/FIRCLSConstants.m; sourceTree = "<group>"; };
@@ -5203,7 +5201,6 @@
 				9B3367958ADC359A55A4D3EBC983979F /* Node.swift */,
 				43EB41B502E379FCABFC9A1339999FAC /* NotificationExtension.swift */,
 				29DB2CF2EC6D89871AFE2BDEF0A60962 /* OlympusAmbiguitySolver.swift */,
-				0015FBE6D439EB2AB9853FA2B5C5E55E /* OlympusBlacklistChecker.swift */,
 				06537E73BF059B6E10D6D25009690630 /* OlympusBluetoothManager.swift */,
 				6DC68A483E50899F58E36B9221BAE2B7 /* OlympusBuildingLevelChanger.swift */,
 				96406823D2C1B4D64E379A811E67C501 /* OlympusConstants.swift */,
@@ -7118,7 +7115,6 @@
 				B6996B5EDF6D9B264D267A506C174DE9 /* Node.swift in Sources */,
 				998A535A95740CFAB4E85C2852D4662B /* NotificationExtension.swift in Sources */,
 				15520D74E83B63AA23ACB58183BCECA7 /* OlympusAmbiguitySolver.swift in Sources */,
-				54929EDEF8CD01B9333B76AE7DC11959 /* OlympusBlacklistChecker.swift in Sources */,
 				B3E3235C2E432581002696D9 /* OlympusAffineConverter.swift in Sources */,
 				9D8BB847136A0ECE885CDBDDB5092F9B /* OlympusBluetoothManager.swift in Sources */,
 				4C1172D01866088C196B579EB6CEC3A4 /* OlympusBuildingLevelChanger.swift in Sources */,

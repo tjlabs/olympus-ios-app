@@ -1,3 +1,6 @@
+
+import Foundation
+
 class OlympusConstants {
     static let OPERATING_SYSTEM: String = "iOS"
     static let MODE_DR = "dr"
