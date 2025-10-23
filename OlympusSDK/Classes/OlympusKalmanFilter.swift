@@ -413,7 +413,7 @@ public class OlympusKalmanFilter: NSObject {
                     
                     outputResult.x = updatedX
                     outputResult.y = updatedY
-                    if (pathMatchingResult.0) { outputResult.absolute_heading = compensateHeading(heading: pathMatchingResult.xyhs[2]) }
+                    if (pathMatchingResult.isSuccess) { outputResult.absolute_heading = compensateHeading(heading: pathMatchingResult.xyhs[2]) }
                 }
                 initPathTrajMatchingInfo()
             }
@@ -452,14 +452,14 @@ public class OlympusKalmanFilter: NSObject {
                 outputResult.y = updatedTuY
 
                 if (isDrStraight) {
-                    outputResult.absolute_heading = compensateHeading(heading: pathMatchingResult.1[2])
+                    outputResult.absolute_heading = compensateHeading(heading: pathMatchingResult.xyhs[2])
                 } else {
                     outputResult.absolute_heading = compensateHeading(heading: updatedHeading)
                 }
             } else {
                 let pathMatchingResult =  OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: 1, PADDING_VALUES: PADDING_VALUES)
-                outputResult.x = (pathMatchingResult.1[0]*0.2 + updatedX*0.8)
-                outputResult.y = (pathMatchingResult.1[1]*0.2 + updatedY*0.8)
+                outputResult.x = (pathMatchingResult.xyhs[0]*0.2 + updatedX*0.8)
+                outputResult.y = (pathMatchingResult.xyhs[1]*0.2 + updatedY*0.8)
                 outputResult.absolute_heading = compensateHeading(heading: updatedHeading)
             }
             // DR
@@ -687,14 +687,14 @@ public class OlympusKalmanFilter: NSObject {
     }
 
     // Helper function to perform path matching
-    private func performPathMatching(fltResult: FineLocationTrackingFromServer, PADDING_VALUES: [Double], mode: String) -> (isSuccess: Bool, xyhs: [Double], bestHeading: Double) {
+    private func performPathMatching(fltResult: FineLocationTrackingFromServer, PADDING_VALUES: [Double], mode: String) -> PathMatchingResult {
         let useHeading = mode != OlympusConstants.MODE_PDR
         let pathType = useHeading ? 1 : 0
         return OlympusPathMatchingCalculator.shared.pathMatching(building: fltResult.building_name, level: fltResult.level_name, x: fltResult.x, y: fltResult.y, heading: fltResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: useHeading, pathType: pathType, PADDING_VALUES: PADDING_VALUES)
     }
 
     // Update result with path-matching result
-    private func updateResultWithPathMatching(pmResult: (isSuccess: Bool, xyhs: [Double], bestHeading: Double), propagatedResult: FineLocationTrackingFromServer, useHeading: Bool) -> FineLocationTrackingFromServer {
+    private func updateResultWithPathMatching(pmResult: PathMatchingResult, propagatedResult: FineLocationTrackingFromServer, useHeading: Bool) -> FineLocationTrackingFromServer {
         var updatedResult = propagatedResult
         updatedResult.x = pmResult.xyhs[0]
         updatedResult.y = pmResult.xyhs[1]
@@ -757,13 +757,13 @@ public class OlympusKalmanFilter: NSObject {
     }
 
     // Fallback path matching if the previous one failed
-    private func fallbackPathMatching(muResult: FineLocationTrackingFromServer, PADDING_VALUES: [Double], mode: String) -> (isSuccess: Bool, xyhs: [Double], bestHeading: Double) {
+    private func fallbackPathMatching(muResult: FineLocationTrackingFromServer, PADDING_VALUES: [Double], mode: String) -> PathMatchingResult {
         let pathType = mode == OlympusConstants.MODE_PDR ? 0 : 1
         return OlympusPathMatchingCalculator.shared.pathMatching(building: muResult.building_name, level: muResult.level_name, x: muResult.x, y: muResult.y, heading: muResult.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: false, pathType: pathType, PADDING_VALUES: PADDING_VALUES)
     }
 
     // Update result with fallback path matching
-    private func updateResultWithFallback(_ updatedResult: inout FineLocationTrackingFromServer, pmResult: (isSuccess: Bool, xyhs: [Double], bestHeading: Double)) {
+    private func updateResultWithFallback(_ updatedResult: inout FineLocationTrackingFromServer, pmResult: PathMatchingResult) {
         updatedResult.x = pmResult.xyhs[0]
         updatedResult.y = pmResult.xyhs[1]
         updatedResult.absolute_heading = pmResult.xyhs[2]

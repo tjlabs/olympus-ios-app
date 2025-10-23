@@ -290,11 +290,12 @@ public class OlympusPathMatchingCalculator {
         }
     }
     
-    public func pathMatching(building: String, level: String, x: Double, y: Double, heading: Double, HEADING_RANGE: Double, isUseHeading: Bool, pathType: Int, PADDING_VALUES: [Double]) -> (isSuccess: Bool, xyhs: [Double], bestHeading: Double) {
+    func pathMatching(building: String, level: String, x: Double, y: Double, heading: Double, HEADING_RANGE: Double, isUseHeading: Bool, pathType: Int, PADDING_VALUES: [Double]) -> PathMatchingResult {
         var isSuccess = false
         var xyhs: [Double] = [x, y, heading, 1.0]
         var bestHeading = heading
-
+        var candidates = [[Double]]()
+        
         let levelCopy = removeLevelDirectionString(levelName: level)
         let key = "\(self.sector_id)_\(building)_\(levelCopy)"
         guard !building.isEmpty, !level.isEmpty,
@@ -302,13 +303,14 @@ public class OlympusPathMatchingCalculator {
               let mainRoad = self.PpCoord[key],
               let mainMagScale = self.PpMagScale[key],
               let mainHeading = self.PpHeading[key] else {
-            return (isSuccess, xyhs, bestHeading)
+            return PathMatchingResult(isSuccess: isSuccess, xyhs: xyhs, bestHeading: bestHeading, candidates: candidates)
         }
 
         let pathMatchingArea = self.checkInEntranceMatchingArea(x: x, y: y, building: building, level: levelCopy)
 
         var idshArray = [[Double]]()
         var idshArrayWhenFail = [[Double]]()
+        
         
         if !mainRoad.isEmpty {
             let roadX = mainRoad[0]
@@ -350,10 +352,12 @@ public class OlympusPathMatchingCalculator {
                             if isValid {
                                 idsh[3] = correctedHeading
                                 idshArray.append(idsh)
+                                candidates.append([xPath, yPath, correctedHeading])
                             }
                         }
                     } else {
                         idshArray.append(idsh)
+                        candidates.append([xPath, yPath, heading])
                     }
                 }
             }
@@ -368,7 +372,7 @@ public class OlympusPathMatchingCalculator {
 
         xyhs[2] = compensateHeading(heading: xyhs[2])
 //        print(getLocalTimeString() + " , (Olympus) pathMatching : xyh after = \(xyhs[0]),\(xyhs[1]),\(xyhs[2])")
-        return (isSuccess, xyhs, bestHeading)
+        return PathMatchingResult(isSuccess: isSuccess, xyhs: xyhs, bestHeading: bestHeading, candidates: candidates)
     }
 
     private func getHeadingDataArray(_ headingString: String) -> [Double]? {
