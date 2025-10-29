@@ -1,5 +1,9 @@
 import Foundation
 
+enum FindNodeType {
+    case LONG, NORMAL
+}
+
 public class OlympusPathMatchingCalculator {
     static var shared = OlympusPathMatchingCalculator()
     
@@ -42,12 +46,6 @@ public class OlympusPathMatchingCalculator {
     
     init() {
         
-    }
-    
-    private struct Point {
-        var x: Double
-        var y: Double
-        var direction: Double
     }
     
     public func initialize() {
@@ -300,6 +298,7 @@ public class OlympusPathMatchingCalculator {
         let key = "\(self.sector_id)_\(building)_\(levelCopy)"
         guard !building.isEmpty, !level.isEmpty,
               let mainType = self.PpType[key],
+              let mainNode = self.PpNode[key],
               let mainRoad = self.PpCoord[key],
               let mainMagScale = self.PpMagScale[key],
               let mainHeading = self.PpHeading[key] else {
@@ -311,6 +310,7 @@ public class OlympusPathMatchingCalculator {
         var idshArray = [[Double]]()
         var idshArrayWhenFail = [[Double]]()
         
+        var resultNodeNumber: Int = 0
         
         if !mainRoad.isEmpty {
             let roadX = mainRoad[0]
@@ -335,7 +335,7 @@ public class OlympusPathMatchingCalculator {
                 let xPath = roadX[i]
                 let yPath = roadY[i]
                 let pathTypeLoaded = mainType[i]
-
+                let nodeNumber = Double(mainNode[i])
                 // Skip this path type if conditions aren't met
                 if pathType == 1 && pathTypeLoaded == 0 { continue }
 
@@ -352,12 +352,12 @@ public class OlympusPathMatchingCalculator {
                             if isValid {
                                 idsh[3] = correctedHeading
                                 idshArray.append(idsh)
-                                candidates.append([xPath, yPath, correctedHeading])
+                                candidates.append([nodeNumber, xPath, yPath, correctedHeading, distance])
                             }
                         }
                     } else {
                         idshArray.append(idsh)
-                        candidates.append([xPath, yPath, heading])
+                        candidates.append([nodeNumber, xPath, yPath, heading, distance])
                     }
                 }
             }
@@ -763,8 +763,8 @@ public class OlympusPathMatchingCalculator {
                         }
                         
                         if pastResult.x != currentResult.x && pastResult.y != currentResult.y {
-                            let point1 = Point(x: pastResult.x, y: pastResult.y, direction: pastResultHeading)
-                            let point2 = Point(x: currentResult.x, y: currentResult.y, direction: currentResultHeading)
+                            let point1 = OlympusPoint(x: pastResult.x, y: pastResult.y, direction: pastResultHeading)
+                            let point2 = OlympusPoint(x: currentResult.x, y: currentResult.y, direction: currentResultHeading)
                             if let intersectionPoint = findIntersection(point1: point1, point2: point2) {
                                 var distanceArray = [Double]()
                                 for i in 0..<xCandidates.count {
@@ -878,8 +878,8 @@ public class OlympusPathMatchingCalculator {
                         
                         if (!isNodePassed) {
                             if pastResult.x != currentResult.x && pastResult.y != currentResult.y {
-                                let point1 = Point(x: pastResult.x, y: pastResult.y, direction: pastResultHeading)
-                                let point2 = Point(x: currentResult.x, y: currentResult.y, direction: currentResultHeading)
+                                let point1 = OlympusPoint(x: pastResult.x, y: pastResult.y, direction: pastResultHeading)
+                                let point2 = OlympusPoint(x: currentResult.x, y: currentResult.y, direction: currentResultHeading)
                                 if let intersectionPoint = findIntersection(point1: point1, point2: point2) {
                                     var distanceArray = [Double]()
                                     for i in 0..<xCandidates.count {
@@ -1143,7 +1143,7 @@ public class OlympusPathMatchingCalculator {
     }
     
     
-    private func findIntersection(point1: Point, point2: Point) -> Point? {
+    func findIntersection(point1: OlympusPoint, point2: OlympusPoint) -> OlympusPoint? {
         let radian1 = point1.direction*OlympusConstants.D2R
         let radian2 = point2.direction*OlympusConstants.D2R
 
@@ -1151,16 +1151,16 @@ public class OlympusPathMatchingCalculator {
             return nil
         } else {
             if point1.direction == 90 || point1.direction == 270 {
-                return Point(x: point1.x, y: point2.y, direction: -1)
+                return OlympusPoint(x: point1.x, y: point2.y, direction: -1)
             } else if (point2.direction == 90 || point2.direction == 270) {
-                return Point(x: point2.x, y: point1.y, direction: -1)
+                return OlympusPoint(x: point2.x, y: point1.y, direction: -1)
             } else {
                 let slope1 = tan(radian1)
                 let slope2 = tan(radian2)
                 
                 let x = (slope1 * point1.x - slope2 * point2.x + point2.y - point1.y) / (slope1 - slope2)
                 let y = slope1 * (x - point1.x) + point1.y
-                return Point(x: x, y: y, direction: -1)
+                return OlympusPoint(x: x, y: y, direction: -1)
             }
         }
     }
@@ -1398,8 +1398,8 @@ public class OlympusPathMatchingCalculator {
         return badCaseNodeInfo
     }
     
-    public func findNodesUsingCandidateDirections(fltResult: FineLocationTrackingFromServer, originCoord: [Double], candidateDirections: [Double], pathType: Int) -> [PassedNodeInfo] {
-        let PIXEL_LENGTH = OlympusConstants.PIXEL_LENGTH_TO_FIND_NODE*2
+    func findNodesUsingCandidateDirections(fltResult: FineLocationTrackingFromServer, originCoord: [Double], candidateDirections: [Double], pathType: Int, type: FindNodeType) -> [PassedNodeInfo] {
+        let PIXEL_LENGTH = type == .NORMAL ? OlympusConstants.PIXEL_LENGTH_TO_FIND_NODE*2 : OlympusConstants.PIXEL_LENGTH_TO_FIND_NODE*4
         let PIXELS_TO_CHECK = Int(PIXEL_LENGTH)
         
         var nodeCandidatesInfo = [PassedNodeInfo]()
@@ -1430,6 +1430,7 @@ public class OlympusPathMatchingCalculator {
                     if (matchedNodeResult.1 != -1) {
                         let nodeInfo = PassedNodeInfo(nodeNumber: matchedNodeResult.1, nodeCoord: [x, y], nodeHeadings: matchedNodeResult.2, matchedIndex: 0, userHeading: 0)
                         nodeCandidatesInfo.append(nodeInfo)
+                        if type == .LONG { break }
                     }
                 }
             }
@@ -2229,6 +2230,55 @@ public class OlympusPathMatchingCalculator {
         }
         
         return pathMatchingNodeCandidates
+    }
+    
+    func getOpeCandidateNodes(preResult: FineLocationTrackingFromServer, curResult: FineLocationTrackingFromServer, linkDir: [Double], pathType: Int) -> [PassedNodeInfo] {
+        var nodeList = [PassedNodeInfo]()
+        
+        let result = curResult
+        print(getLocalTimeString() + " , (Olympus) pathMatching : TURN OCCURED in Node !")
+        var candidateDirections = [Double]()
+        let majorHeading = preResult.absolute_heading
+        print(getLocalTimeString() + " , (Olympus) pathMatching : majorHeading = \(majorHeading)")
+        // Node를 찾은 방향 설정
+        var oppositeHeading: Double = compensateHeading(heading: majorHeading-180)
+        var minDiffValue: Double = 360
+        let directions = linkDir
+        print(getLocalTimeString() + " , (Olympus) pathMatching : linkDirections = \(directions)")
+        if (!directions.isEmpty) {
+            for mapHeading in directions {
+                var diffValue: Double = 0
+                
+                if (majorHeading > 270 && (mapHeading >= 0 && mapHeading < 90)) {
+                    diffValue = abs(majorHeading - (mapHeading+360))
+                } else if (mapHeading > 270 && (majorHeading >= 0 && majorHeading < 90)) {
+                    diffValue = abs(mapHeading - (majorHeading+360))
+                } else {
+                    diffValue = abs(majorHeading - mapHeading)
+                }
+                
+                if diffValue < minDiffValue {
+                    minDiffValue = diffValue
+                    oppositeHeading = compensateHeading(heading: mapHeading-180)
+                }
+            }
+            candidateDirections = [majorHeading, oppositeHeading]
+            print(getLocalTimeString() + " , (Olympus) pathMatching : originCoord = \([preResult.x, preResult.y]), candidateDirections = \(candidateDirections)")
+            
+            let nodes = findNodesUsingCandidateDirections(fltResult: result, originCoord: [preResult.x, preResult.y], candidateDirections: candidateDirections, pathType: pathType, type: .LONG)
+            print(getLocalTimeString() + " , (Olympus) pathMatching : Node Candidates = \(nodes.map({$0.nodeNumber}))")
+            for node in nodes {
+                let nearestHeading = getNearestNodeHeading(userHeading: result.absolute_heading, nodeHeadings: node.nodeHeadings)
+                let newX = result.x + cos(nearestHeading*OlympusConstants.D2R)
+                let newY = result.y + sin(nearestHeading*OlympusConstants.D2R)
+                let isPossibleNode = checkPathPixelHasCoords(fltResult: result, coordToCheck: [newX, newY])
+                if isPossibleNode {
+                    nodeList.append(node)
+                }
+            }
+        }
+        
+        return nodeList
     }
     
     public func getTimeUpdateLimitation(level:String, mode: String) -> (limitType: LimitationType, limitValues: [Double]) {
