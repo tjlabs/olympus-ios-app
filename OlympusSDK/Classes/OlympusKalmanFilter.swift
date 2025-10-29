@@ -450,7 +450,7 @@ public class OlympusKalmanFilter: NSObject {
                 
                 outputResult.x = updatedTuX
                 outputResult.y = updatedTuY
-
+                
                 if (isDrStraight) {
                     outputResult.absolute_heading = compensateHeading(heading: pathMatchingResult.xyhs[2])
                 } else {
@@ -462,6 +462,7 @@ public class OlympusKalmanFilter: NSObject {
                 outputResult.y = (pathMatchingResult.xyhs[1]*0.2 + updatedY*0.8)
                 outputResult.absolute_heading = compensateHeading(heading: updatedHeading)
             }
+            
             // DR
             let limitationResult = OlympusPathMatchingCalculator.shared.getTimeUpdateLimitation(level: levelName, mode: mode)
             if (limitationResult.limitType == .Y_LIMIT) {
@@ -486,7 +487,6 @@ public class OlympusKalmanFilter: NSObject {
         }
         
         tuResult = outputResult
-//        print(getLocalTimeString() + " , (Olympus) ErrorChecking 0-3 : index = \(unitDRInfoBuffer[unitDRInfoBuffer.count-1].index) , x = \(outputResult.x) , y = \(outputResult.y) , h = \(outputResult.absolute_heading)")
         kalmanP += kalmanQ
         headingKalmanP += headingKalmanQ
         muFlag = true
