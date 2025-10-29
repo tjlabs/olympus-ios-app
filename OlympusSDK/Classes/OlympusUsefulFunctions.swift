@@ -476,7 +476,7 @@ func checkForTrajMatching(index: Int,
                 }
                 
                 if let idx = userPropagtionIndex, let dirs = candidateDirections {
-                    let nodes = OlympusPathMatchingCalculator.shared.findNodesUsingCandidateDirections(fltResult: fltResult, originCoord: linkCoord, candidateDirections: dirs, pathType: 1)
+                    let nodes = OlympusPathMatchingCalculator.shared.findNodesUsingCandidateDirections(fltResult: fltResult, originCoord: linkCoord, candidateDirections: dirs, pathType: 1, type: .NORMAL)
                     
                     let alignedTraj = applyAlignment(to: unitDRInfoList, using: aligned.alignTransform)
                     let alignedHeading = alignedTraj.h
