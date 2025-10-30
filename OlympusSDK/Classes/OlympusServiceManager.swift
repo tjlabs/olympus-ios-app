@@ -189,6 +189,44 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     var trajMisMatchSearchInfo = SearchInfo()
     private var isMakingTemporalResultRunning = false
     
+    // Thread-safe temporal result processing actor
+    private actor TemporalResultActor {
+        private var isProcessing = false
+        private var isMatchingInProgress = false
+        private var isOnPointInProgress = false
+        private var mtfSkipFlag = false
+        
+        func canStartProcessing() -> Bool {
+            return !isProcessing && !mtfSkipFlag
+        }
+        
+        func startProcessing() {
+            isProcessing = true
+        }
+        
+        func endProcessing() {
+            isProcessing = false
+        }
+        
+        func canStartMatching() -> Bool {
+            return !isMatchingInProgress
+        }
+        
+        func startMatching() {
+            isMatchingInProgress = true
+        }
+        
+        func endMatching() {
+            isMatchingInProgress = false
+        }
+        
+        func setMtfSkipFlag(_ flag: Bool) {
+            mtfSkipFlag = flag
+        }
+    }
+    
+    private let temporalResultActor = TemporalResultActor()
+    
     var headingBufferForCorrection: [Double] = []
     var isPossibleHeadingCorrection: Bool = false
     var scCompensation: Double = 1.0
@@ -2574,13 +2612,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
     }
     
-//    func safeMakeTemporalResultWrapper(input: FineLocationTrackingFromServer, isStableMode: Bool, mustInSameLink: Bool, updateType: UpdateNodeLinkType, pathMatchingType: PathMatchingType, jumpedNodes: [PassedNodeInfo] = [], runInUvdTimer: Bool = false) {
-//        temporalResultQueue.async { [weak self] in
-//            guard let self = self else { return }
-//            self.makeTemporalResult(input: input, isStableMode: isStableMode, mustInSameLink: mustInSameLink, updateType: updateType, pathMatchingType: pathMatchingType, jumpedNodes: jumpedNodes, runInUvdTimer: runInUvdTimer) // 여기가 안전하게 실행됨
-//        }
-//    }
-    
     func safeMakeTemporalResultWrapper(input: FineLocationTrackingFromServer,
                                         isStableMode: Bool,
                                         mustInSameLink: Bool,
@@ -2588,14 +2619,22 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                         pathMatchingType: PathMatchingType,
                                         jumpedNodes: [PassedNodeInfo] = [],
                                         runInUvdTimer: Bool = false) {
-        guard !isMakingTemporalResultRunning else { return }
-        isMakingTemporalResultRunning = true
         
-        if mtfSkipFlag { return }
+        // Thread-safe 플래그 체크 및 설정
         temporalResultQueue.async { [weak self] in
-            guard let strongSelf = self else {
-                return
+            guard let strongSelf = self else { return }
+            
+            // 동기화된 플래그 체크
+            guard !strongSelf.isMakingTemporalResultRunning else { return }
+            strongSelf.isMakingTemporalResultRunning = true
+            
+            // defer를 사용하여 어떤 경우든 플래그가 리셋되도록 보장
+            defer {
+                strongSelf.isMakingTemporalResultRunning = false
             }
+            
+            // mtfSkipFlag 체크
+            guard !strongSelf.mtfSkipFlag else { return }
 
             strongSelf.makeTemporalResult(
                 input: input,
@@ -2606,8 +2645,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 jumpedNodes: jumpedNodes,
                 runInUvdTimer: runInUvdTimer
             )
-
-            strongSelf.isMakingTemporalResultRunning = false
         }
     }
     
@@ -2788,9 +2825,19 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 
                 // MARK: processPhase3ForAmbiguousTraj
                 if !trajMisMatchOccured && !isMatchingInProgress && !isOnPointInProgress && resultIndex - self.trajMisMatchIndex > 30 && runInUvdTimer {
+                    
+                    // Thread-safe 플래그 설정
+                    guard !isMatchingInProgress else { return }
                     isMatchingInProgress = true
                     
                     DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                        defer {
+                            // 항상 플래그 리셋 보장
+                            DispatchQueue.main.async { [weak self] in
+                                self?.isMatchingInProgress = false
+                            }
+                        }
+                        
                         guard let strongSelf = self else { return }
 
                         guard let comparingResult = checkForTrajMatching(
@@ -2802,15 +2849,11 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             linkCoord: strongSelf.KF.linkCoord,
                             linkDirections: strongSelf.KF.linkDirections
                         ) else {
-                            DispatchQueue.main.async { [weak self] in
-                                self?.isMatchingInProgress = false
-                            }
                             return
                         }
 
                         DispatchQueue.main.async { [weak self] in
                             guard let self = self else { return }
-                            defer { self.isMatchingInProgress = false }
                             
                             let dTime = getCurrentTimeInMilliseconds() - self.routeTrackFinishTime
                             let isInLevelChangeArea = self.buildingLevelChanger.checkInLevelChangeArea(result: self.olympusResult, mode: self.runMode)
@@ -2880,7 +2923,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 }
                                 self.trajMisMatchOccured = false
                             }
-                            self.isMatchingInProgress = false
                         }
                     }
                 }
@@ -2938,6 +2980,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             let decoded = jsonToOnPointEstimationResult(jsonString: returnedString)
                             if decoded.0 {
                                 let pointResults = decoded.1.point_results
+                                print(getLocalTimeString() + " , (Olympus) pathMatching : postOpe // pointResults = \(pointResults)")
                                 if let bestPoint = pointResults.max(by: { $0.ccs < $1.ccs }) {
                                     
                                     OlympusPathMatchingCalculator.shared.initPassedNodeInfo()
