@@ -194,10 +194,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         private var isProcessing = false
         private var isMatchingInProgress = false
         private var isOnPointInProgress = false
-        private var mtfSkipFlag = false
+        private var mtrSkipFlag = false
         
         func canStartProcessing() -> Bool {
-            return !isProcessing && !mtfSkipFlag
+            return !isProcessing && !mtrSkipFlag
         }
         
         func startProcessing() {
@@ -220,8 +220,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             isMatchingInProgress = false
         }
         
-        func setMtfSkipFlag(_ flag: Bool) {
-            mtfSkipFlag = flag
+        func setMtrSkipFlag(_ flag: Bool) {
+            mtrSkipFlag = flag
         }
     }
     
@@ -231,7 +231,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     var isPossibleHeadingCorrection: Bool = false
     var scCompensation: Double = 1.0
     var isInMapEnd: Bool = false
-    var mtfSkipFlag: Bool = false
+    var mtrSkipFlag: Bool = false
     
     var temporalResult =  FineLocationTrackingFromServer()
     var preTemporalResult = FineLocationTrackingFromServer()
@@ -2633,8 +2633,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 strongSelf.isMakingTemporalResultRunning = false
             }
             
-            // mtfSkipFlag 체크
-            guard !strongSelf.mtfSkipFlag else { return }
+            // mtrSkipFlag 체크
+            guard !strongSelf.mtrSkipFlag else { return }
 
             strongSelf.makeTemporalResult(
                 input: input,
@@ -2704,12 +2704,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 print(getLocalTimeString() + " , (Olympus) pathMatching : mustInSameLink = \(mustInSameLink)")
                 let correctedResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: isUseHeading, pathType: 1, PADDING_VALUES: paddings)
                 if (correctedResult.isSuccess) {
-                    if unitDRInfo.index >= 740 && unitDRInfo.index <= 840 {
-                        unitDRGenerator.setVelocityScale(scale: 0.62)
-                    } else {
-                        unitDRGenerator.setVelocityScale(scale: correctedResult.xyhs[3])
-                    }
-//                    unitDRGenerator.setVelocityScale(scale: correctedResult.xyhs[3])
+                    unitDRGenerator.setVelocityScale(scale: correctedResult.xyhs[3])
                     result.x = correctedResult.xyhs[0]
                     result.y = correctedResult.xyhs[1]
                     result.absolute_heading = correctedResult.xyhs[2]
@@ -2973,7 +2968,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 
                 if !onPoints.isEmpty {
                     isOpeProcessing = true
-                    self.mtfSkipFlag = true
+                    self.mtrSkipFlag = true
                     let opeInput = OnPointEstimation(user_id: self.user_id, mobile_time: getCurrentTimeInMilliseconds(), sector_id: self.sector_id, building_name: result.building_name, level_name: result.level_name, operating_system: OlympusConstants.OPERATING_SYSTEM, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rssi: Int(OlympusConstants.DEVICE_MIN_RSSI), standard_min_rssi: Int(OlympusConstants.STANDARD_MIN_RSS), points: onPoints)
                     OlympusNetworkManager.shared.postOPE(url: CALC_OPE_URL, input: opeInput, completion: { statusCode, returnedString in
                         if statusCode == 200 {
@@ -3016,7 +3011,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                 }
                             }
                         }
-                        self.mtfSkipFlag = false
+                        self.mtrSkipFlag = false
                     })
                 }
             }
