@@ -298,12 +298,13 @@ public class OlympusRflowCorrelator {
     
     func smoothRflowForAutoMode(rflow: Double) -> Double {
         var smoothedRflow: Double = 1.0
+        updateRflowForAutoModeQueue(data: smoothedRflow)
+        
         if (self.rflowForAutoModeQueue.count == 1) {
             smoothedRflow = rflow
         } else {
             smoothedRflow = movingAverage(preMvalue: self.preSmoothedRflowForAutoMode, curValue: rflow, windowSize: self.rflowForAutoModeQueue.count)
         }
-        updateRflowForAutoModeQueue(data: smoothedRflow)
         preSmoothedRflowForAutoMode = smoothedRflow
         return smoothedRflow
     }
