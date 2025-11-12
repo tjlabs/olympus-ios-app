@@ -73,7 +73,6 @@ public class OlympusSectionController {
             uvdSectionLength = 0
             uvdSectionHeadings = []
             userStraightIndexes = []
-//            print(getLocalTimeString() + " , (Olympus) Section : section changed at \(userVelocity.index) index")
         }
         
         return isNeedUpdate
