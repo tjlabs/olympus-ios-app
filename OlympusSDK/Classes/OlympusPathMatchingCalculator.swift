@@ -1998,6 +1998,48 @@ public class OlympusPathMatchingCalculator {
         return false
     }
     
+    private func checkPathPixelHasCoordsWithPadding(fltResult: FineLocationTrackingFromServer, coordToCheck: [Double], paddingValue: Double) -> (Bool, [Double], [Double]) {
+        let building = fltResult.building_name
+        let level = fltResult.level_name
+        let levelCopy: String = removeLevelDirectionString(levelName: level)
+        let x = coordToCheck[0]
+        let y = coordToCheck[1]
+        let key: String = "\(self.sector_id)_\(building)_\(levelCopy)"
+        
+        let xMin = x - paddingValue
+        let xMax = x + paddingValue
+        let yMin = y - paddingValue
+        let yMax = y + paddingValue
+        
+        if (!(building.isEmpty) && !(level.isEmpty)) {
+            guard let mainRoad: [[Double]] = self.PpCoord[key] else { return (false, [], []) }
+            guard let mainHeading = self.PpHeading[key] else { return (false, [], []) }
+            
+            if (!mainRoad.isEmpty) {
+                let roadX = mainRoad[0]
+                let roadY = mainRoad[1]
+                for i in 0..<roadX.count {
+                    let xPath = roadX[i]
+                    let yPath = roadY[i]
+                    let headingArray = mainHeading[i]
+                    
+                    if xPath >= xMin && xPath <= xMax && yPath >= yMin && yPath <= yMax {
+                        var ppHeadingValues = [Double]()
+                        let headingData = headingArray.components(separatedBy: ",")
+                        for j in 0..<headingData.count {
+                            if(!headingData[j].isEmpty) {
+                                let mapHeading = Double(headingData[j])!
+                                ppHeadingValues.append(mapHeading)
+                            }
+                        }
+                        return (true, [xPath, yPath], ppHeadingValues)
+                    }
+                }
+            }
+        }
+        return (false, [], [])
+    }
+    
     func getMatchedNodeWithCoord(fltResult: FineLocationTrackingFromServer, originCoord: [Double], coordToCheck: [Double], pathType: Int, PADDING_VALUES: [Double]) -> (Bool, Int, [Double]) {
         let building = fltResult.building_name
         let level = fltResult.level_name
@@ -2069,11 +2111,27 @@ public class OlympusPathMatchingCalculator {
                                             }
                                             diffHeading.append(diffValue)
                                         }
+                                        print(getLocalTimeString() + " , (Olympus) Path-Matching : userHeading = \(userHeading) // diffHeading = \(diffHeading)")
                                         if let minHeading = diffHeading.min() {
                                             if minHeading < OlympusConstants.HEADING_RANGE-10 {
                                                 return (false, node, matchedNodeHeadings)
                                             } else {
-                                                return (false, matchedNode, matchedNodeHeadings)
+                                                if pathType != 1 {
+                                                    let tempX = coordToCheck[0] + cos(userHeading*OlympusConstants.D2R)
+                                                    let tempY = coordToCheck[1] + sin(userHeading*OlympusConstants.D2R)
+                                                    print(getLocalTimeString() + " , (Olympus) Path-Matching : tempX,Y = [\(tempX), \(tempY)]")
+                                                    let checkResult = checkPathPixelHasCoordsWithPadding(fltResult: fltResult, coordToCheck: [tempX, tempY], paddingValue: 0.5)
+                                                    print(getLocalTimeString() + " , (Olympus) Path-Matching : checkResult = \(checkResult)")
+                                                    if checkResult.0 {
+                                                        let ppHeadings = checkResult.2
+                                                        let nodeHeadingsToReturn = matchedNodeHeadings + ppHeadings
+                                                        return (false, node, nodeHeadingsToReturn)
+                                                    } else {
+                                                        return (false, matchedNode, matchedNodeHeadings)
+                                                    }
+                                                } else {
+                                                    return (false, matchedNode, matchedNodeHeadings)
+                                                }
                                             }
                                         } else {
                                             return (false, matchedNode, matchedNodeHeadings)
@@ -2198,17 +2256,18 @@ public class OlympusPathMatchingCalculator {
             }
         }
         
-//        print(getLocalTimeString() + " , (Olympus) Path-Matching : userXY = \(x) , \(y)")
-//        print(getLocalTimeString() + " , (Olympus) Path-Matching : startHeading = \(startHeading)")
-//        print(getLocalTimeString() + " , (Olympus) Path-Matching : diffHeadings = \(diffHeadings)")
-//        print(getLocalTimeString() + " , (Olympus) Path-Matching : candidateDirections = \(candidateDirections)")
+        print(getLocalTimeString() + " , (Olympus) Path-Matching : userXY = \(x) , \(y)")
+        print(getLocalTimeString() + " , (Olympus) Path-Matching : startHeading = \(startHeading)")
+        print(getLocalTimeString() + " , (Olympus) Path-Matching : diffHeadings = \(diffHeadings)")
+        print(getLocalTimeString() + " , (Olympus) Path-Matching : candidateDirections = \(candidateDirections)")
         var uvdLength: Double = 0
         for uvd in uvdBuffer {
             uvdLength += uvd.length
         }
         
-        let PIXELS_TO_CHECK = Int(round(uvdLength + uvdLength*0.2))
-//        print(getLocalTimeString() + " , (Olympus) Path-Matching : PIXELS_TO_CHECK = \(PIXELS_TO_CHECK)")
+        let ratio = pathType == 1 ? 0.2 : 0.6
+        let PIXELS_TO_CHECK = Int(round(uvdLength + uvdLength*ratio))
+        print(getLocalTimeString() + " , (Olympus) Path-Matching : PIXELS_TO_CHECK = \(PIXELS_TO_CHECK)")
         if (!candidateDirections.isEmpty) {
             let matchedNodeResult = getMatchedNodeWithCoord(fltResult: fltResult, originCoord: [x, y], coordToCheck: [x, y], pathType: pathType, PADDING_VALUES: [1, 1, 1, 1])
             if (matchedNodeResult.1 != -1) {
@@ -2220,14 +2279,15 @@ public class OlympusPathMatchingCalculator {
                 var matchedNodeNumber: Int = -1
                 var matchedNodeCoord: [Double] = [0, 0]
                 var matchedNodeHeadings = [Double]()
-                let paddingValues = [Double] (repeating: Double(PIXELS_TO_CHECK), count: 4)
+                let paddingValues = [Double] (repeating: 1, count: 4)
                 
                 var xToCheck: Double = x
                 var yToCheck: Double = y
                 for _ in 0..<PIXELS_TO_CHECK {
                     xToCheck += cos(direction*OlympusConstants.D2R)
                     yToCheck += sin(direction*OlympusConstants.D2R)
-                    let matchedNodeResult = getMatchedNodeWithCoord(fltResult: fltResult, originCoord: [x, y], coordToCheck: [xToCheck, yToCheck], pathType: pathType, PADDING_VALUES: paddingValues)
+                    let matchedNodeResult = getMatchedNodeWithCoord(fltResult: fltResult, originCoord: [xToCheck, yToCheck], coordToCheck: [xToCheck, yToCheck], pathType: pathType, PADDING_VALUES: paddingValues)
+                    print(getLocalTimeString() + " , (Olympus) Path-Matching : [\(xToCheck) , \(yToCheck)] // matchedNodeResult = \(matchedNodeResult)")
                     if (matchedNodeResult.0) {
                         break
                     } else {
@@ -2240,7 +2300,7 @@ public class OlympusPathMatchingCalculator {
                     }
                     
                     if (matchedNodeNumber != -1) {
-//                        print(getLocalTimeString() + " , (Olympus) Path-Matching : matchedNodeNumber = \(matchedNodeNumber) // matchedNodeCoord = \(matchedNodeCoord)")
+                        print(getLocalTimeString() + " , (Olympus) Path-Matching : matchedNodeNumber = \(matchedNodeNumber) // matchedNodeCoord = \(matchedNodeCoord)")
                         let nodeInfo = PathMatchingNodeCandidateInfo(nodeNumber: matchedNodeNumber, nodeCoord: matchedNodeCoord, nodeHeadings: matchedNodeHeadings)
                         pathMatchingNodeCandidates.append(nodeInfo)
                     }
