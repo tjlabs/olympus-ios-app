@@ -326,10 +326,12 @@ func checkForTrajMatching(index: Int,
                           userMaskBuffer: [UserMask],
                           unitDRInfoBuffer: [UnitDRInfo],
                           linkCoord: [Double],
-                          linkDirections: [Double]) -> (BadCaseType, [[Double]])? {
+                          linkDirections: [Double],
+                          mode: String) -> (BadCaseType, [[Double]])? {
     
+    let indexStandard: Int = mode == OlympusConstants.MODE_DR ? 20 : 5
     // 같은 좌표에 최근 User Mask가 20개 존재하는지 확인
-    let indexForSameCount: Int = 20
+    let indexForSameCount: Int = indexStandard
     let cutIndex = max(max(0, index - indexForSameCount), ambiguitySolvedIndex)
     let buffer = userMaskBuffer.filter { $0.index >= cutIndex && $0.index < index }
     
@@ -347,14 +349,14 @@ func checkForTrajMatching(index: Int,
         }
     }
     
-    if sameCount < 19 {
+    if sameCount < indexStandard-1 {
         return nil
     }
     
     print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : sameCount = \(sameCount)")
     print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : index = \(index)")
     // 최근 30개의 UserMask와 UserVelocity를 비교
-    let indexCount = 30
+    let indexCount = Int(round(Double(indexStandard)*1.5))
     let tailIndex = max(max(0, index - indexCount), ambiguitySolvedIndex)
     
     let userMaskList = userMaskBuffer.filter { $0.index >= tailIndex && $0.index < index }
@@ -476,7 +478,8 @@ func checkForTrajMatching(index: Int,
                 }
                 
                 if let idx = userPropagtionIndex, let dirs = candidateDirections {
-                    let nodes = OlympusPathMatchingCalculator.shared.findNodesUsingCandidateDirections(fltResult: fltResult, originCoord: linkCoord, candidateDirections: dirs, pathType: 1, type: .NORMAL)
+                    let pathType = mode == OlympusConstants.MODE_DR ? 1 : 0
+                    let nodes = OlympusPathMatchingCalculator.shared.findNodesUsingCandidateDirections(fltResult: fltResult, originCoord: linkCoord, candidateDirections: dirs, pathType: pathType, type: .NORMAL)
                     
                     let alignedTraj = applyAlignment(to: unitDRInfoList, using: aligned.alignTransform)
                     let alignedHeading = alignedTraj.h
@@ -520,7 +523,7 @@ func checkForTrajMatching(index: Int,
                                 heading: alignedHeading.last!,
                                 HEADING_RANGE: OlympusConstants.HEADING_RANGE,
                                 isUseHeading: true,
-                                pathType: 1,
+                                pathType: pathType,
                                 PADDING_VALUES: OlympusConstants.PADDING_VALUES
                             )
 
