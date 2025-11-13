@@ -2265,7 +2265,7 @@ public class OlympusPathMatchingCalculator {
             uvdLength += uvd.length
         }
         
-        let ratio = pathType == 1 ? 0.2 : 0.6
+        let ratio = pathType == 1 ? 0.2 : 2
         let PIXELS_TO_CHECK = Int(round(uvdLength + uvdLength*ratio))
         print(getLocalTimeString() + " , (Olympus) Path-Matching : PIXELS_TO_CHECK = \(PIXELS_TO_CHECK)")
         if (!candidateDirections.isEmpty) {
