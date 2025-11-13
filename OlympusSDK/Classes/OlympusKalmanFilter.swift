@@ -319,12 +319,6 @@ public class OlympusKalmanFilter: NSObject {
                                             endY += inputUnitDrInfoBuffer[i].length*sin(compensationDirection*OlympusConstants.D2R)
                                         }
                                         
-//                                        if (turnType == 1) {
-//                                            distanceCompensation = 1.5
-//                                            endX += distanceCompensation*cos(compensationDirection*OlympusConstants.D2R)
-//                                            endY += distanceCompensation*sin(compensationDirection*OlympusConstants.D2R)
-//                                        }
-                                        
                                         var endPaddingValues: [Double] = [1, 1, 1, 1]
                                         let headingRange: Double = 10
                                         if (compensationDirection >= -headingRange && compensationDirection < headingRange) || (compensationDirection >= 180-headingRange && compensationDirection < 180+headingRange) {
@@ -394,28 +388,6 @@ public class OlympusKalmanFilter: NSObject {
                         }
                     }
                 }
-            } else {
-                let drBufferVeryStraightResult = isDrBufferStraight(unitDRInfoBuffer: unitDRInfoBuffer, numIndex: OlympusConstants.DR_BUFFER_SIZE_FOR_STRAIGHT, condition: 10.0)
-                let isDrVeryStraight: Bool = drBufferVeryStraightResult.0
-//                print(getLocalTimeString() + " , (Olympus) Path-Matching : isDrVeryStraight = \(isDrVeryStraight)")
-                if (isDrVeryStraight) {
-                    if (isNeedPathTrajMatching.straight) {
-                        isNeedRequestPhase4 = true
-                    }
-                    let pathMatchingResult = OlympusPathMatchingCalculator.shared.pathMatching(building: self.tuResult.building_name, level: levelName, x: updatedX, y: updatedY, heading: updatedHeading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: true, pathType: 0, PADDING_VALUES: PADDING_VALUES)
-                    
-                    let compensatedHeading = compensateHeading(heading: pathMatchingResult.xyhs[2])
-                    let dx = length*cos(compensatedHeading*OlympusConstants.D2R)
-                    let dy = length*sin(compensatedHeading*OlympusConstants.D2R)
-                    
-                    let updatedX = self.tuResult.x + dx
-                    let updatedY = self.tuResult.y + dy
-                    
-                    outputResult.x = updatedX
-                    outputResult.y = updatedY
-                    if (pathMatchingResult.isSuccess) { outputResult.absolute_heading = compensateHeading(heading: pathMatchingResult.xyhs[2]) }
-                }
-                initPathTrajMatchingInfo()
             }
             
             if (!isDidPathTrajMatching) {
@@ -490,7 +462,7 @@ public class OlympusKalmanFilter: NSObject {
         kalmanP += kalmanQ
         headingKalmanP += headingKalmanQ
         muFlag = true
-        
+
         return (outputResult, isDidPathTrajMatching, isNeedRequestPhase4)
     }
     
