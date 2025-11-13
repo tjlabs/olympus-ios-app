@@ -329,8 +329,10 @@ func checkForTrajMatching(index: Int,
                           linkDirections: [Double],
                           mode: String) -> (BadCaseType, [[Double]])? {
     
-    let indexStandard: Int = mode == OlympusConstants.MODE_DR ? 20 : 5
-    // 같은 좌표에 최근 User Mask가 20개 존재하는지 확인
+    let indexStandard: Int = mode == OlympusConstants.MODE_DR ? 20 : 8
+    let pathType: Int = mode == OlympusConstants.MODE_DR ? 1 : 0
+    print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : indexStandard = \(indexStandard)")
+    // 같은 좌표에 최근 User Mask가 N개 존재하는지 확인
     let indexForSameCount: Int = indexStandard
     let cutIndex = max(max(0, index - indexForSameCount), ambiguitySolvedIndex)
     let buffer = userMaskBuffer.filter { $0.index >= cutIndex && $0.index < index }
@@ -393,9 +395,10 @@ func checkForTrajMatching(index: Int,
 
         let m_seg = Array(userMaskList[start..<end])
         let majorHeading = m_seg.first!.absolute_heading
-        
+        print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : majorHeading = \(majorHeading)")
         let oppositeHeading = compensateHeading(heading: majorHeading-180)
         
+        var points = linkCoord
         var candidateDirections = [Double]()
         for mapHeading in linkDirections {
             if mapHeading != majorHeading && mapHeading != oppositeHeading {
@@ -403,8 +406,22 @@ func checkForTrajMatching(index: Int,
             }
         }
         
+        if candidateDirections.isEmpty && mode != OlympusConstants.MODE_DR {
+            let newX = linkCoord[0] + cos(majorHeading*OlympusConstants.D2R)
+            let newY = linkCoord[1] + sin(majorHeading*OlympusConstants.D2R)
+            print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : newXY = \(newX), \(newY)")
+            let ppHeadings = OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: fltResult.building_name, level: fltResult.level_name, x: newX, y: newY, PADDING_VALUE: 1, mode: mode)
+            for mapHeading in ppHeadings {
+                if mapHeading != majorHeading && mapHeading != oppositeHeading {
+                    candidateDirections.append(mapHeading)
+                }
+            }
+            points = [newX, newY]
+        }
+        
+        print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : candidateDirections = \(candidateDirections)")
         let length = Double(sameCount)
-        let propagatedPoints = OlympusPathMatchingCalculator.shared.findPropagatedPoints(fltResult: fltResult, originCoord: linkCoord, candidateDirections: candidateDirections, majorHeading: majorHeading, length: length, pathType: 1)
+        let propagatedPoints = OlympusPathMatchingCalculator.shared.findPropagatedPoints(fltResult: fltResult, originCoord: points, candidateDirections: candidateDirections, majorHeading: majorHeading, length: length, pathType: pathType)
         
         return (BadCaseType.STRAIGHT, propagatedPoints)
     } else {
