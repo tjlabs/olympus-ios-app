@@ -331,7 +331,6 @@ func checkForTrajMatching(index: Int,
     
     let indexStandard: Int = mode == OlympusConstants.MODE_DR ? 20 : 8
     let pathType: Int = mode == OlympusConstants.MODE_DR ? 1 : 0
-    print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : indexStandard = \(indexStandard)")
     // 같은 좌표에 최근 User Mask가 N개 존재하는지 확인
     let indexForSameCount: Int = indexStandard
     let cutIndex = max(max(0, index - indexForSameCount), ambiguitySolvedIndex)
@@ -355,7 +354,6 @@ func checkForTrajMatching(index: Int,
         return nil
     }
     
-    print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : sameCount = \(sameCount)")
     print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : index = \(index)")
     // 최근 30개의 UserMask와 UserVelocity를 비교
     let indexCount = Int(round(Double(indexStandard)*1.5))

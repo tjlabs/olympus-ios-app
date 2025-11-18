@@ -210,7 +210,6 @@ public class OlympusKalmanFilter: NSObject {
                 if (isNeedPathTrajMatching.turn && turnAngle <= 135) {
                     // Node를 옮기자
                     isNeedRequestPhase4 = true
-//                    print(getLocalTimeString() + " , (Olympus) Path-Matching : isNeedRequestPhase4 (1) = \(isNeedRequestPhase4)")
                     let linkDirArray = linkDirections
                     if (!linkDirArray.isEmpty) {
                         let inputUserMaskBuffer = Array(userMaskBuffer.suffix(straight_threshold))
@@ -226,7 +225,6 @@ public class OlympusKalmanFilter: NSObject {
                         let userX = inputUserMaskBuffer[inputUserMaskBuffer.count-1].x
                         let userY = inputUserMaskBuffer[inputUserMaskBuffer.count-1].y
                         let userHeading = inputUserMaskBuffer[inputUserMaskBuffer.count-1].absolute_heading
-//                        print(getLocalTimeString() + " , (Olympus) Path-Matching : User Mask  = \(inputUserMaskBuffer)")
                         print(getLocalTimeString() + " , (Olympus) Path-Matching : linkDirArray  = \(linkDirArray)")
                         var directionCount = [Int](repeating: 0, count: linkDirArray.count)
                         for idx in 0..<inputUserMaskBuffer.count {
@@ -257,7 +255,6 @@ public class OlympusKalmanFilter: NSObject {
                         if !findPathMatchingNodeResult.isEmpty {
                             var resultCoordX = [Double]()
                             var resultCoordY = [Double]()
-                            let MARGIN: Double = 44
                             
                             for pathMatchingNode in findPathMatchingNodeResult {
                                 var candidateDirections = [Double]()
@@ -290,8 +287,7 @@ public class OlympusKalmanFilter: NSObject {
                                     let nodeCoord = pathMatchingNode.nodeCoord
                                     let turnType = determineTurnType(headings: uvdHeadings)
                                     print(getLocalTimeString() + " , (Olympus) Turn Type : turnType = \(turnType)")
-                                    var distanceCompensation: Double = 0
-                                    
+
                                     var startX = nodeCoord[0]
                                     var startY = nodeCoord[1]
                                     for i in (0..<turnIndex).reversed() {
