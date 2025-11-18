@@ -836,6 +836,19 @@ struct AlignmentTransform {
     let maskCenterY: Double
 }
 
+struct PathMatchingResult {
+    let isSuccess: Bool
+    let xyhs: [Double]
+    let bestHeading: Double
+    let candidates: [[Double]]
+}
+
+struct OlympusPoint {
+    var x: Double
+    var y: Double
+    var direction: Double
+}
+
 // 임시
 public struct ServiceResult {
     public var isIndexChanged: Bool = false

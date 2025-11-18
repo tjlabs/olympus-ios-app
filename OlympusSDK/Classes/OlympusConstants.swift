@@ -41,7 +41,7 @@ class OlympusConstants {
     static let PHASE_5: Int = 5
     static let PHASE_6: Int = 6
     static let PHASE_BECOME3_SCC: Double = 0.5
-    static let PHASE_BREAK_SCC_PDR: Double = 0.45
+    static let PHASE_BREAK_SCC_PDR: Double = 0.42
 //    static let PHASE_BREAK_SCC_DR: Double = 0.45
 //    static let PHASE5_RECOVERY_SCC: Double = 0.5 // 0.55
     static var PHASE_BREAK_SCC_DR: Double = 0.42
@@ -159,7 +159,7 @@ class OlympusConstants {
     
     static let MODE_CHANGE_TIME_CONDITION: Double = 10*1000 // miliseconds
     static let MODE_CHANGE_RFLOW_TIME_OVER: Double = 0.1
-    static let MODE_CHANGE_RFLOW_FORCE: Double = 0.065
+    static let MODE_CHANGE_RFLOW_FORCE: Double = 0.05 // 0.065
     
     // OnSpotRecognition
     static let OSR_INTERVAL: TimeInterval = 2 // seconds

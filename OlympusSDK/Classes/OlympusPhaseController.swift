@@ -107,7 +107,7 @@ public class OlympusPhaseController {
                 phase = self.checkScResultConnectionForStable(inputPhase: inputPhase, serverResultArray: serverResultArray, drBuffer: drBuffer, inputTrajType: inputTrajType, UVD_INTERVAL: UVD_INTERVAL, TRAJ_LENGTH: TRAJ_LENGTH, INDEX_THRESHOLD: INDEX_THRESHOLD, mode: mode)
             }
         case 4:
-            phase = self.phaseControlInStable(serverResult: currentResult, mode: mode, inputPhase: 4)
+            phase = self.phaseControlInStable(serverResult: currentResult, mode: mode, inputPhase: 6)
         case 5:
             phase = self.phaseControlInStable(serverResult: currentResult, mode: mode, inputPhase: 6)
         case 6:

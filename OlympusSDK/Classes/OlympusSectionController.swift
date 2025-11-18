@@ -42,7 +42,7 @@ public class OlympusSectionController {
         self.preUserHeading = value
     }
     
-    public func extendedCheckIsNeedAnchorNodeUpdate(userVelocity: UserVelocity, userHeading: Double) -> Bool {
+    public func extendedCheckIsNeedAnchorNodeUpdate(userVelocity: UserVelocity, userHeading: Double, mode: String) -> Bool {
         var isNeedUpdate: Bool = false
         
         uvdForSection.append(userVelocity)
@@ -58,7 +58,8 @@ public class OlympusSectionController {
         let straightAngle: Double = OlympusConstants.SECTION_STRAIGHT_ANGLE
         let circularStandardDeviationAll = circularStandardDeviation(for: uvdSectionHeadings)
         
-        if (diffHeading == 0) && (circularStandardDeviationAll <= straightAngle) {
+        let headingCondition = mode == OlympusConstants.MODE_PDR ? true : diffHeading == 0
+        if headingCondition && (circularStandardDeviationAll <= straightAngle) {
             // 섹션 유지중
             if (uvdSectionLength >= OlympusConstants.REQUIRED_SECTION_STRAIGHT_LENGTH) {
                 if (anchorSectionNumber != sectionNumber) {
@@ -73,7 +74,7 @@ public class OlympusSectionController {
             uvdSectionLength = 0
             uvdSectionHeadings = []
             userStraightIndexes = []
-//            print(getLocalTimeString() + " , (Olympus) Section : section changed at \(userVelocity.index) index")
+            print(getLocalTimeString() + " , (Olympus) flt check : extendedCheckIsNeedAnchorNodeUpdate // sectionChanged to \(sectionNumber) // straightAngle:\(straightAngle) & std:\(circularStandardDeviationAll) // diffHeading:\(diffHeading)")
         }
         
         return isNeedUpdate
