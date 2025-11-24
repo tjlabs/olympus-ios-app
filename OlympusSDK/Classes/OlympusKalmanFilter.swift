@@ -170,7 +170,7 @@ public class OlympusKalmanFilter: NSObject {
         
         let updatedX = self.tuResult.x + dx
         let updatedY = self.tuResult.y + dy
-        
+
         outputResult.x = updatedX
         outputResult.y = updatedY
         outputResult.absolute_heading = updatedHeading
@@ -430,7 +430,7 @@ public class OlympusKalmanFilter: NSObject {
                 outputResult.y = (pathMatchingResult.xyhs[1]*0.2 + updatedY*0.8)
                 outputResult.absolute_heading = compensateHeading(heading: updatedHeading)
             }
-            
+//            print("(Olympus) DEBUG : outputResult \(outputResult.x), \(outputResult.y)")
             // DR
             let limitationResult = OlympusPathMatchingCalculator.shared.getTimeUpdateLimitation(level: levelName, mode: mode)
             if (limitationResult.limitType == .Y_LIMIT) {

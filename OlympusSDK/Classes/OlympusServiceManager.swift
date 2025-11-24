@@ -1285,6 +1285,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 if (runMode == OlympusConstants.MODE_PDR) { pathType = 0 }
                 let kfTimeUpdate = KF.timeUpdate(currentTime: currentTime, length: unitUvdLength, diffHeading: diffHeading, isPossibleHeadingCorrection: isPossibleHeadingCorrection, unitDRInfoBuffer: unitDRInfoBuffer, userMaskBuffer: userMaskBufferPathTrajMatching, isNeedPathTrajMatching: isNeedPathTrajMatching, PADDING_VALUES: PADDING_VALUES, mode: runMode)
                 var tuResult = kfTimeUpdate.0
+          
                 let isDidPathTrajMatching: Bool = kfTimeUpdate.1
                 var updateType: UpdateNodeLinkType = .NONE
                 var mustInSameLink: Bool = true
@@ -3057,19 +3058,31 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 }
                 print(getLocalTimeString() + " , (Olympus) pathMatching : temporalResult _ after = \(temporalResult.x), \(temporalResult.y), \(temporalResult.absolute_heading)")
             }
-//            self.temporalResult = result
-//            self.preTemporalResult = result
-//            self.preTemporalResultHeading = temporalResultHeading
-//            if !OlympusConstants.DEFAULT_HEADINGS.contains(result.absolute_heading) {
-//                let diffX = input.x - result.x
-//                let diffY = input.y - result.y
-//                let diffNorm = sqrt(diffX*diffX + diffY*diffY)
-//                if diffNorm >= 2 {
-//                    KF.updateTuResult(x: result.x, y: result.y)
-//                    KF.updateTuResultNow(result: result)
-//                }
-//            }
-//            print(getLocalTimeString() + " , (Olympus) pathMatching : temporalResult _ after = \(temporalResult.x), \(temporalResult.y), \(temporalResult.absolute_heading)")
+            
+            let passedNodeInfoForNavigation = OlympusPathMatchingCalculator.shared.passedNodeInfoForNavigation
+            if passedNodeInfoForNavigation.nodeNumber != -1 && OlympusNavigationManager.shared.navigationOption {
+                OlympusNavigationManager.shared.setPassedNodeInfo(data: passedNodeInfoForNavigation)
+                let navigationCheckType = OlympusNavigationManager.shared.controlPassedNodeInfo(passedNodeInfo: passedNodeInfoForNavigation)
+                if let answerNode = OlympusNavigationManager.shared.checkFollowingNaviRoute(type: navigationCheckType, fltResult: result) {
+                    if let newCoord = OlympusPathMatchingCalculator.shared.getMatchedCoordWithNode(fltResult: result, nodeNumber: answerNode.nodeNumber, pathType: pathTypeForNodeAndLink, PADDING_VALUES: [40, 40, 40, 40]) {
+                        print("(Olympus) DEBUG : index = \(unitDRInfoIndex)")
+                        print("(Olympus) DEBUG : \(answerNode)의 좌표 값은 \(newCoord) 입니다.")
+                        OlympusNavigationManager.shared.forceUpdate()
+                        self.temporalResult.x = newCoord[0]
+                        self.temporalResult.y = newCoord[1]
+                        self.preTemporalResult.x = newCoord[0]
+                        self.preTemporalResult.y = newCoord[1]
+                        
+                        OlympusPathMatchingCalculator.shared.linkCoord = newCoord
+                        self.KF.setLinkInfo(coord: newCoord, directions: OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: result.building_name, level: result.level_name, x: newCoord[0], y: newCoord[1], PADDING_VALUE: 0.0, mode: self.runMode))
+                        
+                        KF.updateTuResult(x: newCoord[0], y: newCoord[1])
+                        KF.updateTuResultNow(result: self.temporalResult)
+                        self.displayOutput.serverResult = [newCoord[0], newCoord[1], temporalResult.absolute_heading]
+//                        print("(Olympus) DEBUG : new result = \(self.temporalResult)")
+                    }
+                }
+            }
         }
     }
     

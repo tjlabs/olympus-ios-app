@@ -858,6 +858,7 @@
 		B34E224DBF00A8BDEFD2655D341B34B5 /* GULNSData+zlib.m in Sources */ = {isa = PBXBuildFile; fileRef = 944595A716538342FE35F00638EFDB65 /* GULNSData+zlib.m */; };
 		B37811355B3B0A68D923FE9236A1A009 /* SettingsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AF8992D5CDE28B05D8825395E991A62 /* SettingsProvider.swift */; };
 		B3896628D9FDFDA75DDD45699ED47F63 /* GDTCORProductData.m in Sources */ = {isa = PBXBuildFile; fileRef = 6E69C66F67AE81A04FBA4628278F9BCC /* GDTCORProductData.m */; };
+		B3DC88C22ECD7E940004629F /* OlympusNavigationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3DC88C12ECD7E940004629F /* OlympusNavigationManager.swift */; };
 		B3E3235C2E432581002696D9 /* OlympusAffineConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E3235B2E432581002696D9 /* OlympusAffineConverter.swift */; };
 		B3E426DE69DD0F0947B8941210DA0027 /* GDTCORStorageMetadata.h in Headers */ = {isa = PBXBuildFile; fileRef = 1665A61A43C1300AABEA505BC4DF289C /* GDTCORStorageMetadata.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		B49C86FFFA1E820617B514997075116B /* YAxisRendererRadarChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0393213288386E30E1F988EF0B81D2F /* YAxisRendererRadarChart.swift */; };
@@ -2670,6 +2671,7 @@
 		B2597CAE9652505254DDCA598DC7E06F /* FBLPromise+Async.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "FBLPromise+Async.h"; path = "Sources/FBLPromises/include/FBLPromise+Async.h"; sourceTree = "<group>"; };
 		B2780FDCF2B66D5CF7DF00A34F1B41D8 /* FIRCLSDownloadAndSaveSettingsOperation.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRCLSDownloadAndSaveSettingsOperation.h; path = Crashlytics/Crashlytics/Settings/Operations/FIRCLSDownloadAndSaveSettingsOperation.h; sourceTree = "<group>"; };
 		B3AC191E703838F9D8CDB37E2D6EAB81 /* ObservableType+Extensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "ObservableType+Extensions.swift"; path = "RxSwift/ObservableType+Extensions.swift"; sourceTree = "<group>"; };
+		B3DC88C12ECD7E940004629F /* OlympusNavigationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusNavigationManager.swift; path = OlympusSDK/Classes/OlympusNavigationManager.swift; sourceTree = "<group>"; };
 		B3E3235B2E432581002696D9 /* OlympusAffineConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OlympusAffineConverter.swift; path = OlympusSDK/Classes/OlympusAffineConverter.swift; sourceTree = "<group>"; };
 		B3E975F4D49C3291C1B1881A85E7206C /* GULNetworkConstants.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = GULNetworkConstants.h; path = GoogleUtilities/Network/Public/GoogleUtilities/GULNetworkConstants.h; sourceTree = "<group>"; };
 		B3EA70C546722B432C34D8EB636A9D32 /* PrimitiveSequence+Concurrency.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "PrimitiveSequence+Concurrency.swift"; path = "RxSwift/Traits/PrimitiveSequence/PrimitiveSequence+Concurrency.swift"; sourceTree = "<group>"; };
@@ -5231,6 +5233,7 @@
 				D3DB82AAFAD3586C2F4486890ACDC199 /* OlympusStateManager.swift */,
 				B807FC6AD160FFFBEBA008CEFF69E665 /* OlympusStepLengthEstimator.swift */,
 				C9A9BC8AC7D9C4AEDE3958B81285F51C /* OlympusTrajectoryController.swift */,
+				B3DC88C12ECD7E940004629F /* OlympusNavigationManager.swift */,
 				0292472CB116E25EEF0696AEFF4CAAC0 /* OlympusUnitAttitudeEstimator.swift */,
 				089A79260183A480CE005F6BF5FB304F /* OlympusUnitDRGenerator.swift */,
 				F9B5015B1FC84FAA7D2B40CE47A7D00F /* OlympusUnitStatusEstimator.swift */,
@@ -7111,6 +7114,7 @@
 				0F4B4C07112609DC1C7A100B76E87F08 /* ArrayExtension.swift in Sources */,
 				5772A06545CD5B1BFC75D7E9513AB9CF /* DeviceModel.swift in Sources */,
 				BAA8F40592E15CBD3698AE3A87917FDF /* JSONConverter.swift in Sources */,
+				B3DC88C22ECD7E940004629F /* OlympusNavigationManager.swift in Sources */,
 				31623D6A6037253C247D566DD1223AF1 /* LinkedList.swift in Sources */,
 				B6996B5EDF6D9B264D267A506C174DE9 /* Node.swift in Sources */,
 				998A535A95740CFAB4E85C2852D4662B /* NotificationExtension.swift in Sources */,

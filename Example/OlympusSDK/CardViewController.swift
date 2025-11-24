@@ -99,11 +99,11 @@ class CardViewController: UIViewController, Observer {
 //    var sector_id: Int = 14 // DS
 //    var mode: String = "pdr"
     
-//    var sector_id: Int = 6
-//    var mode: String = "auto"
-    
-    var sector_id: Int = 20  // Convensia
+    var sector_id: Int = 6
     var mode: String = "auto"
+    
+//    var sector_id: Int = 20  // Convensia
+//    var mode: String = "auto"
     
 //    var sector_id: Int = 2
 //    var mode: String = "pdr"
@@ -139,7 +139,8 @@ class CardViewController: UIViewController, Observer {
     
 //        serviceManager.setDeadReckoningMode(flag: true, buildingName: "S3", levelName: "7F", x: 6, y: 16, heading: 270)
         
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_05_0811.csv", sensorFileName: "sensor_coex_05_0811.csv")
+        OlympusNavigationManager.shared.setDummyRoutes(option: false)
+        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_01_2_0811.csv", sensorFileName: "sensor_coex_01_2_0811.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250818_test2.csv", sensorFileName: "sensor_songdo_250818_test2.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250818_test8.csv", sensorFileName: "sensor_songdo_250818_test8.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250822_km01.csv", sensorFileName: "sensor_songdo_250822_km01.csv")
@@ -156,7 +157,7 @@ class CardViewController: UIViewController, Observer {
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250818_test10.csv", sensorFileName: "sensor_songdo_250818_test10.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250822_stop.csv", sensorFileName: "sensor_songdo_250822_stop.csv")
         
-        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
         
         // collect
 //        isCollect = true
