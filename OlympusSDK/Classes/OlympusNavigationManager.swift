@@ -36,7 +36,7 @@ public class OlympusNavigationManager {
     
     var isStartNavigation: Bool = false
     
-    var isNeedRepositioning: Bool = false
+    public var isNeedRepositioning: Bool = false
     
     func initailize() {
         self.passedNode = PassedNodeInfo(nodeNumber: -1, nodeCoord: [], nodeHeadings: [], matchedIndex: -1, userHeading: 0)
