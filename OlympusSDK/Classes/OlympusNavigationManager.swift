@@ -171,7 +171,6 @@ public class OlympusNavigationManager {
             let routes = [NavigationNode(nodeNumber: 85, nodeCoord: [], turn: false),
                           NavigationNode(nodeNumber: 74, nodeCoord: [], turn: false),
                           NavigationNode(nodeNumber: 69, nodeCoord: [], lastHeading: 180, turn: true),
-    //                      NavigationNode(nodeNumber: 68, nodeCoord: [], lastHeading: 90, turn: true),
                           NavigationNode(nodeNumber: 68, nodeCoord: [], lastHeading: 270, turn: true),
                           NavigationNode(nodeNumber: 72, nodeCoord: [], turn: false),
                           NavigationNode(nodeNumber: 80, nodeCoord: [], lastHeading: 180, turn: true),
@@ -191,16 +190,15 @@ public class OlympusNavigationManager {
                           NavigationNode(nodeNumber: 74, nodeCoord: [], turn: false),
                           NavigationNode(nodeNumber: 69, nodeCoord: [], lastHeading: 180, turn: true),
                           NavigationNode(nodeNumber: 68, nodeCoord: [], lastHeading: 90, turn: true),
-                          NavigationNode(nodeNumber: 72, nodeCoord: [], turn: false),
-                          NavigationNode(nodeNumber: 80, nodeCoord: [], lastHeading: 180, turn: true),
-                          NavigationNode(nodeNumber: 79, nodeCoord: [], lastHeading: 90, turn: true),
-                          NavigationNode(nodeNumber: 76, nodeCoord: [], lastHeading: 180, turn: true),
-                          NavigationNode(nodeNumber: 75, nodeCoord: [], lastHeading: 270, turn: true),
-                          NavigationNode(nodeNumber: 77, nodeCoord: [], turn: false),
-                          NavigationNode(nodeNumber: 83, nodeCoord: [], turn: false),
-                          NavigationNode(nodeNumber: 86, nodeCoord: [], lastHeading: 0, turn: true),
-                          NavigationNode(nodeNumber: 87, nodeCoord: [], turn: false),
-                          NavigationNode(nodeNumber: 88, nodeCoord: [], turn: false)]
+                          NavigationNode(nodeNumber: 63, nodeCoord: [], lastHeading: 180, turn: true),
+                          NavigationNode(nodeNumber: 62, nodeCoord: [], lastHeading: 270, turn: true),
+                          NavigationNode(nodeNumber: 67, nodeCoord: [], lastHeading: 180, turn: true),
+                          NavigationNode(nodeNumber: 66, nodeCoord: [], lastHeading: 90, turn: true),
+                          NavigationNode(nodeNumber: 61, nodeCoord: [], lastHeading: 180, turn: true),
+                          NavigationNode(nodeNumber: 60, nodeCoord: [], lastHeading: 270, turn: true),
+                          NavigationNode(nodeNumber: 65, nodeCoord: [], turn: false),
+                          NavigationNode(nodeNumber: 70, nodeCoord: [], lastHeading: 0, turn: true),
+                          NavigationNode(nodeNumber: 71, nodeCoord: [], turn: false)]
             
             self.routeNaviNodes = routes
             self.routeSize = routes.count
