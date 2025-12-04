@@ -23,7 +23,7 @@ public class OlympusNavigationManager {
     
     deinit { }
     
-    var navigationOption: Bool = true
+    var navigationOption: Bool = false
     
     var passedNode: PassedNodeInfo = PassedNodeInfo(nodeNumber: -1, nodeCoord: [], nodeHeadings: [], matchedIndex: -1, userHeading: 0)
     

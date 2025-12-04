@@ -338,6 +338,9 @@ func checkForTrajMatching(index: Int,
     
     var sameCount: Int = 0
     for index in stride(from: buffer.count - 1, through: 1, by: -1) {
+        guard index < buffer.count, index - 1 >= 0, index - 1 < buffer.count else {
+            continue
+        }
         let current = buffer[index]
         let previous = buffer[index - 1]
         
@@ -363,13 +366,19 @@ func checkForTrajMatching(index: Int,
     let unitDRInfoList = unitDRInfoBuffer.filter { $0.index >= tailIndex && $0.index < index }
     
     guard userMaskList.count == indexCount,
-          unitDRInfoList.count == indexCount else {
+          unitDRInfoList.count == indexCount,
+          userMaskList.count > 0,
+          unitDRInfoList.count > 0 else {
+        print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : insufficient data - userMask: \(userMaskList.count), unitDR: \(unitDRInfoList.count), required: \(indexCount)")
         return nil
     }
     
     // heading 변화 구간 추출
     var changeIndices = [0]
     for i in 1..<userMaskList.count {
+        guard i < userMaskList.count, i - 1 >= 0, i - 1 < userMaskList.count else {
+            continue
+        }
         if userMaskList[i].absolute_heading != userMaskList[i - 1].absolute_heading {
             changeIndices.append(i)
         }
@@ -384,6 +393,8 @@ func checkForTrajMatching(index: Int,
 
     print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : mask len = \(userMaskList.count)")
     print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : \(changeIndices.count-1) segments")
+    
+    guard linkCoord.count >= 2 else { return nil }
     
     let segmentCount = changeIndices.count-1
     if segmentCount == 1 {
@@ -524,6 +535,7 @@ func checkForTrajMatching(index: Int,
                             }
 
                             let nodeCoord = node.nodeCoord
+                            guard nodeCoord.count >= 2 else { return }
                             let offsetX = nodeCoord[0] - alignedTraj.x[idx]
                             let offsetY = nodeCoord[1] - alignedTraj.y[idx]
 

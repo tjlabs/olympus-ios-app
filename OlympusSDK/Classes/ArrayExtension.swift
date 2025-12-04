@@ -177,3 +177,25 @@ public func indexOfMaxRateOfChange(in array: [Double]) -> Int {
     }
     return indexOfMaxChange
 }
+
+extension Array {
+    /// Thread-safe subscript that returns nil if index is out of bounds
+    subscript(safe index: Int) -> Element? {
+        return indices.contains(index) ? self[index] : nil
+    }
+    
+    /// Thread-safe method to get a safe copy of array elements within a range
+    func safeSubarray(from start: Int, to end: Int) -> Array<Element> {
+        let safeStart = Swift.max(0, Swift.min(start, count))
+        let safeEnd = Swift.max(safeStart, Swift.min(end, count))
+        
+        guard safeStart < safeEnd else { return [] }
+        return Array(self[safeStart..<safeEnd])
+    }
+    
+    /// Thread-safe filter that creates a new array
+    func safeFilter(_ predicate: (Element) throws -> Bool) rethrows -> Array<Element> {
+        let copyArray = Array(self) // Create a copy first
+        return try copyArray.filter(predicate)
+    }
+}

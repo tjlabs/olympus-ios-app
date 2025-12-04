@@ -312,8 +312,6 @@ public class OlympusPathMatchingCalculator {
         var idshArray = [[Double]]()
         var idshArrayWhenFail = [[Double]]()
         
-        var resultNodeNumber: Int = 0
-        
         if !mainRoad.isEmpty {
             let roadX = mainRoad[0]
             let roadY = mainRoad[1]
@@ -1430,7 +1428,7 @@ public class OlympusPathMatchingCalculator {
         let PIXELS_TO_CHECK = Int(PIXEL_LENGTH)
         
         var nodeCandidatesInfo = [PassedNodeInfo]()
-
+        guard originCoord.count >= 2 else { return nodeCandidatesInfo }
         for direction in candidateDirections {
             var paddingValues = [Double] (repeating: Double(PIXELS_TO_CHECK), count: 4)
             if (direction == 0) {
@@ -2076,6 +2074,13 @@ public class OlympusPathMatchingCalculator {
         let isPpEndPoint: Bool = true
         let matchedNode: Int = -1
         var matchedNodeHeadings = [Double]()
+        
+        guard originCoord.count >= 2,
+              coordToCheck.count >= 2,
+              PADDING_VALUES.count == 4 else {
+            return (isPpEndPoint, matchedNode, matchedNodeHeadings)
+        }
+        
         if (!(building.isEmpty) && !(level.isEmpty)) {
             guard let mainType: [Int] = self.PpType[key] else { return (isPpEndPoint, matchedNode, matchedNodeHeadings) }
             guard let mainRoad: [[Double]] = self.PpCoord[key] else { return (isPpEndPoint, matchedNode, matchedNodeHeadings) }
