@@ -1,0 +1,56 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.0.3 effective-5.10 (swiftlang-6.0.3.1.10 clang-1600.0.30.1)
+// swift-module-flags: -target arm64-apple-ios15.6 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-bare-slash-regex -module-name TJLabsAuth
+import Foundation
+import Security
+import Swift
+@_exported import TJLabsAuth
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+public enum AuthRegion : Swift.String {
+  case KOREA
+  case US_EAST
+  case CANADA
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public enum TokenResult {
+  case success(Swift.String)
+  case failure(TJLabsAuth.TokenResult.FailureReason, statusCode: Swift.Int?, message: Swift.String?)
+  public enum FailureReason {
+    case refreshFailed
+    case authFailed
+    case credentialsMissing
+    public static func == (a: TJLabsAuth.TokenResult.FailureReason, b: TJLabsAuth.TokenResult.FailureReason) -> Swift.Bool
+    public func hash(into hasher: inout Swift.Hasher)
+    public var hashValue: Swift.Int {
+      get
+    }
+  }
+}
+@_hasMissingDesignatedInitializers public class TJLabsAuthConstants {
+  public static func setServerURL(region: Swift.String, serverType: Swift.String)
+  public static func getUserBaseURL() -> Swift.String
+  public static func getUserTokenVersion() -> Swift.String
+  public static func getUserTokenURL() -> Swift.String
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class TJLabsAuthManager {
+  public static let shared: TJLabsAuth.TJLabsAuthManager
+  public func getAccessToken(update: Swift.Bool = true, completion: @escaping (TJLabsAuth.TokenResult) -> Swift.Void)
+  public func extractTenantID(from jwt: Swift.String) -> Swift.String?
+  public func getRefreshToken() -> Swift.String
+  public func auth(name: Swift.String, password: Swift.String, completion: @escaping (Swift.Int, Swift.Bool) -> Swift.Void)
+  public func refresh(completion: @escaping (Swift.Int, Swift.Bool) -> Swift.Void)
+  public func isTokenNearExpiry(token: Swift.String, threshold: Foundation.TimeInterval = 60) -> Swift.Bool
+  @objc deinit
+}
+extension TJLabsAuth.AuthRegion : Swift.Equatable {}
+extension TJLabsAuth.AuthRegion : Swift.Hashable {}
+extension TJLabsAuth.AuthRegion : Swift.RawRepresentable {}
+extension TJLabsAuth.TokenResult.FailureReason : Swift.Equatable {}
+extension TJLabsAuth.TokenResult.FailureReason : Swift.Hashable {}

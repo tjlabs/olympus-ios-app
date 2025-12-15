@@ -1,0 +1,6 @@
+framework module TJLabsAuth {
+  umbrella header "TJLabsAuth.h"
+  export *
+
+  module * { export * }
+}
