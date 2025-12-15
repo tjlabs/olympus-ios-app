@@ -1,0 +1,144 @@
+[
+  {
+    "id": 1,
+    "name": "TJ-00CB-00000386-0000",
+    "building_name": "COEX",
+    "level_name": "B0",
+    "linked_level_name": "B2",
+    "rssi": -80,
+    "x": 281,
+    "y": 13,
+    "linked_links": [
+      1
+    ],
+    "distance": 70
+  },
+  {
+    "id": 2,
+    "name": "TJ-00CB-00000323-0000",
+    "building_name": "COEX",
+    "level_name": "B0",
+    "linked_level_name": "B2",
+    "rssi": -80,
+    "x": 233,
+    "y": 237,
+    "linked_links": [
+      2
+    ],
+    "distance": 70
+  },
+  {
+    "id": 3,
+    "name": "TJ-00CB-0000030A-0000",
+    "building_name": "COEX",
+    "level_name": "B0",
+    "linked_level_name": "B2",
+    "rssi": -80,
+    "x": 270,
+    "y": 280,
+    "linked_links": [
+      3
+    ],
+    "distance": 70
+  },
+  {
+    "id": 4,
+    "name": "TJ-00CB-00000221-0000",
+    "building_name": "COEX",
+    "level_name": "B0",
+    "linked_level_name": "B2",
+    "rssi": -80,
+    "x": 239,
+    "y": 437,
+    "linked_links": [
+      4,
+      5
+    ],
+    "distance": 70
+  },
+  {
+    "id": 5,
+    "name": "TJ-00CB-000003F6-0000",
+    "building_name": "COEX",
+    "level_name": "B0",
+    "linked_level_name": "B2",
+    "rssi": -80,
+    "x": 25,
+    "y": 388,
+    "linked_links": [
+      5
+    ],
+    "distance": 70
+  },
+  {
+    "id": 6,
+    "name": "TJ-00CB-00000393-0000",
+    "building_name": "COEX",
+    "level_name": "B2",
+    "linked_level_name": "B3",
+    "rssi": -80,
+    "x": 261,
+    "y": 147,
+    "linked_links": [
+      6
+    ],
+    "distance": 70
+  },
+  {
+    "id": 7,
+    "name": "TJ-00CB-0000038D-0000",
+    "building_name": "COEX",
+    "level_name": "B2",
+    "linked_level_name": "B3",
+    "rssi": -80,
+    "x": 269,
+    "y": 268,
+    "linked_links": [
+      7
+    ],
+    "distance": 70
+  },
+  {
+    "id": 8,
+    "name": "TJ-00CB-0000038C-0000",
+    "building_name": "COEX",
+    "level_name": "B2",
+    "linked_level_name": "B3",
+    "rssi": -80,
+    "x": 248,
+    "y": 401,
+    "linked_links": [
+      8
+    ],
+    "distance": 70
+  },
+  {
+    "id": 9,
+    "name": "TJ-00CB-0000038A-0000",
+    "building_name": "COEX",
+    "level_name": "B3",
+    "linked_level_name": "B4",
+    "rssi": -80,
+    "x": 276,
+    "y": 269,
+    "linked_links": [
+      9
+    ],
+    "distance": 70
+  },
+  {
+    "id": 10,
+    "name": "TJ-00CB-00000392-0000",
+    "building_name": "COEX",
+    "level_name": "B3",
+    "linked_level_name": "B4",
+    "rssi": -80,
+    "x": 243,
+    "y": 396,
+    "linked_links": [
+      1,
+      10
+    ],
+    "distance": 70
+  }
+]

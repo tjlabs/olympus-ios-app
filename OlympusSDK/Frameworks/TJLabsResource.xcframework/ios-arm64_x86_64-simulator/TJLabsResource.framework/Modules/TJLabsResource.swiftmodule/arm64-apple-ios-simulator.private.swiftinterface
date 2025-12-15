@@ -1,0 +1,369 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.2 effective-5.10 (swiftlang-6.2.0.19.9 clang-1700.3.19.1)
+// swift-module-flags: -target arm64-apple-ios15.6-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name TJLabsResource
+// swift-module-flags-ignorable:  -formal-cxx-interoperability-mode=off -interface-compiler-version 6.2
+import Foundation
+import Swift
+import TJLabsAuth
+@_exported import TJLabsResource
+import UIKit
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+public enum ResourceRegion : Swift.String {
+  case KOREA
+  case CANADA
+  case US_EAST
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init?(rawValue: Swift.String)
+  #endif
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public struct PathPixelData {
+  public var roadType: [Swift.Int]
+  public var nodeNumber: [Swift.Int]
+  public var road: [[Swift.Float]]
+  public var roadMinMax: [Swift.Float]
+  public var roadScale: [Swift.Float]
+  public var roadHeading: [Swift.String]
+  public init(roadType: [Swift.Int], nodeNumber: [Swift.Int], road: [[Swift.Float]], roadMinMax: [Swift.Float], roadScale: [Swift.Float], roadHeading: [Swift.String])
+}
+public struct EntranceData : Swift.Codable {
+  public var number: Swift.Int
+  public var networkStatus: Swift.Bool
+  public var velocityScale: Swift.Float
+  public var innerWardId: Swift.String
+  public var innerWardRssi: Swift.Float
+  public var innerWardCoord: [Swift.Float]
+  public var outerWardId: Swift.String
+  public init(number: Swift.Int, networkStatus: Swift.Bool, velocityScale: Swift.Float, innerWardId: Swift.String, innerWardRssi: Swift.Float, innerWardCoord: [Swift.Float], outerWardId: Swift.String)
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct EntranceRouteData {
+  public var routeLevel: [Swift.String]
+  public var route: [[Swift.Float]]
+  public init(routeLevel: [Swift.String], route: [[Swift.Float]])
+}
+public struct UnitData : Swift.Codable {
+  public let category: Swift.Int
+  public let number: Swift.Int
+  public let name: Swift.String
+  public let accessibility: Swift.String
+  public let restriction: Swift.Bool
+  public let visibility: Swift.Bool
+  public let x: Swift.Float
+  public let y: Swift.Float
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct ParameterData : Swift.Codable {
+  public let trajectory_length: Swift.Double
+  public let trajectory_diagonal: Swift.Double
+  public let debug: Swift.Bool
+  public let standard_rss: [Swift.Int]
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct GeofenceData : Swift.Codable {
+  public let entrance_area: [[Swift.Float]]
+  public let entrance_matching_area: [[Swift.Float]]
+  public let level_change_area: [[Swift.Float]]
+  public let dr_mode_area: [TJLabsResource.DRModeArea]
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct SectorIdInput : Swift.Codable {
+  public var sector_id: Swift.Int
+  public init(sector_id: Swift.Int)
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct SectorIdOsInput : Swift.Codable {
+  public var sector_id: Swift.Int
+  public var operating_system: Swift.String
+  public init(sector_id: Swift.Int, operating_system: Swift.String = "iOS")
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct LevelIdOsInput : Swift.Codable {
+  public var level_id: Swift.Int
+  public var operating_system: Swift.String
+  public init(level_id: Swift.Int, operating_system: Swift.String = "iOS")
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct SectorOutput : Swift.Codable {
+  public let id: Swift.Int
+  public let name: Swift.String
+  public let request_service: Swift.String
+  public let debug: Swift.Bool
+  public let buildings: [TJLabsResource.BuildingOutput]
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct BuildingOutput : Swift.Codable {
+  public let id: Swift.Int
+  public let name: Swift.String
+  public let levels: [TJLabsResource.LevelOutput]
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct LevelOutput : Swift.Codable {
+  public let id: Swift.Int
+  public let name: Swift.String
+  public let image: Swift.String
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct PathPixelOutput : Swift.Codable {
+  public let csv: Swift.String
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct InnermostWard : Swift.Codable {
+  public let name: Swift.String
+  public let rssi: Swift.Float
+  public let x: Swift.Int
+  public let y: Swift.Int
+  public let direction: Swift.Float
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct Entrance : Swift.Codable {
+  public let number: Swift.Int
+  public let outermost_ward_name: Swift.String
+  public let scale: Swift.Float
+  public let csv: Swift.String
+  public let network_status: Swift.Bool
+  public let innermost_ward: TJLabsResource.InnermostWard
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct EntranceOutput : Swift.Codable {
+  public let entrances: [TJLabsResource.Entrance]
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct ScaleOffsetOutput : Swift.Codable {
+  public let image_scale: [Swift.Float]
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct UnitOutput : Swift.Codable {
+  public let units: [TJLabsResource.UnitData]
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct SectorParameterOutput : Swift.Codable {
+  public let standard_max_rssi: Swift.Int
+  public let standard_min_rssi: Swift.Int
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct LevelParameterOutput : Swift.Codable {
+  public let trajectory_length: Swift.Double
+  public let trajectory_diagonal: Swift.Double
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct DRModeArea : Swift.Codable {
+  public var number: Swift.Int
+  public var range: [Swift.Float]
+  public var direction: Swift.Float
+  public var nodes: [TJLabsResource.DRModeAreaNode]
+  public init(number: Swift.Int, range: [Swift.Float], direction: Swift.Float, nodes: [TJLabsResource.DRModeAreaNode])
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct LevelWardsOutput : Swift.Codable {
+  public let id: Swift.Int
+  public let name: Swift.String
+  public let wards: [TJLabsResource.LevelWard]
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct LevelWard : Swift.Codable {
+  public let id: Swift.Int
+  public let name: Swift.String
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public enum SpotType : Swift.Codable {
+  case BUILDING_LEVEL_TAG, LANDMARK
+  public static func == (a: TJLabsResource.SpotType, b: TJLabsResource.SpotType) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct SpotsOutput : Swift.Codable {
+  public let buildilng_level_tags: [TJLabsResource.BuildingLevelTag]
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct BuildingLevelTag : Swift.Codable {
+  public let id: Swift.Int
+  public let name: Swift.String
+  public let building_name: Swift.String
+  public let level_name: Swift.String
+  public let linked_level_name: Swift.String
+  public let rssi: Swift.Int
+  public let x: Swift.Int
+  public let y: Swift.Int
+  public let linked_links: [Swift.Int]
+  public let distance: Swift.Int
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct Landmark : Swift.Codable {
+  public let id: Swift.Int
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct AffineTransParamOutput : Swift.Codable {
+  public let xx_scale: Swift.Double
+  public let xy_shear: Swift.Double
+  public let x_translation: Swift.Double
+  public let yx_shear: Swift.Double
+  public let yy_scale: Swift.Double
+  public let y_translation: Swift.Double
+  public let heading_offset: Swift.Double
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct DRModeAreaNode : Swift.Codable {
+  public var number: Swift.Int
+  public var center_x: Swift.Float
+  public var center_y: Swift.Float
+  public var direction_type: Swift.String
+  public init(number: Swift.Int, center_x: Swift.Float, center_y: Swift.Float, direction_type: Swift.String)
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public enum ResourceError {
+  case Sector
+  case PathPixel
+  case BuildingLevel
+  case Image
+  case Scale
+  case Entrance
+  case Unit
+  case Param
+  case Geofence
+  case LevelWards
+  case Affine
+  case Spots
+  public static func == (a: TJLabsResource.ResourceError, b: TJLabsResource.ResourceError) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public protocol TJLabsResourceManagerDelegate : AnyObject {
+  func onSectorData(_ manager: TJLabsResource.TJLabsResourceManager, data: TJLabsResource.SectorOutput)
+  func onSectorError(_ manager: TJLabsResource.TJLabsResourceManager, error: TJLabsResource.ResourceError)
+  func onBuildingsData(_ manager: TJLabsResource.TJLabsResourceManager, data: [TJLabsResource.BuildingOutput])
+  func onScaleOffsetData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, data: [Swift.Float])
+  func onPathPixelData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, data: TJLabsResource.PathPixelData)
+  func onUnitData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, data: [TJLabsResource.UnitData])
+  func onGeofenceData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, data: TJLabsResource.GeofenceData)
+  func onEntranceData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, data: TJLabsResource.EntranceData)
+  func onEntranceRouteData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, data: TJLabsResource.EntranceRouteData)
+  #if compiler(>=5.3) && $NonescapableTypes
+  func onImageData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, data: UIKit.UIImage?)
+  #endif
+  func onSectorParam(_ manager: TJLabsResource.TJLabsResourceManager, data: TJLabsResource.SectorParameterOutput)
+  func onLevelParam(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, data: TJLabsResource.LevelParameterOutput)
+  func onLevelWardsData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, data: [TJLabsResource.LevelWard])
+  func onAffineParam(_ manager: TJLabsResource.TJLabsResourceManager, data: TJLabsResource.AffineTransParamOutput)
+  func onSpotsData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.Int, type: TJLabsResource.SpotType, data: Any)
+  func onError(_ manager: TJLabsResource.TJLabsResourceManager, error: TJLabsResource.ResourceError, key: Swift.String)
+}
+@_hasMissingDesignatedInitializers public class TJLabsFileDownloader {
+  public static let shared: TJLabsResource.TJLabsFileDownloader
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func downloadCSVFile(from url: Foundation.URL, fname: Swift.String, completion: @escaping (Foundation.URL?, (any Swift.Error)?) -> Swift.Void)
+  #endif
+  @objc deinit
+}
+public class TJLabsResourceManager {
+  public static let shared: TJLabsResource.TJLabsResourceManager
+  weak public var delegate: (any TJLabsResource.TJLabsResourceManagerDelegate)?
+  public init()
+  public func loadMapResource(region: Swift.String, sectorId: Swift.Int, completion: @escaping (Swift.Bool) -> Swift.Void)
+  public func loadJupiterResource(region: Swift.String, sectorId: Swift.Int, completion: @escaping (Swift.Bool) -> Swift.Void)
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func loadSector(region: Swift.String, sectorId: Swift.Int, forceUpdate: Swift.Bool = false, completion: @escaping (TJLabsResource.SectorOutput?) -> Swift.Void)
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func getMatchedLevelId(key: Swift.String) -> Swift.Int?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func getMatchedLevelImageUrl(key: Swift.String) -> Swift.String?
+  #endif
+  public func getIsSaveMobileResult() -> Swift.Bool
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func getSectorData(sector_id: Swift.Int) -> TJLabsResource.SectorOutput?
+  #endif
+  public func getBuildingLevelData() -> [Swift.Int : [TJLabsResource.BuildingOutput]]
+  public func getScaleOffset() -> [Swift.String : [Swift.Float]]
+  public func getPathPixelData() -> [Swift.String : TJLabsResource.PathPixelData]
+  public func getUnitData() -> [Swift.String : [TJLabsResource.UnitData]]
+  public func getGeofenceData() -> [Swift.String : TJLabsResource.GeofenceData]
+  public func getEntranceData() -> [Swift.String : TJLabsResource.EntranceData]
+  public func getEntranceRouteData() -> [Swift.String : TJLabsResource.EntranceRouteData]
+  public func getBuildingLevelImageData() -> [Swift.String : UIKit.UIImage]
+  public func getSectorParamData() -> [Swift.Int : TJLabsResource.SectorParameterOutput]
+  public func getLevelParamData() -> [Swift.String : TJLabsResource.LevelParameterOutput]
+  public func getLevelWardsData() -> [Swift.String : [TJLabsResource.LevelWard]]
+  public func getAffineParamData() -> [Swift.Int : TJLabsResource.AffineTransParamOutput]
+  public func setIsSaveMobileResult(flag: Swift.Bool)
+  public func updateScaleOffsetData(key: Swift.String, completion: @escaping (Swift.Bool) -> Swift.Void)
+  public func updatePathPixelData(key: Swift.String, completion: @escaping (Swift.Bool) -> Swift.Void)
+  public func updateUnitData(key: Swift.String, completion: @escaping (Swift.Bool) -> Swift.Void)
+  public func updateGeofence(key: Swift.String, completion: @escaping (Swift.Bool) -> Swift.Void)
+  public func updateEntracne(key: Swift.String, completion: @escaping (Swift.Bool) -> Swift.Void)
+  public func updateImage(key: Swift.String, completion: @escaping (Swift.Bool) -> Swift.Void)
+  public func updateLevelParam(key: Swift.String, completion: @escaping (Swift.Bool) -> Swift.Void)
+  public func updateLevelWards(key: Swift.String, completion: @escaping (Swift.Bool) -> Swift.Void)
+  public func updateAffineParam(sectorId: Swift.Int, completion: @escaping (Swift.Bool) -> Swift.Void)
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class TJLabsResourceNetworkConstants {
+  public static func setServerURL(region: Swift.String)
+  public static func getUserBaseURL() -> Swift.String
+  public static func getUserSectorVersion() -> Swift.String
+  public static func getUserSectorURL() -> Swift.String
+  public static func getUserScaleVersion() -> Swift.String
+  public static func getUserScaleURL() -> Swift.String
+  public static func getUserPathPixelVersion() -> Swift.String
+  public static func getUserPathPixelURL() -> Swift.String
+  public static func getUserUnitVersion() -> Swift.String
+  public static func getUserUnitURL() -> Swift.String
+  public static func getUserGeoVersion() -> Swift.String
+  public static func getUserGeoURL() -> Swift.String
+  public static func getUserEntranceVersion() -> Swift.String
+  public static func getUserEntranceURL() -> Swift.String
+  public static func getUserSectorParamVersion() -> Swift.String
+  public static func getUserSectorParamURL() -> Swift.String
+  public static func getUserLevelParamVersion() -> Swift.String
+  public static func getUserLevelParamURL() -> Swift.String
+  public static func getUserLevelWardsVersion() -> Swift.String
+  public static func getUserLevelWardsURL() -> Swift.String
+  public static func getUserAffineVersion() -> Swift.String
+  public static func getUserAffineURL() -> Swift.String
+  @objc deinit
+}
+extension TJLabsResource.ResourceRegion : Swift.Equatable {}
+extension TJLabsResource.ResourceRegion : Swift.Hashable {}
+extension TJLabsResource.ResourceRegion : Swift.RawRepresentable {}
+extension TJLabsResource.SpotType : Swift.Equatable {}
+extension TJLabsResource.SpotType : Swift.Hashable {}
+extension TJLabsResource.ResourceError : Swift.Equatable {}
+extension TJLabsResource.ResourceError : Swift.Hashable {}
