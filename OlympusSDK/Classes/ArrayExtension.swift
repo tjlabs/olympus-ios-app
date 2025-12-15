@@ -1,11 +1,11 @@
 import Foundation
 
 
-public func += <V> ( left: inout [V], right: V) {
+func += <V> ( left: inout [V], right: V) {
     left.append(right)
 }
 
-public func + <V>(left: Array<V>, right: V) -> Array<V>
+func + <V>(left: Array<V>, right: V) -> Array<V>
 {
     var map = Array<V>()
     for (v) in left {
@@ -17,7 +17,7 @@ public func + <V>(left: Array<V>, right: V) -> Array<V>
     return map
 }
 
-public func sliceArray<T>(_ array: [T], startingFrom index: Int) -> [T] {
+func sliceArray<T>(_ array: [T], startingFrom index: Int) -> [T] {
     guard index >= 0 && index < array.count else {
         return []
     }
@@ -34,7 +34,7 @@ func sliceDoubleArrayToIndex(array: [Double], endIndex: Int) -> [Double]? {
 }
 
 
-public func circularStandardDeviation(for array: [Double]) -> Double {
+func circularStandardDeviation(for array: [Double]) -> Double {
     guard !array.isEmpty else {
         return 20.0
     }
@@ -51,7 +51,7 @@ public func circularStandardDeviation(for array: [Double]) -> Double {
     return sqrt(circularVariance)
 }
 
-public func circularMean(for array: [Double]) -> Double {
+func circularMean(for array: [Double]) -> Double {
     guard !array.isEmpty else {
         return 0.0
     }
@@ -72,12 +72,12 @@ public func circularMean(for array: [Double]) -> Double {
     return (meanAngle < 0) ? meanAngle + 360.0 : meanAngle
 }
 
-public func angleDifference(_ a1: Double, _ a2: Double) -> Double {
+func angleDifference(_ a1: Double, _ a2: Double) -> Double {
     let diff = abs(a1 - a2)
     return (diff <= 180.0) ? diff : 360.0 - diff
 }
 
-public func getMinMaxValues(for array: [[Double]]) -> [Double] {
+func getMinMaxValues(for array: [[Double]]) -> [Double] {
     guard !array.isEmpty else {
         return []
     }
@@ -97,7 +97,7 @@ public func getMinMaxValues(for array: [[Double]]) -> [Double] {
     return [xMin, yMin, xMax, yMax]
 }
 
-public func subtractConstant(from array: [Double], constant: Double) -> [Double] {
+func subtractConstant(from array: [Double], constant: Double) -> [Double] {
     let newArray = array.map { abs($0 - constant) }
     if let minIndex = newArray.enumerated().min(by: { $0.element < $1.element })?.offset {
         var mutableArray = array
@@ -108,7 +108,7 @@ public func subtractConstant(from array: [Double], constant: Double) -> [Double]
     }
 }
 
-public func convertIntArrayToDoubleArray(_ array: [Int]) -> [Double] {
+func convertIntArrayToDoubleArray(_ array: [Int]) -> [Double] {
     let doubleArray = array.map { Double($0) }
     return doubleArray
 }
@@ -151,11 +151,11 @@ extension Array where Element == Double {
     }
 }
 
-public func convertToDoubleArray(intArray: [Int]) -> [Double] {
+func convertToDoubleArray(intArray: [Int]) -> [Double] {
     return intArray.map { Double($0) }
 }
 
-public func containsArray(_ array2D: [[Double]], _ targetArray: [Double]) -> Bool {
+func containsArray(_ array2D: [[Double]], _ targetArray: [Double]) -> Bool {
     for array in array2D {
         if array == targetArray {
             return true
@@ -164,7 +164,7 @@ public func containsArray(_ array2D: [[Double]], _ targetArray: [Double]) -> Boo
     return false
 }
 
-public func indexOfMaxRateOfChange(in array: [Double]) -> Int {
+func indexOfMaxRateOfChange(in array: [Double]) -> Int {
     var maxRateOfChange: Double = 0.0
     var indexOfMaxChange: Int = 0
 

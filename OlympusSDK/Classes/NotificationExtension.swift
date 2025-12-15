@@ -13,18 +13,5 @@ extension Notification.Name {
     public static let serviceStarted                  = Notification.Name("olympusStarted")
     public static let didEnterBackground              = Notification.Name("olmypusDidEnterBackground")
     public static let didBecomeActive                 = Notification.Name("olmypusDidBecomeActive")
-    public static let didBecomeVenus                  = Notification.Name("olmypusDidBecomeVenus")
-    public static let didBecomeJupiter                = Notification.Name("olmypusDidBecomeJupiter")
-    public static let errorSendRfd                    = Notification.Name("olmypusErrorSendRfd")
-    public static let errorSendUvd                    = Notification.Name("olmypusErrorSendUvd")
-    public static let trajEditedBecomeForground       = Notification.Name("olympusDidTrajEditedBecomeForeground")
-    public static let trajEditedAfterOsr              = Notification.Name("olympusDidTrajEditedBecomeForeground")
-    
-    public static let sectorImagesUpdated             = Notification.Name("olympusSectorImagesUpdated")
-    public static let sectorPathPixelUpdated          = Notification.Name("olympusSectorPathPixelUpdated")
-    public static let sectorScalesUpdated             = Notification.Name("olympusSectorScalesUpdated")
-    public static let sectorUnitsUpdated              = Notification.Name("olympusSectorUnitsUpdated")
-    
-    public static let phaseChanged                    = Notification.Name("olmypusPhaseChanged")
     
 }

@@ -1,6 +1,8 @@
-import Foundation
 
-public class OlympusRflowCorrelator {
+import Foundation
+import TJLabsCommon
+
+class JupiterRflowCorrelator {
     let D = 10*2 // 10s
     let T = 10*2 // 10s
     
@@ -29,14 +31,14 @@ public class OlympusRflowCorrelator {
         self.rfdAutoModeBufferLength = (self.D_AUTO + self.T_AUTO)
     }
     
-    public func initialize() {
+    func toggleToOutdoor() {
         self.rfdVelocityBuffer = [[String: Double]]()
         self.rflowQueue = [Double]()
         self.rfdAutoModeBuffer = [[String: Double]]()
         self.rflowForAutoModeQueue = [Double]()
     }
     
-    public func accumulateRfdBuffer(bleData: [String: Double]) -> Bool {
+    func accumulateRfdBuffer(bleData: [String: Double]) -> Bool {
         var isSufficient: Bool = false
         if (self.rfdBuffer.count < self.rfdBufferLength) {
             if (self.rfdBuffer.isEmpty) {
@@ -57,7 +59,7 @@ public class OlympusRflowCorrelator {
         return isSufficient
     }
     
-    public func getRflow() -> Double {
+    func getRflow() -> Double {
         var result: Double = 0
         
         if (self.rfdBuffer.count >= self.rfdBufferLength) {
@@ -93,7 +95,7 @@ public class OlympusRflowCorrelator {
         return result
     }
     
-    public func accumulateRfdVelocityBuffer(bleData: [String: Double]) -> Bool {
+    func accumulateRfdVelocityBuffer(bleData: [String: Double]) -> Bool {
         var isSufficient: Bool = false
         if (self.rfdVelocityBuffer.count < self.rfdVelocityBufferLength) {
             if (self.rfdVelocityBuffer.isEmpty) {
@@ -114,7 +116,7 @@ public class OlympusRflowCorrelator {
         return isSufficient
     }
     
-    public func getRflowForVelocityScale() -> Double {
+    func getRflowForVelocityScale() -> Double {
         var result: Double = 0
         
         if (self.rfdVelocityBuffer.count >= self.rfdVelocityBufferLength) {
@@ -150,7 +152,7 @@ public class OlympusRflowCorrelator {
         return result
     }
     
-    public func accumulateRfdAutoModeBuffer(bleData: [String: Double]) -> Bool {
+    func accumulateRfdAutoModeBuffer(bleData: [String: Double]) -> Bool {
         var isSufficient: Bool = false
         if (self.rfdAutoModeBuffer.count < self.rfdAutoModeBufferLength) {
             if (self.rfdAutoModeBuffer.isEmpty) {
@@ -171,7 +173,7 @@ public class OlympusRflowCorrelator {
         return isSufficient
     }
     
-    public func getRflowForAutoMode() -> Double {
+    func getRflowForAutoMode() -> Double {
         var result: Double = 0
         
         if (self.rfdAutoModeBuffer.count >= self.rfdAutoModeBufferLength) {
@@ -283,7 +285,7 @@ public class OlympusRflowCorrelator {
         if (self.rflowQueue.count == 1) {
             smoothedRflow = rflow
         } else {
-            smoothedRflow = movingAverage(preMvalue: self.preSmoothedRflowForVelocity, curValue: rflow, windowSize: self.rflowQueue.count)
+            smoothedRflow = TJLabsUtilFunctions.shared.movingAverage(preAvgValue: self.preSmoothedRflowForVelocity, curValue: rflow, windowSize: self.rflowQueue.count)
         }
         preSmoothedRflowForVelocity = smoothedRflow
         return smoothedRflow
@@ -298,13 +300,12 @@ public class OlympusRflowCorrelator {
     
     func smoothRflowForAutoMode(rflow: Double) -> Double {
         var smoothedRflow: Double = 1.0
-        updateRflowForAutoModeQueue(data: smoothedRflow)
-        
         if (self.rflowForAutoModeQueue.count == 1) {
             smoothedRflow = rflow
         } else {
-            smoothedRflow = movingAverage(preMvalue: self.preSmoothedRflowForAutoMode, curValue: rflow, windowSize: self.rflowForAutoModeQueue.count)
+            smoothedRflow = TJLabsUtilFunctions.shared.movingAverage(preAvgValue: self.preSmoothedRflowForAutoMode, curValue: rflow, windowSize: self.rflowForAutoModeQueue.count)
         }
+        updateRflowForAutoModeQueue(data: smoothedRflow)
         preSmoothedRflowForAutoMode = smoothedRflow
         return smoothedRflow
     }
