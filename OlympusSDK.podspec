@@ -17,6 +17,11 @@ TODO: Add long description of the pod here.
 
   s.static_framework = true
   s.source_files = 'OlympusSDK/Classes/**/*'
+#  s.vendored_frameworks = [
+#    'OlympusSDK/Frameworks/TJLabsAuth.xcframework',
+#    'OlympusSDK/Frameworks/TJLabsCommon.xcframework'
+#  ]
+  s.vendored_frameworks = 'OlympusSDK/Frameworks/*.xcframework'
   
   s.pod_target_xcconfig = { 'SWIFT_OPTIMIZATION_LEVEL' => '-Owholemodule' }
 end

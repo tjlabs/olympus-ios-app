@@ -1,8 +1,9 @@
 import UIKit
 import Charts
 import OlympusSDK
+import TJLabsCommon
 
-class CardViewController: UIViewController, Observer {
+class CardViewController: UIViewController {
     
     @IBOutlet weak var imgViewLevel: UIImageView!
     @IBOutlet weak var scatterChart: ScatterChartView!
@@ -31,62 +32,6 @@ class CardViewController: UIViewController, Observer {
 //        })
 //        serviceManager.removeObserver(self)
     }
-    
-    func update(result: OlympusSDK.FineLocationTrackingResult) {
-        DispatchQueue.main.async {
-            if (result.x != 0 && result.y != 0) {
-                let building = result.building_name
-                let level = result.level_name
-                let x = result.x
-                let y = result.y
-                
-                if (result.ble_only_position) {
-                    self.isBleOnlyMode = true
-                } else {
-                    self.isBleOnlyMode = false
-                }
-                
-                if (building.count < 2 && level.count < 2) {
-                    print("(VC) Error : \(result)")
-                }
-                
-                self.coordToDisplay.building = building
-                self.coordToDisplay.level = level
-                self.coordToDisplay.x = x
-                self.coordToDisplay.y = y
-                self.coordToDisplay.heading = result.absolute_heading
-                self.coordToDisplay.isIndoor = result.isIndoor
-                
-                self.phoenixData.building_name = building
-                self.phoenixData.level_name = level
-                self.phoenixData.x = Int(result.x)
-                self.phoenixData.y = Int(result.y)
-                self.phoenixData.absolute_heading = result.absolute_heading
-                self.phoenixData.velocity = result.velocity
-                self.phoenixData.is_indoor = result.isIndoor
-                
-//                let diffTime = result.mobile_time - self.preServiceTime
-//                print(getLocalTimeString() + " , (VC) : index = \(result.index) // isIndoor = \(result.isIndoor) // \(result.llh)")
-//                if let llh = result.llh {
-//                    print("(COORD):\(result.index),\(llh.lat),\(llh.lon),\(llh.heading)")
-//                }
-                
-                self.preServiceTime = result.mobile_time
-            }
-        }
-    }
-    
-    func report(flag: Int) {
-        print("InnerLabs : Flag = \(flag)")
-    }
-    
-//    func didStatusChanged(status: OlympusSDK.InOutStatus) {
-//        print("InnerLabs : InOutStatus = \(status)")
-//        DispatchQueue.main.async {
-//            self.inOutStatusLabel.text = "\(status)"
-//            self.statusTime = getCurrentTimeInMilliseconds()
-//        }
-//    }
     
     var statusTime: Int = 0
     
@@ -118,7 +63,6 @@ class CardViewController: UIViewController, Observer {
     
     let OPERATING_SYSTEM: String = "iOS"
     
-    var serviceManager = OlympusServiceManager()
     var isCollect: Bool = false
     
     var timer: DispatchSourceTimer?
@@ -150,7 +94,7 @@ class CardViewController: UIViewController, Observer {
         
         // Analysis
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_250829_test02_ent1.csv", sensorFileName: "sensor_250829_test02_ent1.csv")
-        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_250829_test08_ent2.csv", sensorFileName: "sensor_250829_test08_ent2.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_250829_test08_ent2.csv", sensorFileName: "sensor_250829_test08_ent2.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_250829_test06_ent3.csv", sensorFileName: "sensor_250829_test06_ent3.csv")
         
         // Ent3
@@ -170,17 +114,17 @@ class CardViewController: UIViewController, Observer {
         let uniqueId = makeUniqueId(uuid: self.userId)
 
         // service
-        serviceManager.addObserver(self)
-        serviceManager.setDebugOption(flag: true)
-        serviceManager.startService(user_id: uniqueId, region: self.region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
+//        serviceManager.addObserver(self)
+//        serviceManager.setDebugOption(flag: true)
+//        serviceManager.startService(user_id: uniqueId, region: self.region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
 //        serviceManager.startService(user_id: uniqueId, region: "Korea", sector_id: 16, service: "FLT", mode: "pdr", completion: { [self] isStart, returnedString in
-            if (isStart) {
-                serviceState = true
-                self.startTimer()
-            } else {
-                print(returnedString)
-            }
-        })
+//            if (isStart) {
+//                serviceState = true
+//                self.startTimer()
+//            } else {
+//                print(returnedString)
+//            }
+//        })
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -194,35 +138,35 @@ class CardViewController: UIViewController, Observer {
             saveButton.titleLabel?.textColor = .red1
         }
         
-        serviceManager.saveJupiterDataFiles { [self] isDone in
-            DispatchQueue.main.async { [self] in
-                saveButton.isHidden = true
-                saveButton.isUserInteractionEnabled = true
-                saveButton.titleLabel?.text = "Save"
-                saveButton.titleLabel?.textColor = .black
-            }
-        }
+//        serviceManager.saveJupiterDataFiles { [self] isDone in
+//            DispatchQueue.main.async { [self] in
+//                saveButton.isHidden = true
+//                saveButton.isUserInteractionEnabled = true
+//                saveButton.titleLabel?.text = "Save"
+//                saveButton.titleLabel?.textColor = .black
+//            }
+//        }
 //        serviceManager.stopCollect()
         self.stopTimer()
     }
     
     
     @IBAction func tapStopButton(_ sender: UIButton) {
-        if serviceState {
-            let isStop = serviceManager.stopService { [self] isSuccess, message in
-                serviceState = false
-                print(message)
-            }
-        } else {
-            let uniqueId = makeUniqueId(uuid: self.userId)
-            serviceManager.startService(user_id: uniqueId, region: self.region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
-                if (isStart) {
-                    serviceState = true
-                } else {
-                    print(returnedString)
-                }
-            })
-        }
+//        if serviceState {
+//            let isStop = serviceManager.stopService { [self] isSuccess, message in
+//                serviceState = false
+//                print(message)
+//            }
+//        } else {
+//            let uniqueId = makeUniqueId(uuid: self.userId)
+//            serviceManager.startService(user_id: uniqueId, region: self.region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
+//                if (isStart) {
+//                    serviceState = true
+//                } else {
+//                    print(returnedString)
+//                }
+//            })
+//        }
     }
     
     
@@ -231,7 +175,7 @@ class CardViewController: UIViewController, Observer {
             return [[Double]]()
         }
         let ppXY:[[Double]] = parsePp(url: URL(fileURLWithPath: path))
-        print(getLocalTimeString() + " , (VC) Load PP : path = \(path)")
+//        print(getLocalTimeString() + " , (VC) Load PP : path = \(path)")
         return ppXY
     }
     
@@ -269,7 +213,7 @@ class CardViewController: UIViewController, Observer {
             }
             rpXY = [rpX, rpY]
         } catch {
-            print(getLocalTimeString() + " , (VC) Error reading .csv file")
+//            print(getLocalTimeString() + " , (VC) Error reading .csv file")
         }
         return rpXY
     }
@@ -669,57 +613,57 @@ class CardViewController: UIViewController, Observer {
     }
     
     func updateCoord(data: CoordToDisplay, flag: Bool) {
-        DispatchQueue.main.async { [self] in
-            
-            let ioStatus = serviceManager.getInOutState()
-            self.inOutStatusLabel.text = "\(ioStatus)"
-            
-            indexTx.text = String(serviceManager.displayOutput.indexTx)
-            indexRx.text = String(serviceManager.displayOutput.indexRx) + " // " + String(serviceManager.displayOutput.phase)
-            scc.text = String(serviceManager.displayOutput.scc)
-            
-            let directionArray = serviceManager.displayOutput.searchDirection
-            let stringArray = directionArray.map { String($0) }
-            searchDirections.text = stringArray.joined(separator: ", ")
-            resultDirection.text = String(serviceManager.displayOutput.resultDirection)
-            
-            let XY: [Double] = [data.x, data.y]
-            let heading: Double = data.heading
-            let isIndoor = data.isIndoor
-            var limits: [Double] = [0, 0, 0, 0]
-            
-            if (data.building != "") {
-                currentBuilding = data.building
-                if (data.level != "") {
-                    currentLevel = data.level
-                }
-            }
-            
-            
-            pastBuilding = currentBuilding
-            pastLevel = currentLevel
-            
-            
-            let key = "\(data.building)_\(data.level)"
-            let condition: ((String, [[Double]])) -> Bool = {
-                $0.0.contains(key)
-            }
-            let pathPixel: [[Double]] = PathPixel[key] ?? [[Double]]()
-            if (PathPixel.contains(where: condition)) {
-                if (pathPixel.isEmpty) {
-                    PathPixel[key] = loadPp(fileName: key)
-    //                scatterChart.isHidden = true
-                } else {
-    //                scatterChart.isHidden = false
-                    let serverXY: [Double] = serviceManager.displayOutput.serverResult
-                    let tuXY: [Double] = serviceManager.timeUpdateResult
-                    drawDebug(XY: XY, RP_X: pathPixel[0], RP_Y: pathPixel[1], serverXY: serverXY, tuXY: tuXY, heading: heading, limits: limits, isBleOnlyMode: self.isBleOnlyMode, isPmSuccess: true, trajectoryStartCoord: serviceManager.displayOutput.trajectoryStartCoord, userTrajectory: serviceManager.displayOutput.userTrajectory, searchArea: serviceManager.displayOutput.searchArea, searchType: serviceManager.displayOutput.searchType, isIndoor: isIndoor, trajPm: serviceManager.displayOutput.trajectoryPm, trajOg: serviceManager.displayOutput.trajectoryOg)
-    //                drawResult(XY: XY, RP_X: pathPixel[0], RP_Y: pathPixel[1], heading: heading, limits: limits, isBleOnlyMode: self.isBleOnlyMode, isPmSuccess: true, isIndoor: isIndoor)
-                }
-            } else {
-                PathPixel[key] = loadPp(fileName: key)
-            }
-        }
+//        DispatchQueue.main.async { [self] in
+//            
+//            let ioStatus = serviceManager.getInOutState()
+//            self.inOutStatusLabel.text = "\(ioStatus)"
+//            
+//            indexTx.text = String(serviceManager.displayOutput.indexTx)
+//            indexRx.text = String(serviceManager.displayOutput.indexRx) + " // " + String(serviceManager.displayOutput.phase)
+//            scc.text = String(serviceManager.displayOutput.scc)
+//            
+//            let directionArray = serviceManager.displayOutput.searchDirection
+//            let stringArray = directionArray.map { String($0) }
+//            searchDirections.text = stringArray.joined(separator: ", ")
+//            resultDirection.text = String(serviceManager.displayOutput.resultDirection)
+//            
+//            let XY: [Double] = [data.x, data.y]
+//            let heading: Double = data.heading
+//            let isIndoor = data.isIndoor
+//            var limits: [Double] = [0, 0, 0, 0]
+//            
+//            if (data.building != "") {
+//                currentBuilding = data.building
+//                if (data.level != "") {
+//                    currentLevel = data.level
+//                }
+//            }
+//            
+//            
+//            pastBuilding = currentBuilding
+//            pastLevel = currentLevel
+//            
+//            
+//            let key = "\(data.building)_\(data.level)"
+//            let condition: ((String, [[Double]])) -> Bool = {
+//                $0.0.contains(key)
+//            }
+//            let pathPixel: [[Double]] = PathPixel[key] ?? [[Double]]()
+//            if (PathPixel.contains(where: condition)) {
+//                if (pathPixel.isEmpty) {
+//                    PathPixel[key] = loadPp(fileName: key)
+//    //                scatterChart.isHidden = true
+//                } else {
+//    //                scatterChart.isHidden = false
+//                    let serverXY: [Double] = serviceManager.displayOutput.serverResult
+//                    let tuXY: [Double] = serviceManager.timeUpdateResult
+//                    drawDebug(XY: XY, RP_X: pathPixel[0], RP_Y: pathPixel[1], serverXY: serverXY, tuXY: tuXY, heading: heading, limits: limits, isBleOnlyMode: self.isBleOnlyMode, isPmSuccess: true, trajectoryStartCoord: serviceManager.displayOutput.trajectoryStartCoord, userTrajectory: serviceManager.displayOutput.userTrajectory, searchArea: serviceManager.displayOutput.searchArea, searchType: serviceManager.displayOutput.searchType, isIndoor: isIndoor, trajPm: serviceManager.displayOutput.trajectoryPm, trajOg: serviceManager.displayOutput.trajectoryOg)
+//    //                drawResult(XY: XY, RP_X: pathPixel[0], RP_Y: pathPixel[1], heading: heading, limits: limits, isBleOnlyMode: self.isBleOnlyMode, isPmSuccess: true, isIndoor: isIndoor)
+//                }
+//            } else {
+//                PathPixel[key] = loadPp(fileName: key)
+//            }
+//        }
     }
     
     // Display Outputs
@@ -743,9 +687,9 @@ class CardViewController: UIViewController, Observer {
     
     @objc func timerUpdate() {
         if (isCollect) {
-            print(getLocalTimeString() + " , (Collect) : gyroX = \(serviceManager.collectData.gyro[0])")
-            print(getLocalTimeString() + " , (Collect) : trueHeading = \(serviceManager.collectData.trueHeading)")
-            print(getLocalTimeString() + " , (Collect) : bleRaw = \(serviceManager.collectData.bleRaw)")
+//            print(getLocalTimeString() + " , (Collect) : gyroX = \(serviceManager.collectData.gyro[0])")
+//            print(getLocalTimeString() + " , (Collect) : trueHeading = \(serviceManager.collectData.trueHeading)")
+//            print(getLocalTimeString() + " , (Collect) : bleRaw = \(serviceManager.collectData.bleRaw)")
         } else {
             DispatchQueue.main.async {
 //                if getCurrentTimeInMilliseconds() - self.statusTime > 10000 && self.inOutStatusLabel.text != "..." {
@@ -766,7 +710,7 @@ class CardViewController: UIViewController, Observer {
     }
     
     private func makeUniqueId(uuid: String) -> String {
-        let currentTime: Int = getCurrentTimeInMilliseconds()
+        let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
         let unique_id: String = "\(uuid)_\(currentTime)"
         
         return unique_id
@@ -782,12 +726,12 @@ class CardViewController: UIViewController, Observer {
     
     private func postPhoenixRecords() {
         if phoenixData.longitude != 0 && phoenixData.latitude != 0 {
-            self.phoenixData.mobile_time = getCurrentTimeInMillisecondsDouble()
+//            self.phoenixData.mobile_time = getCurrentTimeInMillisecondsDouble()
             self.phoenixIndex += 1
             self.phoenixData.index = self.phoenixIndex
             
             self.phoenixData.remaining_time = 0
-            self.phoenixData.mobile_time = getCurrentTimeInMillisecondsDouble()
+//            self.phoenixData.mobile_time = getCurrentTimeInMillisecondsDouble()
             self.phoenixData.sector_id = self.sector_id
 
             postPhoenixRecord(url: PHOENIX_RECORD_URL, input: [phoenixData], completion: { [self] statusCode, returnedString in

@@ -107,7 +107,7 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         deviceOsInfo = UIDevice.current.systemVersion
         let arr = deviceOsInfo.components(separatedBy: ".")
         deviceOsVersion = Int(arr[0]) ?? 0
-        self.sdkVersion = OlympusServiceManager.sdkVersion
+//        self.sdkVersion = OlympusServiceManager.sdkVersion
         self.sdkVersionLabel.text = self.sdkVersion
     }
     
@@ -124,13 +124,13 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         let loginInfo = LoginInfo(user_id: self.userId, device_model: self.deviceModel, os_version: self.deviceOsVersion, sdk_version: self.sdkVersion)
         NetworkManager.shared.postUserLogin(url: USER_LOGIN_URL, input: loginInfo, completion: { statusCode, returnedString in
             if (statusCode == 200) {
-                print(getLocalTimeString() + " , (InnerLabs) Success : User Login")
+//                print(getLocalTimeString() + " , (InnerLabs) Success : User Login")
                 self.goToCardViewController(region: "Korea", userId: self.userId)
 //                self.goToMapViewController(userId: self.userId)
 //                self.goToMapScaleViewController(userId: self.userId)
             } else {
-                print(getLocalTimeString() + " , (InnerLabs) Fail : User Login \(statusCode)")
-                print(returnedString)
+//                print(getLocalTimeString() + " , (InnerLabs) Fail : User Login \(statusCode)")
+//                print(returnedString)
             }
         })
     }
