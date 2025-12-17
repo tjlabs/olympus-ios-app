@@ -99,11 +99,11 @@ class CardViewController: UIViewController, Observer {
 //    var sector_id: Int = 14 // DS
 //    var mode: String = "pdr"
     
-//    var sector_id: Int = 6
-//    var mode: String = "auto"
-    
-    var sector_id: Int = 20  // Convensia
+    var sector_id: Int = 6
     var mode: String = "auto"
+    
+//    var sector_id: Int = 20  // Convensia
+//    var mode: String = "auto"
     
 //    var sector_id: Int = 2
 //    var mode: String = "pdr"
@@ -156,7 +156,7 @@ class CardViewController: UIViewController, Observer {
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250818_test10.csv", sensorFileName: "sensor_songdo_250818_test10.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250822_stop.csv", sensorFileName: "sensor_songdo_250822_stop.csv")
         
-        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
         
         // collect
 //        isCollect = true

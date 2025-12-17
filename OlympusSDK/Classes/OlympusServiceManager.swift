@@ -2716,10 +2716,10 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 pathTypeForNodeAndLink = 1
                 isUseHeading = stateManager.isVenusMode ? false : true
                 let paddings = levelName == "B0" ? OlympusConstants.PADDING_VALUES : paddingValues
-                print(getLocalTimeString() + " , (Olympus) pathMatching : -------------------------")
-                print(getLocalTimeString() + " , (Olympus) pathMatching : index \(unitDRInfoIndex)")
-                print(getLocalTimeString() + " , (Olympus) pathMatching : paddingValues = \(paddingValues)")
-                print(getLocalTimeString() + " , (Olympus) pathMatching : mustInSameLink = \(mustInSameLink)")
+//                print(getLocalTimeString() + " , (Olympus) pathMatching : -------------------------")
+//                print(getLocalTimeString() + " , (Olympus) pathMatching : index \(unitDRInfoIndex)")
+//                print(getLocalTimeString() + " , (Olympus) pathMatching : paddingValues = \(paddingValues)")
+//                print(getLocalTimeString() + " , (Olympus) pathMatching : mustInSameLink = \(mustInSameLink)")
                 let correctedResult = OlympusPathMatchingCalculator.shared.pathMatching(building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, HEADING_RANGE: OlympusConstants.HEADING_RANGE, isUseHeading: isUseHeading, pathType: 1, PADDING_VALUES: paddings)
                 if (correctedResult.isSuccess) {
                     unitDRGenerator.setVelocityScale(scale: correctedResult.xyhs[3])
@@ -2728,9 +2728,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     result.absolute_heading = correctedResult.xyhs[2]
                     temporalResultHeading = correctedResult.bestHeading
                     self.curTemporalResultHeading = correctedResult.bestHeading
-                    print(getLocalTimeString() + " , (Olympus) pathMatching : input xyh = \(input.x), \(input.y), \(input.absolute_heading)")
-                    print(getLocalTimeString() + " , (Olympus) pathMatching : correctedResult.candidates = \(correctedResult.candidates)")
-                    print(getLocalTimeString() + " , (Olympus) pathMatching : correctedResult.xyhs = \(correctedResult.xyhs)")
+//                    print(getLocalTimeString() + " , (Olympus) pathMatching : input xyh = \(input.x), \(input.y), \(input.absolute_heading)")
+//                    print(getLocalTimeString() + " , (Olympus) pathMatching : correctedResult.candidates = \(correctedResult.candidates)")
+//                    print(getLocalTimeString() + " , (Olympus) pathMatching : correctedResult.xyhs = \(correctedResult.xyhs)")
                 } else {
                     let key: String = "\(buildingName)_\(levelName)"
                     var ppIsLoaded: Bool = true
@@ -2840,7 +2840,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 if !trajMisMatchOccured && !isMatchingInProgress && !isOnPointInProgress && resultIndex - self.trajMisMatchIndex > 30 && runInUvdTimer {
                     // Thread-safe 플래그 설정
                     guard !isMatchingInProgress else {
-                        print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : isMatchingInProgress 1")
+//                        print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : isMatchingInProgress 1")
                         return
                     }
                     isMatchingInProgress = true
@@ -2854,7 +2854,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         }
                         
                         guard let strongSelf = self else {
-                            print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : strongSelf")
+//                            print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : strongSelf")
                             return
                         }
 
@@ -2871,7 +2871,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             return
                         }
                         
-                        print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : comparingResult = \(comparingResult)")
+//                        print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : comparingResult = \(comparingResult)")
                         DispatchQueue.main.async { [weak self] in
                             guard let self = self else { return }
                             
@@ -2886,7 +2886,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                     var inputPoints: [[Double]] = comparingResult.1
                                     if runMode != OlympusConstants.MODE_PDR { inputPoints.append(currentPoint) }
                                     
-                                    print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : inputPoints = \(inputPoints)")
+//                                    print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : inputPoints = \(inputPoints)")
                                     if inputPoints.count > 1 {
                                         self.isOnPointInProgress = true
                                         var onPoints = [OnPoint]()
@@ -2896,7 +2896,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                         
                                         let opeInput = OnPointEstimation(user_id: self.user_id, mobile_time: getCurrentTimeInMilliseconds(), sector_id: self.sector_id, building_name: result.building_name, level_name: result.level_name, operating_system: OlympusConstants.OPERATING_SYSTEM, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rssi: Int(OlympusConstants.DEVICE_MIN_RSSI), standard_min_rssi: Int(OlympusConstants.STANDARD_MIN_RSS), points: onPoints)
                                         OlympusNetworkManager.shared.postOPE(url: CALC_OPE_URL, input: opeInput, completion: { statusCode, returnedString in
-                                            print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : opeResult = \(statusCode), \(returnedString)")
+//                                            print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : opeResult = \(statusCode), \(returnedString)")
                                             if statusCode == 200 {
                                                 let decoded = jsonToOnPointEstimationResult(jsonString: returnedString)
                                                 if decoded.0 {
@@ -2962,7 +2962,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     }
                 }
             }
-            print(getLocalTimeString() + " , (Olympus) pathMatching : temporalResult _ before = \(temporalResult.x), \(temporalResult.y), \(temporalResult.absolute_heading)")
+//            print(getLocalTimeString() + " , (Olympus) pathMatching : temporalResult _ before = \(temporalResult.x), \(temporalResult.y), \(temporalResult.absolute_heading)")
             var isOpeProcessing: Bool = false
             let diffXY = sqrt((result.x - temporalResult.x)*(result.x - temporalResult.x) + (result.y - temporalResult.y)*(result.y - temporalResult.y))
             if diffXY >= 12 && pathMatchingType == .NARROW {
@@ -2974,14 +2974,14 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         onPoints.append(OnPoint(x: Int(candidate.nodeCoord[0]), y: Int(candidate.nodeCoord[1])))
                     }
                 } else {
-                    print(getLocalTimeString() + " , (Olympus) pathMatching : temporalResult jumped!!")
+//                    print(getLocalTimeString() + " , (Olympus) pathMatching : temporalResult jumped!!")
                     // 아니라면
                     let point1 = OlympusPoint(x: result.x ,y: result.y, direction: result.absolute_heading)
                     let point2 = OlympusPoint(x: temporalResult.x, y: temporalResult.y, direction: temporalResult.absolute_heading)
-                    print(getLocalTimeString() + " , (Olympus) pathMatching : intersectionPoint // point1 = \(point1)")
-                    print(getLocalTimeString() + " , (Olympus) pathMatching : intersectionPoint // point2 = \(point2)")
+//                    print(getLocalTimeString() + " , (Olympus) pathMatching : intersectionPoint // point1 = \(point1)")
+//                    print(getLocalTimeString() + " , (Olympus) pathMatching : intersectionPoint // point2 = \(point2)")
                     if let intersectionPoint = OlympusPathMatchingCalculator.shared.findIntersection(point1: point1, point2: point2) {
-                        print(getLocalTimeString() + " , (Olympus) pathMatching : intersectionPoint = \(intersectionPoint)")
+//                        print(getLocalTimeString() + " , (Olympus) pathMatching : intersectionPoint = \(intersectionPoint)")
                         var jumpedResult = result
                         jumpedResult.x = intersectionPoint.x
                         jumpedResult.y = intersectionPoint.y
@@ -3001,7 +3001,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                             let decoded = jsonToOnPointEstimationResult(jsonString: returnedString)
                             if decoded.0 {
                                 let pointResults = decoded.1.point_results
-                                print(getLocalTimeString() + " , (Olympus) pathMatching : postOpe // pointResults = \(pointResults)")
+//                                print(getLocalTimeString() + " , (Olympus) pathMatching : postOpe // pointResults = \(pointResults)")
                                 if let bestPoint = pointResults.max(by: { $0.ccs < $1.ccs }) {
                                     
                                     OlympusPathMatchingCalculator.shared.initPassedNodeInfo()
@@ -3011,7 +3011,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                     let xyh: [Double] = [Double(bestPoint.x), Double(bestPoint.y), result.absolute_heading]
                                     result.x = xyh[0]
                                     result.y = xyh[1]
-                                    print(getLocalTimeString() + " , (Olympus) pathMatching : postOpe // bestPoint = \(xyh)")
+//                                    print(getLocalTimeString() + " , (Olympus) pathMatching : postOpe // bestPoint = \(xyh)")
                                     let newCoord = [xyh[0], xyh[1]]
                                     self.KF.updateTuResult(x: newCoord[0], y: newCoord[1])
                                     self.KF.setLinkInfo(coord: newCoord, directions: OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: result.building_name, level: result.level_name, x: newCoord[0], y: newCoord[1], PADDING_VALUE: 0.0, mode: self.runMode))
@@ -3033,7 +3033,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                             self.KF.updateTuResultNow(result: result)
                                         }
                                     }
-                                    print(getLocalTimeString() + " , (Olympus) pathMatching : temporalResult _ after ope = \(self.temporalResult.x), \(self.temporalResult.y), \(self.temporalResult.absolute_heading)")
+//                                    print(getLocalTimeString() + " , (Olympus) pathMatching : temporalResult _ after ope = \(self.temporalResult.x), \(self.temporalResult.y), \(self.temporalResult.absolute_heading)")
                                 }
                             }
                         }
@@ -3055,21 +3055,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         KF.updateTuResultNow(result: result)
                     }
                 }
-                print(getLocalTimeString() + " , (Olympus) pathMatching : temporalResult _ after = \(temporalResult.x), \(temporalResult.y), \(temporalResult.absolute_heading)")
+//                print(getLocalTimeString() + " , (Olympus) pathMatching : temporalResult _ after = \(temporalResult.x), \(temporalResult.y), \(temporalResult.absolute_heading)")
             }
-//            self.temporalResult = result
-//            self.preTemporalResult = result
-//            self.preTemporalResultHeading = temporalResultHeading
-//            if !OlympusConstants.DEFAULT_HEADINGS.contains(result.absolute_heading) {
-//                let diffX = input.x - result.x
-//                let diffY = input.y - result.y
-//                let diffNorm = sqrt(diffX*diffX + diffY*diffY)
-//                if diffNorm >= 2 {
-//                    KF.updateTuResult(x: result.x, y: result.y)
-//                    KF.updateTuResultNow(result: result)
-//                }
-//            }
-//            print(getLocalTimeString() + " , (Olympus) pathMatching : temporalResult _ after = \(temporalResult.x), \(temporalResult.y), \(temporalResult.absolute_heading)")
         }
     }
     
