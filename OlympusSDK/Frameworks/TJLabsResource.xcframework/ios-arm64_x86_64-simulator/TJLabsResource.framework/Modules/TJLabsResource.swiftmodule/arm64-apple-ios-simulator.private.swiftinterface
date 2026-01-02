@@ -31,6 +31,37 @@ public struct PathPixelData {
   public var roadHeading: [Swift.String]
   public init(roadType: [Swift.Int], nodeNumber: [Swift.Int], road: [[Swift.Float]], roadMinMax: [Swift.Float], roadScale: [Swift.Float], roadHeading: [Swift.String])
 }
+public struct NodeData {
+  public let id: Swift.Int
+  public let coords: [Swift.Float]
+  public let directions: [TJLabsResource.NodeDirection]
+  public let connected_nodes: [Swift.Int]
+  public let connected_links: [Swift.Int]
+}
+public struct NodeDirection : Swift.Codable {
+  public let heading: Swift.Float
+  public let is_end: Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct LinkData {
+  public let id: Swift.Int
+  public let start_node: Swift.Int
+  public let end_node: Swift.Int
+  public let distance: Swift.Float
+  public let included_heading: [Swift.Float]
+  public let group_id: Swift.Int
+}
+public enum NodeLinkType : Swift.Codable {
+  case NODE, LINK, FILE
+  public static func == (a: TJLabsResource.NodeLinkType, b: TJLabsResource.NodeLinkType) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
 public struct EntranceData : Swift.Codable {
   public var number: Swift.Int
   public var networkStatus: Swift.Bool
@@ -193,7 +224,7 @@ public struct LevelWard : Swift.Codable {
   public init(from decoder: any Swift.Decoder) throws
 }
 public enum SpotType : Swift.Codable {
-  case BUILDING_LEVEL_TAG, LANDMARK
+  case BUILDING_LEVEL_TAG, NONE
   public static func == (a: TJLabsResource.SpotType, b: TJLabsResource.SpotType) -> Swift.Bool
   public func encode(to encoder: any Swift.Encoder) throws
   public func hash(into hasher: inout Swift.Hasher)
@@ -221,8 +252,16 @@ public struct BuildingLevelTag : Swift.Codable {
   public func encode(to encoder: any Swift.Encoder) throws
   public init(from decoder: any Swift.Decoder) throws
 }
-public struct Landmark : Swift.Codable {
-  public let id: Swift.Int
+public struct LandmarkData : Swift.Codable {
+  public let ward_id: Swift.String
+  public let peaks: [TJLabsResource.PeakData]
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct PeakData : Swift.Codable {
+  public let x: Swift.Int
+  public let y: Swift.Int
+  public let rssi: Swift.Float
   public func encode(to encoder: any Swift.Encoder) throws
   public init(from decoder: any Swift.Decoder) throws
 }
@@ -249,6 +288,8 @@ public struct DRModeAreaNode : Swift.Codable {
 public enum ResourceError {
   case Sector
   case PathPixel
+  case Node
+  case Link
   case BuildingLevel
   case Image
   case Scale
@@ -259,6 +300,7 @@ public enum ResourceError {
   case LevelWards
   case Affine
   case Spots
+  case Landmark
   public static func == (a: TJLabsResource.ResourceError, b: TJLabsResource.ResourceError) -> Swift.Bool
   public func hash(into hasher: inout Swift.Hasher)
   public var hashValue: Swift.Int {
@@ -271,6 +313,7 @@ public protocol TJLabsResourceManagerDelegate : AnyObject {
   func onBuildingsData(_ manager: TJLabsResource.TJLabsResourceManager, data: [TJLabsResource.BuildingOutput])
   func onScaleOffsetData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, data: [Swift.Float])
   func onPathPixelData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, data: TJLabsResource.PathPixelData)
+  func onNodeLinkData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, type: TJLabsResource.NodeLinkType, data: Any)
   func onUnitData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, data: [TJLabsResource.UnitData])
   func onGeofenceData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, data: TJLabsResource.GeofenceData)
   func onEntranceData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, data: TJLabsResource.EntranceData)
@@ -283,6 +326,7 @@ public protocol TJLabsResourceManagerDelegate : AnyObject {
   func onLevelWardsData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, data: [TJLabsResource.LevelWard])
   func onAffineParam(_ manager: TJLabsResource.TJLabsResourceManager, data: TJLabsResource.AffineTransParamOutput)
   func onSpotsData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.Int, type: TJLabsResource.SpotType, data: Any)
+  func onLandmarkData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, data: [Swift.String : TJLabsResource.LandmarkData])
   func onError(_ manager: TJLabsResource.TJLabsResourceManager, error: TJLabsResource.ResourceError, key: Swift.String)
 }
 @_hasMissingDesignatedInitializers public class TJLabsFileDownloader {
@@ -363,6 +407,8 @@ public class TJLabsResourceManager {
 extension TJLabsResource.ResourceRegion : Swift.Equatable {}
 extension TJLabsResource.ResourceRegion : Swift.Hashable {}
 extension TJLabsResource.ResourceRegion : Swift.RawRepresentable {}
+extension TJLabsResource.NodeLinkType : Swift.Equatable {}
+extension TJLabsResource.NodeLinkType : Swift.Hashable {}
 extension TJLabsResource.SpotType : Swift.Equatable {}
 extension TJLabsResource.SpotType : Swift.Hashable {}
 extension TJLabsResource.ResourceError : Swift.Equatable {}
