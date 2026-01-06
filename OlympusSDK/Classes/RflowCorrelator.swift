@@ -2,7 +2,7 @@
 import Foundation
 import TJLabsCommon
 
-class JupiterRflowCorrelator {
+class RflowCorrelator {
     let D = 10*2 // 10s
     let T = 10*2 // 10s
     
