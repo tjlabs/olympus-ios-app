@@ -1,4 +1,3 @@
-
 import Foundation
 import UIKit
 import simd
@@ -6,27 +5,72 @@ import TJLabsCommon
 import TJLabsResource
 
 class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsResourceManagerDelegate, BuildingLevelChangerDelegate {
-    func onNodeLinkData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, type: TJLabsResource.NodeLinkType, data: Any) {
-        // TODO
-    }
-    
-    func onLandmarkData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [String : TJLabsResource.LandmarkData]) {
-        // TODO
-    }
-    
-    
     func isBuildingLevelChanged(isChanged: Bool, newBuilding: String, newLevel: String, newCoord: [Float]) {
         // TODO
     }
     
-    init(region: String, id: String, sectorId: Int, rssCompensator: JupiterRssCompensator) {
+    // MARK: - Classes
+    private var tjlabsResourceManager = TJLabsResourceManager()
+    
+    private var entManager: EntranceManager?
+    private var buildingLevelChanger: BuildingLevelChanger?
+    private var wardAvgManager: WardAveragingManager?
+    private var peakDetector = PeakDetector()
+    private var stackManager = StackManager()
+    private var kalmanFilter: KalmanFilter?
+    private var sectionController = SectionController()
+    
+    // MARK: - User Properties
+    var id: String = ""
+    var sectorId: Int = 0
+    var region: String = JupiterRegion.KOREA.rawValue
+    var os: String = JupiterNetworkConstants.OPERATING_SYSTEM
+    
+    // MARK: - Generator
+    private var rfdGenerator: RFDGenerator?
+    private var uvdGenerator: UVDGenerator?
+    private var uvdStopTimestamp: Double = 0
+    private var rfdEmptyMillis: Double = 0
+    private var pressure: Float = 0
+    
+    var curRfd = ReceivedForce(tenant_user_name: "", mobile_time: 0, rfs: [String: Float](), pressure: 0)
+    var curUvd = UserVelocity(tenant_user_name: "", mobile_time: 0, index: 0, length: 0, heading: 0, looking: false)
+    var pastUvd = UserVelocity(tenant_user_name: "", mobile_time: 0, index: 0, length: 0, heading: 0, looking: false)
+    var curUserMask = UserMask(user_id: "", mobile_time: 0, section_number: 0, index: 0, x: 0, y: 0, absolute_heading: 0)
+    var curVelocity: Float = 0
+    var curUserMode: String = "AUTO"
+    var curUserModeEnum: UserMode = .MODE_AUTO
+    
+    // MARK: - Constants
+    private let AVG_BUFFER_SIZE = 10
+    
+    // MARK: - Etc..
+//    var paddingValues = JupiterMode.PADDING_VALUES_DR
+    private var pathMatchingCondition = PathMatchingCondition()
+
+    private var report = -1
+    
+    // Result
+    var jupiterPhase: JupiterPhase = .NONE
+    var curResult: FineLocationTrackingOutput?
+    var preResult: FineLocationTrackingOutput?
+    
+    var curPathMatchingResult: FineLocationTrackingOutput?
+    var prePathMatchingResult: FineLocationTrackingOutput?
+    
+    var paddingValues = JupiterMode.PADDING_VALUES_DR
+    
+    var tu_xyh: [Float] = [0, 0, 0]
+    // MARK: - init & deinit
+    init(region: String, id: String, sectorId: Int) {
         self.id = id
         self.sectorId = sectorId
         self.region = region
         
-        self.rssCompensator = rssCompensator
         self.entManager = EntranceManager(sector_id: sectorId)
         self.buildingLevelChanger = BuildingLevelChanger(sector_id: sectorId)
+        self.wardAvgManager = WardAveragingManager(bufferSize: AVG_BUFFER_SIZE)
+        self.kalmanFilter = KalmanFilter(stackManager: stackManager)
         
         tjlabsResourceManager.delegate = self
         buildingLevelChanger?.delegate = self
@@ -34,49 +78,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     deinit { }
     
-    
-    // MARK: - Classes
-    private var entManager: EntranceManager?
-    private var rssCompensator: JupiterRssCompensator?
-    private var buildingLevelChanger: BuildingLevelChanger?
-    
-    // MARK: - Properties
-    var id: String = ""
-    var sectorId: Int = 0
-    var region: String = JupiterRegion.KOREA.rawValue
-    var os: String = JupiterNetworkConstants.OPERATING_SYSTEM
-    var phase: Int = 1
-    
-    var curUvd = UserVelocity(tenant_user_name: "", mobile_time: 0, index: 0, length: 0, heading: 0, looking: false)
-    var curUserMask = UserMask(user_id: "", mobile_time: 0, section_number: 0, index: 0, x: 0, y: 0, absolute_heading: 0)
-    var pastUvd = UserVelocity(tenant_user_name: "", mobile_time: 0, index: 0, length: 0, heading: 0, looking: false)
-    
-    var curVelocity: Float = 0
-    var curUserMode: String = "AUTO"
-    var curUserModeRaw: UserMode = .MODE_AUTO
-    private var pressure: Float = 0
-    
-    private var uvdStopTimestamp: Double = 0
-    private var tjlabsResourceManager = TJLabsResourceManager()
-    
-    private var rfdGenerator: RFDGenerator?
-    private var uvdGenerator: UVDGenerator?
-    
-    private var rfdEmptyMillis: Double = 0
-    
-//    var paddingValues = JupiterMode.PADDING_VALUES_DR
-    private var pathMatchingCondition = PathMatchingCondition()
-    
-    private var report = -1
-    
-    
-    // Result
-    var curResult = FineLocationTrackingOutput()
-    var preResult = FineLocationTrackingOutput()
-    
-    var curPathMatchingResult = FineLocationTrackingOutput()
-    var prePathMatchingResult = FineLocationTrackingOutput()
-    
+    // MARK: - Functions
     func start(completion: @escaping (Bool, String) -> Void) {
         tjlabsResourceManager.loadJupiterResource(region: region, sectorId: sectorId, completion: { isSuccess in
             let msg: String = isSuccess ? "JupiterCalcManager start success" : "JupiterCalcManager start failed"
@@ -86,11 +88,11 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     // MARK: - Set REC length
     public func setSendRfdLength(_ length: Int = 2) {
-        JupiterDataBatchSender.shared.sendRfdLength = length
+        DataBatchSender.shared.sendRfdLength = length
     }
     
     public func setSendUvdLength(_ length: Int = 4) {
-        JupiterDataBatchSender.shared.sendUvdLength = length
+        DataBatchSender.shared.sendUvdLength = length
     }
     
     func startGenerator(mode: UserMode, completion: @escaping (Bool, String) -> Void) {
@@ -135,7 +137,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     func stopGenerator() {
         rfdGenerator?.stopRfdGeneration()
         uvdGenerator?.stopUvdGeneration()
-        rssCompensator?.saveNormalizationScaleToCache(sector_id: sectorId)
     }
 
     
@@ -144,9 +145,88 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
 //        let levelName = curJupiterResult.level_name
 //        let x = curJupiterResult.x
 //        let y = curJupiterResult.y
-//        
+//
 //        return x != 0.0 && y != 0.0 && !buildingName.isEmpty && !levelName.isEmpty
         return true
+    }
+    
+    func getJupiterResult() -> JupiterResult? {
+        let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
+        guard let curPathMatchingResult = self.curPathMatchingResult else { return nil }
+        let buildingName = curPathMatchingResult.building_name
+        let levelName = curPathMatchingResult.level_name
+        let scc = curPathMatchingResult.scc
+        let x = curPathMatchingResult.x
+        let y = curPathMatchingResult.y
+        let absoluteHeading = curPathMatchingResult.absolute_heading
+        
+        var llh: LLH?
+        if let affineParam = AffineConverter.shared.getAffineParam(sectorId: sectorId) {
+            let converted = AffineConverter.shared.convertPpToLLH(x: Double(x), y: Double(y), heading: Double(absoluteHeading), param: affineParam)
+            llh?.lat = converted.lat
+            llh?.lon = converted.lon
+            llh?.heading = converted.heading
+        }
+        
+        let jupiterResult = JupiterResult(
+            mobile_time: currentTime,
+            building_name: buildingName,
+            level_name: levelName,
+            scc: scc,
+            x: x,
+            y: y,
+            llh: llh,
+            absolute_heading: absoluteHeading,
+            index: curUvd.index,
+            velocity: curVelocity,
+            mode: curUserMode,
+            ble_only_position: false,
+            isIndoor: JupiterResultState.isIndoor,
+            validity: false,
+            validity_flag: 0
+        )
+        
+        return jupiterResult
+    }
+    
+    func getJupiterDebugResult() -> JupiterDebugResult? {
+        let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
+        guard let curPathMatchingResult = self.curPathMatchingResult else { return nil }
+        let buildingName = curPathMatchingResult.building_name
+        let levelName = curPathMatchingResult.level_name
+        let scc = curPathMatchingResult.scc
+        let x = curPathMatchingResult.x
+        let y = curPathMatchingResult.y
+        let absoluteHeading = curPathMatchingResult.absolute_heading
+        
+        var llh: LLH?
+        if let affineParam = AffineConverter.shared.getAffineParam(sectorId: sectorId) {
+            let converted = AffineConverter.shared.convertPpToLLH(x: Double(x), y: Double(y), heading: Double(absoluteHeading), param: affineParam)
+            llh?.lat = converted.lat
+            llh?.lon = converted.lon
+            llh?.heading = converted.heading
+        }
+        
+        let jupiterDebugResult = JupiterDebugResult(
+            mobile_time: currentTime,
+            building_name: buildingName,
+            level_name: levelName,
+            scc: scc,
+            x: x,
+            y: y,
+            llh: llh,
+            absolute_heading: absoluteHeading,
+            index: curUvd.index,
+            velocity: curVelocity,
+            mode: curUserMode,
+            ble_only_position: false,
+            isIndoor: JupiterResultState.isIndoor,
+            validity: false,
+            validity_flag: 0,
+            tu_xyh: self.tu_xyh
+        )
+        
+        return jupiterDebugResult
     }
 
     // MARK: - RFDGeneratorDelegate Methods
@@ -156,82 +236,10 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     func handleRfd(rfd: ReceivedForce) {
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-        JupiterDataBatchSender.shared.sendRfd(rfd: rfd)
+        DataBatchSender.shared.sendRfd(rfd: rfd)
         
-        guard let entManager = self.entManager, let rssCompensator = self.rssCompensator else { return }
-        
-        // OUTDOOR -> INDOOR 상황에서 진입 판단
-        if !JupiterResultState.isIndoor && !JupiterResultState.isEntTrack {
-            let entCheckResult = entManager.checkStartEntTrack(bleAvg: rfd.rfs, sec: 3)
-            JupiterResultState.isEntTrack = entCheckResult.is_entered
-            if JupiterResultState.isEntTrack {
-                let entKey = entCheckResult.key
-                let entTrackData = entKey.split(separator: "_")
-                JupiterLogger.i(tag: "JupiterCalcManager", message: "(handleRfd) - entTrackData = \(entTrackData)")
-                let entBuildingName = String(entTrackData[1])
-                // Building Update
-            }
-//            let checkStartRouteTrackResult = JupiterRouteTracker.shared.checkStartRouteTrack(bleAvg: rfd.rfs, sec: 3)
-//            JupiterResultState.isRouteTrack = checkStartRouteTrackResult.0
-//            if JupiterResultState.isRouteTrack {
-//                let key = checkStartRouteTrackResult.1
-//                let routeTrackData = key.split(separator: "_")
-//                JupiterLogger.i(tag: "JupiterCalcManager", message: "(handleRfd) - routeTrackData = \(routeTrackData)")
-//                curJupiterResult.building_name = String(routeTrackData[1])
-//            }
-        }
-        
-        // Entrance Tracking 상황에서 위치 정보 제공 및 종료 판단
-        if JupiterResultState.isEntTrack {
-            let stopEntTrackResult = entManager.stopEntTrack(curResult: curResult, bleAvg: rfd.rfs,
-                                    normalizationScale: rssCompensator.normalizationScale,
-                                    deviceMinRss: rssCompensator.deviceMinRss,
-                                    standardMinRss: rssCompensator.standardMinRss)
-            if stopEntTrackResult.0 {
-                JupiterLogger.i(tag: "JupiterCalcManager", message: "(handleRfd) - EntTrack Finished : \(stopEntTrackResult.1.building_name) \(stopEntTrackResult.1.level_name) , [\(stopEntTrackResult.1.x),\(stopEntTrackResult.1.y),\(stopEntTrackResult.1.absolute_heading)]")
-
-                // Entrance Tracking Finshid (Normal)
-                JupiterResultState.isEntTrack = false
-                KalmanState.isKalmanFilterRunning = true
-                phase = 6
-                curResult = stopEntTrackResult.1
-                curPathMatchingResult = stopEntTrackResult.1
-//                JupiterKalmanFilter.shared.updateTuResult(result: checkFinishRouteTrackResult.1)
-            }
-//
-            if entManager.forcedStopEntTrack(bleAvg: rfd.rfs, sec: 30) {
-                JupiterResultState.isEntTrack = false
-                entManager.setEntTrackFinishedTimestamp(time: currentTime)
-            }
-        }
-        
-        if !rfd.rfs.isEmpty {
-            let bleAvg = rfd.rfs
-            rssCompensator.refreshWardMinRssi(bleData: bleAvg)
-            rssCompensator.refreshWardMaxRssi(bleData: bleAvg)
-            let minRssi = rssCompensator.getMinRssi()
-            let maxRssi = rssCompensator.getMaxRssi()
-            let diffMinMaxRssi = abs(maxRssi - minRssi)
-            if minRssi <= JupiterRssCompensation.DEVICE_MIN_UPDATE_THRESHOLD {
-                rssCompensator.deviceMinRss = minRssi
-            }
-            rssCompensator.stackTimeAfterResponse()
-                
-            // Estimate Normalization Scale
-//                rssCompensator?.estimateNormalizationScale(isGetFirstResponse: <#T##Bool#>, isIndoor: <#T##Bool#>, currentLevel: <#T##String#>, diffMinMaxRssi: diffMinMaxRssi, minRssi: minRssi)
-            
-            //            JupiterRssCompensator.shared.estimateNormalizationScale(isGetFirstResponse: isPossibleReturnJupiterResult(), isIndoor: JupiterResultState.isIndoor, currentLevel: curJupiterPathMatchingResult.level_name, diffMinMaxRssi: diffMinMaxRssi, minRssi: minRssi)
-            
-            let isPossibleToSave = rssCompensator.isPossibleToSaveToCache()
-            if isPossibleToSave {
-                rssCompensator.saveNormalizationScaleToCache(sector_id: sectorId)
-                rssCompensator.isScaleSaved = true
-            }
-        }
-        
-        if !JupiterResultState.isIndoor {
-//            JupiterRssCompensator.shared.initialize()
-        }
+        // Update Current RFD
+        self.curRfd = rfd
     }
     
     func onRfdError(_ generator: TJLabsCommon.RFDGenerator, code: Int, msg: String) {
@@ -254,10 +262,250 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     }
     func onUvdResult(_ generator: UVDGenerator, mode: UserMode, userVelocity: UserVelocity) {
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
+        DataBatchSender.shared.sendUvd(uvd: userVelocity)
+        determineUserMode(mode: mode)
+        
+        // Update Current UVD
+        self.curUvd = userVelocity
+        let curIndex = userVelocity.index
+        
+        guard let entManager = self.entManager else { return }
+        stackManager.stackUserVelocity(uvd: userVelocity)
+        
+        let capturedRfd = self.curRfd
+        let bleData = capturedRfd.rfs // [String: Float] BLE_ID: RSSI
+        
+        // Moving Averaging
+        guard let wardAvgManager = wardAvgManager else { return }
+        let avgBleData: [String: Float] = wardAvgManager.updateEpoch(bleData: bleData)
+        if let userPeak = peakDetector.updateEpoch(uvdIndex: curIndex, bleAvg: avgBleData) {
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) PEAK detected : id=\(userPeak.id) // peak_idx=\(userPeak.peak_index), peak_rssi=\(userPeak.peak_rssi), detected_idx = \(userPeak.end_index), detected_rssi = \(userPeak.end_rssi)")
+            startEntranceTracking(currentTime: currentTime, entManager: entManager, uvd: userVelocity, peakId: userPeak.id, bleData: bleData)
+//            calcEntranceResult(currentTime: currentTime, entManager: entManager, uvd: userVelocity, peakId: userPeak.id, bleData: bleData)
+        }
+        
+        switch (jupiterPhase) {
+        case .ENTERING:
+            calcEntranceResult(currentTime: currentTime, entManager: entManager, uvd: userVelocity)
+            curPathMatchingResult = curResult
+        case .TRACKING:
+            calcIndoorResult(mode: mode, uvd: userVelocity)
+        case .SEARCHING:
+            print("Searching")
+        case .NONE:
+            print("None")
+        }
+        
+        self.pastUvd = userVelocity
+    }
+    
+//    private func calcEntranceResult(currentTime: Int, entManager: EntranceManager, uvd: UserVelocity, peakId: String, bleData: [String: Float]) {
+//        if !JupiterResultState.isIndoor && jupiterPhase != .ENTERING {
+//            guard let entKey = entManager.checkStartEntTrack(wardId: peakId, sec: 3) else { return }
+////            JupiterResultState.isEntTrack = true
+//            jupiterPhase = .ENTERING
+//            let entTrackData = entKey.split(separator: "_")
+//            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - entTrackData = \(entTrackData) ")
+//        }
+//        
+//        if jupiterPhase == .ENTERING {
+//            if let stopEntTrackResult = entManager.stopEntTrack(curResult: curResult, wardId: peakId) {
+//                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - EntTrack Finished : \(stopEntTrackResult.building_name) \(stopEntTrackResult.level_name) , [\(stopEntTrackResult.x),\(stopEntTrackResult.y),\(stopEntTrackResult.absolute_heading)]")
+//
+//                // Entrance Tracking Finshid (Normal)
+//                startIndoorTracking(fltResult: stopEntTrackResult)
+//            } else {
+//                guard let entTrackResult = entManager.startEntTrack(currentTime: currentTime, uvd: uvd) else { return }
+//                self.curResult = entTrackResult
+//                JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcEntranceResult) index:\(uvd.index) - entTrackResult // \(entTrackResult.building_name) \(entTrackResult.level_name) , x = \(entTrackResult.x) , y = \(entTrackResult.y) , h = \(entTrackResult.absolute_heading)")
+//            }
+//
+//            if entManager.forcedStopEntTrack(bleAvg: bleData, sec: 30) {
+//                // Entrance Tracking Finshid (Force)
+//                JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcEntranceResult) index:\(uvd.index) - forcedStopEntTrack")
+//                startIndoorTracking(fltResult: nil)
+//                entManager.setEntTrackFinishedTimestamp(time: currentTime)
+//            }
+//        }
+//    }
+    
+    private func startEntranceTracking(currentTime: Int, entManager: EntranceManager, uvd: UserVelocity, peakId: String, bleData: [String: Float]) {
+        if !JupiterResultState.isIndoor && jupiterPhase != .ENTERING {
+            guard let entKey = entManager.checkStartEntTrack(wardId: peakId, sec: 3) else { return }
+//            JupiterResultState.isEntTrack = true
+            jupiterPhase = .ENTERING
+            JupiterResultState.isIndoor = true
+            let entTrackData = entKey.split(separator: "_")
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - entTrackData = \(entTrackData) ")
+        }
+        
+        if jupiterPhase == .ENTERING {
+            if let stopEntTrackResult = entManager.stopEntTrack(curResult: curResult, wardId: peakId) {
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - EntTrack Finished : \(stopEntTrackResult.building_name) \(stopEntTrackResult.level_name) , [\(stopEntTrackResult.x),\(stopEntTrackResult.y),\(stopEntTrackResult.absolute_heading)]")
+
+                // Entrance Tracking Finshid (Normal)
+                startIndoorTracking(fltResult: stopEntTrackResult)
+            }
+            
+            if entManager.forcedStopEntTrack(bleAvg: bleData, sec: 30) {
+                // Entrance Tracking Finshid (Force)
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcEntranceResult) index:\(uvd.index) - forcedStopEntTrack")
+                startIndoorTracking(fltResult: nil)
+                entManager.setEntTrackFinishedTimestamp(time: currentTime)
+            }
+        }
+    }
+    
+    private func calcEntranceResult(currentTime: Int, entManager: EntranceManager, uvd: UserVelocity) {
+        guard let entTrackResult = entManager.startEntTrack(currentTime: currentTime, uvd: uvd) else { return }
+        self.curResult = entTrackResult
+        JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcEntranceResult) index:\(uvd.index) - entTrackResult // \(entTrackResult.building_name) \(entTrackResult.level_name) , x = \(entTrackResult.x) , y = \(entTrackResult.y) , h = \(entTrackResult.absolute_heading)")
+    }
+    
+    private func startIndoorTracking(fltResult: FineLocationTrackingOutput?) {
+        peakDetector.setBufferSize(size: 50)
+        jupiterPhase = .TRACKING
+        
+        guard let fltResult = fltResult else { return }
+        curResult = fltResult
+        curPathMatchingResult = fltResult
+        kalmanFilter?.activateKalmanFilter(fltResult: fltResult)
+        JupiterResultState.isIndoor = true
+    }
+    
+    private func calcIndoorResult(mode: UserMode, uvd: UserVelocity) {
+        let (tuResult, isDidPathTrajMatching) = updateResultFromTimeUpdate(mode: mode, uvd: uvd, pastUvd: pastUvd, pathMatchingCondition: self.pathMatchingCondition)
+        guard var tuResult = tuResult else { return }
+        guard let curResult = self.curResult else { return }
+        let pathMatchingArea = PathMatcher.shared.checkInEntranceMatchingArea(sectorId: sectorId, building: tuResult.building_name, level: tuResult.level_name, x: tuResult.x, y: tuResult.y)
+        
+        var mustInSameLink = true
+        
+        if isDidPathTrajMatching {
+            // 1. Path-Traj Matching 결과가 있을 경우
+            // PDR 에서만 적용, DR 모드에서는 항상 false임
+            mustInSameLink = false
+        } else if let _ = pathMatchingArea, PathMatcher.shared.isInNode {
+            // 2. Node에 있거나 Entrance Matching Area에 해당하는 경우
+            // 길끝에 위치하는지 확인
+            mustInSameLink = false
+            let isInMapEnd = PathMatcher.shared.checkIsInMapEnd(sectorId: sectorId, resultStandard: curResult, tuResult: tuResult, userMode: mode)
+            if isInMapEnd {
+                tuResult.x = curResult.x
+                tuResult.y = curResult.y
+                kalmanFilter?.updateTuResult(result: tuResult)
+            }
+        }
+        let isNeedUpdateAnchorNode = sectionController.extendedCheckIsNeedAnchorNodeUpdate(uvdLength: uvd.length, curHeading: curResult.absolute_heading)
+        if isNeedUpdateAnchorNode {
+            PathMatcher.shared.updateAnchorNode(sectorId: sectorId, fltResult: curResult, mode: mode, sectionNumber: sectionController.getSectionNumber())
+        }
+        kalmanFilter?.updateTuInformation(uvd: uvd)
+        let indoorResult = makeCurrentResult(input: tuResult, mustInSameLink: mustInSameLink, pathMatchingType: .NARROW, phase: .TRACKING, mode: mode)
+        self.curResult = indoorResult
+        self.curPathMatchingResult = indoorResult
+        
+        if let tuResult = kalmanFilter?.getTuResult() {
+            self.tu_xyh = [tuResult.x, tuResult.y, tuResult.absolute_heading]
+        }
+    }
+    
+    private func updateResultFromTimeUpdate(mode: UserMode, uvd: UserVelocity, pastUvd: UserVelocity,
+                                            pathMatchingCondition: PathMatchingCondition) -> (FineLocationTrackingOutput?, Bool) {
+        guard let kalmanFilter = self.kalmanFilter else { return (nil, false) }
+        if mode == .MODE_PEDESTRIAN {
+//            result = kalmanFilter.pdrTimeUpdate(region: region, sectorId: sectorId, uvd: uvd, pastUvd: pastUvd, pathMatchingCondition: pathMatchingCondition)
+            return (nil, false)
+        } else {
+            guard let drTuResult = kalmanFilter.drTimeUpdate(region: region, sectorId: sectorId, uvd: uvd, pastUvd: pastUvd) else { return (nil, false) }
+            return (drTuResult, false)
+        }
+    }
+    
+    private func makeCurrentResult(input: FineLocationTrackingOutput, mustInSameLink: Bool, pathMatchingType: PathMatchingType, phase: JupiterPhase, mode: UserMode) -> FineLocationTrackingOutput {
+//        JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - input: \(input.building_name), \(input.level_name), [\(input.x),\(input.y),\(input.absolute_heading)]")
+        var result = input
+        let curIndex = curUvd.index
+        result.index = curIndex
+        
+        let buildingName: String = result.building_name
+        let levelName: String = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: result.level_name)
+        result.level_name = levelName
+        
+        var isPmFailed = false
+        let isPdrMode = curUserModeEnum == UserMode.MODE_PEDESTRIAN
+        
+        var headingRange = Float(JupiterMode.HEADING_RANGE)
+        var isUseHeading = false
+        let paddings = (!isPdrMode && levelName == "B0") ? JupiterMode.PADDING_VALUES_DR : self.paddingValues
+        if mode == .MODE_PEDESTRIAN {
+            // PDR
+            if pathMatchingType == .NARROW {
+                isUseHeading = true
+                headingRange -= 10
+            }
+            
+            if let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, headingRange: headingRange, isUseHeading: isUseHeading, mode: .MODE_PEDESTRIAN, paddingValues: paddings) {
+                result.x = pmResult.x
+                result.y = pmResult.y
+                result.absolute_heading = pmResult.heading
+            } else {
+                isPmFailed = true
+            }
+        } else {
+            // DR
+            isUseHeading = !JupiterResultState.isVenus
+            if let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, headingRange: headingRange, isUseHeading: isUseHeading, mode: .MODE_VEHICLE, paddingValues: paddings) {
+                result.x = pmResult.x
+                result.y = pmResult.y
+                result.absolute_heading = pmResult.heading
+                uvdGenerator?.updateDrVelocityScale(scale: Double(pmResult.scale))
+//                JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - result: \(result.building_name), \(result.level_name), [\(result.x),\(result.y),\(result.absolute_heading)]")
+            } else {
+                isPmFailed = true
+            }
+        }
+        
+        if mustInSameLink && levelName != "B0", let curLinkInfo = PathMatcher.shared.getCurPassedLinkInfo() {
+            let userCoord = curLinkInfo.user_coord
+            let linkDirs = curLinkInfo.included_heading
+            if (userCoord.count == 2 && linkDirs.count == 2) {
+                let MARGIN: Float = 30
+                if (linkDirs.contains(0) && linkDirs.contains(180)) {
+                    // 이전 y축 값과 현재 y값은 같아야 함
+                    let diffHeading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(abs(result.absolute_heading) - linkDirs[0])))
+                    if !((diffHeading > 90-MARGIN && diffHeading <= 90+MARGIN) || (diffHeading > 270-MARGIN && diffHeading <= 270+MARGIN)) {
+                        result.y = userCoord[1]
+                    }
+                    
+                } else if (linkDirs.contains(90) && linkDirs.contains(270)) {
+                    // 이전 x축 값과 현재 x축 값은 같아야 함
+                    let diffHeading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(abs(result.absolute_heading) - linkDirs[0])))
+                    if !((diffHeading > 90-MARGIN && diffHeading <= 90+MARGIN) || (diffHeading > 270-MARGIN && diffHeading <= 270+MARGIN)) {
+                        result.x = userCoord[0]
+                    }
+                }
+            }
+        }
+        
+        if isUseHeading && phase == .TRACKING, let curPathMatchingResult = self.curPathMatchingResult {
+            let diffX = result.x - curPathMatchingResult.x
+            let diffY = result.y - curPathMatchingResult.y
+            let diffNorm = sqrt(diffX*diffX + diffY*diffY)
+            if diffNorm >= 2 {
+                kalmanFilter?.updateTuResult(result: result)
+            }
+        }
+        
+        if KalmanState.isKalmanFilterRunning {
+            PathMatcher.shared.updateNodeAndLinkInfo(sectorId: sectorId, uvdIndex: curIndex, curResult: result, mode: mode)
+        }
+        
+        return result
     }
     
     func determineUserMode(mode: UserMode) {
-        self.curUserModeRaw = mode
+        self.curUserModeEnum = mode
         if mode == .MODE_AUTO {
             self.curUserMode = "AUTO"
         } else if mode == .MODE_VEHICLE {
@@ -286,6 +534,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     }
     
     func onBuildingsData(_ manager: TJLabsResource.TJLabsResourceManager, data: [TJLabsResource.BuildingOutput]) {
+        // TO-DO
     }
     
     func onScaleOffsetData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [Float]) {
@@ -293,7 +542,19 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     }
     
     func onPathPixelData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: TJLabsResource.PathPixelData) {
-        
+        PathMatcher.shared.setPathPixelData(key: key, data: data)
+    }
+    
+    func onNodeLinkData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, type: TJLabsResource.NodeLinkType, data: Any) {
+        if type == .NODE {
+            PathMatcher.shared.setNodeData(key: key, data: data as! [Int : NodeData])
+        } else if type == .LINK {
+            PathMatcher.shared.setLinkData(key: key, data: data as! [Int : LinkData])
+        }
+    }
+    
+    func onLandmarkData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [String : TJLabsResource.LandmarkData]) {
+        // TODO
     }
     
     func onUnitData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [TJLabsResource.UnitData]) {
@@ -303,9 +564,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     func onGeofenceData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: TJLabsResource.GeofenceData) {
         let levelChangeArea = data.level_change_area
         let drModeArea = data.dr_mode_area
-        let entranceMatchingArea = data.entrance_matching_area
-        let entranceArea = data.entrance_area
         
+        PathMatcher.shared.setEntranceMatchingArea(key: key, data: data.entrance_matching_area)
+        PathMatcher.shared.setEntranceArea(key: key, data: data.entrance_area)
     }
     
     func onEntranceData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: TJLabsResource.EntranceData) {
@@ -317,17 +578,15 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     }
     
     func onImageData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: UIImage?) {
-        // TO-DO
+        // NONE
     }
     
     func onSectorParam(_ manager: TJLabsResource.TJLabsResourceManager, data: TJLabsResource.SectorParameterOutput) {
-        let min_max: [Int] = [data.standard_min_rssi, data.standard_max_rssi]
-        rssCompensator?.setStandardMinMax(minMax: min_max)
+
     }
     
     func onLevelParam(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: TJLabsResource.LevelParameterOutput) {
-        let trajLength = data.trajectory_length
-        let trajDiagonal = data.trajectory_diagonal
+
     }
     
     func onLevelWardsData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [TJLabsResource.LevelWard]) {
@@ -335,7 +594,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     }
     
     func onAffineParam(_ manager: TJLabsResource.TJLabsResourceManager, data: TJLabsResource.AffineTransParamOutput) {
-        // TO-DO
+        AffineConverter.shared.setAffineParam(sectorId: sectorId, data: data)
     }
     
     func onSpotsData(_ manager: TJLabsResource.TJLabsResourceManager, key: Int, type: TJLabsResource.SpotType, data: Any) {
