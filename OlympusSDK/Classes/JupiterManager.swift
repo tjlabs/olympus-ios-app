@@ -12,7 +12,6 @@ public class JupiterManager {
     var deviceIdentifier: String
     var deviceOsVersion: Int
     
-    var rssCompensator: JupiterRssCompensator?
     var jupiterCalcManager: JupiterCalcManager?
     public weak var delegate: JupiterManagerDelegate?
     
@@ -30,13 +29,12 @@ public class JupiterManager {
         let deviceOs = UIDevice.current.systemVersion
         let arr = deviceOs.components(separatedBy: ".")
         self.deviceOsVersion = Int(arr[0]) ?? 0
-        
-        self.rssCompensator = JupiterRssCompensator()
     }
 
     // MARK: - Start & Stop Jupiter Service
     public func startJupiter(region: String = JupiterRegion.KOREA.rawValue, sectorId: Int, mode: UserMode) {
-        guard let rssCompensator = self.rssCompensator else { return }
+        JupiterNetworkConstants.setServerURL(region: region)
+        
         let (isNetworkAvailable, msgCheckNetworkAvailable) = JupiterNetworkManager.shared.isConnectedToInternet()
         let (isIdAvailable, msgCheckIdAvailable) = checkIdIsAvailable(id: id)
         
@@ -64,6 +62,7 @@ public class JupiterManager {
                 group.enter()
                 let loginURL = JupiterNetworkConstants.getUserLoginURL()
                 JupiterNetworkManager.shared.postUserLogin(url: loginURL, input: loginInput) { success, msg in
+                    JupiterLogger.i(tag: "JupiterManager", message: "(login) - url \(loginURL)")
                     if success != 200 {
                         reportError(msg)
                         self.delegate?.onJupiterError(success, msg)
@@ -71,22 +70,11 @@ public class JupiterManager {
                     group.leave()
                 }
             }
-            ,{ [self] group, reportError in
-                group.enter()
-                rssCompensator.loadRssiCompensationParam(sector_id: sectorId, device_model: deviceModel, os_version: deviceOsVersion, completion: { success, _, msg in
-                    if !success {
-                        reportError(msg)
-                        self.delegate?.onJupiterError(0, msg)
-                    }
-                    group.leave()
-                })
-            }
         ]
         
         performTasksWithCounter(tasks: tasks, onComplete: { [self] in
             JupiterFileManager.shared.set(region: region, sectorId: sectorId, deviceModel: self.deviceModel, osVersion: self.deviceOsVersion)
-            JupiterNetworkConstants.setServerURL(region: region)
-            jupiterCalcManager = JupiterCalcManager(region: region, id: self.id, sectorId: sectorId, rssCompensator: rssCompensator)
+            jupiterCalcManager = JupiterCalcManager(region: region, id: self.id, sectorId: sectorId)
             jupiterCalcManager?.start(completion: { [self] isSuccess, msg in
                 if isSuccess {
                     jupiterCalcManager?.setSendRfdLength(sendRfdLength)
@@ -148,12 +136,6 @@ public class JupiterManager {
             stopGenerator()
             jupiterCalcManager = nil
             
-//            if !JupiterSimulatorState.simulationFlag {
-//                JupiterStates.resetAll(isStopService: true)
-//                JupiterRssCompensator.shared.saveNormalizationScaleToCache(sector_id: sectorId)
-//                JupiterDataBatchSender.shared.sendRssiCompensation(sectorId: sectorId, deviceModel: deviceModel, deviceOsVersion: deviceOsVersion, normalizationScale: JupiterRssCompensator.shared.normalizationScale)
-//            }
-            
             isStartService = false
         } else {
             completion(false, "After the service has fully started, it can be stop")
@@ -206,14 +188,12 @@ public class JupiterManager {
     }
     
     func outputTimerUpdate() {
-//        if jupiterCalcManager?.isPossibleReturnJupiterResult() {
-//            let jupiterResult = JupiterCalcManager.shared.getJupiterResult()
-//            delegate?.onJupiterResult(jupiterResult)
-//        }
+        guard let jupiterResult = jupiterCalcManager?.getJupiterResult() else { return }
+        delegate?.onJupiterResult(jupiterResult)
     }
     
-//    public func getJupiterDebugResult() -> JupiterDebugResult {
-//        let jupiterDebugResult = JupiterCalcManager.shared.getJupiterDebugResult()
-//        return jupiterDebugResult
-//    }
+    public func getJupiterDebugResult() -> JupiterDebugResult? {
+        guard let jupiterDebugResult = jupiterCalcManager?.getJupiterDebugResult() else { return nil }
+        return jupiterDebugResult
+    }
 }
