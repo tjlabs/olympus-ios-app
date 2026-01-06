@@ -5,7 +5,10 @@
       "start_node": 1,
       "end_node": 2,
       "distance": 20.396078054371138,
-      "included_heading": [],
+      "included_heading": [
+        170.0,
+        350.0
+      ],
       "group_id": 0
     },
     {
@@ -13,7 +16,10 @@
       "start_node": 1,
       "end_node": 30,
       "distance": 172.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 1
     },
     {
@@ -21,7 +27,10 @@
       "start_node": 2,
       "end_node": 3,
       "distance": 48.662100242385755,
-      "included_heading": [],
+      "included_heading": [
+        170.0,
+        350.0
+      ],
       "group_id": 0
     },
     {
@@ -29,7 +38,10 @@
       "start_node": 3,
       "end_node": 6,
       "distance": 17.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 2
     },
     {
@@ -37,7 +49,10 @@
       "start_node": 4,
       "end_node": 2,
       "distance": 23.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 3
     },
     {
@@ -45,7 +60,9 @@
       "start_node": 4,
       "end_node": 5,
       "distance": 39.0,
-      "included_heading": [],
+      "included_heading": [
+        180.0
+      ],
       "group_id": 4
     },
     {
@@ -53,7 +70,10 @@
       "start_node": 4,
       "end_node": 8,
       "distance": 10.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 3
     },
     {
@@ -61,7 +81,9 @@
       "start_node": 5,
       "end_node": 11,
       "distance": 46.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0
+      ],
       "group_id": 5
     },
     {
@@ -69,7 +91,10 @@
       "start_node": 6,
       "end_node": 22,
       "distance": 124.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 2
     },
     {
@@ -77,7 +102,10 @@
       "start_node": 7,
       "end_node": 6,
       "distance": 18.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0,
+        180.0
+      ],
       "group_id": 6
     },
     {
@@ -85,7 +113,10 @@
       "start_node": 7,
       "end_node": 23,
       "distance": 124.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 7
     },
     {
@@ -93,7 +124,9 @@
       "start_node": 9,
       "end_node": 8,
       "distance": 32.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0
+      ],
       "group_id": 8
     },
     {
@@ -101,7 +134,9 @@
       "start_node": 9,
       "end_node": 10,
       "distance": 31.0,
-      "included_heading": [],
+      "included_heading": [
+        270.0
+      ],
       "group_id": 9
     },
     {
@@ -109,7 +144,9 @@
       "start_node": 12,
       "end_node": 13,
       "distance": 20.0,
-      "included_heading": [],
+      "included_heading": [
+        180.0
+      ],
       "group_id": 10
     },
     {
@@ -117,7 +154,9 @@
       "start_node": 14,
       "end_node": 12,
       "distance": 14.142135623730951,
-      "included_heading": [],
+      "included_heading": [
+        225.0
+      ],
       "group_id": 11
     },
     {
@@ -125,7 +164,9 @@
       "start_node": 14,
       "end_node": 18,
       "distance": 10.0,
-      "included_heading": [],
+      "included_heading": [
+        270.0
+      ],
       "group_id": 12
     },
     {
@@ -133,7 +174,9 @@
       "start_node": 16,
       "end_node": 15,
       "distance": 20.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0
+      ],
       "group_id": 13
     },
     {
@@ -141,7 +184,9 @@
       "start_node": 17,
       "end_node": 13,
       "distance": 14.142135623730951,
-      "included_heading": [],
+      "included_heading": [
+        135.0
+      ],
       "group_id": 14
     },
     {
@@ -149,7 +194,9 @@
       "start_node": 18,
       "end_node": 15,
       "distance": 14.142135623730951,
-      "included_heading": [],
+      "included_heading": [
+        45.0
+      ],
       "group_id": 15
     },
     {
@@ -157,7 +204,9 @@
       "start_node": 19,
       "end_node": 16,
       "distance": 14.142135623730951,
-      "included_heading": [],
+      "included_heading": [
+        315.0
+      ],
       "group_id": 16
     },
     {
@@ -165,7 +214,9 @@
       "start_node": 19,
       "end_node": 17,
       "distance": 10.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0
+      ],
       "group_id": 17
     },
     {
@@ -173,7 +224,10 @@
       "start_node": 20,
       "end_node": 18,
       "distance": 30.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 18
     },
     {
@@ -181,7 +235,10 @@
       "start_node": 20,
       "end_node": 901,
       "distance": 14.142135623730951,
-      "included_heading": [],
+      "included_heading": [
+        135.0,
+        315.0
+      ],
       "group_id": 19
     },
     {
@@ -189,7 +246,10 @@
       "start_node": 21,
       "end_node": 301,
       "distance": 80.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 3
     },
     {
@@ -197,7 +257,10 @@
       "start_node": 22,
       "end_node": 21,
       "distance": 48.0,
-      "included_heading": [],
+      "included_heading": [
+        180.0,
+        0.0
+      ],
       "group_id": 20
     },
     {
@@ -205,7 +268,10 @@
       "start_node": 22,
       "end_node": 23,
       "distance": 18.0,
-      "included_heading": [],
+      "included_heading": [
+        180.0,
+        0.0
+      ],
       "group_id": 20
     },
     {
@@ -213,7 +279,10 @@
       "start_node": 24,
       "end_node": 23,
       "distance": 5.0,
-      "included_heading": [],
+      "included_heading": [
+        180.0,
+        0.0
+      ],
       "group_id": 20
     },
     {
@@ -221,7 +290,9 @@
       "start_node": 24,
       "end_node": 37,
       "distance": 39.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0
+      ],
       "group_id": 21
     },
     {
@@ -229,7 +300,10 @@
       "start_node": 26,
       "end_node": 25,
       "distance": 34.0,
-      "included_heading": [],
+      "included_heading": [
+        180.0,
+        0.0
+      ],
       "group_id": 22
     },
     {
@@ -237,7 +311,10 @@
       "start_node": 26,
       "end_node": 902,
       "distance": 53.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 23
     },
     {
@@ -245,7 +322,10 @@
       "start_node": 27,
       "end_node": 19,
       "distance": 73.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 24
     },
     {
@@ -253,7 +333,10 @@
       "start_node": 27,
       "end_node": 26,
       "distance": 19.0,
-      "included_heading": [],
+      "included_heading": [
+        180.0,
+        0.0
+      ],
       "group_id": 22
     },
     {
@@ -261,7 +344,10 @@
       "start_node": 28,
       "end_node": 27,
       "distance": 51.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0,
+        180.0
+      ],
       "group_id": 22
     },
     {
@@ -269,7 +355,10 @@
       "start_node": 28,
       "end_node": 33,
       "distance": 18.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 25
     },
     {
@@ -277,7 +366,10 @@
       "start_node": 29,
       "end_node": 28,
       "distance": 27.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0,
+        180.0
+      ],
       "group_id": 22
     },
     {
@@ -285,7 +377,10 @@
       "start_node": 30,
       "end_node": 29,
       "distance": 63.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0,
+        180.0
+      ],
       "group_id": 22
     },
     {
@@ -293,7 +388,10 @@
       "start_node": 30,
       "end_node": 31,
       "distance": 20.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0,
+        180.0
+      ],
       "group_id": 22
     },
     {
@@ -301,7 +399,10 @@
       "start_node": 31,
       "end_node": 42,
       "distance": 51.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 3
     },
     {
@@ -309,7 +410,10 @@
       "start_node": 31,
       "end_node": 303,
       "distance": 3.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 3
     },
     {
@@ -317,7 +421,9 @@
       "start_node": 32,
       "end_node": 23,
       "distance": 16.0,
-      "included_heading": [],
+      "included_heading": [
+        270.0
+      ],
       "group_id": 26
     },
     {
@@ -325,7 +431,10 @@
       "start_node": 33,
       "end_node": 34,
       "distance": 27.0,
-      "included_heading": [],
+      "included_heading": [
+        180.0,
+        0.0
+      ],
       "group_id": 27
     },
     {
@@ -333,7 +442,10 @@
       "start_node": 34,
       "end_node": 29,
       "distance": 18.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 28
     },
     {
@@ -341,7 +453,10 @@
       "start_node": 34,
       "end_node": 40,
       "distance": 33.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 28
     },
     {
@@ -349,7 +464,10 @@
       "start_node": 34,
       "end_node": 222,
       "distance": 42.0,
-      "included_heading": [],
+      "included_heading": [
+        180.0,
+        0.0
+      ],
       "group_id": 27
     },
     {
@@ -357,7 +475,10 @@
       "start_node": 35,
       "end_node": 302,
       "distance": 23.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 29
     },
     {
@@ -365,7 +486,9 @@
       "start_node": 36,
       "end_node": 32,
       "distance": 23.0,
-      "included_heading": [],
+      "included_heading": [
+        270.0
+      ],
       "group_id": 26
     },
     {
@@ -373,7 +496,10 @@
       "start_node": 36,
       "end_node": 35,
       "distance": 33.0,
-      "included_heading": [],
+      "included_heading": [
+        180.0,
+        0.0
+      ],
       "group_id": 30
     },
     {
@@ -381,7 +507,10 @@
       "start_node": 36,
       "end_node": 37,
       "distance": 5.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0,
+        180.0
+      ],
       "group_id": 30
     },
     {
@@ -389,7 +518,10 @@
       "start_node": 38,
       "end_node": 44,
       "distance": 18.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 31
     },
     {
@@ -397,7 +529,10 @@
       "start_node": 39,
       "end_node": 38,
       "distance": 32.0,
-      "included_heading": [],
+      "included_heading": [
+        180.0,
+        0.0
+      ],
       "group_id": 32
     },
     {
@@ -405,7 +540,10 @@
       "start_node": 41,
       "end_node": 40,
       "distance": 48.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0,
+        180.0
+      ],
       "group_id": 33
     },
     {
@@ -413,7 +551,10 @@
       "start_node": 41,
       "end_node": 46,
       "distance": 18.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 34
     },
     {
@@ -421,7 +562,10 @@
       "start_node": 42,
       "end_node": 43,
       "distance": 17.0,
-      "included_heading": [],
+      "included_heading": [
+        180.0,
+        0.0
+      ],
       "group_id": 35
     },
     {
@@ -429,7 +573,10 @@
       "start_node": 43,
       "end_node": 48,
       "distance": 18.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 36
     },
     {
@@ -437,7 +584,10 @@
       "start_node": 44,
       "end_node": 45,
       "distance": 32.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0,
+        180.0
+      ],
       "group_id": 37
     },
     {
@@ -445,7 +595,10 @@
       "start_node": 44,
       "end_node": 49,
       "distance": 18.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 31
     },
     {
@@ -453,7 +606,10 @@
       "start_node": 45,
       "end_node": 39,
       "distance": 18.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 38
     },
     {
@@ -461,7 +617,10 @@
       "start_node": 46,
       "end_node": 47,
       "distance": 35.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0,
+        180.0
+      ],
       "group_id": 39
     },
     {
@@ -469,7 +628,10 @@
       "start_node": 46,
       "end_node": 50,
       "distance": 18.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 34
     },
     {
@@ -477,7 +639,10 @@
       "start_node": 47,
       "end_node": 42,
       "distance": 18.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 3
     },
     {
@@ -485,7 +650,10 @@
       "start_node": 47,
       "end_node": 48,
       "distance": 17.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0,
+        180.0
+      ],
       "group_id": 39
     },
     {
@@ -493,7 +661,10 @@
       "start_node": 47,
       "end_node": 51,
       "distance": 18.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 3
     },
     {
@@ -501,7 +672,10 @@
       "start_node": 49,
       "end_node": 53,
       "distance": 18.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 31
     },
     {
@@ -509,7 +683,10 @@
       "start_node": 49,
       "end_node": 233,
       "distance": 42.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0,
+        180.0
+      ],
       "group_id": 40
     },
     {
@@ -517,7 +694,10 @@
       "start_node": 50,
       "end_node": 51,
       "distance": 35.0,
-      "included_heading": [],
+      "included_heading": [
+        180.0,
+        0.0
+      ],
       "group_id": 41
     },
     {
@@ -525,7 +705,10 @@
       "start_node": 52,
       "end_node": 51,
       "distance": 30.0,
-      "included_heading": [],
+      "included_heading": [
+        180.0,
+        0.0
+      ],
       "group_id": 41
     },
     {
@@ -533,7 +716,9 @@
       "start_node": 52,
       "end_node": 908,
       "distance": 68.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0
+      ],
       "group_id": 42
     },
     {
@@ -541,7 +726,10 @@
       "start_node": 54,
       "end_node": 40,
       "distance": 54.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 28
     },
     {
@@ -549,7 +737,10 @@
       "start_node": 54,
       "end_node": 53,
       "distance": 97.0,
-      "included_heading": [],
+      "included_heading": [
+        180.0,
+        0.0
+      ],
       "group_id": 43
     },
     {
@@ -557,7 +748,10 @@
       "start_node": 55,
       "end_node": 50,
       "distance": 18.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 34
     },
     {
@@ -565,7 +759,10 @@
       "start_node": 55,
       "end_node": 54,
       "distance": 48.0,
-      "included_heading": [],
+      "included_heading": [
+        180.0,
+        0.0
+      ],
       "group_id": 43
     },
     {
@@ -573,7 +770,10 @@
       "start_node": 55,
       "end_node": 59,
       "distance": 23.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 34
     },
     {
@@ -581,7 +781,10 @@
       "start_node": 56,
       "end_node": 55,
       "distance": 57.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0,
+        180.0
+      ],
       "group_id": 43
     },
     {
@@ -589,7 +792,9 @@
       "start_node": 56,
       "end_node": 907,
       "distance": 50.0,
-      "included_heading": [],
+      "included_heading": [
+        270.0
+      ],
       "group_id": 44
     },
     {
@@ -597,7 +802,10 @@
       "start_node": 57,
       "end_node": 53,
       "distance": 24.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 31
     },
     {
@@ -605,7 +813,10 @@
       "start_node": 57,
       "end_node": 58,
       "distance": 97.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0,
+        180.0
+      ],
       "group_id": 45
     },
     {
@@ -613,7 +824,10 @@
       "start_node": 57,
       "end_node": 60,
       "distance": 21.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 31
     },
     {
@@ -621,7 +835,10 @@
       "start_node": 58,
       "end_node": 54,
       "distance": 24.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 28
     },
     {
@@ -629,7 +846,10 @@
       "start_node": 58,
       "end_node": 62,
       "distance": 21.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 28
     },
     {
@@ -637,7 +857,10 @@
       "start_node": 59,
       "end_node": 63,
       "distance": 22.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 34
     },
     {
@@ -645,7 +868,10 @@
       "start_node": 59,
       "end_node": 906,
       "distance": 49.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0,
+        180.0
+      ],
       "group_id": 46
     },
     {
@@ -653,7 +879,10 @@
       "start_node": 60,
       "end_node": 65,
       "distance": 19.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 31
     },
     {
@@ -661,7 +890,10 @@
       "start_node": 61,
       "end_node": 60,
       "distance": 47.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0,
+        180.0
+      ],
       "group_id": 47
     },
     {
@@ -669,7 +901,10 @@
       "start_node": 61,
       "end_node": 66,
       "distance": 19.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 48
     },
     {
@@ -677,7 +912,10 @@
       "start_node": 61,
       "end_node": 275,
       "distance": 28.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0,
+        180.0
+      ],
       "group_id": 47
     },
     {
@@ -685,7 +923,10 @@
       "start_node": 62,
       "end_node": 67,
       "distance": 19.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 28
     },
     {
@@ -693,7 +934,10 @@
       "start_node": 63,
       "end_node": 62,
       "distance": 48.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0,
+        180.0
+      ],
       "group_id": 49
     },
     {
@@ -701,7 +945,10 @@
       "start_node": 63,
       "end_node": 64,
       "distance": 79.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0,
+        180.0
+      ],
       "group_id": 49
     },
     {
@@ -709,7 +956,10 @@
       "start_node": 65,
       "end_node": 70,
       "distance": 23.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 31
     },
     {
@@ -717,7 +967,10 @@
       "start_node": 65,
       "end_node": 903,
       "distance": 23.0,
-      "included_heading": [],
+      "included_heading": [
+        180.0,
+        0.0
+      ],
       "group_id": 50
     },
     {
@@ -725,7 +978,10 @@
       "start_node": 67,
       "end_node": 66,
       "distance": 50.0,
-      "included_heading": [],
+      "included_heading": [
+        180.0,
+        0.0
+      ],
       "group_id": 51
     },
     {
@@ -733,7 +989,10 @@
       "start_node": 68,
       "end_node": 63,
       "distance": 19.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 34
     },
     {
@@ -741,7 +1000,10 @@
       "start_node": 69,
       "end_node": 68,
       "distance": 67.0,
-      "included_heading": [],
+      "included_heading": [
+        180.0,
+        0.0
+      ],
       "group_id": 52
     },
     {
@@ -749,7 +1011,10 @@
       "start_node": 70,
       "end_node": 71,
       "distance": 97.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0,
+        180.0
+      ],
       "group_id": 53
     },
     {
@@ -757,7 +1022,10 @@
       "start_node": 71,
       "end_node": 67,
       "distance": 23.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 28
     },
     {
@@ -765,7 +1033,10 @@
       "start_node": 71,
       "end_node": 72,
       "distance": 48.0,
-      "included_heading": [],
+      "included_heading": [
+        180.0,
+        0.0
+      ],
       "group_id": 53
     },
     {
@@ -773,7 +1044,10 @@
       "start_node": 72,
       "end_node": 68,
       "distance": 23.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 34
     },
     {
@@ -781,7 +1055,10 @@
       "start_node": 72,
       "end_node": 80,
       "distance": 36.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 34
     },
     {
@@ -789,7 +1066,10 @@
       "start_node": 72,
       "end_node": 905,
       "distance": 15.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0,
+        180.0
+      ],
       "group_id": 53
     },
     {
@@ -797,7 +1077,10 @@
       "start_node": 74,
       "end_node": 69,
       "distance": 23.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 54
     },
     {
@@ -805,7 +1088,10 @@
       "start_node": 74,
       "end_node": 85,
       "distance": 72.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 54
     },
     {
@@ -813,7 +1099,10 @@
       "start_node": 75,
       "end_node": 77,
       "distance": 18.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 55
     },
     {
@@ -821,7 +1110,10 @@
       "start_node": 76,
       "end_node": 75,
       "distance": 66.0,
-      "included_heading": [],
+      "included_heading": [
+        180.0,
+        0.0
+      ],
       "group_id": 56
     },
     {
@@ -829,7 +1121,10 @@
       "start_node": 77,
       "end_node": 78,
       "distance": 35.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0,
+        180.0
+      ],
       "group_id": 57
     },
     {
@@ -837,7 +1132,10 @@
       "start_node": 77,
       "end_node": 83,
       "distance": 37.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 55
     },
     {
@@ -845,7 +1143,10 @@
       "start_node": 78,
       "end_node": 79,
       "distance": 31.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0,
+        180.0
+      ],
       "group_id": 57
     },
     {
@@ -853,7 +1154,10 @@
       "start_node": 79,
       "end_node": 76,
       "distance": 18.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 58
     },
     {
@@ -861,7 +1165,10 @@
       "start_node": 80,
       "end_node": 79,
       "distance": 19.0,
-      "included_heading": [],
+      "included_heading": [
+        180.0,
+        0.0
+      ],
       "group_id": 57
     },
     {
@@ -869,7 +1176,10 @@
       "start_node": 80,
       "end_node": 82,
       "distance": 19.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 34
     },
     {
@@ -877,7 +1187,10 @@
       "start_node": 81,
       "end_node": 78,
       "distance": 19.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 59
     },
     {
@@ -885,7 +1198,10 @@
       "start_node": 81,
       "end_node": 82,
       "distance": 50.0,
-      "included_heading": [],
+      "included_heading": [
+        180.0,
+        0.0
+      ],
       "group_id": 60
     },
     {
@@ -893,7 +1209,10 @@
       "start_node": 82,
       "end_node": 84,
       "distance": 18.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 34
     },
     {
@@ -901,7 +1220,10 @@
       "start_node": 83,
       "end_node": 84,
       "distance": 85.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0,
+        180.0
+      ],
       "group_id": 61
     },
     {
@@ -909,7 +1231,10 @@
       "start_node": 83,
       "end_node": 86,
       "distance": 19.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 55
     },
     {
@@ -917,7 +1242,10 @@
       "start_node": 85,
       "end_node": 88,
       "distance": 20.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 54
     },
     {
@@ -925,7 +1253,9 @@
       "start_node": 85,
       "end_node": 89,
       "distance": 31.622776601683793,
-      "included_heading": [],
+      "included_heading": [
+        162.0
+      ],
       "group_id": 62
     },
     {
@@ -933,7 +1263,10 @@
       "start_node": 86,
       "end_node": 87,
       "distance": 85.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0,
+        180.0
+      ],
       "group_id": 63
     },
     {
@@ -941,7 +1274,10 @@
       "start_node": 87,
       "end_node": 84,
       "distance": 19.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 34
     },
     {
@@ -949,7 +1285,10 @@
       "start_node": 88,
       "end_node": 87,
       "distance": 67.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0,
+        180.0
+      ],
       "group_id": 63
     },
     {
@@ -957,7 +1296,9 @@
       "start_node": 88,
       "end_node": 89,
       "distance": 31.622776601683793,
-      "included_heading": [],
+      "included_heading": [
+        18.0
+      ],
       "group_id": 64
     },
     {
@@ -965,7 +1306,9 @@
       "start_node": 89,
       "end_node": 93,
       "distance": 14.422205101855956,
-      "included_heading": [],
+      "included_heading": [
+        146.0
+      ],
       "group_id": 65
     },
     {
@@ -973,7 +1316,9 @@
       "start_node": 91,
       "end_node": 90,
       "distance": 7.0710678118654755,
-      "included_heading": [],
+      "included_heading": [
+        225.0
+      ],
       "group_id": 66
     },
     {
@@ -981,7 +1326,9 @@
       "start_node": 91,
       "end_node": 92,
       "distance": 7.0710678118654755,
-      "included_heading": [],
+      "included_heading": [
+        135.0
+      ],
       "group_id": 67
     },
     {
@@ -989,7 +1336,9 @@
       "start_node": 94,
       "end_node": 93,
       "distance": 7.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0
+      ],
       "group_id": 68
     },
     {
@@ -997,7 +1346,9 @@
       "start_node": 95,
       "end_node": 94,
       "distance": 13.0,
-      "included_heading": [],
+      "included_heading": [
+        23.0
+      ],
       "group_id": 69
     },
     {
@@ -1005,7 +1356,9 @@
       "start_node": 96,
       "end_node": 95,
       "distance": 13.0,
-      "included_heading": [],
+      "included_heading": [
+        337.0
+      ],
       "group_id": 70
     },
     {
@@ -1013,7 +1366,10 @@
       "start_node": 301,
       "end_node": 8,
       "distance": 36.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 3
     },
     {
@@ -1021,7 +1377,9 @@
       "start_node": 301,
       "end_node": 11,
       "distance": 39.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0
+      ],
       "group_id": 71
     },
     {
@@ -1029,7 +1387,9 @@
       "start_node": 302,
       "end_node": 32,
       "distance": 33.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0
+      ],
       "group_id": 72
     },
     {
@@ -1037,7 +1397,10 @@
       "start_node": 302,
       "end_node": 303,
       "distance": 33.0,
-      "included_heading": [],
+      "included_heading": [
+        0.0,
+        180.0
+      ],
       "group_id": 73
     },
     {
@@ -1045,7 +1408,10 @@
       "start_node": 303,
       "end_node": 21,
       "distance": 16.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 3
     },
     {
@@ -1053,7 +1419,10 @@
       "start_node": 900,
       "end_node": 25,
       "distance": 82.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 74
     },
     {
@@ -1061,7 +1430,10 @@
       "start_node": 904,
       "end_node": 68,
       "distance": 10.0,
-      "included_heading": [],
+      "included_heading": [
+        180.0,
+        0.0
+      ],
       "group_id": 52
     },
     {
@@ -1069,7 +1441,10 @@
       "start_node": 909,
       "end_node": 64,
       "distance": 40.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0,
+        270.0
+      ],
       "group_id": 75
     },
     {
@@ -1077,7 +1452,9 @@
       "start_node": 910,
       "end_node": 96,
       "distance": 7.0,
-      "included_heading": [],
+      "included_heading": [
+        270.0
+      ],
       "group_id": 76
     },
     {
@@ -1085,7 +1462,9 @@
       "start_node": 911,
       "end_node": 92,
       "distance": 5.0,
-      "included_heading": [],
+      "included_heading": [
+        90.0
+      ],
       "group_id": 77
     }
   ]
