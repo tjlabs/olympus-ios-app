@@ -1,8 +1,8 @@
 
 import TJLabsCommon
 
-class JupiterDataBatchSender {
-    static let shared = JupiterDataBatchSender()
+class DataBatchSender {
+    static let shared = DataBatchSender()
     init() { }
     
     private let MOBILE_RESULT_BUFFER_LENGTH: Int = 20
@@ -54,7 +54,7 @@ class JupiterDataBatchSender {
                                         x: result.x,
                                         y: result.y,
                                         scc: result.scc,
-                                        phase: result.phase,
+                                        phase: 6,
                                         absolute_heading: result.absolute_heading,
                                         normalization_scale: normalizationScale,
                                         device_min_rss: Int(deviceMinRss),
@@ -65,7 +65,7 @@ class JupiterDataBatchSender {
                                         latitude: result.llh?.lat,
                                         longitude: result.llh?.lon,
                                         velocity: result.velocity,
-                                        calculated_time: result.calculated_time)
+                                        calculated_time: 0.1)
         inputMobileResultArray.append(mobileResult)
         if inputMobileResultArray.count >= MOBILE_RESULT_BUFFER_LENGTH {
             let resultURL = JupiterNetworkConstants.getRecMobileResultURL()
@@ -78,13 +78,6 @@ class JupiterDataBatchSender {
     func sendMobileReport(report: MobileReport) {
         let reportURL = JupiterNetworkConstants.getRecMobileReportURL()
         JupiterNetworkManager.shared.postMobileReport(url: reportURL, input: report, completion: { [self] _,_,_ in
-        })
-    }
-    
-    func sendRssiCompensation(sectorId: Int, deviceModel: String, deviceOsVersion: Int, normalizationScale: Float) {
-        let rcURL = JupiterNetworkConstants.getUserRcURL()
-        let rcInfo = RcInfoSave(sector_id: sectorId, device_model: deviceModel, os_version: deviceOsVersion, normalization_scale: normalizationScale)
-        JupiterNetworkManager.shared.postParam(url: rcURL, input: rcInfo, completion: { [self] statusCode, retunedString, _ in
         })
     }
 }
