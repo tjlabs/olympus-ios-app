@@ -12,16 +12,16 @@ public struct FineLocationTrackingOutput: Codable, Equatable {
     public var y: Float
     public var absolute_heading: Float
     
-    public init() {
-        self.mobile_time = 0
-        self.index = 0
-        self.building_name = ""
-        self.level_name = ""
-        self.scc = 0
-        self.x = 0
-        self.y = 0
-        self.absolute_heading = 0
-    }
+//    public init() {
+//        self.mobile_time = 0
+//        self.index = 0
+//        self.building_name = ""
+//        self.level_name = ""
+//        self.scc = 0
+//        self.x = 0
+//        self.y = 0
+//        self.absolute_heading = 0
+//    }
 }
 
 // MARK: - RSSI Compensation

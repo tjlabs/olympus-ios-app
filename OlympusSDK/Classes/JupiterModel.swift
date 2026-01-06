@@ -15,6 +15,10 @@ public protocol JupiterManagerDelegate: AnyObject {
     func onJupiterReport(_ flag: Int)
 }
 
+public enum JupiterPhase {
+    case NONE, ENTERING, SEARCHING, TRACKING
+}
+
 // MARK: - JupiterResult
 public struct JupiterResult: Codable {
     public var mobile_time: Int
@@ -25,8 +29,6 @@ public struct JupiterResult: Codable {
     public var y: Float
     public var llh: LLH?
     public var absolute_heading: Float
-    public var phase: Int
-    public var calculated_time: Float
     public var index: Int
     public var velocity: Float
     public var mode: String
@@ -47,4 +49,25 @@ struct RssCompensationParam {
     let device_min_rss: Float
     let standard_min_rss: Float
     let normalization_scale: Float
+}
+
+
+// MARK: - JupiterDebugResult
+public struct JupiterDebugResult: Codable {
+    public var mobile_time: Int
+    public var building_name: String
+    public var level_name: String
+    public var scc: Float
+    public var x: Float
+    public var y: Float
+    public var llh: LLH?
+    public var absolute_heading: Float
+    public var index: Int
+    public var velocity: Float
+    public var mode: String
+    public var ble_only_position: Bool
+    public var isIndoor: Bool
+    public var validity: Bool
+    public var validity_flag: Int
+    public var tu_xyh: [Float]
 }

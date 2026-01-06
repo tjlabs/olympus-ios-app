@@ -12,8 +12,6 @@ public enum InOutState: Int, Codable {
 final class JupiterResultState {
     static var isEntTrack = false
     static var isPossibleHeadingCorrection = false
-    static var isAmbiguous = false
-    static var isAmbiguousInDRMode = false
     static var isInRecoveryProcess = false
     static var isIndoor = false
     static var isInMapEnd = false
@@ -21,16 +19,12 @@ final class JupiterResultState {
     static var isSleepMode = false
     static var isVenus = false
     static var isDRMode = false
-    static var isDRModeRqInfoSaved = false
     static var stableModeInitFlag = true
-    static var isOsrRunning = false
     static var isGetFirstResponse = false
     
     static func reset() {
         isEntTrack = false
         isPossibleHeadingCorrection = false
-        isAmbiguous = false
-        isAmbiguousInDRMode = false
         isInRecoveryProcess = false
         isIndoor = false
         isInMapEnd = false
@@ -38,9 +32,7 @@ final class JupiterResultState {
         isSleepMode = false
         isVenus = false
         isDRMode = false
-        isDRModeRqInfoSaved = false
         stableModeInitFlag = true
-        isOsrRunning = false
         isGetFirstResponse = false
     }
 }
@@ -105,14 +97,6 @@ final class NetworkState {
     }
 }
 
-final class PhaseState {
-    static var isPhaseBreak = false
-
-    static func reset() {
-        isPhaseBreak = false
-    }
-}
-
 final class GeofenceState {
     static var isInEntranceLevel = false
 
@@ -150,7 +134,7 @@ final class JupiterStates {
         JupiterTimeState.reset()
         KalmanState.reset()
         NetworkState.reset()
-        PhaseState.reset()
+//        PhaseState.reset()
         JupiterMisMatchState.reset()
         GeofenceState.reset()
         BackgroundState.reset()
