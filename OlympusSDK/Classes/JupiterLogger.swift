@@ -19,14 +19,8 @@ public class JupiterLogger {
     static let TJ_USEFUL_FUNC_TAG = "TJLabsUsefulFunction"
     static let TJ_RETURN_RESULT_TAG = "TJLabsUpdateResult"
     
-    static var debugOption = false
-    static var infoOption = false
-    
-    static let COLOR_RESET = "\u{001B}[0m"
-    static let COLOR_RED = "\u{001B}[0;31m"
-    static let COLOR_GREEN = "\u{001B}[0;32m"
-    static let COLOR_YELLOW = "\u{001B}[0;33m"
-    static let COLOR_BLUE = "\u{001B}[0;34m"
+    static var debugOption = true
+    static var infoOption = true
     
     public static func setDebugOption(set: Bool) {
         debugOption = set
@@ -38,25 +32,25 @@ public class JupiterLogger {
     
     static func d(tag: String, message: String) {
         if debugOption {
-            print("\(COLOR_BLUE)[DEBUG] [\(tag)] \(message)\(COLOR_RESET)")
+            print("[DEBUG] [\(tag)] \(message)")
         }
     }
     
     static func i(tag: String, message: String) {
         if debugOption {
-            print("\(COLOR_GREEN)[INFO]  [\(tag)] \(message)\(COLOR_RESET)")
+            print("[INFO]  [\(tag)] \(message)")
         }
     }
     
     static func w(tag: String, message: String) {
         if debugOption {
-            print("\(COLOR_YELLOW)[WARN]  [\(tag)] \(message)\(COLOR_RESET)")
+            print("[WARN]  [\(tag)] \(message)")
         }
     }
     
     static func e(tag: String, message: String) {
         if debugOption {
-            print("\(COLOR_RED)[ERROR] [\(tag)] \(message)\(COLOR_RESET)")
+            print("[ERROR] [\(tag)] \(message)")
         }
     }
 }
