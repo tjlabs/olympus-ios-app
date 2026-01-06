@@ -7,7 +7,7 @@ class EntranceManager {
     init(sector_id: Int) {
         self.sector_id = sector_id
         
-        self.curEntKey = ""
+        self.curEntKey = nil
         self.checkStartEntTrackFlag = false
         self.checkStartEntTrackTimestamp = 0
         self.scaledDistance = 0
@@ -26,7 +26,7 @@ class EntranceManager {
     private var entInnerWardCoordMap = [String: xyhs]()
     
     var sector_id: Int
-    private var curEntKey: String
+    private var curEntKey: String?
     private var checkStartEntTrackFlag: Bool
     private var checkStartEntTrackTimestamp: Int
     private var scaledDistance: Double
@@ -35,7 +35,7 @@ class EntranceManager {
     private var entTrackFinishedTimestamp: Int
     
     func toggleToOutdoor() {
-        self.curEntKey = ""
+        self.curEntKey = nil
         self.checkStartEntTrackFlag = false
         self.checkStartEntTrackTimestamp = 0
         self.scaledDistance = 0
@@ -56,21 +56,19 @@ class EntranceManager {
         self.entInnerWardCoordMap[key] = xyhs(x: data.innerWardCoord[0], y: data.innerWardCoord[1], heading: data.innerWardCoord[2])
     }
     
-    func checkStartEntTrack(bleAvg: [String: Float], sec: Int) -> EntranceCheckerResult {
-        var check: Bool = false
-        if entRouteMap.isEmpty || bleAvg.isEmpty {
-            curEntKey = ""
+    func checkStartEntTrack(wardId: String, sec: Int) -> String? {
+        if entRouteMap.isEmpty {
+            curEntKey = nil
             checkStartEntTrackFlag = false
         }
-        JupiterLogger.i(tag: "EntranceManager", message: "(checkStartEntTrack) - checkStartEntTrackFlag = \(checkStartEntTrackFlag) // bleAvg = \(bleAvg)")
+        JupiterLogger.i(tag: "EntranceManager", message: "(checkStartEntTrack) - checkStartEntTrackFlag = \(checkStartEntTrackFlag) // wardId = \(wardId)")
         
         if !checkStartEntTrackFlag {
-            for key in bleAvg.keys {
-                if entOuterWardIdMap.values.contains(key) {
-                    curEntKey = entOuterWardIdMap.first(where: { $0.value == key })?.key ?? ""
-                    checkStartEntTrackFlag = true
-                    checkStartEntTrackTimestamp = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-                }
+            JupiterLogger.i(tag: "EntranceManager", message: "(checkStartEntTrack) - entOuterWardIdMap = \(entOuterWardIdMap)")
+            if entOuterWardIdMap.values.contains(wardId) {
+                curEntKey = entOuterWardIdMap.first(where: { $0.value == wardId })?.key ?? nil
+                checkStartEntTrackFlag = true
+                checkStartEntTrackTimestamp = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
             }
         }
         
@@ -79,89 +77,72 @@ class EntranceManager {
         JupiterLogger.i(tag: "EntranceManager", message: "(checkStartEntTrack) - timeDiff = \(timeDiff)")
         
         if (timeDiff >= sec * JupiterTime.SECONDS_TO_MILLIS && checkStartEntTrackFlag) {
-            if (bleAvg.count >= 2) {
-                var bleRssiConditionCount = 0
-                for (_, value) in bleAvg {
-                    if value >= -90 {
-                        bleRssiConditionCount += 1
-                    }
-                    
-                    if (bleRssiConditionCount >= 2) {
-                        checkStartEntTrackFlag = false
-                        check = true
-                        break
-                    }
-                }
-            }
+            checkStartEntTrackFlag = false
         }
         
-        return EntranceCheckerResult(is_entered: check, key: curEntKey)
+        return curEntKey
     }
         
-    func startEntTrack(uvd: UserVelocity, curResult: FineLocationTrackingOutput) -> FineLocationTrackingOutput {
-        var result = curResult
-            
-        if curEntKey != "" {
-            let length = uvd.length
-            let scale = Double(entVelocityScalesMap[curEntKey] ?? 1.0)
-            let scaledLength = length*scale
-            scaledDistance += scaledLength
-            var roundedIndex = Int(round(scaledDistance))
-            JupiterLogger.i(tag: "EntranceManager", message: "(trackEntRoute) - uvd index = \(uvd.index) // length = \(length) // scale = \(scale) // scaledLength = \(scaledLength) // scaledDistance =\(scaledDistance)")
-            
-            guard let routeData = self.entRouteMap[curEntKey] else { return result }
-            let entRouteLevel = routeData.routeLevel
-            let entRouteCoord = routeData.route
-            
-            if roundedIndex >= entRouteCoord.count-1 {
-                roundedIndex = entRouteCoord.count-1
-                isLastEntPos = true
-            } else {
-                isLastEntPos = false
-            }
-            JupiterLogger.i(tag: "EntranceManager", message: "(trackEntRoute) - roundedIndex = \(roundedIndex) // route size = \(entRouteCoord.count-1)")
-            
-            result.level_name = entRouteLevel[roundedIndex]
-            result.x = entRouteCoord[roundedIndex][0]
-            result.y = entRouteCoord[roundedIndex][1]
-            result.absolute_heading = entRouteCoord[roundedIndex][2]
-            JupiterLogger.i(tag: "EntranceManager", message: "(trackEntRoute) - entTrackResult : \(result.building_name) , \(result.level_name) , \(result.x) , \(result.y) , \(result.absolute_heading)")
-            return result
+    func startEntTrack(currentTime: Int, uvd: UserVelocity) -> FineLocationTrackingOutput? {
+        guard let curEntKey = self.curEntKey else { return nil }
+        let entTrackData = curEntKey.split(separator: "_")
+        let entTrackBuilding = String(entTrackData[1])
+        
+        let length = uvd.length
+        let scale = Double(entVelocityScalesMap[curEntKey] ?? 1.0)
+        let scaledLength = length*scale
+        scaledDistance += scaledLength
+        var roundedIndex = Int(round(scaledDistance))
+        JupiterLogger.i(tag: "EntranceManager", message: "(trackEntRoute) - uvd index = \(uvd.index) // length = \(length) // scale = \(scale) // scaledLength = \(scaledLength) // scaledDistance =\(scaledDistance)")
+        
+        guard let routeData = self.entRouteMap[curEntKey] else { return nil }
+        let entRouteLevel = routeData.routeLevel
+        let entRouteCoord = routeData.route
+        
+        if roundedIndex >= entRouteCoord.count-1 {
+            roundedIndex = entRouteCoord.count-1
+            isLastEntPos = true
         } else {
-            return result
+            isLastEntPos = false
         }
+        JupiterLogger.i(tag: "EntranceManager", message: "(trackEntRoute) - roundedIndex = \(roundedIndex) // route size = \(entRouteCoord.count-1)")
+        
+        let result = FineLocationTrackingOutput(mobile_time: currentTime,
+                                                index: uvd.index,
+                                                building_name: entTrackBuilding,
+                                                level_name: entRouteLevel[roundedIndex],
+                                                scc: 1.0,
+                                                x: entRouteCoord[roundedIndex][0],
+                                                y: entRouteCoord[roundedIndex][1],
+                                                absolute_heading: entRouteCoord[roundedIndex][2])
+        JupiterLogger.i(tag: "EntranceManager", message: "(trackEntRoute) - entTrackResult : \(result.building_name) , \(result.level_name) , \(result.x) , \(result.y) , \(result.absolute_heading)")
+        return result
     }
         
-    func stopEntTrack(curResult: FineLocationTrackingOutput, bleAvg: [String: Float], normalizationScale: Float, deviceMinRss: Float, standardMinRss: Float) -> (Bool, FineLocationTrackingOutput) {
-        var result = curResult
+    func stopEntTrack(curResult: FineLocationTrackingOutput?, wardId: String) -> FineLocationTrackingOutput? {
+        guard let curEntKey = self.curEntKey else { return nil }
+        guard let curResult = curResult else { return nil }
+        guard let innerWardId = entInnerWardIdMap[curEntKey] else { return nil }
+        guard let wardCoord = entInnerWardCoordMap[curEntKey] else { return nil }
+        
+        if innerWardId == wardId {
+            var result = curResult
+            result.x = wardCoord.x
+            result.y = wardCoord.y
+            result.absolute_heading = wardCoord.heading
+            result.level_name = getEntTrackEndLevel()
             
-        if let bleID = entInnerWardIdMap[curEntKey] {
-            if let scannedRSSI = bleAvg[bleID] {
-                if let thresholdRSSI = entInnerWardRssiMap[curEntKey] {
-                    if let wardCoord = entInnerWardCoordMap[curEntKey] {
-                        let normalizedRSSI = (scannedRSSI - deviceMinRss)*normalizationScale + standardMinRss
-                        result.x = wardCoord.x
-                        result.y = wardCoord.y
-                        result.absolute_heading = wardCoord.heading
-                        result.level_name = getEntTrackEndLevel()
-                        return normalizedRSSI >= thresholdRSSI ? (true, result) : (false, result)
-                    } else {
-                        return (false, result)
-                    }
-                } else {
-                    return (false, result)
-                }
-            } else {
-                return (false, result)
-            }
+            return result
         } else {
-            return (false, result)
+            return nil
         }
     }
     
     func forcedStopEntTrack(bleAvg: [String: Float], sec: Int) -> Bool {
+        guard let curEntKey = self.curEntKey else { return false }
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-        JupiterLogger.i(tag: "EntranceManager", message: "(forcedStopEntTrack) - start & stop : stop -> forcedStopEntTrack // time = \(currentTime), isLastEntrancePosition = \(isLastEntPos)")
+        
+//        JupiterLogger.i(tag: "EntranceManager", message: "(forcedStopEntTrack) - start & stop : stop -> forcedStopEntTrack // time = \(currentTime), isLastEntrancePosition = \(isLastEntPos)")
 
         if isLastEntPos && curEntKey != "" {
             if let bleID = entInnerWardIdMap[curEntKey] {
@@ -180,6 +161,8 @@ class EntranceManager {
     }
     
     private func getEntTrackEndLevel() -> String {
+        guard let curEntKey = self.curEntKey else { return "" }
+
         if let entRouteData = entRouteMap[curEntKey] {
             let entRouteLevel = entRouteData.routeLevel
             if !entRouteLevel.isEmpty {
