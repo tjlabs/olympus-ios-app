@@ -139,7 +139,7 @@ class BuildingLevelChanger {
                     let buildingDestination = isOn.buildingDestination
                     let levelDestination = isOn.levelDestination
                     let spotCoord: [Float] = [Float(isTagged.x), Float(isTagged.y)]
-                    determineSpotDetect(time: <#T##Int#>, tag: <#T##BuildingLevelTag#>, lastSpotId: <#T##Int#>, buildingDestination: <#T##String#>, levelDestination: <#T##String#>, curBuilding: <#T##String#>, curLevel: <#T##String#>, spotCoord: <#T##[Float]#>)
+//                    determineSpotDetect(time: <#T##Int#>, tag: <#T##BuildingLevelTag#>, lastSpotId: <#T##Int#>, buildingDestination: <#T##String#>, levelDestination: <#T##String#>, curBuilding: <#T##String#>, curLevel: <#T##String#>, spotCoord: <#T##[Float]#>)
                 }
             }
         }
