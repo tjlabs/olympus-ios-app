@@ -19,6 +19,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     private var stackManager = StackManager()
     private var kalmanFilter: KalmanFilter?
     private var sectionController = SectionController()
+    private var landmarkTagger: LandmarkTagger?
     
     // MARK: - User Properties
     var id: String = ""
@@ -60,7 +61,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     var paddingValues = JupiterMode.PADDING_VALUES_DR
     
-    var tu_xyh: [Float] = [0, 0, 0]
+    // Debuging
+    var debug_tu_xyh: [Float] = [0, 0, 0]
+    var debug_landmark: LandmarkData?
     // MARK: - init & deinit
     init(region: String, id: String, sectorId: Int) {
         self.id = id
@@ -71,6 +74,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         self.buildingLevelChanger = BuildingLevelChanger(sectorId: sectorId)
         self.wardAvgManager = WardAveragingManager(bufferSize: AVG_BUFFER_SIZE)
         self.kalmanFilter = KalmanFilter(stackManager: stackManager)
+        self.landmarkTagger = LandmarkTagger(sectorId: sectorId)
         
         tjlabsResourceManager.delegate = self
         buildingLevelChanger?.delegate = self
@@ -223,7 +227,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             isIndoor: JupiterResultState.isIndoor,
             validity: false,
             validity_flag: 0,
-            tu_xyh: self.tu_xyh
+            tu_xyh: self.debug_tu_xyh,
+            landmark: self.debug_landmark
         )
         
         return jupiterDebugResult
@@ -270,6 +275,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         let curIndex = userVelocity.index
         
         guard let entManager = self.entManager else { return }
+        guard let landmarkTagger = self.landmarkTagger else { return }
         stackManager.stackUserVelocity(uvd: userVelocity)
         
         let capturedRfd = self.curRfd
@@ -281,7 +287,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         if let userPeak = peakDetector.updateEpoch(uvdIndex: curIndex, bleAvg: avgBleData) {
             JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) PEAK detected : id=\(userPeak.id) // peak_idx=\(userPeak.peak_index), peak_rssi=\(userPeak.peak_rssi), detected_idx = \(userPeak.end_index), detected_rssi = \(userPeak.end_rssi)")
             startEntranceTracking(currentTime: currentTime, entManager: entManager, uvd: userVelocity, peakId: userPeak.id, bleData: bleData)
-//            calcEntranceResult(currentTime: currentTime, entManager: entManager, uvd: userVelocity, peakId: userPeak.id, bleData: bleData)
+            if let matchedLandmark = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: userPeak, curResult: self.curResult) {
+                self.debug_landmark = matchedLandmark
+            }
         }
         
         switch (jupiterPhase) {
@@ -299,40 +307,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         self.pastUvd = userVelocity
     }
     
-//    private func calcEntranceResult(currentTime: Int, entManager: EntranceManager, uvd: UserVelocity, peakId: String, bleData: [String: Float]) {
-//        if !JupiterResultState.isIndoor && jupiterPhase != .ENTERING {
-//            guard let entKey = entManager.checkStartEntTrack(wardId: peakId, sec: 3) else { return }
-////            JupiterResultState.isEntTrack = true
-//            jupiterPhase = .ENTERING
-//            let entTrackData = entKey.split(separator: "_")
-//            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - entTrackData = \(entTrackData) ")
-//        }
-//        
-//        if jupiterPhase == .ENTERING {
-//            if let stopEntTrackResult = entManager.stopEntTrack(curResult: curResult, wardId: peakId) {
-//                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - EntTrack Finished : \(stopEntTrackResult.building_name) \(stopEntTrackResult.level_name) , [\(stopEntTrackResult.x),\(stopEntTrackResult.y),\(stopEntTrackResult.absolute_heading)]")
-//
-//                // Entrance Tracking Finshid (Normal)
-//                startIndoorTracking(fltResult: stopEntTrackResult)
-//            } else {
-//                guard let entTrackResult = entManager.startEntTrack(currentTime: currentTime, uvd: uvd) else { return }
-//                self.curResult = entTrackResult
-//                JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcEntranceResult) index:\(uvd.index) - entTrackResult // \(entTrackResult.building_name) \(entTrackResult.level_name) , x = \(entTrackResult.x) , y = \(entTrackResult.y) , h = \(entTrackResult.absolute_heading)")
-//            }
-//
-//            if entManager.forcedStopEntTrack(bleAvg: bleData, sec: 30) {
-//                // Entrance Tracking Finshid (Force)
-//                JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcEntranceResult) index:\(uvd.index) - forcedStopEntTrack")
-//                startIndoorTracking(fltResult: nil)
-//                entManager.setEntTrackFinishedTimestamp(time: currentTime)
-//            }
-//        }
-//    }
-    
     private func startEntranceTracking(currentTime: Int, entManager: EntranceManager, uvd: UserVelocity, peakId: String, bleData: [String: Float]) {
         if !JupiterResultState.isIndoor && jupiterPhase != .ENTERING {
             guard let entKey = entManager.checkStartEntTrack(wardId: peakId, sec: 3) else { return }
-//            JupiterResultState.isEntTrack = true
             jupiterPhase = .ENTERING
             JupiterResultState.isIndoor = true
             let entTrackData = entKey.split(separator: "_")
@@ -402,7 +379,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         }
         kalmanFilter?.updateTuInformation(uvd: uvd)
         if let tuResult = kalmanFilter?.getTuResult() {
-            self.tu_xyh = [tuResult.x, tuResult.y, tuResult.absolute_heading]
+            self.debug_tu_xyh = [tuResult.x, tuResult.y, tuResult.absolute_heading]
         }
         
         let indoorResult = makeCurrentResult(input: tuResult, mustInSameLink: mustInSameLink, pathMatchingType: .NARROW, phase: .TRACKING, mode: mode)
@@ -461,7 +438,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                 result.y = pmResult.y
                 result.absolute_heading = pmResult.heading
                 uvdGenerator?.updateDrVelocityScale(scale: Double(pmResult.scale))
-                JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - result: \(result.building_name), \(result.level_name), [\(result.x),\(result.y),\(result.absolute_heading)]")
+//                JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - result: \(result.building_name), \(result.level_name), [\(result.x),\(result.y),\(result.absolute_heading)]")
             } else {
                 isPmFailed = true
             }
@@ -494,7 +471,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             let diffY = result.y - curResult.y
             let diffNorm = sqrt(diffX*diffX + diffY*diffY)
             if diffNorm >= 2 {
-                JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - bound inNode: \(result.building_name), \(result.level_name), [\(result.x),\(result.y),\(result.absolute_heading)]")
                 kalmanFilter?.updateTuPosition(coord: [result.x, result.y])
             }
         }
@@ -556,7 +532,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     }
     
     func onLandmarkData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [String : TJLabsResource.LandmarkData]) {
-        // TODO
+        landmarkTagger?.setLandmarkData(key: key, data: data)
     }
     
     func onUnitData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [TJLabsResource.UnitData]) {
