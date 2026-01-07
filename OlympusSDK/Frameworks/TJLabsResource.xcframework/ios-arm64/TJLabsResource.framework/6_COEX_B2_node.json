@@ -779,41 +779,6 @@
       ]
     },
     {
-      "id": 26,
-      "coords": [
-        40.0,
-        297.0
-      ],
-      "directions": [
-        {
-          "heading": 0.0,
-          "is_end": false
-        },
-        {
-          "heading": 90.0,
-          "is_end": false
-        },
-        {
-          "heading": 180.0,
-          "is_end": false
-        },
-        {
-          "heading": 270.0,
-          "is_end": true
-        }
-      ],
-      "connected_nodes": [
-        25,
-        27,
-        902
-      ],
-      "connected_links": [
-        28,
-        29,
-        31
-      ]
-    },
-    {
       "id": 27,
       "coords": [
         59.0,
