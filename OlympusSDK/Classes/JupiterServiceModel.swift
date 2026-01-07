@@ -26,3 +26,7 @@ struct PassedLinkInfo {
     var matched_heading: Float
     var oppsite_heading: Float
 }
+
+enum LimitationType {
+    case X_LIMIT, Y_LIMIT, NO_LIMIT
+}
