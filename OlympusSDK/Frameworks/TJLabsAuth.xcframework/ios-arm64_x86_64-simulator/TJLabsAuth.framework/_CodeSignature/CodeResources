@@ -10,47 +10,47 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		fCIpK8vg2RpUzAylY1MOjHNKTUs=
+		0Gt/N/n9cIYTxtBEENL/MAkwj/c=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios-simulator.abi.json</key>
 		<data>
-		XrUYgpuUtNDAaKHLcYAqguuVcZg=
+		wxuWzksMv7NLiVUVXi2/gpKZrrw=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios-simulator.private.swiftinterface</key>
 		<data>
-		pMNOhWfg0Q0q6Ii8B+STpY7YsBk=
+		eH5245KBLmQK9eavU50azhbvWY8=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios-simulator.swiftdoc</key>
 		<data>
-		k32gCUvFdxOla6B6YN9dGiHI6+I=
+		rcvZafKu+dKGMswwLkaM+t/J7kU=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios-simulator.swiftinterface</key>
 		<data>
-		pMNOhWfg0Q0q6Ii8B+STpY7YsBk=
+		eH5245KBLmQK9eavU50azhbvWY8=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios-simulator.swiftmodule</key>
 		<data>
-		R1mcV6dtMzaRlXbeD5L9kyacR9g=
+		7yHq7Tn91cQUq8uN96bGK/baQ5o=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/x86_64-apple-ios-simulator.abi.json</key>
 		<data>
-		XrUYgpuUtNDAaKHLcYAqguuVcZg=
+		wxuWzksMv7NLiVUVXi2/gpKZrrw=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/x86_64-apple-ios-simulator.private.swiftinterface</key>
 		<data>
-		0UiSczfSq8gKfPx7c1GOQVQIysA=
+		xSdBuYNWl1oxsFAEIjtuDmjcHL8=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/x86_64-apple-ios-simulator.swiftdoc</key>
 		<data>
-		larN6IzbTEpPR6sJJpkChjsC518=
+		t/E1U+O9w9q5M3zgjIRCqMsOnF4=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/x86_64-apple-ios-simulator.swiftinterface</key>
 		<data>
-		0UiSczfSq8gKfPx7c1GOQVQIysA=
+		xSdBuYNWl1oxsFAEIjtuDmjcHL8=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/x86_64-apple-ios-simulator.swiftmodule</key>
 		<data>
-		g+W8VcMv+vFZdsWDF+DR/0Cfqik=
+		YdU4EcQmHwUgpccHZVKi+9T156Y=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -70,70 +70,70 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			jKNk8k8S+diIY0WuUX8PCQtMkG7y0pvRePk8aGUXsCo=
+			N0oiqVL6ahS0O+WcW80J+X4IDZ4iLaQNwWcScfVjvFg=
 			</data>
 		</dict>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios-simulator.private.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			SR/k2vc9KOVtdoPU2XtShjjMnekc4GRQFdCQW6lpTpM=
+			a1BnL//HGN9APYVpimClAhvM+ckJjuI1rbmPN9oGOHI=
 			</data>
 		</dict>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios-simulator.swiftdoc</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			gQC23qEThyyTPHCtWlOmGgeAenFy6xwsa/nnAUOnhYc=
+			2XtXVYMvHX6rFuNuT8ZuDvdWV2nci7ZfpjB+HVOUkLE=
 			</data>
 		</dict>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios-simulator.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			SR/k2vc9KOVtdoPU2XtShjjMnekc4GRQFdCQW6lpTpM=
+			a1BnL//HGN9APYVpimClAhvM+ckJjuI1rbmPN9oGOHI=
 			</data>
 		</dict>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios-simulator.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			cdZX+RnaPk/3psALIzMg0hxlnWsibXtSP3jJaksCSjs=
+			NsV9IIT/zAL2RFoe2CQR0fTxU+j3VRO+zPtNqbD5Mpk=
 			</data>
 		</dict>
 		<key>Modules/TJLabsAuth.swiftmodule/x86_64-apple-ios-simulator.abi.json</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			jKNk8k8S+diIY0WuUX8PCQtMkG7y0pvRePk8aGUXsCo=
+			N0oiqVL6ahS0O+WcW80J+X4IDZ4iLaQNwWcScfVjvFg=
 			</data>
 		</dict>
 		<key>Modules/TJLabsAuth.swiftmodule/x86_64-apple-ios-simulator.private.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			ClJLhnx98tkKYIRHFtcuSMnhw20zvFOSN7JOJLVLQdY=
+			aElxzq0nOqAuBDKc/RCAULkHav3HZlodXRZh0709V4s=
 			</data>
 		</dict>
 		<key>Modules/TJLabsAuth.swiftmodule/x86_64-apple-ios-simulator.swiftdoc</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			txrexW7s8t2KNMcf3h7z6MPN7OGDk6yLp6R0RWNXaQQ=
+			tGqCodSeAERAeWp3wi74rSKOn39ZgdADmW6fpQmUzZc=
 			</data>
 		</dict>
 		<key>Modules/TJLabsAuth.swiftmodule/x86_64-apple-ios-simulator.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			ClJLhnx98tkKYIRHFtcuSMnhw20zvFOSN7JOJLVLQdY=
+			aElxzq0nOqAuBDKc/RCAULkHav3HZlodXRZh0709V4s=
 			</data>
 		</dict>
 		<key>Modules/TJLabsAuth.swiftmodule/x86_64-apple-ios-simulator.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			+G1Mo3/al1q2cjFRF2nhFZLVMbuWhASZIHqpAejNqrg=
+			TN17jUJLPx6Q/sCEhCceXaS/wRe1s69oHIVlFLUXxCI=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>

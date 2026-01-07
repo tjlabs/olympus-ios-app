@@ -10,27 +10,27 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		OpY8RkPnNxI7vmo+N3uRCJsgC/Y=
+		E+km+NQVbUV8i7NXy+/xrt27IaU=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios.abi.json</key>
 		<data>
-		XrUYgpuUtNDAaKHLcYAqguuVcZg=
+		wxuWzksMv7NLiVUVXi2/gpKZrrw=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios.private.swiftinterface</key>
 		<data>
-		kfjvWi4IWPAfCVoTQGx4T6J+tWY=
+		V6aCnLYDPGWoVizteyfPWUq0n2E=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios.swiftdoc</key>
 		<data>
-		rwLWbt7/tlgL5XoMVQHhGEmFCzE=
+		nAVyEZbXPY5prpMbA3dXVQqVjS4=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios.swiftinterface</key>
 		<data>
-		kfjvWi4IWPAfCVoTQGx4T6J+tWY=
+		V6aCnLYDPGWoVizteyfPWUq0n2E=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios.swiftmodule</key>
 		<data>
-		GcMFEELwVOEVsgtATjtZMJGdtwI=
+		QDdtX6DtI9GL646bWgyngdxOQJw=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -50,35 +50,35 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			jKNk8k8S+diIY0WuUX8PCQtMkG7y0pvRePk8aGUXsCo=
+			N0oiqVL6ahS0O+WcW80J+X4IDZ4iLaQNwWcScfVjvFg=
 			</data>
 		</dict>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios.private.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			MtdzJTXH24CZjopj9KD0osTT9UcM8+guNeQRb6fVd8g=
+			jTAd4zPwuJc+hzSc4gSrKEwUtzwhv478t8uYQU2ELSo=
 			</data>
 		</dict>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios.swiftdoc</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			GYC3w2dsHpfALlPWDs6OzUxzv+OrBH85IHVFI/FJ8OA=
+			YmAg25iByWhVmJ+THValFwcm39Rnv6X04gkK5s7Ty6g=
 			</data>
 		</dict>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			MtdzJTXH24CZjopj9KD0osTT9UcM8+guNeQRb6fVd8g=
+			jTAd4zPwuJc+hzSc4gSrKEwUtzwhv478t8uYQU2ELSo=
 			</data>
 		</dict>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			eW5EHXndq05KlqoDwwFbDZpwhwQkndyEuTCWLXe2BlQ=
+			zVk9ibwJ4Pj1CH7kSbPhejnWvjHDZ/BpI/TWZ4Wloxo=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>

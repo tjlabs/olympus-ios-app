@@ -805,6 +805,52 @@
               "AccessControl"
             ],
             "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "getUserRefreshTokenURL",
+            "printedName": "getUserRefreshTokenURL()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:10TJLabsAuth0aB9ConstantsC22getUserRefreshTokenURLSSyFZ",
+            "mangledName": "$s10TJLabsAuth0aB9ConstantsC22getUserRefreshTokenURLSSyFZ",
+            "moduleName": "TJLabsAuth",
+            "static": true,
+            "declAttributes": [
+              "Final",
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "getUserVerifyTokenURL",
+            "printedName": "getUserVerifyTokenURL()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:10TJLabsAuth0aB9ConstantsC21getUserVerifyTokenURLSSyFZ",
+            "mangledName": "$s10TJLabsAuth0aB9ConstantsC21getUserVerifyTokenURLSSyFZ",
+            "moduleName": "TJLabsAuth",
+            "static": true,
+            "declAttributes": [
+              "Final",
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
           }
         ],
         "declKind": "Class",
@@ -1221,21 +1267,21 @@
       "kind": "StringLiteral",
       "offset": 222,
       "length": 12,
-      "value": "\"2025-03-25\""
+      "value": "\"2025-12-16\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsAuth-sdk-ios\/TJLabsAuth\/TJLabsAuthConstants.swift",
       "kind": "StringLiteral",
       "offset": 290,
       "length": 12,
-      "value": "\"2025-06-11\""
+      "value": "\"2025-12-16\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsAuth-sdk-ios\/TJLabsAuth\/TJLabsAuthConstants.swift",
       "kind": "StringLiteral",
       "offset": 358,
       "length": 12,
-      "value": "\"2025-06-30\""
+      "value": "\"2025-12-16\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsAuth-sdk-ios\/TJLabsAuth\/TJLabsAuthConstants.swift",
@@ -1331,14 +1377,14 @@
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsAuth-sdk-ios\/TJLabsAuth\/TJLabsAuthManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 5948,
+      "offset": 5955,
       "length": 2,
       "value": "60"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsAuth-sdk-ios\/TJLabsAuth\/TJLabsAuthManager.swift",
       "kind": "StringLiteral",
-      "offset": 8063,
+      "offset": 8070,
       "length": 6,
       "value": "\"POST\""
     }
