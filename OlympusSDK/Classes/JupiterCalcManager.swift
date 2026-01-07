@@ -385,15 +385,15 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             // 1. Path-Traj Matching 결과가 있을 경우
             // PDR 에서만 적용, DR 모드에서는 항상 false임
             mustInSameLink = false
-        } else if let _ = pathMatchingArea, PathMatcher.shared.isInNode {
+        } else if pathMatchingArea != nil || PathMatcher.shared.isInNode {
             // 2. Node에 있거나 Entrance Matching Area에 해당하는 경우
             // 길끝에 위치하는지 확인
             mustInSameLink = false
-            let isInMapEnd = PathMatcher.shared.checkIsInMapEnd(sectorId: sectorId, resultStandard: curResult, tuResult: tuResult, userMode: mode)
+            let isInMapEnd = PathMatcher.shared.checkIsInMapEnd(sectorId: sectorId, tuResult: tuResult)
             if isInMapEnd {
                 tuResult.x = curResult.x
                 tuResult.y = curResult.y
-                kalmanFilter?.updateTuResult(result: tuResult)
+                kalmanFilter?.updateTuPosition(coord: [curResult.x, curResult.y])
             }
         }
         let isNeedUpdateAnchorNode = sectionController.extendedCheckIsNeedAnchorNodeUpdate(uvdLength: uvd.length, curHeading: curResult.absolute_heading)
@@ -401,13 +401,14 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             PathMatcher.shared.updateAnchorNode(sectorId: sectorId, fltResult: curResult, mode: mode, sectionNumber: sectionController.getSectionNumber())
         }
         kalmanFilter?.updateTuInformation(uvd: uvd)
-        let indoorResult = makeCurrentResult(input: tuResult, mustInSameLink: mustInSameLink, pathMatchingType: .NARROW, phase: .TRACKING, mode: mode)
-        self.curResult = indoorResult
-        self.curPathMatchingResult = indoorResult
-        
         if let tuResult = kalmanFilter?.getTuResult() {
             self.tu_xyh = [tuResult.x, tuResult.y, tuResult.absolute_heading]
         }
+        
+        let indoorResult = makeCurrentResult(input: tuResult, mustInSameLink: mustInSameLink, pathMatchingType: .NARROW, phase: .TRACKING, mode: mode)
+        self.curResult = indoorResult
+        
+        self.curPathMatchingResult = indoorResult
     }
     
     private func updateResultFromTimeUpdate(mode: UserMode, uvd: UserVelocity, pastUvd: UserVelocity,
@@ -460,7 +461,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                 result.y = pmResult.y
                 result.absolute_heading = pmResult.heading
                 uvdGenerator?.updateDrVelocityScale(scale: Double(pmResult.scale))
-//                JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - result: \(result.building_name), \(result.level_name), [\(result.x),\(result.y),\(result.absolute_heading)]")
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - result: \(result.building_name), \(result.level_name), [\(result.x),\(result.y),\(result.absolute_heading)]")
             } else {
                 isPmFailed = true
             }
@@ -488,12 +489,13 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             }
         }
         
-        if isUseHeading && phase == .TRACKING, let curPathMatchingResult = self.curPathMatchingResult {
-            let diffX = result.x - curPathMatchingResult.x
-            let diffY = result.y - curPathMatchingResult.y
+        if isUseHeading && phase == .TRACKING, let curResult = self.curResult {
+            let diffX = result.x - curResult.x
+            let diffY = result.y - curResult.y
             let diffNorm = sqrt(diffX*diffX + diffY*diffY)
             if diffNorm >= 2 {
-                kalmanFilter?.updateTuResult(result: result)
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - bound inNode: \(result.building_name), \(result.level_name), [\(result.x),\(result.y),\(result.absolute_heading)]")
+                kalmanFilter?.updateTuPosition(coord: [result.x, result.y])
             }
         }
         
