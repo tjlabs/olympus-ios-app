@@ -276,7 +276,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         
         guard let entManager = self.entManager else { return }
         guard let landmarkTagger = self.landmarkTagger else { return }
-        stackManager.stackUserVelocity(uvd: userVelocity)
+        stackManager.stackUvd(uvd: userVelocity)
         
         let capturedRfd = self.curRfd
         let bleData = capturedRfd.rfs // [String: Float] BLE_ID: RSSI
@@ -289,13 +289,14 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             startEntranceTracking(currentTime: currentTime, entManager: entManager, uvd: userVelocity, peakId: userPeak.id, bleData: bleData)
             if let matchedLandmark = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: userPeak, curResult: self.curResult) {
                 self.debug_landmark = matchedLandmark
+                
+                
             }
         }
         
         switch (jupiterPhase) {
         case .ENTERING:
             calcEntranceResult(currentTime: currentTime, entManager: entManager, uvd: userVelocity)
-            curPathMatchingResult = curResult
         case .TRACKING:
             calcIndoorResult(mode: mode, uvd: userVelocity)
         case .SEARCHING:
@@ -303,8 +304,17 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         case .NONE:
             print("None")
         }
-        
         self.pastUvd = userVelocity
+        
+        // MARK: - Update CurPathMatchingResult
+        guard let curResult = self.curResult else { return }
+        stackManager.stackCurResultBuffer(curResult: curResult)
+        
+        guard let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: curResult.x, y: curResult.y, heading: curResult.absolute_heading, isUseHeading: true, mode: mode, paddingValues: paddingValues) else { return }
+        curPathMatchingResult = curResult
+        curPathMatchingResult?.x = pmResult.x
+        curPathMatchingResult?.y = pmResult.y
+        curPathMatchingResult?.absolute_heading = pmResult.heading
     }
     
     private func startEntranceTracking(currentTime: Int, entManager: EntranceManager, uvd: UserVelocity, peakId: String, bleData: [String: Float]) {
@@ -319,7 +329,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         if jupiterPhase == .ENTERING {
             if let stopEntTrackResult = entManager.stopEntTrack(curResult: curResult, wardId: peakId) {
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - EntTrack Finished : \(stopEntTrackResult.building_name) \(stopEntTrackResult.level_name) , [\(stopEntTrackResult.x),\(stopEntTrackResult.y),\(stopEntTrackResult.absolute_heading)]")
-
                 // Entrance Tracking Finshid (Normal)
                 startIndoorTracking(fltResult: stopEntTrackResult)
             }
@@ -345,7 +354,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         
         guard let fltResult = fltResult else { return }
         curResult = fltResult
-        curPathMatchingResult = fltResult
+//        curPathMatchingResult = fltResult
         kalmanFilter?.activateKalmanFilter(fltResult: fltResult)
         JupiterResultState.isIndoor = true
     }
@@ -384,8 +393,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         
         let indoorResult = makeCurrentResult(input: tuResult, mustInSameLink: mustInSameLink, pathMatchingType: .NARROW, phase: .TRACKING, mode: mode)
         self.curResult = indoorResult
-        
-        self.curPathMatchingResult = indoorResult
+//        self.curPathMatchingResult = indoorResult
     }
     
     private func updateResultFromTimeUpdate(mode: UserMode, uvd: UserVelocity, pastUvd: UserVelocity,
