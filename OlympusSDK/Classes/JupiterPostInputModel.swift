@@ -40,25 +40,6 @@ struct MobileReport: Encodable {
     let code: Int
 }
 
-// MARK: - RSSI Compensation
-struct RcDeviceOsInput: Codable {
-    let sector_id: Int
-    let device_model: String
-    let os_version: Int
-}
-
-struct RcDeviceInput: Codable {
-    let sector_id: Int
-    let device_model: String
-}
-
-struct RcInfoSave: Codable {
-    let sector_id: Int
-    let device_model: String
-    let os_version: Int
-    let normalization_scale: Float
-}
-
 // MARK: - UserMask
 struct UserMask: Encodable {
     let user_id: String
