@@ -248,75 +248,20 @@ class PathMatcher {
         return nil
     }
     
-    func checkIsInMapEnd(sectorId: Int, resultStandard: FineLocationTrackingOutput, tuResult: FineLocationTrackingOutput, userMode: UserMode) -> Bool {
-        var isInMapEnd: Bool = false
+    func checkIsInMapEnd(sectorId: Int, tuResult: FineLocationTrackingOutput) -> Bool {
+        let key = "\(sectorId)_\(tuResult.building_name)_\(tuResult.level_name)"
+        if !isInNode { return false }
+        let curNode = self.curPassedNodeInfo
+        if curNode.id == -1 { return false }
+        guard let nodeData = nodeData[key] else { return false }
+        guard let matchedNode = nodeData[curNode.id] else { return false }
         
-        let coordHeadings = getPathMatchingHeadings(sectorId: sectorId, building: resultStandard.building_name, level: resultStandard.level_name, x: resultStandard.x, y: resultStandard.y, paddingValue: 0, mode: userMode)
-        let tuHeading = resultStandard.absolute_heading
+        let curHeading = tuResult.absolute_heading
+        let nodeHeadings = matchedNode.directions.map({$0.heading})
+        let (bestHeading, bestIndex) = closestHeading(to: curHeading, candidates: nodeHeadings)
+        let bestIsMapEnd = matchedNode.directions[bestIndex].is_end
         
-        if !coordHeadings.isEmpty {
-            var diffHeading = [Float]()
-            var bestHeading: Float = tuResult.absolute_heading
-            for dir in coordHeadings {
-                var diffValue: Float = 0
-                if (tuHeading > 270 && (dir >= 0 && dir < 90)) {
-                    diffValue = abs(tuHeading - (dir+360))
-                } else if (dir > 270 && (tuHeading >= 0 && tuHeading < 90)) {
-                    diffValue = abs(dir - (tuHeading+360))
-                } else {
-                    diffValue = abs(tuHeading - dir)
-                }
-                diffHeading.append(diffValue)
-            }
-            let minHeading = diffHeading.min()!
-            if let minIndex = diffHeading.firstIndex(of: minHeading) {
-                bestHeading = coordHeadings[minIndex]
-            }
-
-            if bestHeading.truncatingRemainder(dividingBy: 90.0) == 0 {
-                var resultForEndCheck = resultStandard
-                
-                let dir = Float(TJLabsUtilFunctions.shared.degree2radian(degree: Double(bestHeading)))
-                resultForEndCheck.x += cos(dir)
-                resultForEndCheck.y += sin(dir)
-
-                guard let pathMatchingResult = pathMatching(sectorId: sectorId, building: resultForEndCheck.building_name, level: resultForEndCheck.level_name, x: resultForEndCheck.x, y: resultForEndCheck.y, heading: resultForEndCheck.absolute_heading, isUseHeading: false, mode: userMode, paddingValues: [0, 0, 0, 0]) else { return true }
-            } else {
-                var checkValues = [[Float]]()
-                let dividedValue = round(bestHeading/90)
-
-                if dividedValue == 0 || dividedValue == 4 {
-                    // 0도에 가깝
-                    checkValues = [[1, 1], [1, 0], [1, -1]]
-                } else if dividedValue == 1 {
-                    // 90도에 가깝
-                    checkValues = [[-1, 1], [0, 1], [1, 1]]
-                } else if dividedValue == 2 {
-                    // 180도에 가깝
-                    checkValues = [[-1, 1], [-1, 0], [-1, -1]]
-                } else {
-                    // 270도에 가깝
-                    checkValues = [[-1, -1], [0, -1], [1, -1]]
-                }
-                
-                var failCount = 0
-                for v in checkValues {
-                    let xToCheck = resultStandard.x + v[0]
-                    let yToCheck = resultStandard.y + v[1]
-
-                    if let pathMatchingResult = pathMatching(sectorId: sectorId, building: resultStandard.building_name, level: resultStandard.level_name, x: xToCheck, y: yToCheck, heading: resultStandard.absolute_heading, isUseHeading: false, mode: userMode, paddingValues: [0, 0, 0, 0]) {
-                    } else {
-                        failCount += 1
-                    }
-                    
-                }
-                if failCount == checkValues.count {
-                    isInMapEnd = true
-                }
-            }
-        }
-        
-        return isInMapEnd
+        return bestIsMapEnd
     }
     
     func checkPathPixelHasCoords(sectorId: Int, fltResult: FineLocationTrackingOutput, coordToCheck: [Float]) -> Bool {
@@ -401,6 +346,32 @@ class PathMatcher {
         } else {
             return inputXyhs
         }
+    }
+    
+    func getTimeUpdateLimitation(level: String) -> (limitType: LimitationType, limitValues: [Float]) {
+        var limitType: LimitationType = .NO_LIMIT
+        var limitValues: [Float] = [0, 0]
+        let LIMIT: Float = 0.4
+        
+        if (level == "B0" || self.isInNode) {
+            return (limitType, limitValues)
+        }
+        
+        guard let curLink = self.curPassedLinkInfo else { return (limitType, limitValues) }
+        let coordX = curLink.user_coord[0]
+        let coordY = curLink.user_coord[1]
+        
+        let directions = curLink.included_heading
+        
+        if (directions.contains(0) && directions.contains(180)) {
+            limitType = .Y_LIMIT
+            limitValues = [coordY - LIMIT, coordY + LIMIT]
+        } else if (directions.contains(90) && directions.contains(270)) {
+            limitType = .X_LIMIT
+            limitValues = [coordX - LIMIT, coordX + LIMIT]
+        }
+        
+        return (limitType, limitValues)
     }
     
     // MARK: - Node & Link
@@ -667,7 +638,6 @@ class PathMatcher {
         var curLinkDirs = [Float]()
         var curLinkBestHeading: Float = 0
         var curLinkOppHeading: Float = 0
-        var userCoord = [Float]()
         
         func pointToSegmentDistance(px: Float, py: Float, ax: Float, ay: Float, bx: Float, by: Float) -> (dist: Float, t: Float) {
             let abx = bx - ax
@@ -743,7 +713,7 @@ class PathMatcher {
         curLinkOppHeading = bestOppH
 
         self.curPassedLinkInfo = PassedLinkInfo(id: curLinkId, start_node: ld.start_node, end_node: ld.end_node, distance: ld.distance, included_heading: curLinkDirs, group_id: ld.group_id, user_coord: [correctedX, correctedY], user_heading: heading, matched_heading: curLinkBestHeading, oppsite_heading: curLinkOppHeading)
-//        JupiterLogger.i(tag: "PathMatcher", message: "(updateNodeAndLinkInfo) [LINK] uvd=\(uvdIndex) key=\(key) link=\(curLinkId) (\(ld.start_node)->\(ld.end_node)) xy=(\(correctedX),\(correctedY)) userH=\(heading) bestH=\(bestH)(idx=\(bestIdx)) oppH=\(bestOppH)(idx=\(bestOppIdx)) dist=\(bestLinkDist)")
+        JupiterLogger.i(tag: "PathMatcher", message: "(updateNodeAndLinkInfo) [LINK] uvd=\(uvdIndex) key=\(key) link=\(curLinkId) (\(ld.start_node)->\(ld.end_node)) dirs=\(curLinkDirs) xy=(\(correctedX),\(correctedY)) userH=\(heading) bestH=\(bestH)(idx=\(bestIdx)) oppH=\(bestOppH)(idx=\(bestOppIdx)) dist=\(bestLinkDist)")
     }
     
     private func registerPassedNode(node: Int, coord: [Float], headings: [Float], matchedIndex: Int, heading: Float) {
