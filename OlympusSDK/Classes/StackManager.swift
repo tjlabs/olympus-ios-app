@@ -9,30 +9,26 @@ class StackManager {
     private let DR_BUFFER_SIZE: Int = 60
     private let HEADING_BUFFER_SIZE: Int = 5
     private let BLE_LEVEL_BUFFER_SIZE: Int = 8
+    private let CUR_RESULT_BUFFER_SIZE: Int = 100
 
     private var rfdBuffer = [[String: Float]]()
-    var userVelocityBuffer = [UserVelocity]()
+    var uvdBuffer = [UserVelocity]()
     var isNeedClearBuffer: Bool = false
+    
+    var curResultBuffer = [FineLocationTrackingOutput]()
+    
     var userMaskBuffer = [UserMask]()
     var userUniqueMaskBuffer = [UserMask]()
-    var userMaskBufferDisplay = [UserMask]()
-    var userMaskBufferPathTrajMatching = [UserMask]()
-    var sendFailUvdIndexes = [Int]()
-    var validIndex: Int = 0
     var recoveryIndex: Int = 0
-    var isNeedRemoveIndexSendFailArray: Bool = false
-    var headingBufferForCorrection = [Double]()
-    var serverResultBuffer = [FineLocationTrackingOutput]()
-    var diffHeadingBuffer = [Double]()
     
-    func getUserVelocityBuffer() -> [UserVelocity] {
-        return userVelocityBuffer
+    func getUvdBuffer() -> [UserVelocity] {
+        return uvdBuffer
     }
     
-    func stackUserVelocity(uvd: UserVelocity) {
-        userVelocityBuffer.append(uvd)
-        if (userVelocityBuffer.count > DR_BUFFER_SIZE) {
-            userVelocityBuffer.remove(at: 0)
+    func stackUvd(uvd: UserVelocity) {
+        uvdBuffer.append(uvd)
+        if (uvdBuffer.count > DR_BUFFER_SIZE) {
+            uvdBuffer.remove(at: 0)
         }
     }
 
@@ -70,23 +66,20 @@ class StackManager {
             userUniqueMaskBuffer.remove(at: 0)
         }
     }
-
-    func stackHeadingForCheckCorrection(uvd: UserVelocity) {
-        headingBufferForCorrection.append(uvd.heading)
-        if (headingBufferForCorrection.count > HEADING_BUFFER_SIZE) {
-            headingBufferForCorrection.remove(at: 0)
-        }
-    }
-
-    func stackDiffHeadingBuffer(uvd: UserVelocity, pastUvd: UserVelocity) {
-        diffHeadingBuffer.append(abs(uvd.heading - pastUvd.heading))
-        if (diffHeadingBuffer.count > 3) {
-            diffHeadingBuffer.remove(at: 0)
+    
+    func stackCurResultBuffer(curResult: FineLocationTrackingOutput) {
+        curResultBuffer.append(curResult)
+        if (curResultBuffer.count > CUR_RESULT_BUFFER_SIZE) {
+            curResultBuffer.remove(at: 0)
         }
     }
     
+    func getCurResultBuffer() -> [FineLocationTrackingOutput] {
+        return self.curResultBuffer
+    }
+    
     func isDrBufferStraightCircularStd(numIndex: Int, condition: Double = 1) -> (Bool, Double) {
-        let uvdBuffer = self.userVelocityBuffer
+        let uvdBuffer = self.uvdBuffer
         if (uvdBuffer.count >= numIndex) {
             let firstIndex = uvdBuffer.count-numIndex
             var headingBuffer = [Double]()
