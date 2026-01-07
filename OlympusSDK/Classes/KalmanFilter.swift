@@ -508,7 +508,7 @@ class KalmanFilter {
     private func updateLimitationResult(nextTuResult: FineLocationTrackingOutput) -> FineLocationTrackingOutput {
         var updatedTuResult = nextTuResult
         let limitationResult = PathMatcher.shared.getTimeUpdateLimitation(level: nextTuResult.level_name)
-        JupiterLogger.i(tag: "KalmanFilter", message: "(updateLimitationResult) - limitationResult: \(limitationResult)")
+//        JupiterLogger.i(tag: "KalmanFilter", message: "(updateLimitationResult) - limitationResult: \(limitationResult)")
         
         if (limitationResult.limitType == LimitationType.Y_LIMIT) {
             if (nextTuResult.y < limitationResult.limitValues[0]) {
