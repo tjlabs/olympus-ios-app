@@ -4,8 +4,8 @@ import TJLabsCommon
 import TJLabsResource
 
 class EntranceManager {
-    init(sector_id: Int) {
-        self.sector_id = sector_id
+    init(sectorId: Int) {
+        self.sectorId = sectorId
         
         self.curEntKey = nil
         self.checkStartEntTrackFlag = false
@@ -25,7 +25,7 @@ class EntranceManager {
     private var entInnerWardRssiMap = [String: Float]()
     private var entInnerWardCoordMap = [String: xyhs]()
     
-    var sector_id: Int
+    var sectorId: Int
     private var curEntKey: String?
     private var checkStartEntTrackFlag: Bool
     private var checkStartEntTrackTimestamp: Int

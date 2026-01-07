@@ -67,8 +67,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         self.sectorId = sectorId
         self.region = region
         
-        self.entManager = EntranceManager(sector_id: sectorId)
-        self.buildingLevelChanger = BuildingLevelChanger(sector_id: sectorId)
+        self.entManager = EntranceManager(sectorId: sectorId)
+        self.buildingLevelChanger = BuildingLevelChanger(sectorId: sectorId)
         self.wardAvgManager = WardAveragingManager(bufferSize: AVG_BUFFER_SIZE)
         self.kalmanFilter = KalmanFilter(stackManager: stackManager)
         

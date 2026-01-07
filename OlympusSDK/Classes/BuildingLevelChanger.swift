@@ -8,8 +8,8 @@ protocol BuildingLevelChangerDelegate: AnyObject {
 
 class BuildingLevelChanger {
     
-    init(sector_id: Int) {
-        self.sector_id = sector_id
+    init(sectorId: Int) {
+        self.sectorId = sectorId
         
         buildingLevelChangedTime = 0
         isDetermineSpot = false
@@ -26,7 +26,7 @@ class BuildingLevelChanger {
     
     let DEFAULT_SPOT_DISTANCE: Float = 70
     
-    var sector_id: Int
+    var sectorId: Int
     var blChangerTagMap = [Int: [BuildingLevelTag]]()
     var buildingsAndLevelsMap = [String: [String]]()
     var levelChangeAreaMap = [String: [[Float]]]()
@@ -146,7 +146,7 @@ class BuildingLevelChanger {
     }
     
     func isBuildingLevelChangerTagged(bleAvg: [String: Float], result: FineLocationTrackingOutput) -> BuildingLevelTag? {
-        let sectorKey = self.sector_id
+        let sectorKey = self.sectorId
         guard let sectorTagData = self.blChangerTagMap[sectorKey] else { return nil }
         
         let tagValues: [BuildingLevelTag] = sectorTagData
