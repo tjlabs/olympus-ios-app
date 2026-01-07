@@ -1,6 +1,7 @@
 
 import Foundation
 import TJLabsCommon
+import TJLabsResource
 
 public enum JupiterRegion: String {
     case KOREA = "KOREA"
@@ -69,5 +70,7 @@ public struct JupiterDebugResult: Codable {
     public var isIndoor: Bool
     public var validity: Bool
     public var validity_flag: Int
+    
     public var tu_xyh: [Float]
+    public var landmark: LandmarkData?
 }
