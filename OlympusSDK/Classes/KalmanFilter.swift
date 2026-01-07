@@ -487,9 +487,6 @@ class KalmanFilter {
         let isDrStraight = nextTuResult.level_name == "B0" ? false : drBufferStraightResults.0
         
         if let pmResults = PathMatcher.shared.pathMatching(sectorId: sectorId, building: nextTuResult.building_name, level: nextTuResult.level_name, x: nextTuResult.x, y: nextTuResult.y, heading: nextTuResult.absolute_heading, isUseHeading: true, mode: .MODE_VEHICLE, paddingValues: paddingValues) {
-
-            nextTuResult.x = pmResults.x
-            nextTuResult.y = pmResults.y
             nextTuResult.absolute_heading = isDrStraight ? Float(TJLabsUtilFunctions.shared.compensateDegree(Double(pmResults.heading))) : Float(TJLabsUtilFunctions.shared.compensateDegree(Double(nextTuResult.absolute_heading)))
         } else {
             if let pmResultsWithoutHeading = PathMatcher.shared.pathMatching(sectorId: sectorId, building: nextTuResult.building_name, level: nextTuResult.level_name, x: nextTuResult.x, y: nextTuResult.y, heading: nextTuResult.absolute_heading, isUseHeading: false, mode: .MODE_VEHICLE, paddingValues: paddingValues) {
@@ -499,8 +496,7 @@ class KalmanFilter {
                 nextTuResult.absolute_heading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(nextTuResult.absolute_heading)))
             }
         }
-        nextTuResult = updateLimitationResult(nextTuResult: nextTuResult, mode: .MODE_VEHICLE)
-        
+        nextTuResult = updateLimitationResult(nextTuResult: nextTuResult)
         updateTuResult(result: nextTuResult)
         kalmanP += kalmanQ
         headingKalmanP += headingKalmanQ
@@ -509,23 +505,24 @@ class KalmanFilter {
         return nextTuResult
     }
     
-    private func updateLimitationResult(nextTuResult: FineLocationTrackingOutput, mode: UserMode) -> FineLocationTrackingOutput {
+    private func updateLimitationResult(nextTuResult: FineLocationTrackingOutput) -> FineLocationTrackingOutput {
         var updatedTuResult = nextTuResult
+        let limitationResult = PathMatcher.shared.getTimeUpdateLimitation(level: nextTuResult.level_name)
+        JupiterLogger.i(tag: "KalmanFilter", message: "(updateLimitationResult) - limitationResult: \(limitationResult)")
         
-//        let limitationResult = JupiterNodeChecker.shared.getTimeUpdateLimitation(level: nextTuResult.level_name, mode: mode)
-//        if (limitationResult.limitType == LimitationType.Y_LIMIT) {
-//            if (nextTuResult.y < limitationResult.limitValues[0]) {
-//                updatedTuResult.y = limitationResult.limitValues[0]
-//            } else if (nextTuResult.y > limitationResult.limitValues[1]) {
-//                updatedTuResult.y = limitationResult.limitValues[1]
-//            }
-//        } else if (limitationResult.limitType == LimitationType.X_LIMIT) {
-//            if (nextTuResult.x < limitationResult.limitValues[0]) {
-//                updatedTuResult.x = limitationResult.limitValues[0]
-//            } else if (nextTuResult.x > limitationResult.limitValues[1]) {
-//                updatedTuResult.x = limitationResult.limitValues[1]
-//            }
-//        }
+        if (limitationResult.limitType == LimitationType.Y_LIMIT) {
+            if (nextTuResult.y < limitationResult.limitValues[0]) {
+                updatedTuResult.y = limitationResult.limitValues[0]
+            } else if (nextTuResult.y > limitationResult.limitValues[1]) {
+                updatedTuResult.y = limitationResult.limitValues[1]
+            }
+        } else if (limitationResult.limitType == LimitationType.X_LIMIT) {
+            if (nextTuResult.x < limitationResult.limitValues[0]) {
+                updatedTuResult.x = limitationResult.limitValues[0]
+            } else if (nextTuResult.x > limitationResult.limitValues[1]) {
+                updatedTuResult.x = limitationResult.limitValues[1]
+            }
+        }
         return updatedTuResult
     }
     
@@ -560,7 +557,7 @@ class KalmanFilter {
         let paddingValues = mode == .MODE_PEDESTRIAN ? JupiterMode.PADDING_VALUES_PDR : JupiterMode.PADDING_VALUES_DR
         var updatedResult = propagatedPmFltResult
         
-        if var pmResult = performPathMatching(sectorId: sectorId, fltResult: propagatedPmFltResult, PADDING_VALUES: paddingValues, mode: mode) {
+        if let pmResult = performPathMatching(sectorId: sectorId, fltResult: propagatedPmFltResult, PADDING_VALUES: paddingValues, mode: mode) {
             var pmPropagatedPmFltResult = updateResultWithPathMatching(pmResult: pmResult, propagatedResult: propagatedPmFltResult, useHeading: isPossibleHeadingCorrection)
             var tuHeading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(tuResult.absolute_heading)))
             adjustHeadingIfNeeded(&pmPropagatedPmFltResult, &tuHeading)
