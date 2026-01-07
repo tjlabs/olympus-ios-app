@@ -2,28 +2,28 @@ import Foundation
 
 final class PeakDetector {
 
-    typealias WardId = String
-
-    struct UserPeak {
-        let id: WardId
-        
-        /// Peak 검출에 사용한 Buffer의 시작 uvd Index
-        let start_index: Int
-        /// Peak 검출에 사용한 Buffer의 마지막 uvd Index
-        let end_index: Int
-        /// Peak가 존재하는 시점의 uvd Index
-        let peak_index: Int
-
-        /// Peak 검출에 사용한 Buffer의 시작 rssi
-        let start_rssi: Float
-        /// Peak 검출에 사용한 Buffer의 마지막 rssi
-        let end_rssi: Float
-        /// Peak rssi (buffer 내 max)
-        let peak_rssi: Float
-
-        /// 당시 적용된 adaptive threshold
-        let threshold: Float
-    }
+//    typealias WardId = String
+//
+//    struct UserPeak {
+//        let id: WardId
+//        
+//        /// Peak 검출에 사용한 Buffer의 시작 uvd Index
+//        let start_index: Int
+//        /// Peak 검출에 사용한 Buffer의 마지막 uvd Index
+//        let end_index: Int
+//        /// Peak가 존재하는 시점의 uvd Index
+//        let peak_index: Int
+//
+//        /// Peak 검출에 사용한 Buffer의 시작 rssi
+//        let start_rssi: Float
+//        /// Peak 검출에 사용한 Buffer의 마지막 rssi
+//        let end_rssi: Float
+//        /// Peak rssi (buffer 내 max)
+//        let peak_rssi: Float
+//
+//        /// 당시 적용된 adaptive threshold
+//        let threshold: Float
+//    }
 
     private struct PeakPlateauState {
         var lastPlateauMax: Float? = nil
