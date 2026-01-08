@@ -520,19 +520,20 @@ class KalmanFilter {
     }
     
     
-    func measurementUpdate(sectorId: Int, resultForCorrection: FineLocationTrackingOutput, isPossibleHeadingCorrection: Bool, mode: UserMode) -> FineLocationTrackingOutput? {
-        guard var tuResult = self.tuResult else { return nil }
+    func measurementUpdate(sectorId: Int, resultForCorrection: FineLocationTrackingOutput, mode: UserMode) -> FineLocationTrackingOutput? {
+        guard let tuResult = self.tuResult else { return nil }
         let paddingValues = mode == .MODE_PEDESTRIAN ? JupiterMode.PADDING_VALUES_PDR : JupiterMode.PADDING_VALUES_DR
         
         var updatedResult = resultForCorrection
+        JupiterLogger.i(tag: "KalmanFilter", message: "(measurementUpdate) - resultForCorrection:[\(resultForCorrection.x),\(resultForCorrection.y),\(resultForCorrection.absolute_heading)]")
         if let pmResult = performPathMatching(sectorId: sectorId, fltResult: resultForCorrection, PADDING_VALUES: paddingValues, mode: mode) {
-            var pmFltResult = updateResultWithPathMatching(pmResult: pmResult, correctionResult: resultForCorrection, useHeading: isPossibleHeadingCorrection)
+            var pmFltResult = updateResultWithPathMatching(pmResult: pmResult, correctionResult: resultForCorrection)
             var tuHeading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(tuResult.absolute_heading)))
             adjustHeadingIfNeeded(&pmFltResult, &tuHeading)
             let muResult = applyKalmanFilter(tuResult: tuResult, correctionResult: pmFltResult)
             
             if let pmResultAfterMu = performPathMatching(sectorId: sectorId, fltResult: muResult, PADDING_VALUES: paddingValues, mode: mode) {
-                updatedResult = updateResultWithPathMatching(pmResult: pmResultAfterMu, correctionResult: muResult, useHeading: isPossibleHeadingCorrection)
+                updatedResult = updateResultWithPathMatching(pmResult: pmResultAfterMu, correctionResult: muResult)
             } else {
                 if let pmResult = fallbackPathMatching(sectorId: sectorId, muResult: muResult, PADDING_VALUES: paddingValues, mode: mode) {
                     updateResultWithFallback(&updatedResult, pmResult: pmResult)
@@ -540,7 +541,7 @@ class KalmanFilter {
                 }
             }
         }
-        
+        JupiterLogger.i(tag: "KalmanFilter", message: "(measurementUpdate) - updatedResult:[\(updatedResult.x),\(updatedResult.y),\(updatedResult.absolute_heading)]")
         self.tuResult = updatedResult
         return updatedResult
     }
@@ -558,7 +559,7 @@ class KalmanFilter {
         return pmResult
     }
 
-    private func updateResultWithPathMatching(pmResult: ixyhs, correctionResult: FineLocationTrackingOutput, useHeading: Bool) -> FineLocationTrackingOutput {
+    private func updateResultWithPathMatching(pmResult: ixyhs, correctionResult: FineLocationTrackingOutput, useHeading: Bool = false) -> FineLocationTrackingOutput {
         var updatedResult = correctionResult
         updatedResult.x = pmResult.x
         updatedResult.y = pmResult.y
@@ -581,15 +582,15 @@ class KalmanFilter {
         let kalmanK = kalmanP / (kalmanP + kalmanR)
         let headingKalmanK = headingKalmanP / (headingKalmanP + headingKalmanR)
         
-        muResult.x = tuResult.x + kalmanK * (correctionResult.x - correctionResult.x)
-        muResult.y = tuResult.y + kalmanK * (correctionResult.y - correctionResult.y)
+        muResult.x = tuResult.x + kalmanK * (correctionResult.x - tuResult.x)
+        muResult.y = tuResult.y + kalmanK * (correctionResult.y - tuResult.y)
         
         let muHeading: Float = tuResult.absolute_heading + headingKalmanK * (correctionResult.absolute_heading - tuResult.absolute_heading)
         muResult.absolute_heading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(muHeading)))
         
         kalmanP -= kalmanK * kalmanP
         headingKalmanP -= headingKalmanK * headingKalmanP
-        
+        JupiterLogger.i(tag: "KalmanFilter", message: "(applyKalmanFilter) - tuResult:[\(tuResult.x),\(tuResult.y),\(tuResult.absolute_heading)], muResult:[\(muResult.x),\(muResult.y),\(muResult.absolute_heading)]")
         return muResult
     }
 
