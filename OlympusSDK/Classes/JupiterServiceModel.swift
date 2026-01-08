@@ -1,9 +1,10 @@
 
-struct xyhs {
+struct ixyhs {
+    var index: Int = -1
     var x: Float = 0
     var y: Float = 0
     var heading: Float = 0
-    var scale: Float = 0
+    var scale: Float = 1.0
 }
 
 typealias WardId = String

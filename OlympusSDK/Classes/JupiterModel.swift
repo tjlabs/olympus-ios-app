@@ -45,13 +45,6 @@ public struct LLH: Codable {
     public var heading: Double
 }
 
-// MARK: - Private
-struct RssCompensationParam {
-    let device_min_rss: Float
-    let standard_min_rss: Float
-    let normalization_scale: Float
-}
-
 
 // MARK: - JupiterDebugResult
 public struct JupiterDebugResult: Codable {
@@ -73,4 +66,7 @@ public struct JupiterDebugResult: Codable {
     
     public var tu_xyh: [Float]
     public var landmark: LandmarkData?
+    public var best_landmark: PeakData?
+    public var recon_raw_traj: [[Double]]?
+    public var recon_corr_traj: [FineLocationTrackingOutput]?
 }
