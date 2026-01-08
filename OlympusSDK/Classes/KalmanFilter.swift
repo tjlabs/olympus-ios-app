@@ -29,10 +29,7 @@ class KalmanFilter {
     var stackManager: StackManager?
     var tuResult: FineLocationTrackingOutput?
     
-    private var uvdIndexBuffer = [Int]()
-    private var uvdHeadingBuffer = [Float]()
-    private var tuResultBuffer = [xyhs]()
-    private var isNeedUvdIndexBufferClear: Bool = false
+    private var tuResultBuffer = [ixyhs]()
     private var usedUvdIndex: Int = 0
     private var pathTrajMatchingIndex: Int = 0
     private var pathTrajTurnIndex: Int = 0
@@ -44,11 +41,7 @@ class KalmanFilter {
     
     func initialize() {
         tuResult = nil
-
-        uvdIndexBuffer = [Int]()
-        uvdHeadingBuffer = [Float]()
-        tuResultBuffer = [xyhs]()
-        isNeedUvdIndexBufferClear = false
+        tuResultBuffer = [ixyhs]()
         usedUvdIndex = 0
         pathTrajMatchingIndex = 0
         pathTrajTurnIndex = 0
@@ -92,6 +85,13 @@ class KalmanFilter {
         self.tuResult = result
     }
     
+    func getTuResultWithUvdIndex(index: Int) -> ixyhs? {
+        for tu in self.tuResultBuffer {
+            if tu.index == index { return tu }
+        }
+        return nil
+    }
+    
     func getTuResult() -> FineLocationTrackingOutput? {
         return self.tuResult
     }
@@ -114,18 +114,11 @@ class KalmanFilter {
     }
     
     func updateTuInformation(uvd: UserVelocity) {
-        if (self.isNeedUvdIndexBufferClear) {
-            self.uvdIndexBuffer = TJLabsUtilFunctions.shared.sliceArrayFrom(self.uvdIndexBuffer, startingFrom: self.usedUvdIndex)
-            self.uvdHeadingBuffer = TJLabsUtilFunctions.shared.sliceArrayFrom(self.uvdHeadingBuffer, startingFrom: self.usedUvdIndex)
-            self.tuResultBuffer = TJLabsUtilFunctions.shared.sliceArrayFrom(self.tuResultBuffer, startingFrom: self.usedUvdIndex)
-            self.isNeedUvdIndexBufferClear = false
-        }
-        
         guard let tuResult = self.tuResult else { return }
-        
-        self.uvdIndexBuffer.append(uvd.index)
-        self.uvdHeadingBuffer.append(Float(uvd.heading))
-        self.tuResultBuffer.append(xyhs(x: tuResult.x, y: tuResult.y, heading: tuResult.absolute_heading))
+        self.tuResultBuffer.append(ixyhs(index: uvd.index, x: tuResult.x, y: tuResult.y, heading: tuResult.absolute_heading))
+        if self.tuResultBuffer.count > 100 {
+            self.tuResultBuffer.removeFirst()
+        }
     }
     
     
@@ -526,59 +519,20 @@ class KalmanFilter {
         return updatedTuResult
     }
     
-    func preProcessForMeasurementUpdate(fltResult: FineLocationTrackingOutput, unitDRInfoBuffer: [UserVelocity], isNeedCalDhFromUvd: Bool) -> xyhs? {
-        guard let stackManager = self.stackManager else { return nil }
-        // fltResult = 맵매칭된 서버 결과
-        
-        let uvdIndexBuffer: [Int] = self.uvdIndexBuffer
-        let uvdHeadingBuffer: [Float] = self.uvdHeadingBuffer
-        let tuResultBuffer: [xyhs] = self.tuResultBuffer
-                
-        var dx: Float = 0
-        var dy: Float = 0
-        var dh: Float = 0
-                
-        if let idx = uvdIndexBuffer.firstIndex(of: fltResult.index) {
-            if let propagationResult = stackManager.propagateUsingUvd(uvdBuffer: unitDRInfoBuffer, fltResult: fltResult) {
-                dx = propagationResult.x
-                dy = propagationResult.y
-                dh = propagationResult.heading
-            }
-            self.usedUvdIndex = idx
-            self.isNeedUvdIndexBufferClear = true
-        }
-        
-        return xyhs(x: dx, y: dy, heading: dh)
-    }
     
-    
-    func measurementUpdate(sectorId: Int, fltResult: FineLocationTrackingOutput, pmFltResult: FineLocationTrackingOutput, propagatedPmFltResult: FineLocationTrackingOutput, uvdBuffer: [UserVelocity], isPossibleHeadingCorrection: Bool, mode: UserMode) -> FineLocationTrackingOutput? {
+    func measurementUpdate(sectorId: Int, resultForCorrection: FineLocationTrackingOutput, isPossibleHeadingCorrection: Bool, mode: UserMode) -> FineLocationTrackingOutput? {
         guard var tuResult = self.tuResult else { return nil }
         let paddingValues = mode == .MODE_PEDESTRIAN ? JupiterMode.PADDING_VALUES_PDR : JupiterMode.PADDING_VALUES_DR
-        var updatedResult = propagatedPmFltResult
         
-        if let pmResult = performPathMatching(sectorId: sectorId, fltResult: propagatedPmFltResult, PADDING_VALUES: paddingValues, mode: mode) {
-            var pmPropagatedPmFltResult = updateResultWithPathMatching(pmResult: pmResult, propagatedResult: propagatedPmFltResult, useHeading: isPossibleHeadingCorrection)
+        var updatedResult = resultForCorrection
+        if let pmResult = performPathMatching(sectorId: sectorId, fltResult: resultForCorrection, PADDING_VALUES: paddingValues, mode: mode) {
+            var pmFltResult = updateResultWithPathMatching(pmResult: pmResult, correctionResult: resultForCorrection, useHeading: isPossibleHeadingCorrection)
             var tuHeading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(tuResult.absolute_heading)))
-            adjustHeadingIfNeeded(&pmPropagatedPmFltResult, &tuHeading)
-            let muResult = applyKalmanFilter(tuResult: tuResult, pmResult: pmPropagatedPmFltResult)
+            adjustHeadingIfNeeded(&pmFltResult, &tuHeading)
+            let muResult = applyKalmanFilter(tuResult: tuResult, correctionResult: pmFltResult)
             
             if let pmResultAfterMu = performPathMatching(sectorId: sectorId, fltResult: muResult, PADDING_VALUES: paddingValues, mode: mode) {
-                var pmMuResult = updateResultWithPathMatching(pmResult: pmResultAfterMu, propagatedResult: muResult, useHeading: isPossibleHeadingCorrection)
-                let diffXY = computeDiffXY(tuResult: tuResult, pmMuResult: pmMuResult)
-                let diffH = computeHeadingDifference(tuHeading: tuHeading, pmMuResult: pmMuResult)
-                
-                if diffXY > 30 || diffH > Float(JupiterMode.HEADING_RANGE) {
-                    let propagationResult = stackManager?.propagateUsingUvd(uvdBuffer: uvdBuffer, fltResult: pmFltResult)
-                    updateResultFromPropagation(sectorId: sectorId, &updatedResult, propagationResult: propagationResult, fltResult: fltResult, pmFltResult: pmFltResult, mode: mode, PADDING_VALUES: paddingValues)
-                    backKalmanParam()
-                } else {
-                    if !isPossibleHeadingCorrection && mode == .MODE_VEHICLE {
-                        pmMuResult.absolute_heading = tuResult.absolute_heading
-                    }
-                    updatedResult = pmMuResult
-                    saveKalmanParam()
-                }
+                updatedResult = updateResultWithPathMatching(pmResult: pmResultAfterMu, correctionResult: muResult, useHeading: isPossibleHeadingCorrection)
             } else {
                 if let pmResult = fallbackPathMatching(sectorId: sectorId, muResult: muResult, PADDING_VALUES: paddingValues, mode: mode) {
                     updateResultWithFallback(&updatedResult, pmResult: pmResult)
@@ -587,12 +541,11 @@ class KalmanFilter {
             }
         }
         
-        tuResult = updatedResult
         self.tuResult = updatedResult
         return updatedResult
     }
 
-    private func performPathMatching(sectorId: Int, fltResult: FineLocationTrackingOutput, PADDING_VALUES: [Float], mode: UserMode) -> xyhs? {
+    private func performPathMatching(sectorId: Int, fltResult: FineLocationTrackingOutput, PADDING_VALUES: [Float], mode: UserMode) -> ixyhs? {
         let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId,
                                                               building: fltResult.building_name,
                                                               level: fltResult.level_name,
@@ -605,8 +558,8 @@ class KalmanFilter {
         return pmResult
     }
 
-    private func updateResultWithPathMatching(pmResult: xyhs, propagatedResult: FineLocationTrackingOutput, useHeading: Bool) -> FineLocationTrackingOutput {
-        var updatedResult = propagatedResult
+    private func updateResultWithPathMatching(pmResult: ixyhs, correctionResult: FineLocationTrackingOutput, useHeading: Bool) -> FineLocationTrackingOutput {
+        var updatedResult = correctionResult
         updatedResult.x = pmResult.x
         updatedResult.y = pmResult.y
         if useHeading {
@@ -623,15 +576,15 @@ class KalmanFilter {
         }
     }
 
-    private func applyKalmanFilter(tuResult: FineLocationTrackingOutput, pmResult: FineLocationTrackingOutput) -> FineLocationTrackingOutput {
-        var muResult = pmResult
+    private func applyKalmanFilter(tuResult: FineLocationTrackingOutput, correctionResult: FineLocationTrackingOutput) -> FineLocationTrackingOutput {
+        var muResult = correctionResult
         let kalmanK = kalmanP / (kalmanP + kalmanR)
         let headingKalmanK = headingKalmanP / (headingKalmanP + headingKalmanR)
         
-        muResult.x = tuResult.x + kalmanK * (pmResult.x - tuResult.x)
-        muResult.y = tuResult.y + kalmanK * (pmResult.y - tuResult.y)
+        muResult.x = tuResult.x + kalmanK * (correctionResult.x - correctionResult.x)
+        muResult.y = tuResult.y + kalmanK * (correctionResult.y - correctionResult.y)
         
-        let muHeading: Float = tuResult.absolute_heading + headingKalmanK * (pmResult.absolute_heading - tuResult.absolute_heading)
+        let muHeading: Float = tuResult.absolute_heading + headingKalmanK * (correctionResult.absolute_heading - tuResult.absolute_heading)
         muResult.absolute_heading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(muHeading)))
         
         kalmanP -= kalmanK * kalmanP
@@ -653,7 +606,7 @@ class KalmanFilter {
     }
 
     // Update result from propagation
-    private func updateResultFromPropagation(sectorId: Int, _ updatedResult: inout FineLocationTrackingOutput, propagationResult: xyhs?, fltResult: FineLocationTrackingOutput, pmFltResult: FineLocationTrackingOutput, mode: UserMode, PADDING_VALUES: [Float]) {
+    private func updateResultFromPropagation(sectorId: Int, _ updatedResult: inout FineLocationTrackingOutput, propagationResult: ixyhs?, fltResult: FineLocationTrackingOutput, pmFltResult: FineLocationTrackingOutput, mode: UserMode, PADDING_VALUES: [Float]) {
         if let propagationResult {
             let propagatedResult = [pmFltResult.x + propagationResult.x, pmFltResult.y + propagationResult.y, pmFltResult.absolute_heading + propagationResult.heading]
             guard let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId,
@@ -677,7 +630,7 @@ class KalmanFilter {
     }
 
     // Fallback path matching if the previous one failed
-    private func fallbackPathMatching(sectorId: Int, muResult: FineLocationTrackingOutput, PADDING_VALUES: [Float], mode: UserMode) -> xyhs? {
+    private func fallbackPathMatching(sectorId: Int, muResult: FineLocationTrackingOutput, PADDING_VALUES: [Float], mode: UserMode) -> ixyhs? {
         return PathMatcher.shared.pathMatching(sectorId: sectorId,
                                                       building: muResult.building_name,
                                                       level: muResult.level_name,
@@ -688,7 +641,7 @@ class KalmanFilter {
     }
 
     // Update result with fallback path matching
-    private func updateResultWithFallback(_ updatedResult: inout FineLocationTrackingOutput, pmResult: xyhs) {
+    private func updateResultWithFallback(_ updatedResult: inout FineLocationTrackingOutput, pmResult: ixyhs) {
         updatedResult.x = pmResult.x
         updatedResult.y = pmResult.y
         updatedResult.absolute_heading = pmResult.heading
