@@ -288,6 +288,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         let capturedRfd = self.curRfd
         let bleData = capturedRfd.rfs // [String: Float] BLE_ID: RSSI
         
+        var reconCurResultBuffer: [FineLocationTrackingOutput]?
         // Moving Averaging
         guard let wardAvgManager = wardAvgManager else { return }
         let avgBleData: [String: Float] = wardAvgManager.updateEpoch(bleData: bleData)
@@ -306,6 +307,11 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                         if let reconstructResult = landmarkTagger.recontructTrajectory(peakIndex: userPeak.peak_index, bestLandmark: bestPeak, matchedResult: matchedWithUserPeak.matchedResult, startHeading: Double(matchedTuResult.heading), uvdBuffer: uvdBuffer, curResultBuffer: curResultBuffer, mode: mode) {
                             self.debug_recon_raw_traj = reconstructResult.0
                             self.debug_recon_corr_traj = reconstructResult.1
+                            let resultForCorrection = reconstructResult.1[reconstructResult.1.count-1]
+                            if let muResult = kalmanFilter?.measurementUpdate(sectorId: sectorId, resultForCorrection: resultForCorrection, mode: mode) {
+                                self.curResult = muResult
+                                reconCurResultBuffer = reconstructResult.1
+                            }
                         } else {
                             self.debug_recon_raw_traj = nil
                             self.debug_recon_corr_traj = nil
@@ -331,7 +337,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         
         // MARK: - Update CurPathMatchingResult
         guard let curResult = self.curResult else { return }
-        stackManager.stackCurResult(curResult: curResult)
+        stackManager.stackCurResult(curResult: curResult, reconCurResultBuffer: reconCurResultBuffer)
         
         guard let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: curResult.x, y: curResult.y, heading: curResult.absolute_heading, isUseHeading: true, mode: mode, paddingValues: paddingValues) else { return }
         curPathMatchingResult = curResult
