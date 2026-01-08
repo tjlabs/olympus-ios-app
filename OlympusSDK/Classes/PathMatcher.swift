@@ -40,8 +40,8 @@ class PathMatcher {
         return self.entranceArea[key]
     }
     
-    func pathMatching(sectorId: Int, building: String, level: String, x: Float, y: Float, heading: Float, headingRange: Float = 46, isUseHeading: Bool, mode: UserMode, paddingValues: [Float]) -> xyhs? {
-        var xyhs = xyhs(x: x, y: y, heading: heading, scale: 1.0)
+    func pathMatching(sectorId: Int, building: String, level: String, x: Float, y: Float, heading: Float, headingRange: Float = 46, isUseHeading: Bool, mode: UserMode, paddingValues: [Float]) -> ixyhs? {
+        var ixyhs = ixyhs(x: x, y: y, heading: heading, scale: 1.0)
         var bestHeading = heading
         
         guard !building.isEmpty, !level.isEmpty else { return nil }
@@ -102,17 +102,17 @@ class PathMatcher {
             }
 
             if !idshArray.isEmpty {
-                let updatedXyhs = processIdshArray(idshArray: idshArray, roadX: roadX, roadY: roadY, inputXyhs: &xyhs, bestHeading: &bestHeading, isUseHeading: isUseHeading)
-                xyhs = updatedXyhs
+                let updatedIxyhs = processIdshArray(idshArray: idshArray, roadX: roadX, roadY: roadY, inputXyhs: &ixyhs, bestHeading: &bestHeading, isUseHeading: isUseHeading)
+                ixyhs = updatedIxyhs
             } else {
-                let updatedXyhs = processFailedIdshArray(idshArrayWhenFail: idshArrayWhenFail, mainHeading: mainHeading, roadX: roadX, roadY: roadY, inputXyhs: &xyhs, bestHeading: &bestHeading)
-                xyhs = updatedXyhs
+                let updatedIxyhs = processFailedIdshArray(idshArrayWhenFail: idshArrayWhenFail, mainHeading: mainHeading, roadX: roadX, roadY: roadY, inputXyhs: &ixyhs, bestHeading: &bestHeading)
+                ixyhs = updatedIxyhs
             }
         }
 
-        xyhs.heading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(xyhs.heading)))
+        ixyhs.heading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(ixyhs.heading)))
         
-        return xyhs
+        return ixyhs
     }
     
     func getPathMatchingHeadings(sectorId: Int, building: String, level: String, x: Float, y: Float, paddingValue: Float, mode: UserMode) -> [Float] {
@@ -320,13 +320,13 @@ class PathMatcher {
         }
     }
     
-    private func processIdshArray(idshArray: [[Float]], roadX: [Float], roadY: [Float], inputXyhs: inout xyhs, bestHeading: inout Float, isUseHeading: Bool) -> xyhs {
+    private func processIdshArray(idshArray: [[Float]], roadX: [Float], roadY: [Float], inputXyhs: inout ixyhs, bestHeading: inout Float, isUseHeading: Bool) -> ixyhs {
         let sortedIdsh = idshArray.sorted(by: { $0[1] < $1[1] })
         if let minData = sortedIdsh.first {
             let index = Int(minData[0])
             let correctedScale = max(minData[2], 0.7)
             let correctedHeading = isUseHeading ? minData[3] : inputXyhs.heading
-            let updatedXyhs: xyhs = xyhs(x: roadX[index], y: roadY[index], heading: correctedHeading, scale: correctedScale)
+            let updatedXyhs: ixyhs = ixyhs(x: roadX[index], y: roadY[index], heading: correctedHeading, scale: correctedScale)
             bestHeading = correctedHeading
             return updatedXyhs
         } else {
@@ -334,11 +334,11 @@ class PathMatcher {
         }
     }
 
-    private func processFailedIdshArray(idshArrayWhenFail: [[Float]], mainHeading: [String], roadX: [Float], roadY: [Float], inputXyhs: inout xyhs, bestHeading: inout Float) -> xyhs {
+    private func processFailedIdshArray(idshArrayWhenFail: [[Float]], mainHeading: [String], roadX: [Float], roadY: [Float], inputXyhs: inout ixyhs, bestHeading: inout Float) -> ixyhs {
         let sortedIdsh = idshArrayWhenFail.sorted(by: { $0[1] < $1[1] })
         if let minData = sortedIdsh.first {
             let index = Int(minData[0])
-            let updatedXyhs = xyhs(x: roadX[index], y: roadY[index], heading: inputXyhs.heading, scale: max(minData[2], 0.7))
+            let updatedXyhs = ixyhs(x: roadX[index], y: roadY[index], heading: inputXyhs.heading, scale: max(minData[2], 0.7))
             if let headingData = getHeadingDataArray(mainHeading[index]) {
                 bestHeading = headingData.min() ?? inputXyhs.heading
             }
