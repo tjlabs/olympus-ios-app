@@ -362,17 +362,16 @@ class BuildingLevelChanger {
         }
     }
     
-    func calculateLevelByBle(data: (Int, [(String, Float)], RssCompensationParam)) -> String {
+    func calculateLevelByBle(data: (Int, [(String, Float)])) -> String {
         var result: String = "UNKNOWN"
         var strongestBleData: (String, String, Float)?
         
         var checker = [(String, String, Float)]()
         let bleData = data.1
-        let param = data.2
         for (levelName, wardIds) in levelWardsMap {
             for (id, rssi) in bleData {
                 if wardIds.contains(id) {
-                    let normalized_rssi = (Float(rssi) - param.device_min_rss)*param.normalization_scale + param.standard_min_rss
+                    let normalized_rssi = Float(rssi)
                     if normalized_rssi >= -90 {
                         checker.append((levelName, id, normalized_rssi))
                     }
