@@ -10,12 +10,9 @@ public class JupiterNetworkConstants {
     
     static let REC_RFD_SERVER_VERSION = "2025-04-02"
     static let REC_UVD_SERVER_VERSION = "2025-04-02"
-    static let REC_USER_MASK_SERVER_VERSION = "2025-04-02"
     static let REC_MOBILE_RESULT_SERVER_VERSION = "2025-08-11"
     static let REC_MOBILE_REPORT_SERVER_VERSION = "2025-04-02"
 
-    static let CALC_FLT_SERVER_VERSION = "2025-06-04"
-    static let CALC_OSR_SERVER_VERSION = "2025-06-04"
     static let CALC_OPE_SERVER_VERSION = "1994-07-29" // 있다고 가정
     
     static let OPERATING_SYSTEM: String = "iOS"
@@ -88,10 +85,6 @@ public class JupiterNetworkConstants {
         return REC_UVD_SERVER_VERSION
     }
     
-    public static func getRecUserMaskServerVersion() -> String {
-        return REC_USER_MASK_SERVER_VERSION
-    }
-    
     public static func getRecMobileResultServerVersion() -> String {
         return REC_MOBILE_RESULT_SERVER_VERSION
     }
@@ -112,24 +105,12 @@ public class JupiterNetworkConstants {
         return REC_URL + "/" + REC_UVD_SERVER_VERSION + "/user-velocity"
     }
     
-    public static func getRecUserMaskURL() -> String {
-        return REC_URL + "/" + REC_USER_MASK_SERVER_VERSION + "/user-mask"
-    }
-    
     public static func getRecMobileResultURL() -> String {
         return REC_URL + "/" + REC_MOBILE_RESULT_SERVER_VERSION + "/mobile-result"
     }
     
     public static func getRecMobileReportURL() -> String {
         return REC_URL + "/" + REC_MOBILE_REPORT_SERVER_VERSION + "/mobile-report"
-    }
-    
-    public static func getCalcFltURL() -> String {
-        return CALC_URL + "/" + CALC_FLT_SERVER_VERSION + "/flt"
-    }
-    
-    public static func getCalcOsrURL() -> String {
-        return CALC_URL + "/" + CALC_OSR_SERVER_VERSION + "/osr"
     }
     
     public static func getCalcOpeURL() -> String {

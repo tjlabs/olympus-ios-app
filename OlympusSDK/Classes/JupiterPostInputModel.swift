@@ -39,24 +39,3 @@ struct MobileReport: Encodable {
     let mobile_time: Int
     let code: Int
 }
-
-// MARK: - UserMask
-struct UserMask: Encodable {
-    let user_id: String
-    let mobile_time: Int
-    let section_number: Int
-    let index: Int
-    let x: Int
-    let y: Int
-    let absolute_heading: Float
-}
-
-struct SectorInfo: Encodable {
-    let standard_min_rss: Float
-    let standard_max_rss: Float
-    let user_traj_length: Float
-    let user_traj_length_dr: Float
-    let user_traj_length_pdr: Float
-    let num_straight_idx_dr: Int
-    let num_straight_idx_pdr: Int
-}

@@ -16,9 +16,6 @@ class StackManager {
     var isNeedClearBuffer: Bool = false
     
     var curResultBuffer = [FineLocationTrackingOutput]()
-    
-    var userMaskBuffer = [UserMask]()
-    var userUniqueMaskBuffer = [UserMask]()
     var recoveryIndex: Int = 0
     
     func stackUvd(uvd: UserVelocity) {
@@ -32,40 +29,6 @@ class StackManager {
         return self.uvdBuffer
     }
 
-    func stackUserMask(userMask: UserMask) {
-        if (userMaskBuffer.count > 0) {
-            let lastIndex = userMaskBuffer.last?.index
-            let currentIndex = userMask.index
-            if (lastIndex == currentIndex) {
-                _ = userMaskBuffer.popLast()
-            }
-        }
-
-        userMaskBuffer.append(userMask)
-        if (userMaskBuffer.count > DR_BUFFER_SIZE) {
-            userMaskBuffer.remove(at: 0)
-        }
-    }
-
-    func stackUserUniqueMask(userMask: UserMask) {
-        if (userUniqueMaskBuffer.count > 0) {
-            let lastUserMask = userUniqueMaskBuffer.last
-            let lastIndex = lastUserMask?.index
-            let lastX = lastUserMask?.x
-            let lastY = lastUserMask?.y
-            let currentIndex = userMask.index
-            let currentX = userMask.x
-            let currentY = userMask.y
-            if (lastIndex == currentIndex || (lastX == currentX && lastY == currentY)) {
-                _ = userUniqueMaskBuffer.popLast()
-            }
-        }
-
-        userUniqueMaskBuffer.append(userMask)
-        if (userUniqueMaskBuffer.count > DR_BUFFER_SIZE) {
-            userUniqueMaskBuffer.remove(at: 0)
-        }
-    }
     
     func stackCurResult(curResult: FineLocationTrackingOutput, reconCurResultBuffer: [FineLocationTrackingOutput]?) {
         curResultBuffer.append(curResult)
@@ -108,30 +71,6 @@ class StackManager {
             return (false, 360)
         }
     }
-    
-    func checkIsBadCase() -> Bool {
-        var isBadCase: Bool = false
-        
-        let inputUserMaskBuffer = userMaskBuffer
-        let th = SAME_COORD_THRESHOLD
-        if inputUserMaskBuffer.count >= th {
-            var diffX: Int = 0
-            var diffY: Int = 0
-            var checkCount: Int = 0
-            for i in inputUserMaskBuffer.count-(th-1)..<inputUserMaskBuffer.count {
-                if (inputUserMaskBuffer[i].index) > recoveryIndex {
-                    diffX += abs(inputUserMaskBuffer[i-1].x - inputUserMaskBuffer[i].x)
-                    diffY += abs(inputUserMaskBuffer[i-1].y - inputUserMaskBuffer[i].y)
-                    checkCount += 1
-                }
-            }
-            if diffX == 0 && diffY == 0 && checkCount >= (th-1) {
-                isBadCase = true
-            }
-        }
-        return isBadCase
-    }
-    
     
     func isResultHeadingStraight(drBufferInput: [UserVelocity], fltResult: FineLocationTrackingOutput) -> Bool {
         var isStraight: Bool = false

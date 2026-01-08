@@ -195,22 +195,6 @@ class JupiterNetworkManager {
         }
     }
     
-    func postUserMask(url: String, input: [UserMask], completion: @escaping (Int, String, [UserMask]) -> Void) {
-        guard let body = encodeJson(input) else {
-            DispatchQueue.main.async { completion(406, "Invalid URL or failed to encode JSON", input) }
-            return
-        }
-        makeRequest(url: url, body: body) { request in
-            guard let request = request else {
-                DispatchQueue.main.async { completion(406, "Invalid URL or failed to encode JSON", input) }
-                return
-            }
-            let session = self.umSessions[self.umSessionCount % self.umSessions.count]
-            self.umSessionCount += 1
-            self.performRequest(request: request, session: session, input: input, completion: completion)
-        }
-    }
-    
     func postMobileResult(url: String, input: [MobileResult], completion: @escaping (Int, String, [MobileResult]) -> Void) {
         guard let body = encodeJson(input) else {
             DispatchQueue.main.async { completion(406, "Invalid URL or failed to encode JSON", input) }
