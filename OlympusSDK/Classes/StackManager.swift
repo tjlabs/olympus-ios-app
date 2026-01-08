@@ -67,10 +67,25 @@ class StackManager {
         }
     }
     
-    func stackCurResult(curResult: FineLocationTrackingOutput) {
+    func stackCurResult(curResult: FineLocationTrackingOutput, reconCurResultBuffer: [FineLocationTrackingOutput]?) {
         curResultBuffer.append(curResult)
         if (curResultBuffer.count > CUR_RESULT_BUFFER_SIZE) {
             curResultBuffer.remove(at: 0)
+        }
+
+        guard let reconCurResultBuffer = reconCurResultBuffer, !reconCurResultBuffer.isEmpty else { return }
+
+        var reconMap: [Int: FineLocationTrackingOutput] = [:]
+        reconMap.reserveCapacity(reconCurResultBuffer.count)
+        for r in reconCurResultBuffer {
+            reconMap[r.index] = r
+        }
+
+        for i in 0..<curResultBuffer.count {
+            let idx = curResultBuffer[i].index
+            if let recon = reconMap[idx] {
+                curResultBuffer[i] = recon
+            }
         }
     }
     
