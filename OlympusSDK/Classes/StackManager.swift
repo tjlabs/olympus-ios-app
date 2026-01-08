@@ -21,15 +21,15 @@ class StackManager {
     var userUniqueMaskBuffer = [UserMask]()
     var recoveryIndex: Int = 0
     
-    func getUvdBuffer() -> [UserVelocity] {
-        return uvdBuffer
-    }
-    
     func stackUvd(uvd: UserVelocity) {
         uvdBuffer.append(uvd)
         if (uvdBuffer.count > DR_BUFFER_SIZE) {
             uvdBuffer.remove(at: 0)
         }
+    }
+    
+    func getUvdBuffer() -> [UserVelocity] {
+        return self.uvdBuffer
     }
 
     func stackUserMask(userMask: UserMask) {
@@ -67,7 +67,7 @@ class StackManager {
         }
     }
     
-    func stackCurResultBuffer(curResult: FineLocationTrackingOutput) {
+    func stackCurResult(curResult: FineLocationTrackingOutput) {
         curResultBuffer.append(curResult)
         if (curResultBuffer.count > CUR_RESULT_BUFFER_SIZE) {
             curResultBuffer.remove(at: 0)
@@ -176,8 +176,8 @@ class StackManager {
         return result
     }
     
-    func propagateUsingUvd(uvdBuffer: [UserVelocity], fltResult: FineLocationTrackingOutput) -> xyhs? {
-        var propagationValues: xyhs?
+    func propagateUsingUvd(uvdBuffer: [UserVelocity], fltResult: FineLocationTrackingOutput) -> ixyhs? {
+        var propagationValues: ixyhs?
         
         let resultIndex = fltResult.index
         var matchedIndex: Int = -1
@@ -207,7 +207,7 @@ class StackManager {
             }
             dh = Float(headingBuffer[headingBuffer.count-1] - headingBuffer[0])
             
-            propagationValues = xyhs(x: dx, y: dy, heading: dh, scale: 1.0)
+            propagationValues = ixyhs(x: dx, y: dy, heading: dh, scale: 1.0)
         }
         
         return propagationValues
