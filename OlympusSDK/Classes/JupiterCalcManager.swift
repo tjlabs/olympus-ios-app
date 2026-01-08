@@ -64,6 +64,10 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     // Debuging
     var debug_tu_xyh: [Float] = [0, 0, 0]
     var debug_landmark: LandmarkData?
+    var debug_best_landmark: PeakData?
+    var debug_recon_raw_traj: [[Double]]?
+    var debug_recon_corr_traj: [FineLocationTrackingOutput]?
+    
     // MARK: - init & deinit
     init(region: String, id: String, sectorId: Int) {
         self.id = id
@@ -228,7 +232,10 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             validity: false,
             validity_flag: 0,
             tu_xyh: self.debug_tu_xyh,
-            landmark: self.debug_landmark
+            landmark: self.debug_landmark,
+            best_landmark: self.debug_best_landmark,
+            recon_raw_traj: self.debug_recon_raw_traj,
+            recon_corr_traj: self.debug_recon_corr_traj
         )
         
         return jupiterDebugResult
@@ -287,10 +294,26 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         if let userPeak = peakDetector.updateEpoch(uvdIndex: curIndex, bleAvg: avgBleData) {
             JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) PEAK detected : id=\(userPeak.id) // peak_idx=\(userPeak.peak_index), peak_rssi=\(userPeak.peak_rssi), detected_idx = \(userPeak.end_index), detected_rssi = \(userPeak.end_rssi)")
             startEntranceTracking(currentTime: currentTime, entManager: entManager, uvd: userVelocity, peakId: userPeak.id, bleData: bleData)
-            if let matchedLandmark = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: userPeak, curResult: self.curResult) {
-                self.debug_landmark = matchedLandmark
+            
+            let uvdBuffer = stackManager.getUvdBuffer()
+            let curResultBuffer = stackManager.getCurResultBuffer()
+            if let matchedWithUserPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: userPeak, curResult: self.curResult, curResultBuffer: curResultBuffer) {
+                self.debug_landmark = matchedWithUserPeak.landmark
                 
-                
+                if let bestPeak = landmarkTagger.findBestLandmark(userPeak: userPeak, landmark: matchedWithUserPeak.landmark, matchedResult: matchedWithUserPeak.matchedResult) {
+                    self.debug_best_landmark = bestPeak
+                    if let matchedTuResult = kalmanFilter?.getTuResultWithUvdIndex(index: userPeak.peak_index) {
+                        if let reconstructResult = landmarkTagger.recontructTrajectory(peakIndex: userPeak.peak_index, bestLandmark: bestPeak, matchedResult: matchedWithUserPeak.matchedResult, startHeading: Double(matchedTuResult.heading), uvdBuffer: uvdBuffer, curResultBuffer: curResultBuffer, mode: mode) {
+                            self.debug_recon_raw_traj = reconstructResult.0
+                            self.debug_recon_corr_traj = reconstructResult.1
+                        } else {
+                            self.debug_recon_raw_traj = nil
+                            self.debug_recon_corr_traj = nil
+                        }
+                    }
+                } else {
+                    self.debug_best_landmark = nil
+                }
             }
         }
         
@@ -308,7 +331,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         
         // MARK: - Update CurPathMatchingResult
         guard let curResult = self.curResult else { return }
-        stackManager.stackCurResultBuffer(curResult: curResult)
+        stackManager.stackCurResult(curResult: curResult)
         
         guard let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: curResult.x, y: curResult.y, heading: curResult.absolute_heading, isUseHeading: true, mode: mode, paddingValues: paddingValues) else { return }
         curPathMatchingResult = curResult
@@ -557,6 +580,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     func onEntranceData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: TJLabsResource.EntranceData) {
         entManager?.setEntData(key: key, data: data)
+        landmarkTagger?.setExceptionalTagInfo(id: data.innerWardId)
     }
     
     func onEntranceRouteData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: TJLabsResource.EntranceRouteData) {
