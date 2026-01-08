@@ -23,7 +23,7 @@ class EntranceManager {
     private var entOuterWardIdMap = [String: String]()
     private var entInnerWardIdMap = [String: String]()
     private var entInnerWardRssiMap = [String: Float]()
-    private var entInnerWardCoordMap = [String: xyhs]()
+    private var entInnerWardCoordMap = [String: ixyhs]()
     
     var sectorId: Int
     private var curEntKey: String?
@@ -53,7 +53,7 @@ class EntranceManager {
         self.entOuterWardIdMap[key] = data.outerWardId
         self.entInnerWardIdMap[key] = data.innerWardId
         self.entInnerWardRssiMap[key] = data.innerWardRssi
-        self.entInnerWardCoordMap[key] = xyhs(x: data.innerWardCoord[0], y: data.innerWardCoord[1], heading: data.innerWardCoord[2])
+        self.entInnerWardCoordMap[key] = ixyhs(x: data.innerWardCoord[0], y: data.innerWardCoord[1], heading: data.innerWardCoord[2])
     }
     
     func checkStartEntTrack(wardId: String, sec: Int) -> String? {
