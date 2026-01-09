@@ -1,5 +1,6 @@
 
 import TJLabsCommon
+import TJLabsResource
 
 class StackManager {
     init() { }
@@ -7,15 +8,18 @@ class StackManager {
     private let SAME_COORD_THRESHOLD: Int = 20
     
     private let DR_BUFFER_SIZE: Int = 60
-    private let HEADING_BUFFER_SIZE: Int = 5
     private let BLE_LEVEL_BUFFER_SIZE: Int = 8
+    private let USER_PEAK_AND_LINK_BUFFER_SIZE: Int = 5
     private let CUR_RESULT_BUFFER_SIZE: Int = 100
-
+    private let CUR_PM_RESULT_BUFFER_SIZE: Int = 50
+    
     private var rfdBuffer = [[String: Float]]()
     var uvdBuffer = [UserVelocity]()
-    var isNeedClearBuffer: Bool = false
     
+    var userPeakAndLinkBuffer = [(UserPeak, LinkData)]()
     var curResultBuffer = [FineLocationTrackingOutput]()
+    var curPmResultBuffer = [FineLocationTrackingOutput]()
+
     var recoveryIndex: Int = 0
     
     func stackUvd(uvd: UserVelocity) {
@@ -28,7 +32,37 @@ class StackManager {
     func getUvdBuffer() -> [UserVelocity] {
         return self.uvdBuffer
     }
-
+    
+    func getUvdBuffer(from: Int) -> [UserVelocity] {
+        var buffer = [UserVelocity]()
+        for uvd in uvdBuffer {
+            if uvd.index >= from {
+                buffer.append(uvd)
+            }
+        }
+        return buffer
+    }
+    
+    func stackUserPeakAndLink(userPeakAndLink: (UserPeak, LinkData)) {
+        userPeakAndLinkBuffer.append(userPeakAndLink)
+        if (userPeakAndLinkBuffer.count > USER_PEAK_AND_LINK_BUFFER_SIZE) {
+            userPeakAndLinkBuffer.remove(at: 0)
+        }
+//        JupiterLogger.i(tag: "StackManager", message: "(stackUserPeakAndLink) userPeakAndLinkBuffer: \(userPeakAndLinkBuffer)")
+    }
+    
+    func getUserPeakAndLinkBuffer() -> [(UserPeak, LinkData)] {
+        return self.userPeakAndLinkBuffer
+    }
+    
+    func getOlderPeakIndex() -> Int {
+        if self.userPeakAndLinkBuffer.count < 2 {
+            return 0
+        } else {
+            let olderPeakAndLink = self.userPeakAndLinkBuffer[self.userPeakAndLinkBuffer.count - 2]
+            return olderPeakAndLink.0.peak_index
+        }
+    }
     
     func stackCurResult(curResult: FineLocationTrackingOutput, reconCurResultBuffer: [FineLocationTrackingOutput]?) {
         curResultBuffer.append(curResult)
@@ -54,6 +88,57 @@ class StackManager {
     
     func getCurResultBuffer() -> [FineLocationTrackingOutput] {
         return self.curResultBuffer
+    }
+    
+    func stackCurPmResultBuffer(curPmResult: FineLocationTrackingOutput) {
+        curPmResultBuffer.append(curPmResult)
+        if (curPmResultBuffer.count > CUR_PM_RESULT_BUFFER_SIZE) {
+            curPmResultBuffer.remove(at: 0)
+        }
+    }
+    
+//    func checkIsBadCase() -> Bool {
+//        guard curPmResultBuffer.count >= SAME_COORD_THRESHOLD else { return false }
+//
+//        var lastX: Float? = nil
+//        var lastY: Float? = nil
+//        var sameCount = 0
+//
+//        for result in curPmResultBuffer.reversed() {
+//            let x = result.x
+//            let y = result.y
+//
+//            if let lx = lastX, let ly = lastY {
+//                if x == lx && y == ly {
+//                    sameCount += 1
+//                } else {
+//                    break
+//                }
+//            } else {
+//                sameCount = 1
+//            }
+//
+//            lastX = x
+//            lastY = y
+//
+//            if sameCount >= SAME_COORD_THRESHOLD {
+//                return true
+//            }
+//        }
+//
+//        return false
+//    }
+    
+    func checkIsBadCase() -> Bool {
+        guard curPmResultBuffer.count >= 40 else { return false }
+        
+        let curIndex = curPmResultBuffer[curPmResultBuffer.count-1].index
+        if curIndex - recoveryIndex > 40 {
+            recoveryIndex = curIndex
+            return true
+        }
+
+        return false
     }
     
     func isDrBufferStraightCircularStd(numIndex: Int, condition: Double = 1) -> (Bool, Double) {
