@@ -47,59 +47,7 @@ class LandmarkTagger {
         return (matchedLandmark, matchedCurResult!)
     }
     
-    func findBestLandmark(userPeak: UserPeak, landmark: LandmarkData, matchedResult: FineLocationTrackingOutput) -> PeakData? {
-        let key = "\(sectorId)_\(matchedResult.building_name)_\(matchedResult.level_name)"
-        guard let linkData = PathMatcher.shared.linkData[key] else { return nil }
-        
-        guard let curLinkInfo = PathMatcher.shared.getCurPassedLinkInfo() else { return nil }
-        let curLinkGroupId = curLinkInfo.group_id
-        
-        guard let nodeData = PathMatcher.shared.nodeData[key] else { return nil }
-
-        func pointToSegmentDistance(px: Float, py: Float, ax: Float, ay: Float, bx: Float, by: Float) -> Float {
-            let abx = bx - ax
-            let aby = by - ay
-            let apx = px - ax
-            let apy = py - ay
-            let denom = abx*abx + aby*aby
-            if denom <= 1e-6 {
-                let dx = px - ax
-                let dy = py - ay
-                return sqrt(dx*dx + dy*dy)
-            }
-            var t = (apx*abx + apy*aby) / denom
-            t = max(0, min(1, t))
-            let cx = ax + t*abx
-            let cy = ay + t*aby
-            let dx = px - cx
-            let dy = py - cy
-            return sqrt(dx*dx + dy*dy)
-        }
-
-        func findBestLinkId(forX x: Float, forY y: Float) -> (linkId: Int, dist: Float)? {
-            var bestLinkId = -1
-            var bestDist = Float.greatestFiniteMagnitude
-
-            for (lid, ld) in linkData {
-                guard let sNode = nodeData[ld.start_node], sNode.coords.count >= 2 else { continue }
-                guard let eNode = nodeData[ld.end_node], eNode.coords.count >= 2 else { continue }
-
-                let ax = sNode.coords[0]
-                let ay = sNode.coords[1]
-                let bx = eNode.coords[0]
-                let by = eNode.coords[1]
-
-                let d = pointToSegmentDistance(px: x, py: y, ax: ax, ay: ay, bx: bx, by: by)
-                if d < bestDist {
-                    bestDist = d
-                    bestLinkId = lid
-                }
-            }
-
-            guard bestLinkId != -1 else { return nil }
-            return (bestLinkId, bestDist)
-        }
-
+    func findBestLandmark(userPeak: UserPeak, landmark: LandmarkData, matchedResult: FineLocationTrackingOutput, peakLinkGroupId: Int) -> PeakData? {
         let refX = Float(matchedResult.x)
         let refY = Float(matchedResult.y)
 
@@ -112,10 +60,10 @@ class LandmarkTagger {
             let peakY = Float(peak.y)
 
             // 1) Landmark의 위치가 속한 Link 확인
-            guard let (lid, _) = findBestLinkId(forX: peakX, forY: peakY), let ld = linkData[lid] else { continue }
+            guard let ld = PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId, result: matchedResult) else { continue }
 
             // 2) UserPeak에서의 위치가 속한 Link의 Group ID와 1)에서 얻은 Link의 Group ID의 일치 확인
-            guard ld.group_id == curLinkGroupId else { continue }
+            guard ld.group_id == peakLinkGroupId else { continue }
 
             // 3) UserPeak의 위치와 가장 가까운 Link를 2)의 후보군에서 찾기 (LADNMARK_DIST_THRESHOLD 조건도 만족)
             let dx = peakX - refX
@@ -125,15 +73,15 @@ class LandmarkTagger {
             if dist < bestPeakDist && dist <= LADNMARK_DIST_THRESHOLD {
                 bestPeakDist = dist
                 bestPeak = peak
-                bestPeakLinkId = lid
+                bestPeakLinkId = ld.id
             }
         }
 
         if let bestPeak = bestPeak {
-            JupiterLogger.i(tag: "LandmarkTagger", message: "(applyCorrection) selected peak=(\(bestPeak.x),\(bestPeak.y)) ward=\(landmark.ward_id) link=\(bestPeakLinkId) group=\(curLinkGroupId) dist=\(bestPeakDist)")
+            JupiterLogger.i(tag: "LandmarkTagger", message: "(applyCorrection) selected peak=(\(bestPeak.x),\(bestPeak.y)) ward=\(landmark.ward_id) link=\(bestPeakLinkId) group=\(peakLinkGroupId) dist=\(bestPeakDist)")
             return bestPeak
         } else {
-            JupiterLogger.i(tag: "LandmarkTagger", message: "(applyCorrection) no peak matched: ward=\(landmark.ward_id) curGroup=\(curLinkGroupId) peaks=\(landmark.peaks.count)")
+            JupiterLogger.i(tag: "LandmarkTagger", message: "(applyCorrection) no peak matched: ward=\(landmark.ward_id) curGroup=\(peakLinkGroupId) peaks=\(landmark.peaks.count)")
             return nil
         }
     }
