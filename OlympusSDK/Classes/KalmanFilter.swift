@@ -4,6 +4,12 @@ import TJLabsCommon
 class KalmanFilter {
     init(stackManager: StackManager) {
         self.stackManager = stackManager
+        
+        tuResult = nil
+        tuResultBuffer = [ixyhs]()
+        usedUvdIndex = 0
+        pathTrajMatchingIndex = 0
+        pathTrajTurnIndex = 0
     }
     
     var kalmanP: Float = 1
@@ -38,14 +44,6 @@ class KalmanFilter {
     let DR_BUFFER_SIZE_FOR_STRAIGHT: Int = 10 // COEX 12 // DS 6 //default 10 // tips : 4
     let DR_BUFFER_SIZE_FOR_HEAD_STRAIGHT: Int = 3
     let DR_HEADING_CORR_NUM_IDX: Int = 10
-    
-    func initialize() {
-        tuResult = nil
-        tuResultBuffer = [ixyhs]()
-        usedUvdIndex = 0
-        pathTrajMatchingIndex = 0
-        pathTrajTurnIndex = 0
-    }
     
     func minimizeKalmanR() {
         kalmanR = 0.01
@@ -113,12 +111,26 @@ class KalmanFilter {
         KalmanState.isKalmanFilterRunning = true
     }
     
-    func updateTuInformation(uvd: UserVelocity) {
+    func updateTuInformation(uvd: UserVelocity, olderPeakIndex: Int?) {
         guard let tuResult = self.tuResult else { return }
-        self.tuResultBuffer.append(ixyhs(index: uvd.index, x: tuResult.x, y: tuResult.y, heading: tuResult.absolute_heading))
-        if self.tuResultBuffer.count > 100 {
-            self.tuResultBuffer.removeFirst()
+
+        if let olderPeakIndex {
+            JupiterLogger.i(tag: "KalmanFilter", message: "(updateTuInformation) - olderPeakIndex:\(olderPeakIndex)")
+            if let firstKeep = tuResultBuffer.firstIndex(where: { $0.index >= olderPeakIndex }) {
+                if firstKeep > 0 {
+                    tuResultBuffer.removeSubrange(0..<firstKeep)
+                    JupiterLogger.i(tag: "KalmanFilter", message: "(updateTuInformation) - tuResultBuffer size: \(tuResultBuffer.count+firstKeep) -> \(tuResultBuffer.count)")
+                }
+            } else {
+                tuResultBuffer.removeAll(keepingCapacity: true)
+                JupiterLogger.i(tag: "KalmanFilter", message: "(updateTuInformation) - tuResultBuffer removed all")
+            }
         }
+
+        tuResultBuffer.append(ixyhs(index: uvd.index,
+                                    x: tuResult.x,
+                                    y: tuResult.y,
+                                    heading: tuResult.absolute_heading))
     }
     
     
@@ -148,7 +160,7 @@ class KalmanFilter {
 //        let updatedHeading = nextTuResult?.absolute_heading
 //        var pathTrajMatchingHeading = nextTuResult?.absolute_heading
 //        let inputUnitDrInfoBuffer = Array(stackManager.userVelocityBuffer.suffix(DR_BUFFER_SIZE_FOR_STRAIGHT))
-//        
+//
 //        var isPossiblePathTrajMatching = checkIsPossiblePathTrajMatching(buffer: inputUnitDrInfoBuffer)
 //        var straightThreshold = DR_BUFFER_SIZE_FOR_STRAIGHT
 //        if (!isPossiblePathTrajMatching && inputUnitDrInfoBuffer.count < 5) {
@@ -157,14 +169,14 @@ class KalmanFilter {
 //        }
 //        let (isDrStraight, turnAngle) = stackManager.isDrBufferStraightCircularStd(numIndex: DR_HEADING_CORR_NUM_IDX, condition: 60)
 //        let (isDrVeryStraight, _) = stackManager.isDrBufferStraightCircularStd(numIndex: DR_BUFFER_SIZE_FOR_STRAIGHT, condition: 10)
-//        
+//
 //        if (!isDrStraight && isPossiblePathTrajMatching) {
 //            if (pathMatchingCondition.turn && turnAngle <= 135) {
 //                isNeedRequestPhase4 = true
 //                let linkDirArray = JupiterNodeChecker.shared.linkDirections
 //                if (!linkDirArray.isEmpty) {
 //                    let inputUserMaskBuffer = Array(stackManager.userMaskBuffer.suffix(straightThreshold))
-//                    
+//
 //                    var turnIndex: Int = 0
 //                    var uvdIndexMatchedWithTurn: Int = 0
 //                    var uvdHeadings = [Double]()
@@ -172,7 +184,7 @@ class KalmanFilter {
 //                        uvdHeadings.append(unitUvd.heading)
 //                    }
 //                    turnIndex = indexOfMaxRateOfChange(in: uvdHeadings)
-//                    
+//
 //                    let userX = inputUserMaskBuffer[inputUserMaskBuffer.count-1].x
 //                    let userY = inputUserMaskBuffer[inputUserMaskBuffer.count-1].y
 //                    let userHeading = inputUserMaskBuffer[inputUserMaskBuffer.count-1].absolute_heading
@@ -182,7 +194,7 @@ class KalmanFilter {
 //                        if (idx > turnIndex) {
 //                            break
 //                        }
-//                        
+//
 //                        var diffValues = [Double]()
 //                        for direction in linkDirArray {
 //                            var diffDirValue = abs(direction - inputUserMaskBuffer[idx].absolute_heading)
@@ -200,22 +212,22 @@ class KalmanFilter {
 //                    let endHeading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(userHeading)))
 //
 //                    let findPathMatchingNodeResult = JupiterPathMatcher.shared.findPathTrajMatchingNode(sectorId: sectorId, fltResult: nextTuResult, x: Float(userX), y: Float(userY), heading: startHeading, uvdBuffer: inputUnitDrInfoBuffer, pathType: 0, linkDirections: linkDirArray)
-//                    
+//
 //                    var pathMatchingNodeInfoCandidates = [PassedNodeInfo]()
 //                    if !findPathMatchingNodeResult.isEmpty {
 //                        var resultCoordX = [Float]()
 //                        var resultCoordY = [Float]()
 //                        let MARGIN: Double = 44
-//                        
+//
 //                        for pathMatchingNode in findPathMatchingNodeResult {
 //                            var candidateDirections = [Float]()
 //                            var bestMapHeading: Float = endHeading
-//                            
+//
 //                            var minDiffValue: Float = 360
 //                            let endHeadingCandidates: [Float] = pathMatchingNode.nodeHeadings.filter { !linkDirArray.contains($0) }
 //                            for eh in endHeadingCandidates {
 //                                var diffValue: Float = 0
-//                                
+//
 //                                if (eh > 270 && (updatedHeading >= 0 && updatedHeading < 90)) {
 //                                    diffValue = abs(eh - (updatedHeading+360))
 //                                } else if (updatedHeading > 270 && (eh >= 0 && eh < 90)) {
@@ -223,20 +235,20 @@ class KalmanFilter {
 //                                } else {
 //                                    diffValue = abs(eh - updatedHeading)
 //                                }
-//                                
+//
 //                                if diffValue < minDiffValue {
 //                                    minDiffValue = diffValue
 //                                    bestMapHeading = eh
 //                                }
 //                            }
-//                            
+//
 //                            candidateDirections.append(bestMapHeading)
 //                            if (candidateDirections.count == 1) {
 //                                pathTrajMatchingHeading = candidateDirections[0]
 //                                let nodeCoord = pathMatchingNode.nodeCoord
 //                                let turnType = determineTurnType(headings: uvdHeadings)
 //                                var distanceCompensation: Float = 0
-//                                
+//
 //                                var startX = nodeCoord[0]
 //                                var startY = nodeCoord[1]
 //                                for i in (0..<turnIndex).reversed() {
@@ -244,7 +256,7 @@ class KalmanFilter {
 //                                    startX += Float(inputUnitDrInfoBuffer[i].length*cos(startHeadingInRad))
 //                                    startY += Float(inputUnitDrInfoBuffer[i].length*sin(startHeadingInRad))
 //                                }
-//                                
+//
 //                                let startPaddingValues = getPaddingByHeading(startHeading)
 //                                let startXy = JupiterPathMatcher.shared.pathMatching(sectorId: sectorId,
 //                                                                                     building: nextTuResult.building_name,
@@ -255,24 +267,24 @@ class KalmanFilter {
 //                                                                                     isUseHeading: false,
 //                                                                                     mode: .MODE_PEDESTRIAN,
 //                                                                                     paddingValues: startPaddingValues)
-//                                
+//
 //                                if (startXy.0) {
 //                                    let compensationDirection = candidateDirections[0]
 //                                    let compensationDirInRad = Float(TJLabsUtilFunctions.shared.degree2radian(degree: Double(compensationDirection)))
-//                                    
+//
 //                                    var endX = nodeCoord[0]
 //                                    var endY = nodeCoord[1]
 //                                    for i in turnIndex..<inputUnitDrInfoBuffer.count {
 //                                        endX += Float(inputUnitDrInfoBuffer[i].length)*cos(compensationDirInRad)
 //                                        endY += Float(inputUnitDrInfoBuffer[i].length)*sin(compensationDirInRad)
 //                                    }
-//                                    
+//
 //                                    if (turnType == 1) {
 //                                        distanceCompensation = 0.7
 //                                        endX += distanceCompensation*cos(compensationDirInRad)
 //                                        endY += distanceCompensation*sin(compensationDirInRad)
 //                                    }
-//                                    
+//
 //                                    let endPaddingValues = getPaddingByHeading(compensationDirection)
 //                                    let endXy = JupiterPathMatcher.shared.pathMatching(sectorId: sectorId,
 //                                                                                       building: nextTuResult.building_name,
@@ -293,7 +305,7 @@ class KalmanFilter {
 //                                }
 //                            }
 //                        }
-//                        
+//
 //                        if (!resultCoordX.isEmpty) {
 //                            var minDist: Float = 100
 //                            var bestIndex = -1
@@ -308,21 +320,21 @@ class KalmanFilter {
 //                                    bestCoord = [resultCoordX[c], resultCoordY[c]]
 //                                }
 //                            }
-//                            
+//
 //                            if (!bestCoord.isEmpty) {
 //                                self.pathTrajTurnIndex = uvdIndexMatchedWithTurn
 //                                self.pathTrajMatchingIndex = currentUvdIndex
 //                                nextTuResult.x = bestCoord[0]
 //                                nextTuResult.y = bestCoord[1]
 //                                nextTuResult.absolute_heading = weightedAverageHeading(A: nextTuResult.absolute_heading, B: pathTrajMatchingHeading, weightA: 4, weightB: 6)
-//                                
+//
 //                                let headingCompensation: Float = userHeading - Float(inputUnitDrInfoBuffer[inputUnitDrInfoBuffer.count-1].heading)
 //                                var headingBuffer: [Float] = []
 //                                for uvd in inputUnitDrInfoBuffer {
 //                                    let compensatedHeading = TJLabsUtilFunctions.shared.compensateDegree(uvd.heading + Double(headingCompensation) - 180)
 //                                    headingBuffer.append(Float(compensatedHeading))
 //                                }
-//                                
+//
 //                                var xyFromHead: [Float] = [bestCoord[0], bestCoord[1]]
 //                                var trajectoryFromHead = [[Float]]()
 //                                trajectoryFromHead.append([bestCoord[0], bestCoord[1]])
@@ -344,7 +356,7 @@ class KalmanFilter {
 //                if (pathMatchingCondition.straight) {
 //                    isNeedRequestPhase4 = true
 //                }
-//                
+//
 //                let levelName = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: tuResult.level_name)
 //                let pathMatchingResult = JupiterPathMatcher.shared.pathMatching(sectorId: sectorId,
 //                                                                                building: tuResult.building_name,
@@ -355,26 +367,26 @@ class KalmanFilter {
 //                                                                                isUseHeading: false,
 //                                                                                mode: .MODE_PEDESTRIAN,
 //                                                                                paddingValues: JupiterMode.PADDING_VALUES_PDR)
-//                
+//
 //                let compensatedHeading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(pathMatchingResult.1.heading)))
 //                let compensatedHeadingInRad = Float(TJLabsUtilFunctions.shared.degree2radian(degree: Double(compensatedHeading)))
 //                let dx = Float(currentUvdLength)*cos(compensatedHeadingInRad)
 //                let dy = Float(currentUvdLength)*sin(compensatedHeadingInRad)
-//                
+//
 //                let updatedX = self.tuResult.x + dx
 //                let updatedY = self.tuResult.y + dy
-//                
+//
 //                nextTuResult.x = updatedX
 //                nextTuResult.y = updatedY
 //                if (pathMatchingResult.0) { nextTuResult.absolute_heading = compensatedHeading }
 //            }
 //            initPathTrajMatchingInfo()
 //        }
-//        
+//
 //        if !isDidPathTrajMatching {
 //            nextTuResult = updateLimitationResult(nextTuResult: nextTuResult, mode: .MODE_PEDESTRIAN)
 //        }
-//        
+//
 //        KalmanState.isMeasurementUpdateRunning = true
 //        return (nextTuResult, isDidPathTrajMatching, isNeedRequestPhase4)
 //    }
