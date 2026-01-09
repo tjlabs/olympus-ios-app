@@ -5,7 +5,8 @@ import TJLabsResource
 class PathMatcher {
     static var shared = PathMatcher()
     init() { }
-        
+    
+    let ACCEPT_DIST: Float = 5
     var pathPixelData = [String: PathPixelData]()
     var nodeData = [String: [Int: NodeData]]()
     var linkData = [String: [Int: LinkData]]()
@@ -639,25 +640,6 @@ class PathMatcher {
         var curLinkBestHeading: Float = 0
         var curLinkOppHeading: Float = 0
         
-        func pointToSegmentDistance(px: Float, py: Float, ax: Float, ay: Float, bx: Float, by: Float) -> (dist: Float, t: Float) {
-            let abx = bx - ax
-            let aby = by - ay
-            let apx = px - ax
-            let apy = py - ay
-            let denom = abx*abx + aby*aby
-            if denom <= 1e-6 {
-                let dx = px - ax
-                let dy = py - ay
-                return (sqrt(dx*dx + dy*dy), 0)
-            }
-            var t = (apx*abx + apy*aby) / denom
-            t = max(0, min(1, t))
-            let cx = ax + t*abx
-            let cy = ay + t*aby
-            let dx = px - cx
-            let dy = py - cy
-            return (sqrt(dx*dx + dy*dy), t)
-        }
 
         var candidateLinkIds: [Int]
         if curPassedNodeInfo.id != -1, let curNd = nodeData[curPassedNodeInfo.id] {
@@ -688,8 +670,7 @@ class PathMatcher {
             }
         }
 
-        let acceptDist: Float = 5
-        guard bestLinkId != -1, let ld = bestLink, bestLinkDist <= acceptDist else {
+        guard bestLinkId != -1, let ld = bestLink, bestLinkDist <= ACCEPT_DIST else {
             let coordHeadings = getPathMatchingHeadings(sectorId: sectorId,
                                                        building: curResult.building_name,
                                                        level: curResult.level_name,
@@ -720,6 +701,77 @@ class PathMatcher {
         curPassedNodeInfo = PassedNodeInfo(id: node, coord: coord, headings: headings, matched_index: matchedIndex, user_heading: heading)
         controlPassedNodeInfo(passedNodeInfo: curPassedNodeInfo)
 //        JupiterLogger.i(tag: "PathMatcher", message: "(registerPassedNode) - registerPassedNode : passedNode = \(curPassedNodeInfo.id) // passedNodeMatchedIndex = \(curPassedNodeInfo.matched_index) // passedNodeCoord = \(curPassedNodeInfo.coord) // passedNodeHeadings = \(curPassedNodeInfo.headings)")
+    }
+    
+    func getLinkInfoWithResult(sectorId: Int, result: FineLocationTrackingOutput, checkAll: Bool = false, acceptDist: Float = 5) -> LinkData? {
+        let building = result.building_name
+        let level = result.level_name
+        guard !building.isEmpty, !level.isEmpty else { return nil }
+
+        let levelName = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: level)
+        let key = "\(sectorId)_\(building)_\(levelName)"
+
+        guard let nodeData = self.nodeData[key] else { return nil }
+        guard let linkData = self.linkData[key] else { return nil }
+
+        let correctedX = round(result.x)
+        let correctedY = round(result.y)
+
+        var candidateLinkIds: [Int]
+        if checkAll {
+            candidateLinkIds = Array(linkData.keys)
+        } else if curPassedNodeInfo.id != -1, let curNd = nodeData[curPassedNodeInfo.id] {
+            candidateLinkIds = curNd.connected_links
+        } else {
+            candidateLinkIds = Array(linkData.keys)
+        }
+
+        var bestLinkId: Int = -1
+        var bestLinkDist: Float = Float.greatestFiniteMagnitude
+
+        for lid in candidateLinkIds {
+            guard let ld = linkData[lid] else { continue }
+            guard let sNode = nodeData[ld.start_node], sNode.coords.count >= 2 else { continue }
+            guard let eNode = nodeData[ld.end_node], eNode.coords.count >= 2 else { continue }
+
+            let ax = sNode.coords[0]
+            let ay = sNode.coords[1]
+            let bx = eNode.coords[0]
+            let by = eNode.coords[1]
+
+            let (d, _) = pointToSegmentDistance(px: correctedX, py: correctedY, ax: ax, ay: ay, bx: bx, by: by)
+            if d < bestLinkDist {
+                bestLinkDist = d
+                bestLinkId = lid
+            }
+        }
+
+        guard bestLinkId != -1, bestLinkDist <= acceptDist else { return nil }
+
+        return linkData[bestLinkId]
+    }
+    
+    private func pointToSegmentDistance(px: Float, py: Float, ax: Float, ay: Float, bx: Float, by: Float) -> (dist: Float, t: Float) {
+        let abx = bx - ax
+        let aby = by - ay
+        let apx = px - ax
+        let apy = py - ay
+        let denom = abx*abx + aby*aby
+
+        if denom <= 1e-6 {
+            let dx = px - ax
+            let dy = py - ay
+            return (sqrt(dx*dx + dy*dy), 0)
+        }
+
+        var t = (apx*abx + apy*aby) / denom
+        t = max(0, min(1, t))
+
+        let cx = ax + t*abx
+        let cy = ay + t*aby
+        let dx = px - cx
+        let dy = py - cy
+        return (sqrt(dx*dx + dy*dy), t)
     }
 
     // MARK: - Heading helpers (0~360 circular)
