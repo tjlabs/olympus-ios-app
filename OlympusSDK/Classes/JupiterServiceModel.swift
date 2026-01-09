@@ -51,6 +51,13 @@ struct PassedLinkInfo {
     var oppsite_heading: Float
 }
 
+struct RecoveryTrajectory {
+    var index: Int
+    var x: Float
+    var y: Float
+    var heading: Float
+}
+
 enum LimitationType {
     case X_LIMIT, Y_LIMIT, NO_LIMIT
 }
