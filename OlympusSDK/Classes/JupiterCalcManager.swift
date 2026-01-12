@@ -392,16 +392,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                    let matchedWithRecentPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: recentUserPeak, curResult: curResult, curResultBuffer: curResultBuffer) {
                     if let recoveryResult = recoveryManager.recover(recoveryTraj: recoveryTraj, userPeakAndLinkBuffer: userPeakAndLinkBuffer, landmarks: (matchedWithOlderPeak.0, matchedWithRecentPeak.0), tuResultWhenOlderPeak: tuResultWhenOlderPeak, curPmResult: curPmResult, mode: mode) {
                         self.debug_recovery_result = recoveryResult
-//                        var traj_for_debug = [[Double]]()
-//                        for value in recoveryResult.traj {
-//                            traj_for_debug.append([Double(value.x), Double(value.y)])
-//                        }
-//                        self.debug_recovery_traj = traj_for_debug
                     }
                 }
             }
-        } else {
-//            self.debug_recovery_traj = nil
         }
     }
     
@@ -481,7 +474,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         
         let indoorResult = makeCurrentResult(input: tuResult, mustInSameLink: mustInSameLink, pathMatchingType: .NARROW, phase: .TRACKING, mode: mode)
         self.curResult = indoorResult
-//        self.curPathMatchingResult = indoorResult
     }
     
     private func updateResultFromTimeUpdate(mode: UserMode, uvd: UserVelocity, pastUvd: UserVelocity,
