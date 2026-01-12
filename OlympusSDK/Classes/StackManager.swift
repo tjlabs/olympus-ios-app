@@ -252,16 +252,16 @@ class StackManager {
         return propagationValues
     }
     
-    func checkHasMajorDirection(uvdBuffer: [UserVelocity]) -> Bool {
+    func checkHasMajorDirection(uvdBuffer: [UserVelocity], requiredSize: Int = 7) -> Bool {
         var uvdRawHeading = [Float]()
         for value in uvdBuffer {
             uvdRawHeading.append(Float(value.heading))
         }
-        let headingLeastChangeSection = extractSectionWithLeastChange(inputArray: uvdRawHeading, requiredSize: 7)
+        let headingLeastChangeSection = extractSectionWithLeastChange(inputArray: uvdRawHeading, requiredSize: requiredSize)
         return headingLeastChangeSection.isEmpty ? false : true
     }
     
-    func extractSectionWithLeastChange(inputArray: [Float], requiredSize: Int) -> [Float] {
+    func extractSectionWithLeastChange(inputArray: [Float], requiredSize: Int = 7) -> [Float] {
         var resultArray = [Float]()
         guard inputArray.count > requiredSize else {
             return []
