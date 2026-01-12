@@ -136,6 +136,7 @@ class KalmanFilter {
     
     func timeUpdate(uvd: UserVelocity, pastUvd: UserVelocity) -> FineLocationTrackingOutput? {
         guard var tuResult = self.tuResult else { return nil }
+        JupiterLogger.i(tag: "KalmanFilter", message: "(timeUpdate) - tuResult before :[\(tuResult.x),\(tuResult.y),\(tuResult.absolute_heading)]")
         let length = uvd.length
         let diffHeading = uvd.heading - pastUvd.heading
         let updatedHeading = TJLabsUtilFunctions.shared.compensateDegree(Double(tuResult.absolute_heading) + Double(diffHeading))
@@ -146,7 +147,7 @@ class KalmanFilter {
         tuResult.x += Float(dx)
         tuResult.y += Float(dy)
         tuResult.absolute_heading = Float(updatedHeading)
-        
+        JupiterLogger.i(tag: "KalmanFilter", message: "(timeUpdate) - tuResult after :[\(tuResult.x),\(tuResult.y),\(tuResult.absolute_heading)]")
         return tuResult
     }
     
@@ -493,12 +494,14 @@ class KalmanFilter {
         
         if let pmResults = PathMatcher.shared.pathMatching(sectorId: sectorId, building: nextTuResult.building_name, level: nextTuResult.level_name, x: nextTuResult.x, y: nextTuResult.y, heading: nextTuResult.absolute_heading, isUseHeading: true, mode: .MODE_VEHICLE, paddingValues: paddingValues) {
             nextTuResult.absolute_heading = isDrStraight ? Float(TJLabsUtilFunctions.shared.compensateDegree(Double(pmResults.heading))) : Float(TJLabsUtilFunctions.shared.compensateDegree(Double(nextTuResult.absolute_heading)))
+            JupiterLogger.i(tag: "KalmanFilter", message: "(timeUpdate) - pmResults :[\(nextTuResult.x),\(nextTuResult.y),\(nextTuResult.absolute_heading)]")
         } else {
             if let pmResultsWithoutHeading = PathMatcher.shared.pathMatching(sectorId: sectorId, building: nextTuResult.building_name, level: nextTuResult.level_name, x: nextTuResult.x, y: nextTuResult.y, heading: nextTuResult.absolute_heading, isUseHeading: false, mode: .MODE_VEHICLE, paddingValues: paddingValues) {
                 
                 nextTuResult.x = pmResultsWithoutHeading.x*0.2 + nextTuResult.x*0.8
                 nextTuResult.y = pmResultsWithoutHeading.y*0.2 + nextTuResult.y*0.8
                 nextTuResult.absolute_heading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(nextTuResult.absolute_heading)))
+                JupiterLogger.i(tag: "KalmanFilter", message: "(timeUpdate) - pmResultsWithoutHeading :[\(nextTuResult.x),\(nextTuResult.y),\(nextTuResult.absolute_heading)]")
             }
         }
         nextTuResult = updateLimitationResult(nextTuResult: nextTuResult)
@@ -540,8 +543,6 @@ class KalmanFilter {
         JupiterLogger.i(tag: "KalmanFilter", message: "(measurementUpdate) - resultForCorrection:[\(resultForCorrection.x),\(resultForCorrection.y),\(resultForCorrection.absolute_heading)]")
         if let pmResult = performPathMatching(sectorId: sectorId, fltResult: resultForCorrection, PADDING_VALUES: paddingValues, mode: mode) {
             var pmFltResult = updateResultWithPathMatching(pmResult: pmResult, correctionResult: resultForCorrection)
-            var tuHeading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(tuResult.absolute_heading)))
-            adjustHeadingIfNeeded(&pmFltResult, &tuHeading)
             let muResult = applyKalmanFilter(tuResult: tuResult, correctionResult: pmFltResult)
             
             if let pmResultAfterMu = performPathMatching(sectorId: sectorId, fltResult: muResult, PADDING_VALUES: paddingValues, mode: mode) {
@@ -581,11 +582,13 @@ class KalmanFilter {
         return updatedResult
     }
 
-    private func adjustHeadingIfNeeded(_ result: inout FineLocationTrackingOutput, _ tuHeading: inout Float) {
-        if tuHeading >= 270 && result.absolute_heading < 90 {
-            result.absolute_heading += 360
-        } else if result.absolute_heading >= 270 && tuHeading < 90 {
-            tuHeading += 360
+    private func adjustHeading(_ heading: Float, _ mapHeading: Float) -> Float {
+        if heading > 270 && mapHeading < 90 {
+            return abs(heading - (mapHeading + 360))
+        } else if mapHeading > 270 && heading < 90 {
+            return abs(mapHeading - (heading + 360))
+        } else {
+            return abs(heading - mapHeading)
         }
     }
 
@@ -597,7 +600,7 @@ class KalmanFilter {
         muResult.x = tuResult.x + kalmanK * (correctionResult.x - tuResult.x)
         muResult.y = tuResult.y + kalmanK * (correctionResult.y - tuResult.y)
         
-        let muHeading: Float = tuResult.absolute_heading + headingKalmanK * (correctionResult.absolute_heading - tuResult.absolute_heading)
+        let muHeading: Float = tuResult.absolute_heading + headingKalmanK * adjustHeading(correctionResult.absolute_heading, tuResult.absolute_heading)
         muResult.absolute_heading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(muHeading)))
         
         kalmanP -= kalmanK * kalmanP
@@ -606,17 +609,6 @@ class KalmanFilter {
         return muResult
     }
 
-    // Compute XY difference
-    private func computeDiffXY(tuResult: FineLocationTrackingOutput, pmMuResult: FineLocationTrackingOutput) -> Float {
-        let diffX = tuResult.x - pmMuResult.x
-        let diffY = tuResult.y - pmMuResult.y
-        return sqrt(diffX * diffX + diffY * diffY)
-    }
-
-    // Compute heading difference
-    private func computeHeadingDifference(tuHeading: Float, pmMuResult: FineLocationTrackingOutput) -> Float {
-        return abs(tuHeading - pmMuResult.absolute_heading)
-    }
 
     // Update result from propagation
     private func updateResultFromPropagation(sectorId: Int, _ updatedResult: inout FineLocationTrackingOutput, propagationResult: ixyhs?, fltResult: FineLocationTrackingOutput, pmFltResult: FineLocationTrackingOutput, mode: UserMode, PADDING_VALUES: [Float]) {
