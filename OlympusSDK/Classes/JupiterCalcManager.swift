@@ -319,7 +319,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                         if let bestPeak = landmarkTagger.findBestLandmark(userPeak: userPeak, landmark: matchedWithUserPeak.landmark, matchedResult: matchedWithUserPeak.matchedResult, peakLinkGroupId: linkInfoWhenPeak.group_id) {
                             self.debug_best_landmark = bestPeak
                             if let matchedTuResult = kalmanFilter?.getTuResultWithUvdIndex(index: userPeak.peak_index) {
-                                if let reconstructResult = landmarkTagger.recontructTrajectory(peakIndex: userPeak.peak_index, bestLandmark: bestPeak, matchedResult: matchedWithUserPeak.matchedResult, startHeading: Double(matchedTuResult.heading), uvdBuffer: uvdBuffer, curResultBuffer: curResultBuffer, mode: mode) {
+                                if let reconstructResult = landmarkTagger.reconstructTrajectory(peakIndex: userPeak.peak_index, bestLandmark: bestPeak, matchedResult: matchedWithUserPeak.matchedResult, startHeading: Double(matchedTuResult.heading), uvdBuffer: uvdBuffer, curResultBuffer: curResultBuffer, mode: mode) {
                                     self.debug_recon_raw_traj = reconstructResult.0
                                     self.debug_recon_corr_traj = reconstructResult.1
                                     let resultForCorrection = reconstructResult.1[reconstructResult.1.count-1]
@@ -383,18 +383,50 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             let olderUserPeak = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count-2].0
             let recentUserPeak = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count-1].0
             let uvdBufferForRecovery = recoveryManager.getUvdBufferForRecovery(startIndex: olderUserPeak.peak_index, endIndex: userVelocity.index, uvdBuffer: uvdBuffer)
+            // 1. 사용자 UVD 궤적을 Slice함
+            
+            // 2. N개의 머리쪽 Landmark에 대해 그 근처
+            let headingSearchRange = recoveryManager.getRecoveryRange(olderPeakIndex: olderUserPeak.peak_index, curIndex: curIndex)
+            let pathHeadings = PathMatcher.shared.getPathMatchingHeadings(sectorId: sectorId,
+                                                                          building: curPmResult.building_name,
+                                                                          level: curPmResult.level_name,
+                                                                          x: curPmResult.x, y: curPmResult.y,
+                                                                          paddingValue: headingSearchRange, mode: mode)
             if let tuResultWhenOlderPeak = kalmanFilter?.getTuResultWithUvdIndex(index: olderUserPeak.peak_index) {
-                let startHeading = tuResultWhenOlderPeak.heading
-                let recoveryTraj = recoveryManager.makeRecoveryTrajectory(uvdBuffer: uvdBufferForRecovery, startHeading: startHeading)
-                
                 let curResultBuffer = stackManager.getCurResultBuffer()
                 if let matchedWithOlderPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: olderUserPeak, curResult: curResult, curResultBuffer: curResultBuffer),
                    let matchedWithRecentPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: recentUserPeak, curResult: curResult, curResultBuffer: curResultBuffer) {
-                    if let recoveryResult = recoveryManager.recover(recoveryTraj: recoveryTraj, userPeakAndLinkBuffer: userPeakAndLinkBuffer, landmarks: (matchedWithOlderPeak.0, matchedWithRecentPeak.0), tuResultWhenOlderPeak: tuResultWhenOlderPeak, curPmResult: curPmResult, mode: mode) {
-                        self.debug_recovery_result = recoveryResult
+                    let hasMajorDirection = stackManager.checkHasMajorDirection(uvdBuffer: uvdBufferForRecovery)
+                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: hasMajorDirection= \(hasMajorDirection)")
+                    if hasMajorDirection {
+                        let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBufferForRecovery.map{ Float($0.heading) })
+                        JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: majorSection= \(majorSection)")
+                        let recoveryTrajList = recoveryManager.makeMultipleRecoveryTrajectory(uvdBuffer: uvdBufferForRecovery, majorSection: majorSection, pathHeadings: pathHeadings, endHeading: curResult.absolute_heading)
+                        if let recoveryResult = recoveryManager.recoverWithMultipleTraj(recoveryTrajList: recoveryTrajList,
+                                                                                        userPeakAndLinkBuffer: userPeakAndLinkBuffer,
+                                                                                        landmarks: (matchedWithOlderPeak.0, matchedWithRecentPeak.0),
+                                                                                        tuResultWhenOlderPeak: tuResultWhenOlderPeak,
+                                                                                        curPmResult: curPmResult, mode: mode) {
+                            self.debug_recovery_result = recoveryResult
+                        }
+                    } else {
+                        
                     }
                 }
             }
+//            if let tuResultWhenOlderPeak = kalmanFilter?.getTuResultWithUvdIndex(index: olderUserPeak.peak_index) {
+            
+//                let startHeading = tuResultWhenOlderPeak.heading
+//                let recoveryTraj = recoveryManager.makeRecoveryTrajectory(uvdBuffer: uvdBufferForRecovery, startHeading: startHeading)
+//                
+//                let curResultBuffer = stackManager.getCurResultBuffer()
+//                if let matchedWithOlderPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: olderUserPeak, curResult: curResult, curResultBuffer: curResultBuffer),
+//                   let matchedWithRecentPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: recentUserPeak, curResult: curResult, curResultBuffer: curResultBuffer) {
+//                    if let recoveryResult = recoveryManager.recover(recoveryTraj: recoveryTraj, userPeakAndLinkBuffer: userPeakAndLinkBuffer, landmarks: (matchedWithOlderPeak.0, matchedWithRecentPeak.0), tuResultWhenOlderPeak: tuResultWhenOlderPeak, curPmResult: curPmResult, mode: mode) {
+//                        self.debug_recovery_result = recoveryResult
+//                    }
+//                }
+//            }
         }
     }
     
