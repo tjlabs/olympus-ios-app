@@ -86,7 +86,7 @@ class LandmarkTagger {
         }
     }
     
-    func recontructTrajectory(peakIndex: Int, bestLandmark: PeakData, matchedResult: FineLocationTrackingOutput, startHeading: Double, uvdBuffer: [UserVelocity], curResultBuffer: [FineLocationTrackingOutput], mode: UserMode) -> ([[Double]], [FineLocationTrackingOutput])? {
+    func reconstructTrajectory(peakIndex: Int, bestLandmark: PeakData, matchedResult: FineLocationTrackingOutput, startHeading: Double, uvdBuffer: [UserVelocity], curResultBuffer: [FineLocationTrackingOutput], mode: UserMode) -> ([[Double]], [FineLocationTrackingOutput])? {
         let uvdBufferFromPeakIndex: [UserVelocity] = uvdBuffer
             .filter { $0.index >= peakIndex }
             .sorted { $0.index < $1.index }
