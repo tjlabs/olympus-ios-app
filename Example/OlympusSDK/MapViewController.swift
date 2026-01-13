@@ -32,7 +32,6 @@ class MapViewController: UIViewController, JupiterManagerDelegate {
             DispatchQueue.main.async { [self] in
                 self.guideView = TJLabsParkingGuideView()
                 UIView.animate(withDuration: 0.2, animations: {
-                    print("(DEBUG) Parking guide rendered")
                     containerView.addSubview(self.guideView!)
                     self.guideView!.snp.makeConstraints { make in
                         make.top.bottom.leading.trailing.equalToSuperview()
@@ -93,9 +92,9 @@ class MapViewController: UIViewController, JupiterManagerDelegate {
         
         serviceManager = JupiterManager(id: uniqueId)
         serviceManager?.delegate = self
-        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_03_1007.csv", sensorFileName: "sensor_coex_01_03_1007.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_02_1007.csv", sensorFileName: "sensor_coex_02_02_1007.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_05_1007.csv", sensorFileName: "sensor_coex_03_05_1007.csv")
+//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_03_1007.csv", sensorFileName: "sensor_coex_01_03_1007.csv")
+//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_05_1007.csv", sensorFileName: "sensor_coex_02_05_1007.csv")
+        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_05_1007.csv", sensorFileName: "sensor_coex_03_05_1007.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
         serviceManager?.startJupiter(sectorId: sectorId, mode: .MODE_AUTO)
     }
