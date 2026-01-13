@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import TJLabsAuth
 import FirebaseCore
 
 @UIApplicationMain
@@ -17,7 +18,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         FirebaseApp.configure()
-        // Override point for customization after application launch.
+        TJLabsAuthManager.shared.auth(name: "tjlabs", password: "TJlabs0407@", completion: { statusCode, isSuccess in
+            print("(Auth) : \(statusCode), \(isSuccess)")
+        })
         return true
     }
 

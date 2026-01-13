@@ -1,0 +1,326 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.2 effective-5.10 (swiftlang-6.2.0.19.9 clang-1700.3.19.1)
+// swift-module-flags: -target arm64-apple-ios15.6 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name TJLabsCommon
+// swift-module-flags-ignorable:  -formal-cxx-interoperability-mode=off -interface-compiler-version 6.2
+import CoreBluetooth
+import CoreLocation
+import CoreMotion
+import Darwin
+import Foundation
+import Swift
+@_exported import TJLabsCommon
+import UIKit
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+import simd
+@objc @_inheritsConvenienceInitializers public class RFDFunctions : ObjectiveC.NSObject {
+  public static let shared: TJLabsCommon.RFDFunctions
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func getBleChannelNum(bleAvg: [Swift.String : Swift.Float]?, threshold: Swift.Float = -95.0) -> Swift.Int
+  #endif
+  @objc override dynamic public init()
+  @objc deinit
+}
+@objc public class RFDGenerator : ObjectiveC.NSObject {
+  weak public var delegate: (any TJLabsCommon.RFDGeneratorDelegate)?
+  public var pressureProvider: () -> Swift.Float
+  public init(userId: Swift.String)
+  public func setScanMode(scanMode: TJLabsCommon.ScanMode)
+  public func checkIsAvailableRfd() -> (Swift.Bool, Swift.String)
+  public func generateRfd(rfdIntervalMillis: Foundation.TimeInterval = 1/2, bleScanWindowTimeMillis: Swift.Double = 1000, minRssiThreshold: Swift.Int = -100, maxRssiThreshold: Swift.Int = -40)
+  public func stopRfdGeneration()
+  @objc deinit
+}
+public enum ScanMode {
+  case NO_FILTER_SCAN
+  case ONLY_WARD_SCAN
+  case ONLY_SEI_SCAN
+  case WARD_SEI_SCAN
+  public static func == (a: TJLabsCommon.ScanMode, b: TJLabsCommon.ScanMode) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public struct ReceivedForce : Swift.Encodable {
+  public let tenant_user_name: Swift.String
+  public let mobile_time: Swift.Int
+  public let rfs: [Swift.String : Swift.Float]
+  public let pressure: Swift.Float
+  public init(tenant_user_name: Swift.String, mobile_time: Swift.Int, rfs: [Swift.String : Swift.Float], pressure: Swift.Float)
+  public func encode(to encoder: any Swift.Encoder) throws
+}
+public protocol RFDGeneratorDelegate : AnyObject {
+  func onRfdResult(_ generator: TJLabsCommon.RFDGenerator, receivedForce: TJLabsCommon.ReceivedForce)
+  func onRfdError(_ generator: TJLabsCommon.RFDGenerator, code: Swift.Int, msg: Swift.String)
+  func onRfdEmptyMillis(_ generator: TJLabsCommon.RFDGenerator, time: Swift.Double)
+}
+extension Foundation.NSNotification.Name {
+  public static let tjlabsBluetoothReady: Foundation.Notification.Name
+  public static let tjlabsStartScan: Foundation.Notification.Name
+  public static let tjlabsStopScan: Foundation.Notification.Name
+  public static let tjlabsFoundDevice: Foundation.Notification.Name
+  public static let tjlabsDeviceConnected: Foundation.Notification.Name
+  public static let tjlabsDeviceReady: Foundation.Notification.Name
+  public static let tjlabsDidReceiveData: Foundation.Notification.Name
+  public static let tjlabsScanInfo: Foundation.Notification.Name
+}
+@_hasMissingDesignatedInitializers public class JupiterFileManager {
+  public static let shared: TJLabsCommon.JupiterFileManager
+  public func initalize()
+  public func set(region: Swift.String, sectorId: Swift.Int, deviceModel: Swift.String, osVersion: Swift.Int)
+  public func createFiles(region: Swift.String, sector_id: Swift.Int, deviceModel: Swift.String, osVersion: Swift.Int)
+  public func writeSensorData(currentTime: Swift.Double, data: TJLabsCommon.SensorData)
+  public func writeBleData(time: Swift.Int, data: [Swift.String : Swift.Double])
+  public func saveFilesForSimulation()
+  public func loadFilesForSimulation(bleFile: Swift.String, sensorFile: Swift.String) -> ([[Swift.String : Swift.Float]], [TJLabsCommon.SensorData])
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class JupiterSimulator {
+  public static let shared: TJLabsCommon.JupiterSimulator
+  public func initailize()
+  public func setSimulationMode(flag: Swift.Bool, bleFileName: Swift.String, sensorFileName: Swift.String)
+  public func getSimulationBleData() -> [Swift.String : Swift.Float]
+  public func getSimulationSensorData() -> TJLabsCommon.SensorData
+  @objc deinit
+}
+extension Swift.Array where Element : Swift.BinaryInteger {
+  public var average: Swift.Double {
+    get
+  }
+}
+extension Swift.Array where Element : Swift.BinaryFloatingPoint {
+  public var average: Swift.Double {
+    get
+  }
+}
+extension Swift.Array where Element == Swift.Double {
+  public var mean: Swift.Double {
+    get
+  }
+  public var variance: Swift.Double {
+    get
+  }
+  public var standardDeviation: Swift.Double {
+    get
+  }
+}
+public func += <V>(left: inout [V], right: V)
+public func + <V>(left: Swift.Array<V>, right: V) -> Swift.Array<V>
+extension UIKit.UIDevice {
+  @_Concurrency.MainActor @preconcurrency public static let modelIdentifier: Swift.String
+  @_Concurrency.MainActor @preconcurrency public static let modelName: Swift.String
+}
+public struct LinkedList<Value> {
+  public var head: TJLabsCommon.Node<Value>?
+  public var tail: TJLabsCommon.Node<Value>?
+  public init()
+  public var isEmpty: Swift.Bool {
+    get
+  }
+  public mutating func push(_ value: Value)
+  public mutating func append(_ value: Value)
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func node(at index: Swift.Int) -> TJLabsCommon.Node<Value>?
+  #endif
+  public mutating func insert(_ value: Value, after node: TJLabsCommon.Node<Value>)
+  #if compiler(>=5.3) && $NonescapableTypes
+  public mutating func pop() -> Value?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public mutating func removeLast() -> Value?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public mutating func remove(after node: TJLabsCommon.Node<Value>) -> Value?
+  #endif
+  public var count: Swift.Int {
+    get
+  }
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var last: TJLabsCommon.Node<Value>? {
+    get
+  }
+  #endif
+}
+extension TJLabsCommon.LinkedList : Swift.CustomStringConvertible {
+  public var description: Swift.String {
+    get
+  }
+}
+extension TJLabsCommon.LinkedList : Swift.Collection {
+  public struct Index : Swift.Comparable {
+    public var node: TJLabsCommon.Node<Value>?
+    public static func == (lhs: TJLabsCommon.LinkedList<Value>.Index, rhs: TJLabsCommon.LinkedList<Value>.Index) -> Swift.Bool
+    public static func < (lhs: TJLabsCommon.LinkedList<Value>.Index, rhs: TJLabsCommon.LinkedList<Value>.Index) -> Swift.Bool
+  }
+  public var startIndex: TJLabsCommon.LinkedList<Value>.Index {
+    get
+  }
+  public var endIndex: TJLabsCommon.LinkedList<Value>.Index {
+    get
+  }
+  public func index(after i: TJLabsCommon.LinkedList<Value>.Index) -> TJLabsCommon.LinkedList<Value>.Index
+  public subscript(position: TJLabsCommon.LinkedList<Value>.Index) -> Value {
+    get
+  }
+  public typealias Element = Value
+  public typealias Indices = Swift.DefaultIndices<TJLabsCommon.LinkedList<Value>>
+  public typealias Iterator = Swift.IndexingIterator<TJLabsCommon.LinkedList<Value>>
+  public typealias SubSequence = Swift.Slice<TJLabsCommon.LinkedList<Value>>
+}
+public class Node<Value> {
+  public var value: Value
+  public var next: TJLabsCommon.Node<Value>?
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init(value: Value, next: TJLabsCommon.Node<Value>? = nil)
+  #endif
+  @objc deinit
+}
+extension TJLabsCommon.Node : Swift.CustomStringConvertible {
+  public var description: Swift.String {
+    get
+  }
+}
+extension Swift.String {
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var hex: Swift.Int? {
+    get
+  }
+  #endif
+  public var localized: Swift.String {
+    get
+  }
+  public func localized(bundle: Foundation.Bundle = .main, tableName: Swift.String = "Localizable") -> Swift.String
+  public func substring(from: Swift.Int, to: Swift.Int) -> Swift.String
+}
+@_hasMissingDesignatedInitializers public class TJLabsCommonLogger {
+  public static func setDebugOption(set: Swift.Bool)
+  public static func setInfoOption(set: Swift.Bool)
+  @objc deinit
+}
+public enum TimeFormat {
+  case int
+  case float
+  case double
+  public static func == (a: TJLabsCommon.TimeFormat, b: TJLabsCommon.TimeFormat) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+@objc @_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers public class TJLabsUtilFunctions : ObjectiveC.NSObject {
+  public static let shared: TJLabsCommon.TJLabsUtilFunctions
+  public func getLocalTimeString() -> Swift.String
+  public func getCurrentTimeInMilliseconds(as format: TJLabsCommon.TimeFormat) -> Any
+  public func flattenAndUniquify(_ array2D: [[Swift.Double]]) -> [Swift.Double]
+  public func removeLevelDirectionString(levelName: Swift.String) -> Swift.String
+  public func movingAverage(preAvgValue: Swift.Double, curValue: Swift.Double, windowSize: Swift.Int) -> Swift.Double
+  public func compensateDegree(_ degree: Swift.Double) -> Swift.Double
+  public func weightedAverageDegree(degreeA: Swift.Double, degreeB: Swift.Double, weightA: Swift.Double, weightB: Swift.Double) -> Swift.Double
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func determineClosestDirection(for angles: (Swift.Double, Swift.Double)) -> Swift.String?
+  #endif
+  public func calDegreeDifference(from angle1: Swift.Double, to angle2: Swift.Double) -> Swift.Double
+  public func exponentialMovingAverage(preEMA: Swift.Double, curValue: Swift.Double, windowSize: Swift.Int) -> Swift.Double
+  public func degree2radian(degree: Swift.Double) -> Swift.Double
+  public func radian2degree(radian: Swift.Double) -> Swift.Double
+  public func sliceArrayFrom<T>(_ array: [T], startingFrom index: Swift.Int) -> [T]
+  public func sliceArrayTo<T>(_ array: [T], endTo index: Swift.Int) -> [T]
+  public func sliceArrayFromTo<T>(_ array: [T], startingFrom: Swift.Int, endTo: Swift.Int) -> [T]
+  public func calculateCircularMean(for array: [Swift.Double]) -> Swift.Double
+  public func calculateCircularStd(for array: [Swift.Double]) -> Swift.Double
+  public func subtractConstantInArray(from array: [Swift.Double], constant: Swift.Double) -> [Swift.Double]
+  @objc deinit
+}
+@objc @_inheritsConvenienceInitializers public class TJLabsSensorManager : ObjectiveC.NSObject {
+  @objc override dynamic public init()
+  public func initSensorManager() -> (Swift.Bool, Swift.String)
+  public func getSensorData() -> TJLabsCommon.SensorData
+  public func setRunMode(mode: Swift.String)
+  @objc deinit
+}
+@objc public class UVDGenerator : ObjectiveC.NSObject {
+  weak public var delegate: (any TJLabsCommon.UVDGeneratorDelegate)?
+  public init(userId: Swift.String)
+  public func setRflow(rflow: Swift.Double, rflowForVelocity: Swift.Double, rflowForAutoMode: Swift.Double, isSufficient: Swift.Bool, isSufficientForVelocity: Swift.Bool, isSufficientForAutoMode: Swift.Bool)
+  public func setRouteTrackFinishTime(value: Swift.Double)
+  public func setIsInEntranceLevel(flag: Swift.Bool)
+  public func setIsStartRouteTrack(isStartRoutTrack: Swift.Bool)
+  public func setIsBackground(isBackground: Swift.Bool)
+  public func setUserMode(mode: TJLabsCommon.UserMode)
+  public func updateDrVelocityScale(scale: Swift.Double)
+  public func checkIsAvailableUvd() -> (Swift.Bool, Swift.String)
+  public func generateUvd(defaultPDRStepLength: Swift.Double = 0.6, minPDRStepLength: Swift.Double = 0.5, maxPDRStepLength: Swift.Double = 0.7)
+  public func stopUvdGeneration()
+  @objc deinit
+}
+public struct SensorData {
+  public var time: Swift.Int
+  public var acc: [Swift.Double]
+  public var userAcc: [Swift.Double]
+  public var gyro: [Swift.Double]
+  public var mag: [Swift.Double]
+  public var grav: [Swift.Double]
+  public var att: [Swift.Double]
+  public var quaternion: [Swift.Double]
+  public var rotationMatrix: [[Swift.Double]]
+  public var gameVector: [Swift.Float]
+  public var rotVector: [Swift.Float]
+  public var pressure: [Swift.Double]
+  public var trueHeading: Swift.Double
+  public var magneticHeading: Swift.Double
+  public init()
+}
+public struct UserVelocity : Swift.Encodable {
+  public let tenant_user_name: Swift.String
+  public let mobile_time: Swift.Int
+  public let index: Swift.Int
+  public let length: Swift.Double
+  public let heading: Swift.Double
+  public let looking: Swift.Bool
+  public init(tenant_user_name: Swift.String, mobile_time: Swift.Int, index: Swift.Int, length: Swift.Double, heading: Swift.Double, looking: Swift.Bool)
+  public func encode(to encoder: any Swift.Encoder) throws
+}
+public enum UserMode : Swift.String, Swift.Codable {
+  case MODE_PEDESTRIAN
+  case MODE_VEHICLE
+  case MODE_AUTO
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init?(rawValue: Swift.String)
+  #endif
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public struct UnitDRInfo {
+  public var time: Swift.Double
+  public var index: Swift.Int
+  public var length: Swift.Double
+  public var heading: Swift.Double
+  public var velocity: Swift.Double
+  public var lookingFlag: Swift.Bool
+  public var isIndexChanged: Swift.Bool
+  public var autoMode: Swift.Int
+  public init(time: Swift.Double, index: Swift.Int, length: Swift.Double, heading: Swift.Double, velocity: Swift.Double, lookingFlag: Swift.Bool, isIndexChanged: Swift.Bool, autoMode: Swift.Int)
+}
+public protocol UVDGeneratorDelegate : AnyObject {
+  func onUvdResult(_ generator: TJLabsCommon.UVDGenerator, mode: TJLabsCommon.UserMode, userVelocity: TJLabsCommon.UserVelocity)
+  func onPressureResult(_ generator: TJLabsCommon.UVDGenerator, hPa: Swift.Double)
+  func onVelocityResult(_ generator: TJLabsCommon.UVDGenerator, kmPh: Swift.Double)
+  func onMagNormSmoothingVarResult(_ generator: TJLabsCommon.UVDGenerator, value: Swift.Double)
+  func onUvdPauseMillis(_ generator: TJLabsCommon.UVDGenerator, time: Swift.Double)
+  func onUvdError(_ generator: TJLabsCommon.UVDGenerator, error: Swift.String)
+}
+@_hasMissingDesignatedInitializers public class CommonConstants {
+  public static let G: Swift.Double
+  @objc deinit
+}
+extension TJLabsCommon.ScanMode : Swift.Equatable {}
+extension TJLabsCommon.ScanMode : Swift.Hashable {}
+extension TJLabsCommon.TimeFormat : Swift.Equatable {}
+extension TJLabsCommon.TimeFormat : Swift.Hashable {}
+extension TJLabsCommon.UserMode : Swift.Equatable {}
+extension TJLabsCommon.UserMode : Swift.Hashable {}
+extension TJLabsCommon.UserMode : Swift.RawRepresentable {}

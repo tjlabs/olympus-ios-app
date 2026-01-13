@@ -1,0 +1,63 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.2 effective-5.10 (swiftlang-6.2.0.19.9 clang-1700.3.19.1)
+// swift-module-flags: -target arm64-apple-ios15.6-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name TJLabsAuth
+// swift-module-flags-ignorable:  -formal-cxx-interoperability-mode=off -interface-compiler-version 6.2
+import Foundation
+import Security
+import Swift
+@_exported import TJLabsAuth
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+public enum AuthRegion : Swift.String {
+  case KOREA
+  case US_EAST
+  case CANADA
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init?(rawValue: Swift.String)
+  #endif
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public enum TokenResult {
+  case success(Swift.String)
+  case failure(TJLabsAuth.TokenResult.FailureReason, statusCode: Swift.Int?, message: Swift.String?)
+  public enum FailureReason {
+    case refreshFailed
+    case authFailed
+    case credentialsMissing
+    public static func == (a: TJLabsAuth.TokenResult.FailureReason, b: TJLabsAuth.TokenResult.FailureReason) -> Swift.Bool
+    public func hash(into hasher: inout Swift.Hasher)
+    public var hashValue: Swift.Int {
+      get
+    }
+  }
+}
+@_hasMissingDesignatedInitializers public class TJLabsAuthConstants {
+  public static func setServerURL(region: Swift.String, serverType: Swift.String)
+  public static func getUserBaseURL() -> Swift.String
+  public static func getUserTokenVersion() -> Swift.String
+  public static func getUserTokenURL() -> Swift.String
+  public static func getUserRefreshTokenURL() -> Swift.String
+  public static func getUserVerifyTokenURL() -> Swift.String
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class TJLabsAuthManager {
+  public static let shared: TJLabsAuth.TJLabsAuthManager
+  public func getAccessToken(update: Swift.Bool = true, completion: @escaping (TJLabsAuth.TokenResult) -> Swift.Void)
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func extractTenantID(from jwt: Swift.String) -> Swift.String?
+  #endif
+  public func getRefreshToken() -> Swift.String
+  public func auth(name: Swift.String, password: Swift.String, completion: @escaping (Swift.Int, Swift.Bool) -> Swift.Void)
+  public func refresh(completion: @escaping (Swift.Int, Swift.Bool) -> Swift.Void)
+  public func isTokenNearExpiry(token: Swift.String, threshold: Foundation.TimeInterval = 60) -> Swift.Bool
+  @objc deinit
+}
+extension TJLabsAuth.AuthRegion : Swift.Equatable {}
+extension TJLabsAuth.AuthRegion : Swift.Hashable {}
+extension TJLabsAuth.AuthRegion : Swift.RawRepresentable {}
+extension TJLabsAuth.TokenResult.FailureReason : Swift.Equatable {}
+extension TJLabsAuth.TokenResult.FailureReason : Swift.Hashable {}

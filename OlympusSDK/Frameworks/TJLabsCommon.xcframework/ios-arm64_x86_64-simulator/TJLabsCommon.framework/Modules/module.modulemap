@@ -1,0 +1,6 @@
+framework module TJLabsCommon {
+  umbrella header "TJLabsCommon.h"
+  export *
+
+  module * { export * }
+}

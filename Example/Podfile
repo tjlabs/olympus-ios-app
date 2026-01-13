@@ -11,7 +11,7 @@ target 'OlympusSDK_Example' do
   pod 'Then' 
   pod 'RxSwift', '~> 6.5.0'
   pod 'RxCocoa', '~> 6.5.0'
-
+  pod 'lottie-ios' 
   pod 'Firebase/Analytics'
   pod 'Firebase/Crashlytics'
 
