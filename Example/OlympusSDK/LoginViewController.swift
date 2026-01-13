@@ -1,5 +1,6 @@
 import UIKit
 import OlympusSDK
+import TJLabsAuth
 
 class LoginViewController: UIViewController, UITextFieldDelegate {
 
@@ -23,6 +24,10 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        TJLabsAuthManager.shared.auth(name: "tjlabs", password: "TJlabs0407@", completion: { [self] statusCode, success in
+            print("(TJLabsAuthManager) TJLabsAuth : \(statusCode), \(success)")
+        })
         
         if let name = userDefaults.string(forKey: "uuid") {
             idTextField.text = name
@@ -57,12 +62,12 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         self.navigationController?.pushViewController(cardVC, animated: true)
     }
     
-//    func goToMapViewController(userId: String) {
-//        guard let mapVC = self.storyboard?.instantiateViewController(withIdentifier: "MapViewController") as? MapViewController else { return }
-//        mapVC.userId = userId
-//        self.navigationController?.pushViewController(mapVC, animated: true)
-//    }
-//    
+    func goToMapViewController(userId: String) {
+        guard let mapVC = self.storyboard?.instantiateViewController(withIdentifier: "MapViewController") as? MapViewController else { return }
+        mapVC.userId = userId
+        self.navigationController?.pushViewController(mapVC, animated: true)
+    }
+    
 //    func goToMapScaleViewController(userId: String) {
 //        guard let mapVC = self.storyboard?.instantiateViewController(withIdentifier: "MapScaleViewController") as? MapScaleViewController else { return }
 //        mapVC.userId = userId
@@ -107,7 +112,6 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         deviceOsInfo = UIDevice.current.systemVersion
         let arr = deviceOsInfo.components(separatedBy: ".")
         deviceOsVersion = Int(arr[0]) ?? 0
-//        self.sdkVersion = OlympusServiceManager.sdkVersion
         self.sdkVersionLabel.text = self.sdkVersion
     }
     
@@ -125,8 +129,8 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         NetworkManager.shared.postUserLogin(url: USER_LOGIN_URL, input: loginInfo, completion: { statusCode, returnedString in
             if (statusCode == 200) {
 //                print(getLocalTimeString() + " , (InnerLabs) Success : User Login")
-                self.goToCardViewController(region: "Korea", userId: self.userId)
-//                self.goToMapViewController(userId: self.userId)
+//                self.goToCardViewController(region: "Korea", userId: self.userId)
+                self.goToMapViewController(userId: self.userId)
 //                self.goToMapScaleViewController(userId: self.userId)
             } else {
 //                print(getLocalTimeString() + " , (InnerLabs) Fail : User Login \(statusCode)")

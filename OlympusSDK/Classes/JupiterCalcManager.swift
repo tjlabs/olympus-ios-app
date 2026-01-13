@@ -296,7 +296,14 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         let uvdBuffer = stackManager.getUvdBuffer()
         
         let capturedRfd = self.curRfd
-        let bleData = capturedRfd.rfs // [String: Float] BLE_ID: RSSI
+//        let bleData = capturedRfd.rfs // [String: Float] BLE_ID: RSSI
+        var bleData = [String: Float]() // [String: Float] BLE_ID: RSSI
+        for (key, value) in capturedRfd.rfs {
+            let rssi = value*1.25
+            if rssi > -100 {
+                bleData[key] = rssi
+            }
+        }
         
         var reconCurResultBuffer: [FineLocationTrackingOutput]?
         var olderPeakIndex: Int?

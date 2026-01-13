@@ -2,8 +2,40 @@ import UIKit
 import Charts
 import OlympusSDK
 import TJLabsCommon
+import TJLabsResource
 
-class CardViewController: UIViewController {
+class CardViewController: UIViewController, JupiterManagerDelegate {
+    func onJupiterSuccess(_ isSuccess: Bool) {
+        print("(CardVC) onJupiterSuccess : \(isSuccess)")
+    }
+    
+    func onJupiterError(_ code: Int, _ msg: String) {
+        print("(CardVC) onJupiterError : \(code) , \(msg)")
+    }
+    
+    func onJupiterResult(_ result: OlympusSDK.JupiterResult) {
+//        print("(CardVC) onJupiterResult : \(result)")
+        let building = result.building_name
+        let level = result.level_name
+        let x = result.x
+        let y = result.y
+        
+        if (result.ble_only_position) {
+            self.isBleOnlyMode = true
+        } else {
+            self.isBleOnlyMode = false
+        }
+        
+        if (building.count < 2 && level.count < 2) {
+            print("(VC) Error : \(result)")
+        }
+        updateCoord(flag: true)
+    }
+    
+    func onJupiterReport(_ flag: Int) {
+        print("(CardVC) onJupiterReport")
+    }
+    
     
     @IBOutlet weak var imgViewLevel: UIImageView!
     @IBOutlet weak var scatterChart: ScatterChartView!
@@ -20,13 +52,14 @@ class CardViewController: UIViewController {
     @IBOutlet weak var inOutStatusLabel: UILabel!
     
     var headingImage = UIImage(named: "heading")
-    var coordToDisplay = CoordToDisplay()
+
     var isSaved: Bool = false
     
     var phoenixIndex: Int = 0
     var phoenixData = PhoenixRecord(user_id: "", company: "", car_number: "", mobile_time: 0, index: 0, latitude: 0, longitude: 0, remaining_time: 0, velocity: 0, sector_id: 0, building_name: "", level_name: "", x: 0, y: 0, absolute_heading: 0, is_indoor: false)
     var phoenixRecords = [PhoenixRecord]()
     
+    var serviceManager: JupiterManager?
     override func viewDidDisappear(_ animated: Bool) {
 //        serviceManager.stopService(completion: { _,_ in
 //        })
@@ -44,11 +77,11 @@ class CardViewController: UIViewController {
 //    var sector_id: Int = 14 // DS
 //    var mode: String = "pdr"
     
-//    var sector_id: Int = 6
-//    var mode: String = "auto"
-    
-    var sector_id: Int = 20  // Convensia
+    var sector_id: Int = 6
     var mode: String = "auto"
+    
+//    var sector_id: Int = 20  // Convensia
+//    var mode: String = "auto"
     
 //    var sector_id: Int = 2
 //    var mode: String = "pdr"
@@ -70,11 +103,13 @@ class CardViewController: UIViewController {
     var phoenixTime: TimeInterval = 0
     var preServiceTime: Int = 0
     
+    
     var serviceState: Bool = false
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         headingImage = headingImage?.resize(newWidth: 20)
-
+        
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_io_0811.csv", sensorFileName: "sensor_coex_io_0811.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_0604_05.csv", sensorFileName: "sensor_coex_0604_05.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_03_0930.csv", sensorFileName: "sensor_coex_03_0930.csv")
@@ -112,7 +147,13 @@ class CardViewController: UIViewController {
         
 //        self.setPhoenixData()
         let uniqueId = makeUniqueId(uuid: self.userId)
-
+        
+        serviceManager = JupiterManager(id: uniqueId)
+        serviceManager?.delegate = self
+//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_02_1007.csv", sensorFileName: "sensor_coex_02_02_1007.csv")
+        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
+        serviceManager?.startJupiter(sectorId: sector_id, mode: .MODE_AUTO)
+        
         // service
 //        serviceManager.addObserver(self)
 //        serviceManager.setDebugOption(flag: true)
@@ -265,7 +306,13 @@ class CardViewController: UIViewController {
         })
     }
     
-    private func drawResult(XY: [Double], RP_X: [Double], RP_Y: [Double], heading: Double, limits: [Double], isBleOnlyMode: Bool, isPmSuccess: Bool, isIndoor: Bool) {
+    private func drawDebug(XYH: [Double], RP_X: [Double], RP_Y: [Double], tuXYH: [Double],
+                           landmark: LandmarkData?,
+                           best_landmark: PeakData?,
+                           recon_raw_traj: [[Double]]?,
+                           recon_corr_traj: [FineLocationTrackingOutput]?,
+                           recovery_result: RecoveryResult?,
+                           limits: [Double], isBleOnlyMode: Bool, isPmSuccess: Bool, isIndoor: Bool) {
         let xAxisValue: [Double] = RP_X
         let yAxisValue: [Double] = RP_Y
         
@@ -290,117 +337,7 @@ class CardViewController: UIViewController {
         set0.scatterShapeSize = 4
         
         let values1 = (0..<1).map { (i) -> ChartDataEntry in
-            return ChartDataEntry(x: XY[0], y: XY[1])
-        }
-        let set1 = ScatterChartDataSet(entries: values1, label: "USER")
-        set1.drawValuesEnabled = false
-        set1.setScatterShape(.circle)
-        set1.setColor(valueColor)
-        set1.scatterShapeSize = 16
-        
-        let chartData = ScatterChartData(dataSet: set0)
-        chartData.append(set1)
-        chartData.setDrawValues(false)
-        
-        // Heading
-        let point = scatterChart.getPosition(entry: ChartDataEntry(x: XY[0], y: XY[1]), axis: .left)
-        let imageView = UIImageView(image: headingImage!.rotate(degrees: -heading+90))
-        imageView.frame = CGRect(x: point.x - 15, y: point.y - 15, width: 30, height: 30)
-        imageView.contentMode = .center
-        imageView.tag = 100
-        if let viewWithTag = scatterChart.viewWithTag(100) {
-            viewWithTag.removeFromSuperview()
-        }
-        scatterChart.addSubview(imageView)
-        
-        let chartFlag: Bool = false
-        scatterChart.isHidden = false
-        
-        let xMin = xAxisValue.min()!
-        let xMax = xAxisValue.max()!
-        let yMin = yAxisValue.min()!
-        let yMax = yAxisValue.max()!
-        
-//        print("\(currentBuilding) \(currentLevel) MinMax : \(xMin) , \(xMax), \(yMin), \(yMax)")
-//        print("\(currentBuilding) \(currentLevel) Limits : \(limits[0]) , \(limits[1]), \(limits[2]), \(limits[3])")
-        
-//        scatterChart.xAxis.axisMinimum = -5.8
-//        scatterChart.xAxis.axisMaximum = 56.8
-//        scatterChart.leftAxis.axisMinimum = -2.8
-//        scatterChart.leftAxis.axisMaximum = 66.6
-        
-//        scatterChart.xAxis.axisMinimum = -4
-//        scatterChart.xAxis.axisMaximum = 36
-//        scatterChart.leftAxis.axisMinimum = -4
-//        scatterChart.leftAxis.axisMaximum = 78
-        
-//        scatterChart.xAxis.axisMinimum = -4
-//        scatterChart.xAxis.axisMaximum = 36
-//        scatterChart.leftAxis.axisMinimum = -4.65
-//        scatterChart.leftAxis.axisMaximum = 79
-        
-        // Configure Chart
-        if ( limits[0] == 0 && limits[1] == 0 && limits[2] == 0 && limits[3] == 0 ) {
-            scatterChart.xAxis.axisMinimum = xMin - 10
-            scatterChart.xAxis.axisMaximum = xMax + 10
-            scatterChart.leftAxis.axisMinimum = yMin - 10
-            scatterChart.leftAxis.axisMaximum = yMax + 10
-        } else {
-            scatterChart.xAxis.axisMinimum = limits[0]
-            scatterChart.xAxis.axisMaximum = limits[1]
-            scatterChart.leftAxis.axisMinimum = limits[2]
-            scatterChart.leftAxis.axisMaximum = limits[3]
-        }
-        
-        scatterChart.xAxis.drawGridLinesEnabled = chartFlag
-        scatterChart.leftAxis.drawGridLinesEnabled = chartFlag
-        scatterChart.rightAxis.drawGridLinesEnabled = chartFlag
-        
-        scatterChart.xAxis.drawAxisLineEnabled = chartFlag
-        scatterChart.leftAxis.drawAxisLineEnabled = chartFlag
-        scatterChart.rightAxis.drawAxisLineEnabled = chartFlag
-        
-        scatterChart.xAxis.centerAxisLabelsEnabled = chartFlag
-        scatterChart.leftAxis.centerAxisLabelsEnabled = chartFlag
-        scatterChart.rightAxis.centerAxisLabelsEnabled = chartFlag
-        
-        scatterChart.xAxis.drawLabelsEnabled = chartFlag
-        scatterChart.leftAxis.drawLabelsEnabled = chartFlag
-        scatterChart.rightAxis.drawLabelsEnabled = chartFlag
-        
-        scatterChart.legend.enabled = chartFlag
-        
-        scatterChart.backgroundColor = .clear
-        
-        scatterChart.data = chartData
-    }
-    
-    private func drawDebug(XY: [Double], RP_X: [Double], RP_Y: [Double],  serverXY: [Double], tuXY: [Double], heading: Double, limits: [Double], isBleOnlyMode: Bool, isPmSuccess: Bool, trajectoryStartCoord: [Double], userTrajectory: [[Double]], searchArea: [[Double]], searchType: Int, isIndoor: Bool, trajPm: [[Double]], trajOg: [[Double]]) {
-        let xAxisValue: [Double] = RP_X
-        let yAxisValue: [Double] = RP_Y
-        
-        var valueColor = UIColor.systemRed
-        
-        if (!isIndoor) {
-            valueColor = UIColor.systemGray
-        } else if (isBleOnlyMode) {
-            valueColor = UIColor.systemBlue
-        } else {
-            valueColor = UIColor.systemRed
-        }
-
-        let values0 = (0..<xAxisValue.count).map { (i) -> ChartDataEntry in
-            return ChartDataEntry(x: xAxisValue[i], y: yAxisValue[i])
-        }
-        
-        let set0 = ScatterChartDataSet(entries: values0, label: "RP")
-        set0.drawValuesEnabled = false
-        set0.setScatterShape(.square)
-        set0.setColor(UIColor.yellow)
-        set0.scatterShapeSize = 4
-        
-        let values1 = (0..<1).map { (i) -> ChartDataEntry in
-            return ChartDataEntry(x: XY[0], y: XY[1])
+            return ChartDataEntry(x: XYH[0], y: XYH[1])
         }
         let set1 = ScatterChartDataSet(entries: values1, label: "USER")
         set1.drawValuesEnabled = false
@@ -409,119 +346,144 @@ class CardViewController: UIViewController {
         set1.scatterShapeSize = 16
         
         let values2 = (0..<1).map { (i) -> ChartDataEntry in
-            return ChartDataEntry(x: serverXY[0], y: serverXY[1])
+            return ChartDataEntry(x: tuXYH[0], y: tuXYH[1])
         }
         
-        let set2 = ScatterChartDataSet(entries: values2, label: "SERVER")
+        let set2 = ScatterChartDataSet(entries: values2, label: "TU")
         set2.drawValuesEnabled = false
         set2.setScatterShape(.circle)
-        set2.setColor(.yellow)
+        set2.setColor(.systemGreen)
         set2.scatterShapeSize = 12
-        
-        let values3 = (0..<1).map { (i) -> ChartDataEntry in
-            return ChartDataEntry(x: tuXY[0], y: tuXY[1])
-        }
-        
-        let set3 = ScatterChartDataSet(entries: values3, label: "TU")
-        set3.drawValuesEnabled = false
-        set3.setScatterShape(.circle)
-        set3.setColor(.systemGreen)
-        set3.scatterShapeSize = 12
-        
-        let values4 = (0..<1).map { (i) -> ChartDataEntry in
-            return ChartDataEntry(x: trajectoryStartCoord[0], y: trajectoryStartCoord[1])
-        }
-        
-        let set4 = ScatterChartDataSet(entries: values4, label: "startCoord")
-        set4.drawValuesEnabled = false
-        set4.setScatterShape(.circle)
-        set4.setColor(.blue)
-        set4.scatterShapeSize = 8
-        
-        let values5 = (0..<userTrajectory.count).map { (i) -> ChartDataEntry in
-            return ChartDataEntry(x: userTrajectory[i][0], y: userTrajectory[i][1])
-        }
-        let set5 = ScatterChartDataSet(entries: values5, label: "Trajectory")
-        set5.drawValuesEnabled = false
-        set5.setScatterShape(.circle)
-        set5.setColor(.black)
-        set5.scatterShapeSize = 6
-        
-        let values6 = (0..<searchArea.count).map { (i) -> ChartDataEntry in
-            return ChartDataEntry(x: searchArea[i][0], y: searchArea[i][1])
-        }
-        let set6 = ScatterChartDataSet(entries: values6, label: "SearchArea")
-        set6.drawValuesEnabled = false
-        set6.setScatterShape(.circle)
-        
-        let values7 = (0..<trajPm.count).map { (i) -> ChartDataEntry in
-            return ChartDataEntry(x: trajPm[i][0], y: trajPm[i][1])
-        }
-        let set7 = ScatterChartDataSet(entries: values7, label: "TrajectoryPm")
-        set7.drawValuesEnabled = false
-        set7.setScatterShape(.circle)
-        set7.setColor(.systemRed)
-        set7.scatterShapeSize = 6
-        
-        let values8 = (0..<trajOg.count).map { (i) -> ChartDataEntry in
-            return ChartDataEntry(x: trajOg[i][0], y: trajOg[i][1])
-        }
-        let set8 = ScatterChartDataSet(entries: values8, label: "TrajectoryOg")
-        set8.drawValuesEnabled = false
-        set8.setScatterShape(.circle)
-        set8.setColor(.systemBlue)
-        set8.scatterShapeSize = 6
-        
-        switch (searchType) {
-        case 0:
-            // 곡선
-            set6.setColor(.systemYellow)
-        case 1:
-            // All 직선
-            set6.setColor(.systemGreen)
-        case 2:
-            // Head 직선
-            set6.setColor(.systemBlue)
-        case 3:
-            // Tail 직선
-            set6.setColor(.blue3)
-        case 4:
-            // PDR_IN_PHASE4_HAS_MAJOR_DIR & Phase == 2 Request 
-            set6.setColor(.systemOrange)
-        case 5:
-            // PDR Phase < 4
-            set6.setColor(.systemGreen)
-        case 6:
-            // PDR_IN_PHASE4_NO_MAJOR_DIR
-            set6.setColor(.systemBlue)
-        case 7:
-            // PDR Phase = 4 & Empty Closest Index
-            set6.setColor(.blue3)
-        case -1:
-            // Phase 2 & No Request
-            set6.setColor(.red)
-        case -2:
-            // KF 진입 전
-            set6.setColor(.systemBrown)
-        default:
-            set6.setColor(.systemTeal)
-        }
-        set6.scatterShapeSize = 6
         
         let chartData = ScatterChartData(dataSet: set0)
         chartData.append(set1)
         chartData.append(set2)
-        chartData.append(set3)
-        chartData.append(set4)
-        chartData.append(set5)
-        chartData.append(set6)
-        chartData.append(set7)
-        chartData.append(set8)
         chartData.setDrawValues(false)
         
+        if let landmark = landmark {
+            let xAxisValue: [Double] = landmark.peaks.map({Double($0.x)})
+            let yAxisValue: [Double] = landmark.peaks.map({Double($0.y)})
+            
+            let valuesPeaks = (0..<xAxisValue.count).map { (i) -> ChartDataEntry in
+                return ChartDataEntry(x: xAxisValue[i], y: yAxisValue[i])
+            }
+            
+            let setLandmarkPeak = ScatterChartDataSet(entries: valuesPeaks, label: "Landmark")
+            setLandmarkPeak.drawValuesEnabled = false
+            setLandmarkPeak.setScatterShape(.triangle)
+            setLandmarkPeak.setColor(UIColor.black)
+            setLandmarkPeak.scatterShapeSize = 8
+            chartData.append(setLandmarkPeak)
+        }
+        
+        if let best_landmark = best_landmark {
+            let xAxisValue: [Double] = [Double(best_landmark.x)]
+            let yAxisValue: [Double] = [Double(best_landmark.y)]
+            
+            let valuesPeaks = (0..<xAxisValue.count).map { (i) -> ChartDataEntry in
+                return ChartDataEntry(x: xAxisValue[i], y: yAxisValue[i])
+            }
+            
+            let setLandmarkPeak = ScatterChartDataSet(entries: valuesPeaks, label: "Best")
+            setLandmarkPeak.drawValuesEnabled = false
+            setLandmarkPeak.setScatterShape(.circle)
+            setLandmarkPeak.setColor(.darkgrey4)
+            setLandmarkPeak.scatterShapeSize = 10
+            chartData.append(setLandmarkPeak)
+        }
+        
+        if let recon_raw_traj = recon_raw_traj {
+            var xAxisValue = [Double]()
+            var yAxisValue = [Double]()
+            for traj in recon_raw_traj {
+                xAxisValue.append(traj[0])
+                yAxisValue.append(traj[1])
+            }
+            
+            let valuesRawTraj = (0..<xAxisValue.count).map { (i) -> ChartDataEntry in
+                return ChartDataEntry(x: xAxisValue[i], y: yAxisValue[i])
+            }
+            
+            let setRawTraj = ScatterChartDataSet(entries: valuesRawTraj, label: "RawTraj")
+            setRawTraj.drawValuesEnabled = false
+            setRawTraj.setScatterShape(.circle)
+            setRawTraj.setColor(.red1)
+            setRawTraj.scatterShapeSize = 5
+            chartData.append(setRawTraj)
+        }
+        
+        if let recon_corr_traj = recon_corr_traj {
+            var xAxisValue = [Double]()
+            var yAxisValue = [Double]()
+            for traj in recon_corr_traj {
+                xAxisValue.append(Double(traj.x))
+                yAxisValue.append(Double(traj.y))
+            }
+            
+            let valuesCorrTraj = (0..<xAxisValue.count).map { (i) -> ChartDataEntry in
+                return ChartDataEntry(x: xAxisValue[i], y: yAxisValue[i])
+            }
+            
+            let setCorrTraj = ScatterChartDataSet(entries: valuesCorrTraj, label: "CorrTraj")
+            setCorrTraj.drawValuesEnabled = false
+            setCorrTraj.setScatterShape(.circle)
+            setCorrTraj.setColor(.blue2)
+            setCorrTraj.scatterShapeSize = 3
+            chartData.append(setCorrTraj)
+        }
+        
+        if let recovery_result = recovery_result {
+            let recovery_traj = recovery_result.traj
+            var xAxisValue = [Double]()
+            var yAxisValue = [Double]()
+            for traj in recovery_traj {
+                xAxisValue.append(traj[0])
+                yAxisValue.append(traj[1])
+            }
+            
+            let valuesRecoveryTraj = (0..<xAxisValue.count).map { (i) -> ChartDataEntry in
+                return ChartDataEntry(x: xAxisValue[i], y: yAxisValue[i])
+            }
+            
+            let setRecoveryTraj = ScatterChartDataSet(entries: valuesRecoveryTraj, label: "RecoveryTraj")
+            setRecoveryTraj.drawValuesEnabled = false
+            setRecoveryTraj.setScatterShape(.circle)
+            setRecoveryTraj.setColor(.systemGreen)
+            setRecoveryTraj.scatterShapeSize = 5
+            chartData.append(setRecoveryTraj)
+            
+            let bestOlder = recovery_result.bestOlder
+            let oldX: [Double] = [Double(bestOlder[0])]
+            let oldY: [Double] = [Double(bestOlder[1])]
+            let valuesOld = (0..<oldX.count).map { (i) -> ChartDataEntry in
+                return ChartDataEntry(x: oldX[i], y: oldY[i])
+            }
+            
+            let setOld = ScatterChartDataSet(entries: valuesOld, label: "BestOld")
+            setOld.drawValuesEnabled = false
+            setOld.setScatterShape(.square)
+            setOld.setColor(.systemRed)
+            setOld.scatterShapeSize = 8
+            chartData.append(setOld)
+            
+            let bestRecent = recovery_result.bestRecent
+            let recentX: [Double] = [Double(bestRecent[0])]
+            let recentY: [Double] = [Double(bestRecent[1])]
+            let valuesRecent = (0..<oldX.count).map { (i) -> ChartDataEntry in
+                return ChartDataEntry(x: recentX[i], y: recentY[i])
+            }
+            
+            let setRecent = ScatterChartDataSet(entries: valuesRecent, label: "BestRecent")
+            setRecent.drawValuesEnabled = false
+            setRecent.setScatterShape(.square)
+            setRecent.setColor(.systemBlue)
+            setRecent.scatterShapeSize = 6
+            chartData.append(setRecent)
+        }
+        
         // Heading
-        let point = scatterChart.getPosition(entry: ChartDataEntry(x: XY[0], y: XY[1]), axis: .left)
-        let imageView = UIImageView(image: headingImage!.rotate(degrees: -heading+90))
+        let point = scatterChart.getPosition(entry: ChartDataEntry(x: XYH[0], y: XYH[1]), axis: .left)
+        let imageView = UIImageView(image: headingImage!.rotate(degrees: -XYH[2]+90))
         imageView.frame = CGRect(x: point.x - 15, y: point.y - 15, width: 30, height: 30)
         imageView.contentMode = .center
         imageView.tag = 100
@@ -530,18 +492,8 @@ class CardViewController: UIViewController {
         }
         scatterChart.addSubview(imageView)
         
-        let point2 = scatterChart.getPosition(entry: ChartDataEntry(x: serverXY[0], y: serverXY[1]), axis: .left)
-        let imageView2 = UIImageView(image: headingImage!.rotate(degrees: -serverXY[2]+90))
-        imageView2.frame = CGRect(x: point2.x - 15, y: point2.y - 15, width: 30, height: 30)
-        imageView2.contentMode = .center
-        imageView2.tag = 200
-        if let viewWithTag2 = scatterChart.viewWithTag(200) {
-            viewWithTag2.removeFromSuperview()
-        }
-        scatterChart.addSubview(imageView2)
-        
-        let point3 = scatterChart.getPosition(entry: ChartDataEntry(x: tuXY[0], y: tuXY[1]), axis: .left)
-        let imageView3 = UIImageView(image: headingImage!.rotate(degrees: -tuXY[2]+90))
+        let point3 = scatterChart.getPosition(entry: ChartDataEntry(x: tuXYH[0], y: tuXYH[1]), axis: .left)
+        let imageView3 = UIImageView(image: headingImage!.rotate(degrees: -tuXYH[2]+90))
         imageView3.frame = CGRect(x: point3.x - 15, y: point3.y - 15, width: 30, height: 30)
         imageView3.contentMode = .center
         imageView3.tag = 300
@@ -612,58 +564,64 @@ class CardViewController: UIViewController {
         scatterChart.data = chartData
     }
     
-    func updateCoord(data: CoordToDisplay, flag: Bool) {
-//        DispatchQueue.main.async { [self] in
-//            
+    func updateCoord(flag: Bool) {
+        guard let debugResult = serviceManager?.getJupiterDebugResult() else { return }
+        DispatchQueue.main.async { [self] in
 //            let ioStatus = serviceManager.getInOutState()
-//            self.inOutStatusLabel.text = "\(ioStatus)"
-//            
-//            indexTx.text = String(serviceManager.displayOutput.indexTx)
+            let ioStatus = "DEBUGING"
+            self.inOutStatusLabel.text = "\(ioStatus)"
+            
+            indexTx.text = String(debugResult.index)
 //            indexRx.text = String(serviceManager.displayOutput.indexRx) + " // " + String(serviceManager.displayOutput.phase)
 //            scc.text = String(serviceManager.displayOutput.scc)
-//            
+            
 //            let directionArray = serviceManager.displayOutput.searchDirection
 //            let stringArray = directionArray.map { String($0) }
 //            searchDirections.text = stringArray.joined(separator: ", ")
 //            resultDirection.text = String(serviceManager.displayOutput.resultDirection)
-//            
-//            let XY: [Double] = [data.x, data.y]
-//            let heading: Double = data.heading
-//            let isIndoor = data.isIndoor
-//            var limits: [Double] = [0, 0, 0, 0]
-//            
-//            if (data.building != "") {
-//                currentBuilding = data.building
-//                if (data.level != "") {
-//                    currentLevel = data.level
-//                }
-//            }
-//            
-//            
-//            pastBuilding = currentBuilding
-//            pastLevel = currentLevel
-//            
-//            
-//            let key = "\(data.building)_\(data.level)"
-//            let condition: ((String, [[Double]])) -> Bool = {
-//                $0.0.contains(key)
-//            }
-//            let pathPixel: [[Double]] = PathPixel[key] ?? [[Double]]()
-//            if (PathPixel.contains(where: condition)) {
-//                if (pathPixel.isEmpty) {
-//                    PathPixel[key] = loadPp(fileName: key)
-//    //                scatterChart.isHidden = true
-//                } else {
-//    //                scatterChart.isHidden = false
-//                    let serverXY: [Double] = serviceManager.displayOutput.serverResult
-//                    let tuXY: [Double] = serviceManager.timeUpdateResult
-//                    drawDebug(XY: XY, RP_X: pathPixel[0], RP_Y: pathPixel[1], serverXY: serverXY, tuXY: tuXY, heading: heading, limits: limits, isBleOnlyMode: self.isBleOnlyMode, isPmSuccess: true, trajectoryStartCoord: serviceManager.displayOutput.trajectoryStartCoord, userTrajectory: serviceManager.displayOutput.userTrajectory, searchArea: serviceManager.displayOutput.searchArea, searchType: serviceManager.displayOutput.searchType, isIndoor: isIndoor, trajPm: serviceManager.displayOutput.trajectoryPm, trajOg: serviceManager.displayOutput.trajectoryOg)
-//    //                drawResult(XY: XY, RP_X: pathPixel[0], RP_Y: pathPixel[1], heading: heading, limits: limits, isBleOnlyMode: self.isBleOnlyMode, isPmSuccess: true, isIndoor: isIndoor)
-//                }
-//            } else {
-//                PathPixel[key] = loadPp(fileName: key)
-//            }
-//        }
+            
+            let XYH: [Double] = [Double(debugResult.x), Double(debugResult.y), Double(debugResult.absolute_heading)]
+            let isIndoor = debugResult.isIndoor
+            
+            if (debugResult.building_name != "") {
+                currentBuilding = debugResult.building_name
+                if (debugResult.level_name != "") {
+                    currentLevel = debugResult.level_name
+                }
+            }
+            if let landmark = debugResult.landmark {
+                scc.text = String(landmark.ward_id)
+
+            }
+            
+            pastBuilding = currentBuilding
+            pastLevel = currentLevel
+            
+            let key = "\(currentBuilding)_\(currentLevel)"
+            let condition: ((String, [[Double]])) -> Bool = { $0.0.contains(key) }
+            let pathPixel: [[Double]] = PathPixel[key] ?? [[Double]]()
+            if (PathPixel.contains(where: condition)) {
+                if (pathPixel.isEmpty) {
+                    PathPixel[key] = loadPp(fileName: key)
+    //                scatterChart.isHidden = true
+                } else {
+                    var tu_xyh = [Double]()
+                    for value in debugResult.tu_xyh {
+                        tu_xyh.append(Double(value))
+                    }
+                    drawDebug(XYH: XYH, RP_X: pathPixel[0], RP_Y: pathPixel[1],
+                              tuXYH: tu_xyh,
+                              landmark: debugResult.landmark,
+                              best_landmark: debugResult.best_landmark,
+                              recon_raw_traj: debugResult.recon_raw_traj,
+                              recon_corr_traj: debugResult.recon_corr_traj,
+                              recovery_result: debugResult.recovery_result,
+                              limits: [0, 0, 0, 0], isBleOnlyMode: self.isBleOnlyMode, isPmSuccess: true, isIndoor: isIndoor)
+                }
+            } else {
+                PathPixel[key] = loadPp(fileName: key)
+            }
+        }
     }
     
     // Display Outputs
@@ -695,7 +653,7 @@ class CardViewController: UIViewController {
 //                if getCurrentTimeInMilliseconds() - self.statusTime > 10000 && self.inOutStatusLabel.text != "..." {
 //                    self.inOutStatusLabel.text = "..."
 //                }
-                self.updateCoord(data: self.coordToDisplay, flag: true)
+                self.updateCoord(flag: true)
             }
             if (self.isSaved) {
                 saveButton.isHidden = true

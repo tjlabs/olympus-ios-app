@@ -29,6 +29,12 @@ variant_for_slice()
   "TJLabsCommon.xcframework/ios-arm64_x86_64-simulator")
     echo "simulator"
     ;;
+  "TJLabsMap.xcframework/ios-arm64")
+    echo ""
+    ;;
+  "TJLabsMap.xcframework/ios-arm64_x86_64-simulator")
+    echo "simulator"
+    ;;
   "TJLabsResource.xcframework/ios-arm64")
     echo ""
     ;;
@@ -51,6 +57,12 @@ archs_for_slice()
     echo "arm64"
     ;;
   "TJLabsCommon.xcframework/ios-arm64_x86_64-simulator")
+    echo "arm64 x86_64"
+    ;;
+  "TJLabsMap.xcframework/ios-arm64")
+    echo "arm64"
+    ;;
+  "TJLabsMap.xcframework/ios-arm64_x86_64-simulator")
     echo "arm64 x86_64"
     ;;
   "TJLabsResource.xcframework/ios-arm64")
@@ -143,5 +155,6 @@ install_xcframework() {
 
 install_xcframework "${PODS_ROOT}/../../OlympusSDK/Frameworks/TJLabsAuth.xcframework" "OlympusSDK" "framework" "ios-arm64" "ios-arm64_x86_64-simulator"
 install_xcframework "${PODS_ROOT}/../../OlympusSDK/Frameworks/TJLabsCommon.xcframework" "OlympusSDK" "framework" "ios-arm64" "ios-arm64_x86_64-simulator"
+install_xcframework "${PODS_ROOT}/../../OlympusSDK/Frameworks/TJLabsMap.xcframework" "OlympusSDK" "framework" "ios-arm64" "ios-arm64_x86_64-simulator"
 install_xcframework "${PODS_ROOT}/../../OlympusSDK/Frameworks/TJLabsResource.xcframework" "OlympusSDK" "framework" "ios-arm64" "ios-arm64_x86_64-simulator"
 

@@ -114,6 +114,7 @@ PODS:
   - GoogleUtilities/UserDefaults (7.13.0):
     - GoogleUtilities/Logger
     - GoogleUtilities/Privacy
+  - lottie-ios (4.5.2)
   - nanopb (2.30910.0):
     - nanopb/decode (= 2.30910.0)
     - nanopb/encode (= 2.30910.0)
@@ -137,6 +138,7 @@ DEPENDENCIES:
   - Charts
   - Firebase/Analytics
   - Firebase/Crashlytics
+  - lottie-ios
   - OlympusSDK (from `../`)
   - RxCocoa (~> 6.5.0)
   - RxSwift (~> 6.5.0)
@@ -158,6 +160,7 @@ SPEC REPOS:
     - GoogleAppMeasurement
     - GoogleDataTransport
     - GoogleUtilities
+    - lottie-ios
     - nanopb
     - PromisesObjC
     - PromisesSwift
@@ -186,6 +189,7 @@ SPEC CHECKSUMS:
   GoogleAppMeasurement: f3abf08495ef2cba7829f15318c373b8d9226491
   GoogleDataTransport: 6c09b596d841063d76d4288cc2d2f42cc36e1e2a
   GoogleUtilities: d053d902a8edaa9904e1bd00c37535385b8ed152
+  lottie-ios: 96784afc26ea031d3e2b6cae342a4b8915072489
   nanopb: 438bc412db1928dac798aa6fd75726007be04262
   OlympusSDK: e8320ae286b3d5cd0d09b2af278963dfb19a495a
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
@@ -197,6 +201,6 @@ SPEC CHECKSUMS:
   SwiftAlgorithms: 38dda4731d19027fdeee1125f973111bf3386b53
   Then: 844265ae87834bbe1147d91d5d41a404da2ec27d
 
-PODFILE CHECKSUM: 05a53d8a7e6bf473e117f4c2a2a1e79f75dafe73
+PODFILE CHECKSUM: cdd28b4abc6ddec71c4a8cfc064f3bed01435e4f
 
 COCOAPODS: 1.16.2

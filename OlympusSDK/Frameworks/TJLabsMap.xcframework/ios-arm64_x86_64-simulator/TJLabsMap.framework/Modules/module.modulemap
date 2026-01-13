@@ -1,0 +1,6 @@
+framework module TJLabsMap {
+  umbrella header "TJLabsMap.h"
+  export *
+
+  module * { export * }
+}

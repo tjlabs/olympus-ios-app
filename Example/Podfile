@@ -8,7 +8,8 @@ target 'OlympusSDK_Example' do
   pod 'OlympusSDK', :path => '../'
   pod 'Charts'
   pod 'SnapKit' 
-  pod 'Then' 
+  pod 'Then'
+  pod 'lottie-ios'
   pod 'RxSwift', '~> 6.5.0'
   pod 'RxCocoa', '~> 6.5.0'
 
