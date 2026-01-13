@@ -404,7 +404,7 @@ class RecoveryManager {
                             tmp.y = Float(oc.y)
 
                             let peakDist = dist2(Float(oc.x), Float(oc.y), Float(cand.x), Float(cand.y))
-                            if peakDist < 10 { continue }
+                            if peakDist < 5 { continue }
                             tmp.absolute_heading = tail.heading
 //                            guard let ocLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
 //                                                                                      result: tmp,
