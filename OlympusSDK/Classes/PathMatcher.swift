@@ -584,7 +584,8 @@ class PathMatcher {
         return paddingValues
     }
     
-    func updateNodeAndLinkInfo(sectorId: Int, uvdIndex: Int, curResult: FineLocationTrackingOutput, mode: UserMode) {
+    func updateNodeAndLinkInfo(sectorId: Int, uvdIndex: Int, curResult: FineLocationTrackingOutput, mode: UserMode, isJumped: Bool) {
+        let checkAll = isJumped ? true : false
         let x = curResult.x
         let y = curResult.y
         let building = curResult.building_name
@@ -631,6 +632,8 @@ class PathMatcher {
             registerPassedNode(node: nodeId, coord: nd.coords, headings: nodeHeadings, matchedIndex: bestIndex, heading: heading)
             JupiterLogger.i(tag: "PathMatcher", message: "(updateNodeAndLinkInfo) [NODE] uvd=\(uvdIndex) key=\(key) node=\(nodeId) xy=(\(correctedX),\(correctedY)) userH=\(heading) bestH=\(bestHeading)(idx=\(bestIndex), is_end=\(bestIsEnd)) oppH=\(bestOppHeading)(idx=\(bestOppIndex))")
             return
+        } else if isJumped {
+            JupiterLogger.i(tag: "PathMatcher", message: "(updateNodeAndLinkInfo) [NODE] not found and position jumped!")
         }
 
         // 2. 현재 Node 위에 존재하지 않음
@@ -639,10 +642,12 @@ class PathMatcher {
         var curLinkDirs = [Float]()
         var curLinkBestHeading: Float = 0
         var curLinkOppHeading: Float = 0
-        
 
+        
         var candidateLinkIds: [Int]
-        if curPassedNodeInfo.id != -1, let curNd = nodeData[curPassedNodeInfo.id] {
+        if checkAll {
+            candidateLinkIds = Array(linkData.keys)
+        } else if curPassedNodeInfo.id != -1, let curNd = nodeData[curPassedNodeInfo.id] {
             candidateLinkIds = curNd.connected_links
         } else {
             candidateLinkIds = Array(linkData.keys)

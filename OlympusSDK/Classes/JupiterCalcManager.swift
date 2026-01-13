@@ -289,6 +289,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         let curIndex = userVelocity.index
         
         guard let entManager = self.entManager else { return }
+        guard let blChanger = self.buildingLevelChanger else { return }
         guard let landmarkTagger = self.landmarkTagger else { return }
         guard let recoveryManager = self.recoveryManager else { return }
         stackManager.stackUvd(uvd: userVelocity)
@@ -302,10 +303,26 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         // Moving Averaging
         guard let wardAvgManager = wardAvgManager else { return }
         let avgBleData: [String: Float] = wardAvgManager.updateEpoch(bleData: bleData)
+        
+        var isJumped: Bool = false
+        var blTagResult: BuildingLevelTagResult?
         if let userPeak = peakDetector.updateEpoch(uvdIndex: curIndex, bleAvg: avgBleData) {
             peakHandling: do {
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) PEAK detected : id=\(userPeak.id) // peak_idx=\(userPeak.peak_index), peak_rssi=\(userPeak.peak_rssi), detected_idx = \(userPeak.end_index), detected_rssi = \(userPeak.end_rssi)")
                 startEntranceTracking(currentTime: currentTime, entManager: entManager, uvd: userVelocity, peakId: userPeak.id, bleData: bleData)
+                
+                // Building & Level Changer
+                if let blTag = blChanger.isBuildingLevelChangerTagged(userPeak: userPeak, curResult: curResult, mode: mode),
+                   let destinations = blChanger.getBuildingLevelDestination(tag: blTag, curResult: curResult),
+                   let detectionResult = blChanger.determineTagDetection(time: currentTime, tag: blTag, buildingDestination: destinations.buildingDestination, levelDestination: destinations.levelDestination, tagCoord: [Float(blTag.x), Float(blTag.y)], curResult: curResult) {
+                    blTagResult = detectionResult
+                    if let kf = kalmanFilter {
+                        kf.updateTuBuildingLevel(building: detectionResult.building, level: detectionResult.level)
+                    }
+                    break peakHandling
+                }
+                
+                // LandmarkTag
                 if userPeak.peak_index - correctionIndex < 10 {
                     JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) PEAK is too close with previous landmark correction")
                     break peakHandling
@@ -327,6 +344,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                         self.correctionIndex = userPeak.peak_index
                                         self.curResult = muResult
                                         reconCurResultBuffer = reconstructResult.1
+                                        // Landmark를 이용한 Correction 이후에 위치 Jump 판단 -> PassedNode와 Link 정보 업데이트
+                                        isJumped = true
                                     }
                                 } else {
                                     self.debug_recon_raw_traj = nil
@@ -351,7 +370,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         case .ENTERING:
             calcEntranceResult(currentTime: currentTime, entManager: entManager, uvd: userVelocity)
         case .TRACKING:
-            calcIndoorResult(mode: mode, uvd: userVelocity, olderPeakIndex: olderPeakIndex)
+            calcIndoorResult(mode: mode, uvd: userVelocity, olderPeakIndex: olderPeakIndex, isJumped: isJumped)
         case .SEARCHING:
             print("Searching")
         case .NONE:
@@ -375,17 +394,11 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         // Bad Case 확인 (같은 좌표 20개)
         if stackManager.checkIsBadCase() {
             JupiterResultState.isInRecoveryProcess = true
-            // 필요한 것
-            // 최근 2개의 Peak 정보, 각 Peak_index때 위치에서의 Link?
-            // UVD를 Older Peak의 peak_index부터 현재까지 가져오기
             let userPeakAndLinkBuffer = stackManager.getUserPeakAndLinkBuffer()
             if userPeakAndLinkBuffer.count < 2 { return }
             let olderUserPeak = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count-2].0
             let recentUserPeak = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count-1].0
             let uvdBufferForRecovery = recoveryManager.getUvdBufferForRecovery(startIndex: olderUserPeak.peak_index, endIndex: userVelocity.index, uvdBuffer: uvdBuffer)
-            // 1. 사용자 UVD 궤적을 Slice함
-            
-            // 2. N개의 머리쪽 Landmark에 대해 그 근처
             let headingSearchRange = recoveryManager.getRecoveryRange(olderPeakIndex: olderUserPeak.peak_index, curIndex: curIndex)
             let pathHeadings = PathMatcher.shared.getPathMatchingHeadings(sectorId: sectorId,
                                                                           building: curPmResult.building_name,
@@ -408,6 +421,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                                                                         tuResultWhenOlderPeak: tuResultWhenOlderPeak,
                                                                                         curPmResult: curPmResult, mode: mode) {
                             self.debug_recovery_result = recoveryResult
+                            // BadCAse를 이용한 Correction 이후에 위치 Jump 판단 -> PassedNode와 Link 정보 업데이트
+                            isJumped = true
                         }
                     } else {
                         
@@ -472,7 +487,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         JupiterResultState.isIndoor = true
     }
     
-    private func calcIndoorResult(mode: UserMode, uvd: UserVelocity, olderPeakIndex: Int?) {
+    private func calcIndoorResult(mode: UserMode, uvd: UserVelocity, olderPeakIndex: Int?, isJumped: Bool = false) {
         let (tuResult, isDidPathTrajMatching) = updateResultFromTimeUpdate(mode: mode, uvd: uvd, pastUvd: pastUvd, pathMatchingCondition: self.pathMatchingCondition)
         guard var tuResult = tuResult else { return }
         guard let curResult = self.curResult else { return }
@@ -504,7 +519,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             self.debug_tu_xyh = [tuResult.x, tuResult.y, tuResult.absolute_heading]
         }
         
-        let indoorResult = makeCurrentResult(input: tuResult, mustInSameLink: mustInSameLink, pathMatchingType: .NARROW, phase: .TRACKING, mode: mode)
+        let indoorResult = makeCurrentResult(input: tuResult, mustInSameLink: mustInSameLink, pathMatchingType: .NARROW, phase: .TRACKING, isJumped: isJumped, mode: mode)
         self.curResult = indoorResult
     }
     
@@ -520,7 +535,12 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         }
     }
     
-    private func makeCurrentResult(input: FineLocationTrackingOutput, mustInSameLink: Bool, pathMatchingType: PathMatchingType, phase: JupiterPhase, mode: UserMode) -> FineLocationTrackingOutput {
+    private func makeCurrentResult(input: FineLocationTrackingOutput,
+                                   mustInSameLink: Bool,
+                                   pathMatchingType: PathMatchingType,
+                                   phase: JupiterPhase,
+                                   isJumped: Bool = false,
+                                   mode: UserMode) -> FineLocationTrackingOutput {
 //        JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - input: \(input.building_name), \(input.level_name), [\(input.x),\(input.y),\(input.absolute_heading)]")
         var result = input
         let curIndex = curUvd.index
@@ -596,7 +616,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         }
         
         if KalmanState.isKalmanFilterRunning {
-            PathMatcher.shared.updateNodeAndLinkInfo(sectorId: sectorId, uvdIndex: curIndex, curResult: result, mode: mode)
+            PathMatcher.shared.updateNodeAndLinkInfo(sectorId: sectorId, uvdIndex: curIndex, curResult: result, mode: mode, isJumped: isJumped)
         }
         
         return result
@@ -632,7 +652,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     }
     
     func onBuildingsData(_ manager: TJLabsResource.TJLabsResourceManager, data: [TJLabsResource.BuildingOutput]) {
-        // TO-DO
+        guard let blChanger = self.buildingLevelChanger else { return }
+        blChanger.setBuildingsData(buildingsData: data)
     }
     
     func onScaleOffsetData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [Float]) {
@@ -689,7 +710,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     }
     
     func onLevelWardsData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [TJLabsResource.LevelWard]) {
-        // TO-DO
+        guard let blChanger = self.buildingLevelChanger else { return }
+        blChanger.setLevelWards(levelKey: key, levelWardsData: data)
     }
     
     func onAffineParam(_ manager: TJLabsResource.TJLabsResourceManager, data: TJLabsResource.AffineTransParamOutput) {
@@ -700,7 +722,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         if type == .BUILDING_LEVEL_TAG {
             let blChangerTagData = data as! [TJLabsResource.BuildingLevelTag]
             guard let blChanger = self.buildingLevelChanger else { return }
-            blChanger.blChangerTagMap[key] = blChangerTagData
+            blChanger.setBuildingLevelTagData(key: key, blChangerTagData: blChangerTagData)
         }
     }
     func onError(_ manager: TJLabsResource.TJLabsResourceManager, error: TJLabsResource.ResourceError, key: String) {
