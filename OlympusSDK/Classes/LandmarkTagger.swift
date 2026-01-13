@@ -90,9 +90,9 @@ class LandmarkTagger {
         let uvdBufferFromPeakIndex: [UserVelocity] = uvdBuffer
             .filter { $0.index >= peakIndex }
             .sorted { $0.index < $1.index }
-
+        
         guard uvdBufferFromPeakIndex.count >= 2 else {
-            JupiterLogger.i(tag: "LandmarkTagger", message: "(applyCorrection) skip DR: uvdBufferFromPeakIndex.count=\(uvdBufferFromPeakIndex.count), peakIndex=\(peakIndex)")
+            JupiterLogger.i(tag: "LandmarkTagger", message: "(applyCorrection) skip DR: uvd buffer count= \(uvdBufferFromPeakIndex.count)], peakIndex= \(peakIndex)")
             return nil
         }
         
@@ -104,6 +104,7 @@ class LandmarkTagger {
         var heading: Double = startHeading
         
         var pmCoord: [Double] = startCoord
+        let defaultResult = curResultBuffer[curResultBuffer.count-1]
         
         for i in 1..<uvdBufferFromPeakIndex.count {
             let curUvd = uvdBufferFromPeakIndex[i]
@@ -125,7 +126,7 @@ class LandmarkTagger {
             
             rawResultBuffer.append([coord[0], coord[1], heading])
             
-            var fltResult = curResultBuffer[i]
+            var fltResult = defaultResult
             if let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: matchedResult.building_name, level: matchedResult.level_name, x: Float(pmCoord[0]), y: Float(pmCoord[1]), heading: Float(heading), isUseHeading: true, mode: mode, paddingValues: JupiterMode.PADDING_VALUES_DR) {
                 pmCoord = [Double(pmResult.x), Double(pmResult.y)]
                 fltResult.x = pmResult.x
