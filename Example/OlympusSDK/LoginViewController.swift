@@ -57,12 +57,12 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         self.navigationController?.pushViewController(cardVC, animated: true)
     }
     
-//    func goToMapViewController(userId: String) {
-//        guard let mapVC = self.storyboard?.instantiateViewController(withIdentifier: "MapViewController") as? MapViewController else { return }
-//        mapVC.userId = userId
-//        self.navigationController?.pushViewController(mapVC, animated: true)
-//    }
-//    
+    func goToMapViewController(userId: String) {
+        guard let mapVC = self.storyboard?.instantiateViewController(withIdentifier: "MapViewController") as? MapViewController else { return }
+        mapVC.userId = userId
+        self.navigationController?.pushViewController(mapVC, animated: true)
+    }
+    
 //    func goToMapScaleViewController(userId: String) {
 //        guard let mapVC = self.storyboard?.instantiateViewController(withIdentifier: "MapScaleViewController") as? MapScaleViewController else { return }
 //        mapVC.userId = userId
@@ -125,8 +125,8 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         NetworkManager.shared.postUserLogin(url: USER_LOGIN_URL, input: loginInfo, completion: { statusCode, returnedString in
             if (statusCode == 200) {
                 print(getLocalTimeString() + " , (InnerLabs) Success : User Login")
-                self.goToCardViewController(region: "Korea", userId: self.userId)
-//                self.goToMapViewController(userId: self.userId)
+//                self.goToCardViewController(region: "Korea", userId: self.userId)
+                self.goToMapViewController(userId: self.userId)
 //                self.goToMapScaleViewController(userId: self.userId)
             } else {
                 print(getLocalTimeString() + " , (InnerLabs) Fail : User Login \(statusCode)")

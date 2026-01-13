@@ -42,7 +42,8 @@ class MapViewController: UIViewController, Observer {
     
     var region: String = "Korea"
     var sectorId: Int = 6
-        
+    var userId: String = ""
+    
     let serviceManager = OlympusServiceManager()
     
     private let containerView = UIView().then {
@@ -80,7 +81,7 @@ class MapViewController: UIViewController, Observer {
     func startService() {
         serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_01_2_0811.csv", sensorFileName: "sensor_coex_01_2_0811.csv")
         
-        let uniqueId = makeUniqueId(uuid: "leo")
+        let uniqueId = makeUniqueId(uuid: self.userId)
         serviceManager.addObserver(self)
         serviceManager.startService(user_id: uniqueId, region: self.region, sector_id: sectorId, service: "FLT", mode: "auto", completion: { [self] isStart, returnedString in
             print(returnedString)
