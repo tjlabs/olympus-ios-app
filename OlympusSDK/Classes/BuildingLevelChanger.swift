@@ -12,11 +12,8 @@ class BuildingLevelChanger {
         self.sectorId = sectorId
         
         buildingLevelChangedTime = 0
-        isDetermineSpot = false
-        distAfterSpotDetection = 0
-        lastSpot = 0
-        curSpot = 0
-        preOutputMobileTime = 0
+        distAfterTagDetection = 0
+        lastTag = 0
         buildingsAndLevels = [String: [String]]()
     }
     
@@ -24,34 +21,28 @@ class BuildingLevelChanger {
     
     weak var delegate: BuildingLevelChangerDelegate?
     
-    let DEFAULT_SPOT_DISTANCE: Float = 70
+    let DEFAULT_TAG_DISTANCE: Float = 70
     
     var sectorId: Int
     var blChangerTagMap = [Int: [BuildingLevelTag]]()
     var buildingsAndLevelsMap = [String: [String]]()
     var levelChangeAreaMap = [String: [[Float]]]()
-    var levelWardsMap = [String: [String]]()
+    var levelWardsMap = [String: [LevelWard]]()
 
     var buildingLevelChangedTime: Int
-    var isDetermineSpot: Bool
     
-    private var distAfterSpotDetection: Float
-    
-    private var curSpot: Int
-    private var lastSpot: Int
-    private var preOutputMobileTime: Int
+    private var distAfterTagDetection: Float
+    private var lastTag: Int
     private var buildingsAndLevels = [String: [String]]()
     
     func toggleToOutdoor() {
         buildingLevelChangedTime = 0
-        isDetermineSpot = false
-        distAfterSpotDetection = 0
-        curSpot = 0
-        lastSpot = 0
-        preOutputMobileTime = 0
+        distAfterTagDetection = 0
+        
+        lastTag = 0
     }
     
-    func setLevelWards(levelKey: String, levelWardsData: [String]) {
+    func setLevelWards(levelKey: String, levelWardsData: [LevelWard]) {
         levelWardsMap[levelKey] = levelWardsData
     }
     
@@ -68,93 +59,59 @@ class BuildingLevelChanger {
         return levelChangeAreaMap[key]
     }
     
+    func setBuildingLevelTagData(key: Int, blChangerTagData: [BuildingLevelTag]) {
+        blChangerTagMap[key] = blChangerTagData
+        JupiterLogger.i(tag: "BuildingLevelChanger", message: "(setBuildingLevelTagData) - \(blChangerTagData)")
+    }
+    
     func accumulateDistance(uvd: UserVelocity, isGetFirstResponse: Bool, mode: UserMode, result: FineLocationTrackingOutput) {
         if (isGetFirstResponse && mode == .MODE_VEHICLE) {
             let lastResult = result
             if (lastResult.building_name != "" && lastResult.level_name != "") {
-                self.distAfterSpotDetection += Float(uvd.length)
+                self.distAfterTagDetection += Float(uvd.length)
             }
         }
     }
     
-    func determineSpotDetect(time: Int, tag: BuildingLevelTag, lastSpotId: Int, buildingDestination: String, levelDestination: String, curBuilding: String, curLevel: String, spotCoord: [Float]) {
-        var spotDistance = Float(tag.distance)
-        if (spotDistance == 0) {
-            spotDistance = DEFAULT_SPOT_DISTANCE
+    func determineTagDetection(time: Int, tag: BuildingLevelTag, buildingDestination: String, levelDestination: String, tagCoord: [Float], curResult: FineLocationTrackingOutput?) -> BuildingLevelTagResult? {
+        guard let curResult = curResult else { return nil }
+        let curBuilding = curResult.building_name
+        let curLevel = curResult.level_name
+        
+        var tagDistance = Float(tag.distance)
+        if (tagDistance == 0) {
+            tagDistance = DEFAULT_TAG_DISTANCE
         }
         
         let levelArray: [String] = [tag.level_name, tag.linked_level_name]
         let TIME_CONDITION = levelArray.contains("B0") && levelArray.contains(where: { $0 != "B0" }) ? JupiterTime.MINIMUM_BUILDING_LEVEL_CHANGE_TIME*3 : JupiterTime.MINIMUM_BUILDING_LEVEL_CHANGE_TIME
         
-        if (tag.id != lastSpotId) {
-            // Different Spot Detected
+        if (tag.id != lastTag) {
+            // Different Tag Detected
             let resultLevelName: String = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: levelDestination)
             if (buildingDestination != curBuilding || resultLevelName != curLevel) {
                 if ((Double(time - self.buildingLevelChangedTime)) > TIME_CONDITION) {
                     // Building Level 이 바뀐지 7초 이상 지남 -> 서버 결과를 이용해 바뀌어야 한다고 판단
-                    self.curSpot = tag.id
-                    self.lastSpot = tag.id
-                    self.distAfterSpotDetection = 0
+                    self.lastTag = tag.id
+                    self.distAfterTagDetection = 0
                     setBuildingLevelChangedTime(value: time)
-                    self.delegate?.isBuildingLevelChanged(isChanged: true, newBuilding: buildingDestination, newLevel: levelDestination, newCoord: spotCoord)
-                    self.isDetermineSpot = true
+                    return BuildingLevelTagResult(building: buildingDestination, level: levelDestination, x: tagCoord[0], y: tagCoord[1])
+//                    self.delegate?.isBuildingLevelChanged(isChanged: true, newBuilding: buildingDestination, newLevel: levelDestination, newCoord: tagCoord)
                 }
             }
-            self.preOutputMobileTime = time
         } else {
-            // Same Spot Detected
-            if (self.distAfterSpotDetection >= spotDistance) {
+            // Same Tag Detected
+            if (self.distAfterTagDetection >= tagDistance) {
                 let resultLevelName: String = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: levelDestination)
                 if (buildingDestination != curBuilding || resultLevelName != curLevel) {
                     if (Double(time - self.buildingLevelChangedTime) > TIME_CONDITION) {
                         // Building Level 이 바뀐지 7초 이상 지남 -> 서버 결과를 이용해 바뀌어야 한다고 판단
-                        self.curSpot = tag.id
-                        self.lastSpot = tag.id
-                        self.distAfterSpotDetection = 0
+                        self.lastTag = tag.id
+                        self.distAfterTagDetection = 0
                         setBuildingLevelChangedTime(value: time)
-                        self.delegate?.isBuildingLevelChanged(isChanged: true, newBuilding: buildingDestination, newLevel: levelDestination, newCoord: spotCoord)
-                        self.isDetermineSpot = true
+                        return BuildingLevelTagResult(building: buildingDestination, level: levelDestination, x: tagCoord[0], y: tagCoord[1])
+//                        self.delegate?.isBuildingLevelChanged(isChanged: true, newBuilding: buildingDestination, newLevel: levelDestination, newCoord: tagCoord)
                     }
-                }
-                self.preOutputMobileTime = time
-            }
-        }
-    }
-    
-    func estimateBuildingLevel(bleAvg: [String: Float], mode: UserMode, phase: Int, isGetFirstResponse: Bool, networkStatus: Bool, result: FineLocationTrackingOutput, curEnt: String) {
-        let curTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-        let curBuilding = result.building_name
-        let curLevel = result.level_name
-        
-        var isRunOsr: Bool = true
-        if (isGetFirstResponse && networkStatus) {
-            if (mode != .MODE_PEDESTRIAN) {
-                if (isRunOsr) {
-                    // OSR 와드 태깅 검사하기
-                    guard let isTagged = self.isBuildingLevelChangerTagged(bleAvg: bleAvg, result: result) else { return }
-                    
-                    // 만약 태깅 했다면
-                    guard let isOn = self.isOn(tag: isTagged, building: result.building_name, level: result.level_name) else { return }
-                    
-                    let buildingDestination = isOn.buildingDestination
-                    let levelDestination = isOn.levelDestination
-                    let spotCoord: [Float] = [Float(isTagged.x), Float(isTagged.y)]
-//                    determineSpotDetect(time: <#T##Int#>, tag: <#T##BuildingLevelTag#>, lastSpotId: <#T##Int#>, buildingDestination: <#T##String#>, levelDestination: <#T##String#>, curBuilding: <#T##String#>, curLevel: <#T##String#>, spotCoord: <#T##[Float]#>)
-                }
-            }
-        }
-    }
-    
-    func isBuildingLevelChangerTagged(bleAvg: [String: Float], result: FineLocationTrackingOutput) -> BuildingLevelTag? {
-        let sectorKey = self.sectorId
-        guard let sectorTagData = self.blChangerTagMap[sectorKey] else { return nil }
-        
-        let tagValues: [BuildingLevelTag] = sectorTagData
-        for item in tagValues {
-            for (bleName, rssiValue) in bleAvg {
-                if item.name == bleName && rssiValue >= Float(item.rssi) {
-                    JupiterLogger.i(tag: "BuildingLevelChanger", message: "(isBuildingLevelChangerTagged) - \(bleName) tagged with \(rssiValue)")
-                    return item
                 }
             }
         }
@@ -162,9 +119,30 @@ class BuildingLevelChanger {
         return nil
     }
     
-    func isOn(tag: BuildingLevelTag, building: String, level: String) -> (buildingDestination: String, levelDestination: String)? {
-        let curBuilding: String = building
-        let curLevel: String = level
+    func isBuildingLevelChangerTagged(userPeak: UserPeak, curResult: FineLocationTrackingOutput?, mode: UserMode) -> BuildingLevelTag? {
+        let sectorKey = self.sectorId
+        guard let sectorTagData = self.blChangerTagMap[sectorKey], let result = curResult else { return nil }
+        
+        if !checkInLevelChangeArea(sectorId: sectorId, building: result.building_name, level: result.level_name, x: result.x, y: result.y, mode: mode) {
+            return nil
+        }
+        
+        let tagValues: [BuildingLevelTag] = sectorTagData
+        for item in tagValues {
+            let tagLevelList = [item.level_name, item.linked_level_name]
+            if item.name == userPeak.id && tagLevelList.contains(result.level_name) {
+                JupiterLogger.i(tag: "BuildingLevelChanger", message: "(isBuildingLevelChangerTagged) - \(item.name) tagged with userPeak \(userPeak.id)")
+                return item
+            }
+        }
+        
+        return nil
+    }
+    
+    func getBuildingLevelDestination(tag: BuildingLevelTag, curResult: FineLocationTrackingOutput?) -> (buildingDestination: String, levelDestination: String)? {
+        guard let curResult = curResult else { return nil }
+        let curBuilding: String = curResult.building_name
+        let curLevel: String = curResult.level_name
         
         var buildingDestination: String = ""
         var levelDestination: String = ""
@@ -233,7 +211,7 @@ class BuildingLevelChanger {
         return (isBuildingLevelChanged, result)
     }
     
-    func makeBuildingLevelInfo(buildingsData: [BuildingOutput]) -> [String: [String]] {
+    private func makeBuildingLevelInfo(buildingsData: [BuildingOutput]) -> [String: [String]] {
         var infoBuildingLevel = [String: [String]]()
         for building in buildingsData {
             let buildingName = building.name
@@ -253,7 +231,7 @@ class BuildingLevelChanger {
         return infoBuildingLevel
     }
     
-    func compareFloorNames(lhs: String, rhs: String) -> Bool {
+    private func compareFloorNames(lhs: String, rhs: String) -> Bool {
         func floorValue(_ floor: String) -> Int {
             if floor.starts(with: "B"), let number = Int(floor.dropFirst()) {
                 return -number
@@ -264,17 +242,6 @@ class BuildingLevelChanger {
         }
             
         return floorValue(lhs) > floorValue(rhs)
-    }
-    
-    func makeLevelList(sectorId: Int, building: String, level: String, x: Float, y: Float, mode: UserMode) -> [String] {
-        var levelArray = [level]
-        let isInLevelChangeArea = checkInLevelChangeArea(sectorId: sectorId, building: building, level: level, x: x, y: y, mode: mode)
-        
-        if isInLevelChangeArea {
-            levelArray = makeLevelChangeArray(buildingName: building, levelNameInput: level, buildingLevel: buildingsAndLevelsMap)
-        }
-        
-        return levelArray
     }
     
     func checkInLevelChangeArea(sectorId: Int, building: String, level: String, x: Float, y: Float, mode: UserMode) -> Bool {
@@ -300,50 +267,7 @@ class BuildingLevelChanger {
         }
         return false
     }
-
-    func makeLevelChangeArray(buildingName: String, levelNameInput: String, buildingLevel: [String:[String]]) -> [String] {
-        var levelArrayToReturn = [String]()
-        
-        if (!buildingLevel.isEmpty) {
-            if (levelNameInput.contains("_D")) {
-                let levelCandidate = levelNameInput.replacingOccurrences(of: "_D", with: "")
-                levelArrayToReturn = [levelNameInput, levelCandidate]
-            } else {
-                let levelCandidate = levelNameInput + "_D"
-                levelArrayToReturn = [levelNameInput, levelCandidate]
-            }
-            
-            if let levelList: [String] = buildingLevel[buildingName] {
-                var newArray = [String]()
-                for i in 0..<levelArrayToReturn.count {
-                    let levelName: String = levelArrayToReturn[i]
-                    if levelList.contains(levelName) {
-                        newArray.append(levelName)
-                    }
-                }
-                
-                if !newArray.isEmpty {
-                    levelArrayToReturn = newArray
-                } else {
-                    levelArrayToReturn = [TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: levelNameInput)]
-                }
-            } else {
-                levelArrayToReturn = [TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: levelNameInput)]
-            }
-        } else {
-            levelArrayToReturn = [TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: levelNameInput)]
-        }
-        return levelArrayToReturn
-    }
     
-    func getLevelDirection(currentLevel: Int, destinationLevel: Int) -> String {
-        var levelDirection: String = ""
-        let diffLevel: Int = destinationLevel - currentLevel
-        if (diffLevel > 0) {
-            levelDirection = "_D"
-        }
-        return levelDirection
-    }
     
     func getLevelNumber(levelName: String) -> Int {
         let levelNameCorrected: String = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: levelName)
@@ -362,48 +286,48 @@ class BuildingLevelChanger {
         }
     }
     
-    func calculateLevelByBle(data: (Int, [(String, Float)])) -> String {
-        var result: String = "UNKNOWN"
-        var strongestBleData: (String, String, Float)?
-        
-        var checker = [(String, String, Float)]()
-        let bleData = data.1
-        for (levelName, wardIds) in levelWardsMap {
-            for (id, rssi) in bleData {
-                if wardIds.contains(id) {
-                    let normalized_rssi = Float(rssi)
-                    if normalized_rssi >= -90 {
-                        checker.append((levelName, id, normalized_rssi))
-                    }
-                    
-                    if let stronggest = strongestBleData {
-                        if stronggest.2 < normalized_rssi {
-                            strongestBleData = (levelName, id, normalized_rssi)
-                        }
-                    } else {
-                        strongestBleData = (levelName, id, normalized_rssi)
-                    }
-                }
-            }
-        }
-        
-        if let stronggest = strongestBleData {
-            if stronggest.2 >= -55 {
-                return getLevelInKey(key: stronggest.0)
-            }
-        }
-        
-        if checker.count >= 2 {
-            let frequentLevel = mostFrequentCheckerValue(from: checker)
-            result = frequentLevel
-        } else if checker.count == 1 {
-            if checker[0].2 >= -80 {
-                result = checker[0].0
-            }
-        }
-        
-        return result != "UNKNOWN" ? getLevelInKey(key: result) : result
-    }
+//    func calculateLevelByBle(data: (Int, [(String, Float)])) -> String {
+//        var result: String = "UNKNOWN"
+//        var strongestBleData: (String, String, Float)?
+//        
+//        var checker = [(String, String, Float)]()
+//        let bleData = data.1
+//        for (levelName, wardIds) in levelWardsMap {
+//            for (id, rssi) in bleData {
+//                if wardIds.contains(id) {
+//                    let normalized_rssi = Float(rssi)
+//                    if normalized_rssi >= -90 {
+//                        checker.append((levelName, id, normalized_rssi))
+//                    }
+//                    
+//                    if let stronggest = strongestBleData {
+//                        if stronggest.2 < normalized_rssi {
+//                            strongestBleData = (levelName, id, normalized_rssi)
+//                        }
+//                    } else {
+//                        strongestBleData = (levelName, id, normalized_rssi)
+//                    }
+//                }
+//            }
+//        }
+//        
+//        if let stronggest = strongestBleData {
+//            if stronggest.2 >= -55 {
+//                return getLevelInKey(key: stronggest.0)
+//            }
+//        }
+//        
+//        if checker.count >= 2 {
+//            let frequentLevel = mostFrequentCheckerValue(from: checker)
+//            result = frequentLevel
+//        } else if checker.count == 1 {
+//            if checker[0].2 >= -80 {
+//                result = checker[0].0
+//            }
+//        }
+//        
+//        return result != "UNKNOWN" ? getLevelInKey(key: result) : result
+//    }
     
     private func getLevelInKey(key: String) -> String {
         let splittedKey = key.split(separator: "_")

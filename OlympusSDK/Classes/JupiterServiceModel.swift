@@ -58,6 +58,13 @@ struct RecoveryTrajectory {
     var heading: Float
 }
 
+struct BuildingLevelTagResult {
+    let building: String
+    let level: String
+    let x: Float
+    let y: Float
+}
+
 enum LimitationType {
     case X_LIMIT, Y_LIMIT, NO_LIMIT
 }
