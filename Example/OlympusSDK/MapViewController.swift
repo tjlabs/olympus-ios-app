@@ -2,7 +2,6 @@ import UIKit
 import SnapKit
 import Then
 import OlympusSDK
-import TJLabsAuth
 import TJLabsCommon
 import TJLabsResource
 import TJLabsMap
@@ -40,7 +39,7 @@ class MapViewController: UIViewController, Observer {
         // TODO
     }
     
-    var region: String = "Korea"
+    var region: String = ResourceRegion.KOREA.rawValue
     var sectorId: Int = 6
     var userId: String = ""
     
@@ -58,8 +57,6 @@ class MapViewController: UIViewController, Observer {
     let mapView = TJLabsMapView()
     var isParkingGuideRendered: Bool = false
     var guideView: TJLabsParkingGuideView?
-
-    var reportedTime: Int = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -79,7 +76,9 @@ class MapViewController: UIViewController, Observer {
     }
     
     func startService() {
-        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_01_2_0811.csv", sensorFileName: "sensor_coex_01_2_0811.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_01_03_1007.csv", sensorFileName: "sensor_coex_01_03_1007.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_02_05_1007.csv", sensorFileName: "sensor_coex_02_05_1007.csv")
+        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_03_05_1007.csv", sensorFileName: "sensor_coex_03_05_1007.csv")
         
         let uniqueId = makeUniqueId(uuid: self.userId)
         serviceManager.addObserver(self)

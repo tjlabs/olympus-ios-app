@@ -983,15 +983,15 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             if (bleLineCount < simulationBleData.count-1) {
                 self.simulationTime = getCurrentTimeInMillisecondsDouble()
                 let bleData = simulationBleData[bleLineCount]
-                self.bleAvg = bleData
+//                self.bleAvg = bleData
                 
-//                var bleTemp = [String: Double]()
-//                for (key, value) in bleData {
-//                    var newRssi = value*1.25
-//                    if newRssi < -100 { newRssi = -100 }
-//                    bleTemp[key] = newRssi
-//                }
-//                self.bleAvg = bleTemp
+                var bleTemp = [String: Double]()
+                for (key, value) in bleData {
+                    var newRssi = value*1.25
+                    if newRssi < -100 { newRssi = -100 }
+                    bleTemp[key] = newRssi
+                }
+                self.bleAvg = bleTemp
                 
                 OlympusFileManager.shared.writeBleData(time: currentTime, data: bleAvg)
                 stateManager.getLastScannedEntranceOuterWardTime(bleAvg: self.bleAvg, entranceOuterWards: stateManager.EntranceOuterWards)
