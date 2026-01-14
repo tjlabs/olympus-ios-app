@@ -1642,6 +1642,32 @@
           },
           {
             "kind": "Function",
+            "name": "setDebugOption",
+            "printedName": "setDebugOption(flag:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:12TJLabsCommon18JupiterFileManagerC14setDebugOption4flagySb_tF",
+            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC14setDebugOption4flagySb_tF",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
             "name": "createFiles",
             "printedName": "createFiles(region:sector_id:deviceModel:osVersion:)",
             "children": [
@@ -1696,9 +1722,9 @@
               },
               {
                 "kind": "TypeNominal",
-                "name": "Double",
-                "printedName": "Swift.Double",
-                "usr": "s:Sd"
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
               },
               {
                 "kind": "TypeNominal",
@@ -1708,8 +1734,8 @@
               }
             ],
             "declKind": "Func",
-            "usr": "s:12TJLabsCommon18JupiterFileManagerC15writeSensorData11currentTime4dataySd_AA0gH0VtF",
-            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC15writeSensorData11currentTime4dataySd_AA0gH0VtF",
+            "usr": "s:12TJLabsCommon18JupiterFileManagerC15writeSensorData11currentTime4dataySi_AA0gH0VtF",
+            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC15writeSensorData11currentTime4dataySi_AA0gH0VtF",
             "moduleName": "TJLabsCommon",
             "declAttributes": [
               "AccessControl"
@@ -1735,7 +1761,7 @@
               {
                 "kind": "TypeNominal",
                 "name": "Dictionary",
-                "printedName": "[Swift.String : Swift.Double]",
+                "printedName": "[Swift.String : Swift.Float]",
                 "children": [
                   {
                     "kind": "TypeNominal",
@@ -1745,17 +1771,17 @@
                   },
                   {
                     "kind": "TypeNominal",
-                    "name": "Double",
-                    "printedName": "Swift.Double",
-                    "usr": "s:Sd"
+                    "name": "Float",
+                    "printedName": "Swift.Float",
+                    "usr": "s:Sf"
                   }
                 ],
                 "usr": "s:SD"
               }
             ],
             "declKind": "Func",
-            "usr": "s:12TJLabsCommon18JupiterFileManagerC12writeBleData4time4dataySi_SDySSSdGtF",
-            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC12writeBleData4time4dataySi_SDySSSdGtF",
+            "usr": "s:12TJLabsCommon18JupiterFileManagerC12writeBleData4time4dataySi_SDySSSfGtF",
+            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC12writeBleData4time4dataySi_SDySSSfGtF",
             "moduleName": "TJLabsCommon",
             "declAttributes": [
               "AccessControl"
@@ -1765,20 +1791,39 @@
           {
             "kind": "Function",
             "name": "saveFilesForSimulation",
-            "printedName": "saveFilesForSimulation()",
+            "printedName": "saveFilesForSimulation(completion:)",
             "children": [
               {
                 "kind": "TypeNominal",
                 "name": "Void",
                 "printedName": "()"
+              },
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(Swift.Bool) -> ()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  }
+                ]
               }
             ],
             "declKind": "Func",
-            "usr": "s:12TJLabsCommon18JupiterFileManagerC22saveFilesForSimulationyyF",
-            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC22saveFilesForSimulationyyF",
+            "usr": "s:12TJLabsCommon18JupiterFileManagerC22saveFilesForSimulation10completionyySbc_tF",
+            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC22saveFilesForSimulation10completionyySbc_tF",
             "moduleName": "TJLabsCommon",
             "declAttributes": [
-              "AccessControl"
+              "AccessControl",
+              "RawDocComment"
             ],
             "funcSelfKind": "NonMutating"
           },
@@ -11978,29 +12023,36 @@
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
+      "kind": "BooleanLiteral",
+      "offset": 246,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
       "kind": "StringLiteral",
-      "offset": 419,
+      "offset": 457,
       "length": 2,
       "value": "\"\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 447,
+      "offset": 485,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
       "kind": "StringLiteral",
-      "offset": 479,
+      "offset": 517,
       "length": 9,
       "value": "\"Unknown\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 514,
+      "offset": 552,
       "length": 1,
       "value": "0"
     },

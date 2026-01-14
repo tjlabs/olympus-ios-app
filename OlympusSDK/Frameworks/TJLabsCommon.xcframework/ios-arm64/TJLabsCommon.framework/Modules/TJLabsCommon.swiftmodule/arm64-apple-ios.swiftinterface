@@ -70,10 +70,11 @@ extension Foundation.NSNotification.Name {
   public static let shared: TJLabsCommon.JupiterFileManager
   public func initalize()
   public func set(region: Swift.String, sectorId: Swift.Int, deviceModel: Swift.String, osVersion: Swift.Int)
+  public func setDebugOption(flag: Swift.Bool)
   public func createFiles(region: Swift.String, sector_id: Swift.Int, deviceModel: Swift.String, osVersion: Swift.Int)
-  public func writeSensorData(currentTime: Swift.Double, data: TJLabsCommon.SensorData)
-  public func writeBleData(time: Swift.Int, data: [Swift.String : Swift.Double])
-  public func saveFilesForSimulation()
+  public func writeSensorData(currentTime: Swift.Int, data: TJLabsCommon.SensorData)
+  public func writeBleData(time: Swift.Int, data: [Swift.String : Swift.Float])
+  public func saveFilesForSimulation(completion: @escaping (Swift.Bool) -> Swift.Void)
   public func loadFilesForSimulation(bleFile: Swift.String, sensorFile: Swift.String) -> ([[Swift.String : Swift.Float]], [TJLabsCommon.SensorData])
   @objc deinit
 }

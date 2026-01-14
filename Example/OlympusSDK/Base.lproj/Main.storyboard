@@ -144,26 +144,6 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="qAV-mb-3wF" customClass="ScatterChartView" customModule="Charts">
                                 <rect key="frame" x="0.0" y="148" width="393" height="380"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="aVd-5L-8Gu">
-                                        <rect key="frame" x="349" y="5" width="39" height="34"/>
-                                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
-                                        <state key="normal" title="Save">
-                                            <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        </state>
-                                        <connections>
-                                            <action selector="tapSaveButton:" destination="IhS-Xv-jYF" eventType="touchUpInside" id="IId-VB-1lN"/>
-                                        </connections>
-                                    </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ppI-L0-E7m" userLabel="Stop Button">
-                                        <rect key="frame" x="333.33333333333331" y="59" width="59.666666666666686" height="35"/>
-                                        <state key="normal" title="Button"/>
-                                        <buttonConfiguration key="configuration" style="plain" title="Stop">
-                                            <color key="baseForegroundColor" name="red1"/>
-                                        </buttonConfiguration>
-                                        <connections>
-                                            <action selector="tapStopButton:" destination="IhS-Xv-jYF" eventType="touchUpInside" id="QdU-cx-PKx"/>
-                                        </connections>
-                                    </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="In Out Status" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4D5-eB-I3g">
                                         <rect key="frame" x="10" y="10" width="100" height="21"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
@@ -181,14 +161,10 @@
                                     </label>
                                 </subviews>
                                 <constraints>
-                                    <constraint firstAttribute="trailing" secondItem="ppI-L0-E7m" secondAttribute="trailing" id="NUH-y8-ITy"/>
-                                    <constraint firstAttribute="trailing" secondItem="aVd-5L-8Gu" secondAttribute="trailing" constant="5" id="SAa-Ot-foQ"/>
-                                    <constraint firstItem="ppI-L0-E7m" firstAttribute="top" secondItem="aVd-5L-8Gu" secondAttribute="bottom" constant="20" id="VeZ-fe-4jd"/>
                                     <constraint firstItem="xLv-oI-jbI" firstAttribute="top" secondItem="4D5-eB-I3g" secondAttribute="bottom" constant="10" id="bdw-F4-jTi"/>
                                     <constraint firstItem="4D5-eB-I3g" firstAttribute="top" secondItem="qAV-mb-3wF" secondAttribute="top" constant="10" id="dhy-ji-GCU"/>
                                     <constraint firstItem="4D5-eB-I3g" firstAttribute="leading" secondItem="qAV-mb-3wF" secondAttribute="leading" constant="10" id="kNV-GK-mIN"/>
                                     <constraint firstItem="xLv-oI-jbI" firstAttribute="leading" secondItem="4D5-eB-I3g" secondAttribute="leading" id="nax-CS-cCT"/>
-                                    <constraint firstItem="aVd-5L-8Gu" firstAttribute="top" secondItem="qAV-mb-3wF" secondAttribute="top" constant="5" id="yow-qx-kMS"/>
                                 </constraints>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Kwx-75-RMj">
@@ -365,11 +341,9 @@
                         <outlet property="indexRx" destination="aks-q3-GjB" id="DYP-z7-oYy"/>
                         <outlet property="indexTx" destination="T5K-Sc-tc6" id="UTa-Y5-A0E"/>
                         <outlet property="resultDirection" destination="3yQ-GQ-WVZ" id="nqC-Ok-Wnw"/>
-                        <outlet property="saveButton" destination="aVd-5L-8Gu" id="Qoc-I7-yks"/>
                         <outlet property="scatterChart" destination="qAV-mb-3wF" id="xNO-rq-z7t"/>
                         <outlet property="scc" destination="JV6-ke-d5B" id="zqg-q2-bUx"/>
                         <outlet property="searchDirections" destination="WlA-VI-yzi" id="cld-EQ-afw"/>
-                        <outlet property="stopButton" destination="ppI-L0-E7m" id="hii-Ju-8TK"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="8W2-Ok-9BA" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>

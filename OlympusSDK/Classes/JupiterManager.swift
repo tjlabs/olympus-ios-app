@@ -32,7 +32,7 @@ public class JupiterManager {
     }
 
     // MARK: - Start & Stop Jupiter Service
-    public func startJupiter(region: String = JupiterRegion.KOREA.rawValue, sectorId: Int, mode: UserMode) {
+    public func startJupiter(region: String = JupiterRegion.KOREA.rawValue, sectorId: Int, mode: UserMode, debugOption: Bool = false) {
         JupiterNetworkConstants.setServerURL(region: region)
         
         let (isNetworkAvailable, msgCheckNetworkAvailable) = JupiterNetworkManager.shared.isConnectedToInternet()
@@ -77,6 +77,11 @@ public class JupiterManager {
             jupiterCalcManager = JupiterCalcManager(region: region, id: self.id, sectorId: sectorId)
             jupiterCalcManager?.start(completion: { [self] isSuccess, msg in
                 if isSuccess {
+                    // File Save Setting
+                    if debugOption {
+                        JupiterFileManager.shared.setDebugOption(flag: debugOption)
+                        JupiterFileManager.shared.createFiles(region: region, sector_id: sectorId, deviceModel: deviceModel, osVersion: deviceOsVersion)
+                    }
                     jupiterCalcManager?.setSendRfdLength(sendRfdLength)
                     jupiterCalcManager?.setSendUvdLength(sendUvdLength)
                     startGenerator(mode: mode, completion: { [self] isSuccess, msg in
@@ -142,10 +147,6 @@ public class JupiterManager {
         }
     }
     
-    public func setSimulationMode(flag: Bool, bleFileName: String, sensorFileName: String) {
-        JupiterSimulator.shared.setSimulationMode(flag: flag, bleFileName: bleFileName, sensorFileName: sensorFileName)
-    }
-    
     private func startGenerator(mode: UserMode, completion: @escaping (Bool, String) -> Void) {
         jupiterCalcManager?.startGenerator(mode: mode, completion: { isSuccess, message in
             completion(isSuccess, message)
@@ -195,5 +196,16 @@ public class JupiterManager {
     public func getJupiterDebugResult() -> JupiterDebugResult? {
         guard let jupiterDebugResult = jupiterCalcManager?.getJupiterDebugResult() else { return nil }
         return jupiterDebugResult
+    }
+    
+    //MARK: - Simulation Mode
+    public func setSimulationMode(flag: Bool, bleFileName: String, sensorFileName: String) {
+        JupiterSimulator.shared.setSimulationMode(flag: flag, bleFileName: bleFileName, sensorFileName: sensorFileName)
+    }
+    
+    public func saveFilesForSimulation(completion: @escaping (Bool) -> Void) {
+        JupiterFileManager.shared.saveFilesForSimulation(completion: { isSuccess in
+            completion(isSuccess)
+        })
     }
 }

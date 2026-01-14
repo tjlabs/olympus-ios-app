@@ -30,6 +30,7 @@
 		B33AC5462F15FBAB005982E0 /* TJLabsTopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33AC5452F15FBA8005982E0 /* TJLabsTopView.swift */; };
 		B33AC56C2F160032005982E0 /* circle_loader.json in Resources */ = {isa = PBXBuildFile; fileRef = B33AC56B2F160032005982E0 /* circle_loader.json */; };
 		B33AC56E2F160045005982E0 /* TJLabsParkingGuideView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33AC56D2F160042005982E0 /* TJLabsParkingGuideView.swift */; };
+		B33AC74E2F172C54005982E0 /* ProgressingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33AC74D2F172C54005982E0 /* ProgressingView.swift */; };
 		B3787E4A2BD209C400D5EEBC /* ImageCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3787E492BD209C400D5EEBC /* ImageCacheManager.swift */; };
 		B3787E4C2BD20C4D00D5EEBC /* UIImageExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3787E4B2BD20C4D00D5EEBC /* UIImageExtension.swift */; };
 		B37D3C052CF80C140079E010 /* MapScaleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B37D3C042CF80C140079E010 /* MapScaleViewController.swift */; };
@@ -93,6 +94,7 @@
 		B33AC5452F15FBA8005982E0 /* TJLabsTopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TJLabsTopView.swift; sourceTree = "<group>"; };
 		B33AC56B2F160032005982E0 /* circle_loader.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = circle_loader.json; sourceTree = "<group>"; };
 		B33AC56D2F160042005982E0 /* TJLabsParkingGuideView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TJLabsParkingGuideView.swift; sourceTree = "<group>"; };
+		B33AC74D2F172C54005982E0 /* ProgressingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressingView.swift; sourceTree = "<group>"; };
 		B3787E492BD209C400D5EEBC /* ImageCacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCacheManager.swift; sourceTree = "<group>"; };
 		B3787E4B2BD20C4D00D5EEBC /* UIImageExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageExtension.swift; sourceTree = "<group>"; };
 		B37D3C042CF80C140079E010 /* MapScaleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapScaleViewController.swift; sourceTree = "<group>"; };
@@ -280,6 +282,7 @@
 			isa = PBXGroup;
 			children = (
 				B33AC56D2F160042005982E0 /* TJLabsParkingGuideView.swift */,
+				B33AC74D2F172C54005982E0 /* ProgressingView.swift */,
 				B33AC5452F15FBA8005982E0 /* TJLabsTopView.swift */,
 			);
 			path = View;
@@ -585,6 +588,7 @@
 				B31439722BAD42D5002C072F /* UIViewExtension.swift in Sources */,
 				B3787E4A2BD209C400D5EEBC /* ImageCacheManager.swift in Sources */,
 				B3787E4C2BD20C4D00D5EEBC /* UIImageExtension.swift in Sources */,
+				B33AC74E2F172C54005982E0 /* ProgressingView.swift in Sources */,
 				B31439802BAD439E002C072F /* UIViewControllerExtension.swift in Sources */,
 				B335370D2CC8919900468A95 /* MapViewController.swift in Sources */,
 				B33AC56E2F160045005982E0 /* TJLabsParkingGuideView.swift in Sources */,

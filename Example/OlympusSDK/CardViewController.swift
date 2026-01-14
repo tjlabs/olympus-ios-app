@@ -1,4 +1,5 @@
 import UIKit
+import SnapKit
 import Charts
 import OlympusSDK
 import TJLabsCommon
@@ -36,6 +37,24 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         print("(CardVC) onJupiterReport")
     }
     
+    private var saveButton: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor.black
+        view.alpha = 0.8
+        view.isUserInteractionEnabled = false
+        view.cornerRadius = 15
+        return view
+    }()
+    
+    private let saveButtonTitleLabel: UILabel = {
+        let label = UILabel()
+        label.backgroundColor = .clear
+        label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+        label.textColor = .white
+        label.textAlignment = .center
+        label.text = "Save"
+        return label
+    }()
     
     @IBOutlet weak var imgViewLevel: UIImageView!
     @IBOutlet weak var scatterChart: ScatterChartView!
@@ -45,10 +64,7 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
     @IBOutlet weak var scc: UILabel!
     @IBOutlet weak var searchDirections: UILabel!
     @IBOutlet weak var resultDirection: UILabel!
-    
-    @IBOutlet weak var saveButton: UIButton!
-    @IBOutlet weak var stopButton: UIButton!
-    
+        
     @IBOutlet weak var inOutStatusLabel: UILabel!
     
     var headingImage = UIImage(named: "heading")
@@ -58,6 +74,8 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
     var phoenixIndex: Int = 0
     var phoenixData = PhoenixRecord(user_id: "", company: "", car_number: "", mobile_time: 0, index: 0, latitude: 0, longitude: 0, remaining_time: 0, velocity: 0, sector_id: 0, building_name: "", level_name: "", x: 0, y: 0, absolute_heading: 0, is_indoor: false)
     var phoenixRecords = [PhoenixRecord]()
+    
+    var progressingView: ProgressingView?
     
     var serviceManager: JupiterManager?
     override func viewDidDisappear(_ animated: Bool) {
@@ -108,6 +126,9 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        setupLayout()
+        bindActions()
+        
         headingImage = headingImage?.resize(newWidth: 20)
         
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_io_0811.csv", sensorFileName: "sensor_coex_io_0811.csv")
@@ -151,8 +172,8 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         serviceManager = JupiterManager(id: uniqueId)
         serviceManager?.delegate = self
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_02_1007.csv", sensorFileName: "sensor_coex_02_02_1007.csv")
-        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
-        serviceManager?.startJupiter(sectorId: sector_id, mode: .MODE_AUTO)
+//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
+        serviceManager?.startJupiter(sectorId: sector_id, mode: .MODE_AUTO, debugOption: true)
         
         // service
 //        serviceManager.addObserver(self)
@@ -170,46 +191,56 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
     
     override func viewWillDisappear(_ animated: Bool) {
     }
-    
 
-    @IBAction func tapSaveButton(_ sender: UIButton) {
-        DispatchQueue.main.async { [self] in
-            saveButton.isUserInteractionEnabled = false
-            saveButton.titleLabel?.text = "ing..."
-            saveButton.titleLabel?.textColor = .red1
+    private func setupLayout() {
+        // // MARK: - Start
+        scatterChart.addSubview(saveButton)
+        saveButton.snp.makeConstraints { make in
+            make.top.trailing.equalToSuperview().inset(10)
+            make.width.equalTo(60)
+            make.height.equalTo(40)
         }
         
-//        serviceManager.saveJupiterDataFiles { [self] isDone in
-//            DispatchQueue.main.async { [self] in
-//                saveButton.isHidden = true
-//                saveButton.isUserInteractionEnabled = true
-//                saveButton.titleLabel?.text = "Save"
-//                saveButton.titleLabel?.textColor = .black
-//            }
-//        }
-//        serviceManager.stopCollect()
+        saveButton.addSubview(saveButtonTitleLabel)
+        saveButtonTitleLabel.snp.makeConstraints { make in
+            make.leading.trailing.top.bottom.equalToSuperview().inset(5)
+        }
+    }
+    
+    private func bindActions() {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleSaveButton))
+        saveButton.isUserInteractionEnabled = true
+        saveButton.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc func handleSaveButton() {
+        DispatchQueue.main.async { [self] in
+            saveButton.isUserInteractionEnabled = false
+            saveButtonTitleLabel.text = "ing..."
+//            saveButtonTitleLabel.textColor = .red1
+            
+            self.progressingView = ProgressingView()
+            UIView.animate(withDuration: 0.2, animations: {
+                view.addSubview(progressingView!)
+                progressingView!.snp.makeConstraints { make in
+                    make.top.bottom.leading.trailing.equalToSuperview()
+                }
+            })
+        }
+        
+        serviceManager?.saveFilesForSimulation(completion: { [self] isSuccess in
+            DispatchQueue.main.async { [self] in
+                saveButton.isHidden = true
+                saveButton.isUserInteractionEnabled = true
+                saveButtonTitleLabel.text = "Save"
+//                saveButtonTitleLabel.textColor = .black
+            }
+            DispatchQueue.main.async {
+                self.progressingView?.removeFromSuperview()
+            }
+        })
         self.stopTimer()
     }
-    
-    
-    @IBAction func tapStopButton(_ sender: UIButton) {
-//        if serviceState {
-//            let isStop = serviceManager.stopService { [self] isSuccess, message in
-//                serviceState = false
-//                print(message)
-//            }
-//        } else {
-//            let uniqueId = makeUniqueId(uuid: self.userId)
-//            serviceManager.startService(user_id: uniqueId, region: self.region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
-//                if (isStart) {
-//                    serviceState = true
-//                } else {
-//                    print(returnedString)
-//                }
-//            })
-//        }
-    }
-    
     
     private func loadPp(fileName: String) -> [[Double]] {
         guard let path = Bundle.main.path(forResource: fileName, ofType: "csv") else {
