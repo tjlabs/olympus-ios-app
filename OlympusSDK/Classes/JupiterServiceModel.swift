@@ -65,6 +65,11 @@ struct BuildingLevelTagResult {
     let y: Float
 }
 
+struct JumpInfo {
+    var link_id: Int
+    var jumped_nodes: [PassedNodeInfo]
+}
+
 enum LimitationType {
-    case X_LIMIT, Y_LIMIT, NO_LIMIT
+    case X_LIMIT, Y_LIMIT, SMALL_LIMIT, NO_LIMIT
 }

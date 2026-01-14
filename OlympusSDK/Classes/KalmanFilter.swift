@@ -100,6 +100,7 @@ class KalmanFilter {
     }
     
     func updateTuBuildingLevel(building: String, level: String) {
+        JupiterLogger.i(tag: "KalmanFilter", message: "(updateTuBuildingLevel) - building: \(building), level: \(level)")
         tuResult?.building_name = building
         tuResult?.level_name = level
     }
@@ -516,19 +517,31 @@ class KalmanFilter {
     private func updateLimitationResult(nextTuResult: FineLocationTrackingOutput) -> FineLocationTrackingOutput {
         var updatedTuResult = nextTuResult
         let limitationResult = PathMatcher.shared.getTimeUpdateLimitation(level: nextTuResult.level_name)
-//        JupiterLogger.i(tag: "KalmanFilter", message: "(updateLimitationResult) - limitationResult: \(limitationResult)")
+        JupiterLogger.i(tag: "KalmanFilter", message: "(updateLimitationResult) - limitationResult: \(limitationResult)")
         
-        if (limitationResult.limitType == LimitationType.Y_LIMIT) {
+        if (limitationResult.limitType == .Y_LIMIT) {
             if (nextTuResult.y < limitationResult.limitValues[0]) {
                 updatedTuResult.y = limitationResult.limitValues[0]
             } else if (nextTuResult.y > limitationResult.limitValues[1]) {
                 updatedTuResult.y = limitationResult.limitValues[1]
             }
-        } else if (limitationResult.limitType == LimitationType.X_LIMIT) {
+        } else if (limitationResult.limitType == .X_LIMIT) {
             if (nextTuResult.x < limitationResult.limitValues[0]) {
                 updatedTuResult.x = limitationResult.limitValues[0]
             } else if (nextTuResult.x > limitationResult.limitValues[1]) {
                 updatedTuResult.x = limitationResult.limitValues[1]
+            }
+        } else if limitationResult.limitType == .SMALL_LIMIT {
+            if nextTuResult.x < nextTuResult.x - limitationResult.limitValues[0] {
+                updatedTuResult.x = nextTuResult.x - limitationResult.limitValues[0]
+            } else if nextTuResult.x > nextTuResult.x + limitationResult.limitValues[0] {
+                updatedTuResult.x = nextTuResult.x + limitationResult.limitValues[0]
+            }
+            
+            if nextTuResult.y < nextTuResult.y - limitationResult.limitValues[1] {
+                updatedTuResult.y = nextTuResult.y - limitationResult.limitValues[1]
+            } else if nextTuResult.y > nextTuResult.y + limitationResult.limitValues[1] {
+                updatedTuResult.y = nextTuResult.y + limitationResult.limitValues[1]
             }
         }
         return updatedTuResult
