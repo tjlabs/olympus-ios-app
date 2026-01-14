@@ -95,7 +95,9 @@ class BuildingLevelChanger {
                     self.lastTag = tag.id
                     self.distAfterTagDetection = 0
                     setBuildingLevelChangedTime(value: time)
-                    return BuildingLevelTagResult(building: buildingDestination, level: levelDestination, x: tagCoord[0], y: tagCoord[1])
+                    let detectionResult = BuildingLevelTagResult(building: buildingDestination, level: levelDestination, x: tagCoord[0], y: tagCoord[1])
+                    JupiterLogger.i(tag: "BuildingLevelChanger", message: "(determineTagDetection) blTagResult: \(detectionResult)")
+                    return detectionResult
 //                    self.delegate?.isBuildingLevelChanged(isChanged: true, newBuilding: buildingDestination, newLevel: levelDestination, newCoord: tagCoord)
                 }
             }
@@ -109,7 +111,10 @@ class BuildingLevelChanger {
                         self.lastTag = tag.id
                         self.distAfterTagDetection = 0
                         setBuildingLevelChangedTime(value: time)
-                        return BuildingLevelTagResult(building: buildingDestination, level: levelDestination, x: tagCoord[0], y: tagCoord[1])
+                        
+                        let detectionResult = BuildingLevelTagResult(building: buildingDestination, level: levelDestination, x: tagCoord[0], y: tagCoord[1])
+                        JupiterLogger.i(tag: "BuildingLevelChanger", message: "(determineTagDetection) blTagResult: \(detectionResult)")
+                        return detectionResult
 //                        self.delegate?.isBuildingLevelChanged(isChanged: true, newBuilding: buildingDestination, newLevel: levelDestination, newCoord: tagCoord)
                     }
                 }
@@ -124,14 +129,16 @@ class BuildingLevelChanger {
         guard let sectorTagData = self.blChangerTagMap[sectorKey], let result = curResult else { return nil }
         
         if !checkInLevelChangeArea(sectorId: sectorId, building: result.building_name, level: result.level_name, x: result.x, y: result.y, mode: mode) {
+//            JupiterLogger.i(tag: "BuildingLevelChanger", message: "(isBuildingLevelChangerTagged) - not in LevelChangeArea")
             return nil
         }
         
         let tagValues: [BuildingLevelTag] = sectorTagData
+//        JupiterLogger.i(tag: "BuildingLevelChanger", message: "(isBuildingLevelChangerTagged) - UserPeak: \(userPeak.id)")
         for item in tagValues {
             let tagLevelList = [item.level_name, item.linked_level_name]
             if item.name == userPeak.id && tagLevelList.contains(result.level_name) {
-                JupiterLogger.i(tag: "BuildingLevelChanger", message: "(isBuildingLevelChangerTagged) - \(item.name) tagged with userPeak \(userPeak.id)")
+//                JupiterLogger.i(tag: "BuildingLevelChanger", message: "(isBuildingLevelChangerTagged) - \(item.name) tagged with userPeak \(userPeak.id)")
                 return item
             }
         }
@@ -144,11 +151,14 @@ class BuildingLevelChanger {
         let curBuilding: String = curResult.building_name
         let curLevel: String = curResult.level_name
         
-        var buildingDestination: String = ""
-        var levelDestination: String = ""
-        if curBuilding != tag.building_name {
+        let tagBuildingName = tag.building_name == "" ? curBuilding : tag.building_name
+//        JupiterLogger.i(tag: "BuildingLevelChanger", message: "(getBuildingLevelDestination) - cur: [\(curBuilding),\(curLevel)] -> dest:[\(tagBuildingName), \(tag.level_name) & \(tag.linked_level_name)]")
+        var buildingDestination: String = curBuilding
+        var levelDestination: String = curLevel
+        
+        if curBuilding != tagBuildingName {
             // Building 바뀜
-            buildingDestination = tag.building_name
+            buildingDestination = tagBuildingName
             levelDestination = tag.level_name
             
             return (buildingDestination, levelDestination)

@@ -47,22 +47,19 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     // MARK: - Landmark Correction
     private var correctionIndex: Int = 0
+    var paddingValues = JupiterMode.PADDING_VALUES_DR
     
     // MARK: - Etc..
-//    var paddingValues = JupiterMode.PADDING_VALUES_DR
     private var pathMatchingCondition = PathMatchingCondition()
-
     private var report = -1
     
-    // Result
+    // MARK: - Result
     var jupiterPhase: JupiterPhase = .NONE
     var curResult: FineLocationTrackingOutput?
     var preResult: FineLocationTrackingOutput?
     
     var curPathMatchingResult: FineLocationTrackingOutput?
     var prePathMatchingResult: FineLocationTrackingOutput?
-    
-    var paddingValues = JupiterMode.PADDING_VALUES_DR
     
     // MARK: - Debuging
     var debug_tu_xyh: [Float] = [0, 0, 0]
@@ -71,7 +68,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     var debug_recon_raw_traj: [[Double]]?
     var debug_recon_corr_traj: [FineLocationTrackingOutput]?
     var debug_recovery_result: RecoveryResult?
-//    var debug_recovery_traj: [[Double]]?
     
     // MARK: - init & deinit
     init(region: String, id: String, sectorId: Int) {
@@ -296,14 +292,14 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         let uvdBuffer = stackManager.getUvdBuffer()
         
         let capturedRfd = self.curRfd
-//        let bleData = capturedRfd.rfs // [String: Float] BLE_ID: RSSI
-        var bleData = [String: Float]() // [String: Float] BLE_ID: RSSI
-        for (key, value) in capturedRfd.rfs {
-            let rssi = value*1.25
-            if rssi > -100 {
-                bleData[key] = rssi
-            }
-        }
+        let bleData = capturedRfd.rfs // [String: Float] BLE_ID: RSSI
+//        var bleData = [String: Float]() // [String: Float] BLE_ID: RSSI
+//        for (key, value) in capturedRfd.rfs {
+//            let rssi = value*1.25
+//            if rssi > -100 {
+//                bleData[key] = rssi
+//            }
+//        }
         
         var reconCurResultBuffer: [FineLocationTrackingOutput]?
         var olderPeakIndex: Int?
@@ -311,7 +307,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         guard let wardAvgManager = wardAvgManager else { return }
         let avgBleData: [String: Float] = wardAvgManager.updateEpoch(bleData: bleData)
         
-        var isJumped: Bool = false
+        var jumpInfo: JumpInfo?
         var blTagResult: BuildingLevelTagResult?
         if let userPeak = peakDetector.updateEpoch(uvdIndex: curIndex, bleAvg: avgBleData) {
             peakHandling: do {
@@ -321,7 +317,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                 // Building & Level Changer
                 if let blTag = blChanger.isBuildingLevelChangerTagged(userPeak: userPeak, curResult: curResult, mode: mode),
                    let destinations = blChanger.getBuildingLevelDestination(tag: blTag, curResult: curResult),
-                   let detectionResult = blChanger.determineTagDetection(time: currentTime, tag: blTag, buildingDestination: destinations.buildingDestination, levelDestination: destinations.levelDestination, tagCoord: [Float(blTag.x), Float(blTag.y)], curResult: curResult) {
+                   let detectionResult = blChanger.determineTagDetection(time: currentTime, tag: blTag, buildingDestination: destinations.buildingDestination, levelDestination: destinations.levelDestination, tagCoord: [Float(blTag.x), Float(blTag.y)], curResult: curResult),
+                   !JupiterResultState.isEntTrack {
                     blTagResult = detectionResult
                     if let kf = kalmanFilter {
                         kf.updateTuBuildingLevel(building: detectionResult.building, level: detectionResult.level)
@@ -340,7 +337,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                     if let linkInfoWhenPeak = PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId, result: matchedWithUserPeak.matchedResult) {
                         stackManager.stackUserPeakAndLink(userPeakAndLink: (userPeak, linkInfoWhenPeak))
                         olderPeakIndex = stackManager.getOlderPeakIndex()
-                        if let bestPeak = landmarkTagger.findBestLandmark(userPeak: userPeak, landmark: matchedWithUserPeak.landmark, matchedResult: matchedWithUserPeak.matchedResult, peakLinkGroupId: linkInfoWhenPeak.group_id) {
+                        if let bestResult = landmarkTagger.findBestLandmark(userPeak: userPeak, landmark: matchedWithUserPeak.landmark, matchedResult: matchedWithUserPeak.matchedResult, peakLinkGroupId: linkInfoWhenPeak.group_id) {
+                            let bestPeak = bestResult.0
                             self.debug_best_landmark = bestPeak
                             if let matchedTuResult = kalmanFilter?.getTuResultWithUvdIndex(index: userPeak.peak_index) {
                                 if let reconstructResult = landmarkTagger.reconstructTrajectory(peakIndex: userPeak.peak_index, bestLandmark: bestPeak, matchedResult: matchedWithUserPeak.matchedResult, startHeading: Double(matchedTuResult.heading), uvdBuffer: uvdBuffer, curResultBuffer: curResultBuffer, mode: mode) {
@@ -351,8 +349,25 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                         self.correctionIndex = userPeak.peak_index
                                         self.curResult = muResult
                                         reconCurResultBuffer = reconstructResult.1
+                                        
                                         // Landmark를 이용한 Correction 이후에 위치 Jump 판단 -> PassedNode와 Link 정보 업데이트
-                                        isJumped = true
+                                        if let curLinkInfo = PathMatcher.shared.getCurPassedLinkInfo() {
+                                            jumpInfo = calcJumpedNodes(from: curPathMatchingResult, to: muResult, curLinkInfo: curLinkInfo, jumpedLinkId: bestResult.1, mode: mode)
+                                        }
+//                                        let intermediatePoints = checkResultJump(from: curPathMatchingResult, to: muResult)
+//                                        JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) jumped // intermediatePoints: \(intermediatePoints)")
+//                                        var jumpedNodes = [PassedNodeInfo]()
+//                                        for point in intermediatePoints {
+//                                            let pathType = mode == .MODE_PEDESTRIAN ? 0 : 1
+//                                            if let matchedNodeResult = PathMatcher.shared.getMatchedNodeWithCoord(sectorId: sectorId, fltResult: muResult, originCoord: point, coordToCheck: point, pathType: pathType, paddingValues: [1, 1, 1, 1]) {
+//                                                
+//                                                let nodeInfo = PassedNodeInfo(id: matchedNodeResult.0, coord: point, headings: matchedNodeResult.1, matched_index: muResult.index, user_heading: muResult.absolute_heading)
+//                                                jumpedNodes.append(nodeInfo)
+//                                            } else {
+//                                                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) getMatchedNodeWithCoord fail at point \(point) // \(muResult)")
+//                                            }
+//                                        }
+//                                        jumpInfo = JumpInfo(link_id: bestResult.1, jumped_nodes: jumpedNodes)
                                     }
                                 } else {
                                     self.debug_recon_raw_traj = nil
@@ -377,7 +392,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         case .ENTERING:
             calcEntranceResult(currentTime: currentTime, entManager: entManager, uvd: userVelocity)
         case .TRACKING:
-            calcIndoorResult(mode: mode, uvd: userVelocity, olderPeakIndex: olderPeakIndex, isJumped: isJumped)
+            calcIndoorResult(mode: mode, uvd: userVelocity, olderPeakIndex: olderPeakIndex, jumpInfo: jumpInfo)
         case .SEARCHING:
             print("Searching")
         case .NONE:
@@ -399,7 +414,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         stackManager.stackCurPmResultBuffer(curPmResult: curPmResult)
         
         // Bad Case 확인 (같은 좌표 20개)
-        if stackManager.checkIsBadCase() {
+        if stackManager.checkIsBadCase() && !JupiterResultState.isEntTrack {
             JupiterResultState.isInRecoveryProcess = true
             let userPeakAndLinkBuffer = stackManager.getUserPeakAndLinkBuffer()
             if userPeakAndLinkBuffer.count < 2 { return }
@@ -429,26 +444,13 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                                                                         curPmResult: curPmResult, mode: mode) {
                             self.debug_recovery_result = recoveryResult
                             // BadCAse를 이용한 Correction 이후에 위치 Jump 판단 -> PassedNode와 Link 정보 업데이트
-                            isJumped = true
+//                            isJumped = true
                         }
                     } else {
                         
                     }
                 }
             }
-//            if let tuResultWhenOlderPeak = kalmanFilter?.getTuResultWithUvdIndex(index: olderUserPeak.peak_index) {
-            
-//                let startHeading = tuResultWhenOlderPeak.heading
-//                let recoveryTraj = recoveryManager.makeRecoveryTrajectory(uvdBuffer: uvdBufferForRecovery, startHeading: startHeading)
-//                
-//                let curResultBuffer = stackManager.getCurResultBuffer()
-//                if let matchedWithOlderPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: olderUserPeak, curResult: curResult, curResultBuffer: curResultBuffer),
-//                   let matchedWithRecentPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: recentUserPeak, curResult: curResult, curResultBuffer: curResultBuffer) {
-//                    if let recoveryResult = recoveryManager.recover(recoveryTraj: recoveryTraj, userPeakAndLinkBuffer: userPeakAndLinkBuffer, landmarks: (matchedWithOlderPeak.0, matchedWithRecentPeak.0), tuResultWhenOlderPeak: tuResultWhenOlderPeak, curPmResult: curPmResult, mode: mode) {
-//                        self.debug_recovery_result = recoveryResult
-//                    }
-//                }
-//            }
         }
     }
     
@@ -494,7 +496,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         JupiterResultState.isIndoor = true
     }
     
-    private func calcIndoorResult(mode: UserMode, uvd: UserVelocity, olderPeakIndex: Int?, isJumped: Bool = false) {
+    private func calcIndoorResult(mode: UserMode, uvd: UserVelocity, olderPeakIndex: Int?, jumpInfo: JumpInfo?) {
         let (tuResult, isDidPathTrajMatching) = updateResultFromTimeUpdate(mode: mode, uvd: uvd, pastUvd: pastUvd, pathMatchingCondition: self.pathMatchingCondition)
         guard var tuResult = tuResult else { return }
         guard let curResult = self.curResult else { return }
@@ -526,7 +528,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             self.debug_tu_xyh = [tuResult.x, tuResult.y, tuResult.absolute_heading]
         }
         
-        let indoorResult = makeCurrentResult(input: tuResult, mustInSameLink: mustInSameLink, pathMatchingType: .NARROW, phase: .TRACKING, isJumped: isJumped, mode: mode)
+        let indoorResult = makeCurrentResult(input: tuResult, mustInSameLink: mustInSameLink, pathMatchingType: .NARROW, phase: .TRACKING, jumpInfo: jumpInfo, mode: mode)
         self.curResult = indoorResult
     }
     
@@ -546,9 +548,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                    mustInSameLink: Bool,
                                    pathMatchingType: PathMatchingType,
                                    phase: JupiterPhase,
-                                   isJumped: Bool = false,
+                                   jumpInfo: JumpInfo?,
                                    mode: UserMode) -> FineLocationTrackingOutput {
-//        JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - input: \(input.building_name), \(input.level_name), [\(input.x),\(input.y),\(input.absolute_heading)]")
+        JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - input: \(input.building_name), \(input.level_name), [\(input.x),\(input.y),\(input.absolute_heading)]")
         var result = input
         let curIndex = curUvd.index
         result.index = curIndex
@@ -585,7 +587,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                 result.y = pmResult.y
                 result.absolute_heading = pmResult.heading
                 uvdGenerator?.updateDrVelocityScale(scale: Double(pmResult.scale))
-//                JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - result: \(result.building_name), \(result.level_name), [\(result.x),\(result.y),\(result.absolute_heading)]")
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - result: \(result.building_name), \(result.level_name), [\(result.x),\(result.y),\(result.absolute_heading)]")
             } else {
                 isPmFailed = true
             }
@@ -623,10 +625,148 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         }
         
         if KalmanState.isKalmanFilterRunning {
-            PathMatcher.shared.updateNodeAndLinkInfo(sectorId: sectorId, uvdIndex: curIndex, curResult: result, mode: mode, isJumped: isJumped)
+            let isInLevelChangeArea = buildingLevelChanger!.checkInLevelChangeArea(sectorId: sectorId, building: buildingName, level: levelName, x: result.x, y: result.y, mode: mode)
+            PathMatcher.shared.updateNodeAndLinkInfo(sectorId: sectorId, uvdIndex: curIndex, curResult: result, mode: mode, jumpInfo: jumpInfo, isInLevelChangeArea: isInLevelChangeArea)
         }
         
         return result
+    }
+    
+    private func checkResultJumpV2(jumpedResult: FineLocationTrackingOutput, jumpedLinkId: Int) -> [[Float]]  {
+        var intermediatePoints: [[Float]] = []
+        
+        let building = jumpedResult.building_name
+        let level = jumpedResult.level_name
+        let key = "\(sectorId)_\(building)_\(level)"
+        
+        let userX = round(jumpedResult.x)
+        let userY = round(jumpedResult.y)
+        
+        guard let linkData = PathMatcher.shared.linkData[key] else { return intermediatePoints }
+        guard let jumpedLinkInfo = linkData[jumpedLinkId] else { return intermediatePoints }
+        
+        let userDir = jumpedResult.absolute_heading
+        let oppDir = PathMatcher.shared.oppositeOf(userDir)
+        let oppLinkDir = PathMatcher.shared.closestHeading(to: oppDir, candidates: jumpedLinkInfo.included_heading).0
+        
+        let deltaDir = abs(oppDir - oppLinkDir).truncatingRemainder(dividingBy: 360)
+        let angleDiff = deltaDir > 180 ? 360 - deltaDir : deltaDir
+        let isDirectionAligned = angleDiff <= 10.0
+        
+        let headingRad = oppLinkDir * .pi / 180.0
+        let dirVector = SIMD2(x: cos(headingRad), y: sin(headingRad))
+        
+        let unitVector = simd_normalize(dirVector)
+        let stepCount = 100
+        for i in 1..<stepCount {
+            let step = Float(i)
+            let x = userX + step * unitVector.x
+            let y = userY + step * unitVector.y
+            intermediatePoints.append([x, y])
+        }
+        return intermediatePoints
+    }
+    
+    private func calcJumpedNodes(from: FineLocationTrackingOutput?,
+                                 to: FineLocationTrackingOutput,
+                                 curLinkInfo: PassedLinkInfo,
+                                 jumpedLinkId: Int,
+                                 mode: UserMode) -> JumpInfo? {
+        var jumpInfo: JumpInfo?
+        
+        let building = to.building_name
+        let level = to.level_name
+        let key = "\(sectorId)_\(building)_\(level)"
+        
+        guard let linkData = PathMatcher.shared.linkData[key] else { return nil }
+        guard let jumpedLinkInfo = linkData[jumpedLinkId] else { return nil }
+        guard let from = from else { return nil }
+        
+        if jumpedLinkInfo.group_id == curLinkInfo.group_id {
+            var isJumped: Bool = false
+            var intermediatePoints: [[Float]] = []
+            
+            let userX = from.x
+            let userY = from.y
+            let userDir = from.absolute_heading
+            
+            let resultX = to.x
+            let resultY = to.y
+            let resultDir = to.absolute_heading
+            
+            let deltaDir = abs(userDir - resultDir).truncatingRemainder(dividingBy: 360)
+            let angleDiff = deltaDir > 180 ? 360 - deltaDir : deltaDir
+            let isDirectionAligned = angleDiff <= 10.0
+            
+            let dx = resultX - userX
+            let dy = resultY - userY
+            let distance = sqrt(dx * dx + dy * dy)
+            
+            let headingRad = userDir * .pi / 180.0
+            let dirVector = SIMD2(x: cos(headingRad), y: sin(headingRad))
+            let movementVector = SIMD2(x: dx, y: dy)
+            let dotProduct = simd_dot(dirVector, movementVector)
+            let isSameDirection = dotProduct > 0.0
+            
+            isJumped = distance >= 2.0 && isDirectionAligned && isSameDirection
+            if isJumped {
+                let unitVector = simd_normalize(dirVector)
+                let stepCount = Int(distance)
+                for i in 1..<stepCount {
+                    let step = Float(i)
+                    let x = userX + step * unitVector.x
+                    let y = userY + step * unitVector.y
+                    intermediatePoints.append([x, y])
+                }
+            }
+            
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) jump // calcJumpedNodes in same link")
+            var jumpedNodes = [PassedNodeInfo]()
+            for point in intermediatePoints {
+                let pathType = mode == .MODE_PEDESTRIAN ? 0 : 1
+                if let matchedNodeResult = PathMatcher.shared.getMatchedNodeWithCoord(sectorId: sectorId, fltResult: to, originCoord: point, coordToCheck: point, pathType: pathType, paddingValues: [1, 1, 1, 1]) {
+                    let nodeInfo = PassedNodeInfo(id: matchedNodeResult.0, coord: point, headings: matchedNodeResult.1, matched_index: to.index, user_heading: to.absolute_heading)
+                    jumpedNodes.append(nodeInfo)
+                }
+            }
+            jumpInfo = JumpInfo(link_id: jumpedLinkId, jumped_nodes: jumpedNodes)
+        } else {
+            let userX = round(to.x)
+            let userY = round(to.y)
+            let userDir = to.absolute_heading
+            
+            let oppDir = PathMatcher.shared.oppositeOf(userDir)
+            let oppLinkDir = PathMatcher.shared.closestHeading(to: oppDir, candidates: jumpedLinkInfo.included_heading).0
+            
+            let deltaDir = abs(oppDir - oppLinkDir).truncatingRemainder(dividingBy: 360)
+            let angleDiff = deltaDir > 180 ? 360 - deltaDir : deltaDir
+
+            let headingRad = oppLinkDir * .pi / 180.0
+            let dirVector = SIMD2(x: cos(headingRad), y: sin(headingRad))
+            
+            var jumpedNodes = [PassedNodeInfo]()
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) jump // calcJumpedNodes link jump")
+            let unitVector = simd_normalize(dirVector)
+            let stepCount = 100
+            for i in 1..<stepCount {
+                let step = Float(i)
+                let x = userX + step * unitVector.x
+                let y = userY + step * unitVector.y
+                let point: [Float] = [x, y]
+                let pathType = mode == .MODE_PEDESTRIAN ? 0 : 1
+                if let matchedNodeResult = PathMatcher.shared.getMatchedNodeWithCoord(sectorId: sectorId, fltResult: to, originCoord: point, coordToCheck: point, pathType: pathType, paddingValues: [1, 1, 1, 1]) {
+                    let nodeId = matchedNodeResult.0
+                    let nodeInfo = PassedNodeInfo(id: nodeId, coord: point, headings: matchedNodeResult.1, matched_index: to.index, user_heading: to.absolute_heading)
+                    jumpedNodes.append(nodeInfo)
+                    if nodeId == jumpedLinkInfo.start_node || nodeId == jumpedLinkInfo.end_node {
+                        jumpInfo = JumpInfo(link_id: jumpedLinkId, jumped_nodes: jumpedNodes)
+                        return jumpInfo
+                    }
+                }
+            }
+        }
+
+        return jumpInfo
     }
     
     func determineUserMode(mode: UserMode) {
@@ -691,6 +831,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         let levelChangeArea = data.level_change_area
         let drModeArea = data.dr_mode_area
         
+        if let blChnager = self.buildingLevelChanger {
+            blChnager.setLevelChangeArea(key: key, data: levelChangeArea)
+        }
         PathMatcher.shared.setEntranceMatchingArea(key: key, data: data.entrance_matching_area)
         PathMatcher.shared.setEntranceArea(key: key, data: data.entrance_area)
     }
