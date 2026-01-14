@@ -47,20 +47,23 @@ class LandmarkTagger {
         return (matchedLandmark, matchedCurResult!)
     }
     
-    func findBestLandmark(userPeak: UserPeak, landmark: LandmarkData, matchedResult: FineLocationTrackingOutput, peakLinkGroupId: Int) -> PeakData? {
+    func findBestLandmark(userPeak: UserPeak, landmark: LandmarkData, matchedResult: FineLocationTrackingOutput, peakLinkGroupId: Int) -> (PeakData, Int)? {
         let refX = Float(matchedResult.x)
         let refY = Float(matchedResult.y)
 
         var bestPeak: PeakData? = nil
         var bestPeakDist = Float.greatestFiniteMagnitude
-        var bestPeakLinkId: Int = -1
+        var bestPeakLinkId: Int?
 
         for peak in landmark.peaks {
             let peakX = Float(peak.x)
             let peakY = Float(peak.y)
 
             // 1) Landmark의 위치가 속한 Link 확인
-            guard let ld = PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId, result: matchedResult) else { continue }
+            var lm = matchedResult
+            lm.x = peakX
+            lm.y = peakY
+            guard let ld = PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId, result: lm) else { continue }
 
             // 2) UserPeak에서의 위치가 속한 Link의 Group ID와 1)에서 얻은 Link의 Group ID의 일치 확인
             guard ld.group_id == peakLinkGroupId else { continue }
@@ -77,9 +80,9 @@ class LandmarkTagger {
             }
         }
 
-        if let bestPeak = bestPeak {
+        if let bestPeak = bestPeak, let bestPeakLinkId = bestPeakLinkId {
             JupiterLogger.i(tag: "LandmarkTagger", message: "(applyCorrection) selected peak=(\(bestPeak.x),\(bestPeak.y)) ward=\(landmark.ward_id) link=\(bestPeakLinkId) group=\(peakLinkGroupId) dist=\(bestPeakDist)")
-            return bestPeak
+            return (bestPeak, bestPeakLinkId)
         } else {
             JupiterLogger.i(tag: "LandmarkTagger", message: "(applyCorrection) no peak matched: ward=\(landmark.ward_id) curGroup=\(peakLinkGroupId) peaks=\(landmark.peaks.count)")
             return nil

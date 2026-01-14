@@ -357,7 +357,7 @@ class PathMatcher {
         if (level == "B0" || self.isInNode) {
             return (limitType, limitValues)
         }
-        
+        JupiterLogger.i(tag: "KalmanFilter", message: "(getTimeUpdateLimitation) - curPassedLinkInfo: \(curPassedLinkInfo)")
         guard let curLink = self.curPassedLinkInfo else { return (limitType, limitValues) }
         let coordX = curLink.user_coord[0]
         let coordY = curLink.user_coord[1]
@@ -370,6 +370,9 @@ class PathMatcher {
         } else if (directions.contains(90) && directions.contains(270)) {
             limitType = .X_LIMIT
             limitValues = [coordX - LIMIT, coordX + LIMIT]
+        } else {
+            limitType = .SMALL_LIMIT
+            limitValues = [0.8, 0.8]
         }
         
         return (limitType, limitValues)
@@ -584,8 +587,8 @@ class PathMatcher {
         return paddingValues
     }
     
-    func updateNodeAndLinkInfo(sectorId: Int, uvdIndex: Int, curResult: FineLocationTrackingOutput, mode: UserMode, isJumped: Bool) {
-        let checkAll = isJumped ? true : false
+    func updateNodeAndLinkInfo(sectorId: Int, uvdIndex: Int, curResult: FineLocationTrackingOutput, mode: UserMode, jumpInfo: JumpInfo?, isInLevelChangeArea: Bool = false) {
+        let checkAll = jumpInfo != nil || isInLevelChangeArea ? true : false
         let x = curResult.x
         let y = curResult.y
         let building = curResult.building_name
@@ -632,8 +635,12 @@ class PathMatcher {
             registerPassedNode(node: nodeId, coord: nd.coords, headings: nodeHeadings, matchedIndex: bestIndex, heading: heading)
             JupiterLogger.i(tag: "PathMatcher", message: "(updateNodeAndLinkInfo) [NODE] uvd=\(uvdIndex) key=\(key) node=\(nodeId) xy=(\(correctedX),\(correctedY)) userH=\(heading) bestH=\(bestHeading)(idx=\(bestIndex), is_end=\(bestIsEnd)) oppH=\(bestOppHeading)(idx=\(bestOppIndex))")
             return
-        } else if isJumped {
-            JupiterLogger.i(tag: "PathMatcher", message: "(updateNodeAndLinkInfo) [NODE] not found and position jumped!")
+        } else if let jumpInfo = jumpInfo {
+            JupiterLogger.i(tag: "PathMatcher", message: "(updateNodeAndLinkInfo) [NODE] not found and position jumped to \(jumpInfo.link_id) link")
+            for node in jumpInfo.jumped_nodes {
+                JupiterLogger.i(tag: "PathMatcher", message: "(updateNodeAndLinkInfo) [NODE] jumped_nodes : \(jumpInfo.jumped_nodes.map{$0.id})")
+                registerPassedNode(node: node.id, coord: node.coord, headings: node.headings, matchedIndex: node.matched_index, heading: node.user_heading)
+            }
         }
 
         // 2. 현재 Node 위에 존재하지 않음
@@ -666,7 +673,6 @@ class PathMatcher {
             let ay = sNode.coords[1]
             let bx = eNode.coords[0]
             let by = eNode.coords[1]
-
             let (dist, _) = pointToSegmentDistance(px: correctedX, py: correctedY, ax: ax, ay: ay, bx: bx, by: by)
             if dist < bestLinkDist {
                 bestLinkDist = dist
@@ -706,6 +712,24 @@ class PathMatcher {
         curPassedNodeInfo = PassedNodeInfo(id: node, coord: coord, headings: headings, matched_index: matchedIndex, user_heading: heading)
         controlPassedNodeInfo(passedNodeInfo: curPassedNodeInfo)
 //        JupiterLogger.i(tag: "PathMatcher", message: "(registerPassedNode) - registerPassedNode : passedNode = \(curPassedNodeInfo.id) // passedNodeMatchedIndex = \(curPassedNodeInfo.matched_index) // passedNodeCoord = \(curPassedNodeInfo.coord) // passedNodeHeadings = \(curPassedNodeInfo.headings)")
+    }
+    
+    private func updatePassedNodeInJump(sectorId: Int, curResult: FineLocationTrackingOutput, linkId: Int) {
+        let building = curResult.building_name
+        let level = curResult.level_name
+        guard !building.isEmpty, !level.isEmpty else { return }
+        
+        let levelName = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: level)
+        let key = "\(sectorId)_\(building)_\(levelName)"
+        
+        guard let nodeData = self.nodeData[key] else { return }
+        guard let linkData = self.linkData[key] else { return }
+        guard let jumpedLink = linkData[linkId] else { return }
+        
+//        jumpedLink.
+        
+//        curPassedNodeInfo = PassedNodeInfo(id: node, coord: coord, headings: headings, matched_index: matchedIndex, user_heading: heading)
+//        controlPassedNodeInfo(passedNodeInfo: curPassedNodeInfo)
     }
     
     func getLinkInfoWithResult(sectorId: Int, result: FineLocationTrackingOutput, checkAll: Bool = false, acceptDist: Float = 5) -> LinkData? {
@@ -785,7 +809,7 @@ class PathMatcher {
         return min(d, 360.0 - d)
     }
 
-    private func closestHeading(to userHeading: Float, candidates: [Float]) -> (Float, Int) {
+    func closestHeading(to userHeading: Float, candidates: [Float]) -> (Float, Int) {
         guard !candidates.isEmpty else { return (userHeading, -1) }
 
         var bestHeading = candidates[0]
@@ -804,7 +828,7 @@ class PathMatcher {
         return (bestHeading, bestIndex)
     }
 
-    private func oppositeOf(_ heading: Float) -> Float {
+    func oppositeOf(_ heading: Float) -> Float {
         return Float(TJLabsUtilFunctions.shared.compensateDegree(Double(heading) - 180.0))
     }
     
