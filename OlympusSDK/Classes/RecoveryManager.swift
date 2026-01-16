@@ -215,7 +215,11 @@ class RecoveryManager {
                 resultTraj.append([Double(value.x), Double(value.y)])
             }
             
-            let recoveryResult = RecoveryResult(traj: resultTraj, loss: bestLoss, bestOlder: [bestOlderCand!.x, bestOlderCand!.y], bestRecent: [bestRecentCand.x, bestRecentCand.y])
+            let recoveryResult = RecoveryResult(traj: resultTraj,
+                                                loss: bestLoss,
+                                                bestOlder: [bestOlderCand!.x, bestOlderCand!.y],
+                                                bestRecent: [bestRecentCand.x, bestRecentCand.y],
+                                                bestResult: nil)
             return recoveryResult
 //            return (traj: bestShiftedTraj, loss: bestLoss, olderCand: bestOlderCand, recentCand: bestRecentCand)
         } else {
@@ -487,7 +491,8 @@ class RecoveryManager {
         let recoveryResult = RecoveryResult(traj: resultTraj,
                                             loss: best.loss,
                                             bestOlder: bestOlder,
-                                            bestRecent: [best.recentCand.x, best.recentCand.y])
+                                            bestRecent: [best.recentCand.x, best.recentCand.y],
+                                            bestResult: best.head)
         return recoveryResult
     }
     
