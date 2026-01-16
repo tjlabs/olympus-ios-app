@@ -258,8 +258,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     }
     
     func onRfdError(_ generator: TJLabsCommon.RFDGenerator, code: Int, msg: String) {
-        //
+        JupiterLogger.i(tag: "JupiterCalcManager", message: "(onRfdError): \(code), \(msg)")
     }
+    
     func onRfdEmptyMillis(_ generator: TJLabsCommon.RFDGenerator, time: Double) {
         rfdEmptyMillis = time
     }
@@ -269,12 +270,15 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         // TODO: Handle pressure result
         pressure = Float(hPa)
     }
+    
     func onUvdError(_ generator: UVDGenerator, error: String) {
-        // TODO: Handle UVD error
+        JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdError): \(error)")
     }
+    
     func onUvdPauseMillis(_ generator: UVDGenerator, time: Double) {
         // TODO: Handle UVD pause
     }
+    
     func onUvdResult(_ generator: UVDGenerator, mode: UserMode, userVelocity: UserVelocity) {
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
         DataBatchSender.shared.sendUvd(uvd: userVelocity)
@@ -303,6 +307,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         
         var reconCurResultBuffer: [FineLocationTrackingOutput]?
         var olderPeakIndex: Int?
+        
         // Moving Averaging
         guard let wardAvgManager = wardAvgManager else { return }
         let avgBleData: [String: Float] = wardAvgManager.updateEpoch(bleData: bleData)
@@ -354,20 +359,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                         if let curLinkInfo = PathMatcher.shared.getCurPassedLinkInfo() {
                                             jumpInfo = calcJumpedNodes(from: curPathMatchingResult, to: muResult, curLinkInfo: curLinkInfo, jumpedLinkId: bestResult.1, mode: mode)
                                         }
-//                                        let intermediatePoints = checkResultJump(from: curPathMatchingResult, to: muResult)
-//                                        JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) jumped // intermediatePoints: \(intermediatePoints)")
-//                                        var jumpedNodes = [PassedNodeInfo]()
-//                                        for point in intermediatePoints {
-//                                            let pathType = mode == .MODE_PEDESTRIAN ? 0 : 1
-//                                            if let matchedNodeResult = PathMatcher.shared.getMatchedNodeWithCoord(sectorId: sectorId, fltResult: muResult, originCoord: point, coordToCheck: point, pathType: pathType, paddingValues: [1, 1, 1, 1]) {
-//                                                
-//                                                let nodeInfo = PassedNodeInfo(id: matchedNodeResult.0, coord: point, headings: matchedNodeResult.1, matched_index: muResult.index, user_heading: muResult.absolute_heading)
-//                                                jumpedNodes.append(nodeInfo)
-//                                            } else {
-//                                                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) getMatchedNodeWithCoord fail at point \(point) // \(muResult)")
-//                                            }
-//                                        }
-//                                        jumpInfo = JumpInfo(link_id: bestResult.1, jumped_nodes: jumpedNodes)
                                     }
                                 } else {
                                     self.debug_recon_raw_traj = nil
@@ -441,10 +432,19 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                                                                         userPeakAndLinkBuffer: userPeakAndLinkBuffer,
                                                                                         landmarks: (matchedWithOlderPeak.0, matchedWithRecentPeak.0),
                                                                                         tuResultWhenOlderPeak: tuResultWhenOlderPeak,
-                                                                                        curPmResult: curPmResult, mode: mode) {
+                                                                                        curPmResult: curPmResult, mode: mode),
+                        let bestResult = recoveryResult.bestResult {
                             self.debug_recovery_result = recoveryResult
-                            // BadCAse를 이용한 Correction 이후에 위치 Jump 판단 -> PassedNode와 Link 정보 업데이트
-//                            isJumped = true
+                            let recoveryCoord: [Float] = [bestResult.x, bestResult.y]
+                            kalmanFilter?.updateTuPosition(coord: recoveryCoord)
+                            self.curResult? = bestResult
+                            
+                            if let matchedLink = PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId, result: bestResult, checkAll: true) {
+                                let jumpInfo = JumpInfo(link_id: matchedLink.id, jumped_nodes: [])
+                                PathMatcher.shared.updateNodeAndLinkInfo(sectorId: sectorId, uvdIndex: curIndex, curResult: bestResult, mode: mode, jumpInfo: jumpInfo)
+                            } else {
+                                PathMatcher.shared.initPassedLinkInfo()
+                            }
                         }
                     } else {
                         
@@ -589,6 +589,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                 uvdGenerator?.updateDrVelocityScale(scale: Double(pmResult.scale))
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - result: \(result.building_name), \(result.level_name), [\(result.x),\(result.y),\(result.absolute_heading)]")
             } else {
+                uvdGenerator?.updateDrVelocityScale(scale: 1.0)
                 isPmFailed = true
             }
         }
