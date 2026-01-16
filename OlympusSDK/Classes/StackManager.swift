@@ -97,17 +97,23 @@ class StackManager {
         }
     }
     
-//    func checkIsBadCase() -> Bool {
-//        guard curPmResultBuffer.count >= SAME_COORD_THRESHOLD else { return false }
-//
-//        var lastX: Float? = nil
-//        var lastY: Float? = nil
-//        var sameCount = 0
-//
-//        for result in curPmResultBuffer.reversed() {
-//            let x = result.x
-//            let y = result.y
-//
+    func checkIsBadCase() -> Bool {
+        guard curPmResultBuffer.count >= SAME_COORD_THRESHOLD else { return false }
+
+        let lastX: Float = curPmResultBuffer[curPmResultBuffer.count-1].x
+        let lastY: Float = curPmResultBuffer[curPmResultBuffer.count-1].y
+        var sameCount = 0
+
+        for result in curPmResultBuffer.reversed() {
+            let x = result.x
+            let y = result.y
+            
+            if x == lastX && y == lastY {
+                sameCount += 1
+            } else {
+                break
+            }
+            
 //            if let lx = lastX, let ly = lastY {
 //                if x == lx && y == ly {
 //                    sameCount += 1
@@ -117,29 +123,29 @@ class StackManager {
 //            } else {
 //                sameCount = 1
 //            }
-//
+
 //            lastX = x
 //            lastY = y
-//
-//            if sameCount >= SAME_COORD_THRESHOLD {
-//                return true
-//            }
-//        }
-//
-//        return false
-//    }
-    
-    func checkIsBadCase() -> Bool {
-        guard curPmResultBuffer.count >= 40 else { return false }
-        
-        let curIndex = curPmResultBuffer[curPmResultBuffer.count-1].index
-        if curIndex - recoveryIndex > 40 {
-            recoveryIndex = curIndex
-            return true
+            JupiterLogger.i(tag: "StackManager", message: "(checkIsBadCase) sameCount: \(sameCount)")
+            if sameCount >= SAME_COORD_THRESHOLD {
+                return true
+            }
         }
 
         return false
     }
+    
+//    func checkIsBadCase() -> Bool {
+//        guard curPmResultBuffer.count >= 40 else { return false }
+//        
+//        let curIndex = curPmResultBuffer[curPmResultBuffer.count-1].index
+//        if curIndex - recoveryIndex > 40 {
+//            recoveryIndex = curIndex
+//            return true
+//        }
+//
+//        return false
+//    }
     
     func isDrBufferStraightCircularStd(numIndex: Int, condition: Double = 1) -> (Bool, Double) {
         let uvdBuffer = self.uvdBuffer
