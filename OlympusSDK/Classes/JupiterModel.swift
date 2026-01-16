@@ -77,4 +77,5 @@ public struct RecoveryResult: Codable {
     public let loss: Float
     public let bestOlder: [Int]
     public let bestRecent: [Int]
+    public let bestResult: FineLocationTrackingOutput?
 }
