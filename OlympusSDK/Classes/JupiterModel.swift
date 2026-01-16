@@ -70,6 +70,7 @@ public struct JupiterDebugResult: Codable {
     public var recon_raw_traj: [[Double]]?
     public var recon_corr_traj: [FineLocationTrackingOutput]?
     public var recovery_result: RecoveryResult?
+    public var recovery_result_v2: RecoveryResult_v2?
 }
 
 public struct RecoveryResult: Codable {
@@ -77,5 +78,14 @@ public struct RecoveryResult: Codable {
     public let loss: Float
     public let bestOlder: [Int]
     public let bestRecent: [Int]
+    public let bestResult: FineLocationTrackingOutput?
+}
+
+public struct RecoveryResult_v2: Codable {
+    public let traj: [[Double]]
+    public let loss: Float
+    public let bestThird: [Int]
+    public let bestSecond: [Int]
+    public let bestFirst: [Int]
     public let bestResult: FineLocationTrackingOutput?
 }
