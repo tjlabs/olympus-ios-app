@@ -595,13 +595,13 @@ class KalmanFilter {
         return updatedResult
     }
 
-    private func adjustHeading(_ heading: Float, _ mapHeading: Float) -> Float {
+    private func calDiffHeading(_ heading: Float, _ mapHeading: Float) -> Float {
         if heading > 270 && mapHeading < 90 {
-            return abs(heading - (mapHeading + 360))
+            return heading - (mapHeading + 360)
         } else if mapHeading > 270 && heading < 90 {
-            return abs(mapHeading - (heading + 360))
+            return mapHeading - (heading + 360)
         } else {
-            return abs(heading - mapHeading)
+            return heading - mapHeading
         }
     }
 
@@ -613,7 +613,7 @@ class KalmanFilter {
         muResult.x = tuResult.x + kalmanK * (correctionResult.x - tuResult.x)
         muResult.y = tuResult.y + kalmanK * (correctionResult.y - tuResult.y)
         
-        let muHeading: Float = tuResult.absolute_heading + headingKalmanK * adjustHeading(correctionResult.absolute_heading, tuResult.absolute_heading)
+        let muHeading: Float = tuResult.absolute_heading + headingKalmanK * calDiffHeading(correctionResult.absolute_heading, tuResult.absolute_heading)
         muResult.absolute_heading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(muHeading)))
         
         kalmanP -= kalmanK * kalmanP
