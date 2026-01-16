@@ -378,6 +378,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                                                                                 userPeakAndLinkBuffer: userPeakAndLinkBuffer,
                                                                                                 landmarks: (matchedWithThirdPeak.0, matchedWithSecondPeak.0, matchedWithFirstPeak.0),
                                                                                                 tuResultWhenThirdPeak: tuResultWhenThirdPeak,
+                                                                                                resultWhenFisrtPeak: matchedWithFirstPeak.1,
                                                                                                 curPmResult: curPmResult, mode: mode),
                                 let bestResult = recoveryResult.bestResult {
                                     self.debug_recovery_result_v2 = recoveryResult

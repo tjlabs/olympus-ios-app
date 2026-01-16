@@ -343,6 +343,7 @@ class RecoveryManager {
                                     userPeakAndLinkBuffer: [(UserPeak, LinkData)],
                                     landmarks: (third: LandmarkData, second: LandmarkData, first: LandmarkData),
                                     tuResultWhenThirdPeak: ixyhs,
+                                    resultWhenFisrtPeak: FineLocationTrackingOutput,
                                     curPmResult: FineLocationTrackingOutput,
                                     mode: UserMode) -> RecoveryResult_v2? {
         let semaphore = DispatchSemaphore(value: 0)
@@ -353,6 +354,7 @@ class RecoveryManager {
                                                             userPeakAndLinkBuffer: userPeakAndLinkBuffer,
                                                             landmarks: landmarks,
                                                             tuResultWhenThirdPeak: tuResultWhenThirdPeak,
+                                                            resultWhenFisrtPeak: resultWhenFisrtPeak,
                                                             curPmResult: curPmResult,
                                                             mode: mode)
             semaphore.signal()
@@ -377,16 +379,17 @@ class RecoveryManager {
                                                  userPeakAndLinkBuffer: [(UserPeak, LinkData)],
                                                  landmarks: (third: LandmarkData, second: LandmarkData, first: LandmarkData),
                                                  tuResultWhenThirdPeak: ixyhs,
+                                                 resultWhenFisrtPeak: FineLocationTrackingOutput,
                                                  curPmResult: FineLocationTrackingOutput,
                                                  mode: UserMode) async -> RecoveryResult_v2? {
         guard userPeakAndLinkBuffer.count >= 3 else { return nil }
         let key = "\(sectorId)_\(curPmResult.building_name)_\(curPmResult.level_name)"
-        guard let nodeData = PathMatcher.shared.nodeData[key] else { return nil }
+        guard let nodeData = PathMatcher.shared.nodeData[key], let linkData = PathMatcher.shared.linkData[key] else { return nil }
         // Base link-group constraint: first landmark must be on the same link-group as current PM result.
-        guard let curLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
-                                                                    result: curPmResult,
+        guard let firstLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
+                                                                    result: resultWhenFisrtPeak,
                                                                     checkAll: true) else { return nil }
-        let curLinkGroupId = curLink.group_id
+        let firstLinkGroupId = firstLink.group_id
         let thirdUserPeak = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count - 3].0
         let thirdUserLink = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count - 3].1
         
@@ -410,7 +413,7 @@ class RecoveryManager {
 
         let bestCandidate: _RecoveryCandidate_v2? = await withTaskGroup(of: _RecoveryCandidate_v2?.self) { group in
             for recoveryTraj in recoveryTrajList {
-                group.addTask { [sectorId = self.sectorId, nodeData = nodeData, curLinkGroupId = curLinkGroupId] in
+                group.addTask { [sectorId = self.sectorId, nodeData = nodeData, firstLinkGroupId = firstLinkGroupId] in
                     guard recoveryTraj.count >= 2 else { return nil }
                     
                     var midIdx: Int? = nil
@@ -448,7 +451,7 @@ class RecoveryManager {
                                                                                      checkAll: true) else {
                             continue
                         }
-                        if candLink.group_id != curLinkGroupId {
+                        if candLink.group_id != firstLinkGroupId {
                             continue
                         }
                         let offsetX = Float(cand.x) - recoveryTraj[aIdx].x
@@ -474,7 +477,7 @@ class RecoveryManager {
                                                                        heading: first.heading,
                                                                        isUseHeading: false,
                                                                        mode: mode,
-                                                                       paddingValues: JupiterMode.PADDING_VALUES_DR) else { continue }
+                                                                        paddingValues: JupiterMode.PADDING_VALUES_PDR) else { continue }
 
                         var tailResult = curPmResult
                         tailResult.x = tail.x
@@ -497,7 +500,7 @@ class RecoveryManager {
                                                                        heading: mid.heading,
                                                                        isUseHeading: false,
                                                                        mode: mode,
-                                                                       paddingValues: JupiterMode.PADDING_VALUES_DR) else { continue }
+                                                                       paddingValues: JupiterMode.PADDING_VALUES_PDR) else { continue }
 
                         var bodyResult = curPmResult
                         bodyResult.x = body.x
@@ -519,7 +522,7 @@ class RecoveryManager {
                                                                        heading: last.heading,
                                                                        isUseHeading: false,
                                                                        mode: mode,
-                                                                       paddingValues: JupiterMode.PADDING_VALUES_DR) else {
+                                                                       paddingValues: JupiterMode.PADDING_VALUES_PDR) else {
                             continue
                         }
                         var headResult = curPmResult
