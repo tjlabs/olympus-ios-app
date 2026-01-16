@@ -17,7 +17,6 @@ final class JupiterResultState {
     static var isBecomeForeground = false
     static var isSleepMode = false
     static var isVenus = false
-    static var isDRMode = false
     static var isGetFirstResponse = false
     
     static func reset() {
@@ -28,7 +27,6 @@ final class JupiterResultState {
         isBecomeForeground = false
         isSleepMode = false
         isVenus = false
-        isDRMode = false
         isGetFirstResponse = false
     }
 }

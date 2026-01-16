@@ -113,19 +113,6 @@ class StackManager {
             } else {
                 break
             }
-            
-//            if let lx = lastX, let ly = lastY {
-//                if x == lx && y == ly {
-//                    sameCount += 1
-//                } else {
-//                    break
-//                }
-//            } else {
-//                sameCount = 1
-//            }
-
-//            lastX = x
-//            lastY = y
             JupiterLogger.i(tag: "StackManager", message: "(checkIsBadCase) sameCount: \(sameCount)")
             if sameCount >= SAME_COORD_THRESHOLD {
                 return true
