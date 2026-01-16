@@ -388,6 +388,15 @@ class PathMatcher {
     var passedNodeInfoBuffer = [PassedNodeInfo]()
     
     var isNeedClearBuffer = false
+    
+    func initPassedNodeInfo() {
+        self.curPassedNodeInfo = PassedNodeInfo(id: -1, coord: [], headings: [], matched_index: -1, user_heading: 0)
+    }
+    
+    func initPassedLinkInfo() {
+        self.curPassedLinkInfo = nil
+    }
+    
     func updateAnchorNode(sectorId: Int, fltResult: FineLocationTrackingOutput, mode: UserMode, sectionNumber: Int) {
         let pathType = mode == .MODE_PEDESTRIAN ? 0 : 1
         let anchorNode = findAnchorNode(sectorId: sectorId, fltResult: fltResult, pathType: pathType)
