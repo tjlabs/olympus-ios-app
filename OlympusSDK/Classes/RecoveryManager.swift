@@ -175,7 +175,7 @@ class RecoveryManager {
 
                         guard let tailLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
                                                                                     result: tailResult,
-                                                                                    checkAll: true) else {
+                                                                                    checkAll: true, acceptDist: 15) else {
                             continue
                         }
                         let tailLinkGroupId = tailLink.group_id
@@ -203,7 +203,7 @@ class RecoveryManager {
                             tmp.y = Float(oc.y)
 
                             let peakDist = dist2(Float(oc.x), Float(oc.y), Float(cand.x), Float(cand.y))
-                            if peakDist < 5 { continue }
+                            if peakDist < 2 { continue }
                             tmp.absolute_heading = tail.heading
 //                            guard let ocLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
 //                                                                                      result: tmp,
@@ -313,11 +313,12 @@ class RecoveryManager {
         }
 
         func getLinkInfoWithResult(sectorId: Int,
-                                  result: FineLocationTrackingOutput,
-                                  checkAll: Bool) -> LinkData? {
+                                   result: FineLocationTrackingOutput,
+                                   checkAll: Bool, acceptDist: Float = 5) -> LinkData? {
             return PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId,
-                                                           result: result,
-                                                           checkAll: checkAll)
+                                                            result: result,
+                                                            checkAll: checkAll,
+                                                            acceptDist: acceptDist)
         }
     }
 
@@ -387,8 +388,11 @@ class RecoveryManager {
         guard let nodeData = PathMatcher.shared.nodeData[key], let linkData = PathMatcher.shared.linkData[key] else { return nil }
         // Base link-group constraint: first landmark must be on the same link-group as current PM result.
         guard let firstLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
-                                                                    result: resultWhenFisrtPeak,
-                                                                    checkAll: true) else { return nil }
+                                                                      result: resultWhenFisrtPeak,
+                                                                      checkAll: true,
+                                                                      acceptDist: 15) else { return nil }
+        
+        let indexDiff = Float(curPmResult.index - resultWhenFisrtPeak.index)
         let firstLinkGroupId = firstLink.group_id
         let thirdUserPeak = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count - 3].0
         let thirdUserLink = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count - 3].1
@@ -399,7 +403,7 @@ class RecoveryManager {
         let firstUserPeak = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count - 1].0
         let firstUserPeakIndex = firstUserPeak.peak_index
 
-//        JupiterLogger.i(tag: "RecoveryManager", message: "(recover) olderPeakId: \(olderUserPeak.id), oldPeakIndex: \(olderUserPeak.peak_index), recentPeakId: \(recentUserPeak.id), recentPeakIndex: \(recentUserPeakIndex)")
+        JupiterLogger.i(tag: "RecoveryManager", message: "(recover) third: \(thirdUserPeak.id), second: \(secondUserPeak.id), first: \(firstUserPeak.id)")
         
         let thirdLandmarkCands: [PeakData] = landmarks.third.peaks
         let secondLandmarkCands: [PeakData] = landmarks.second.peaks
@@ -413,7 +417,7 @@ class RecoveryManager {
 
         let bestCandidate: _RecoveryCandidate_v2? = await withTaskGroup(of: _RecoveryCandidate_v2?.self) { group in
             for recoveryTraj in recoveryTrajList {
-                group.addTask { [sectorId = self.sectorId, nodeData = nodeData, firstLinkGroupId = firstLinkGroupId] in
+                group.addTask { [sectorId = self.sectorId, nodeData = nodeData, linkData = linkData, firstLinkGroupId = firstLinkGroupId] in
                     guard recoveryTraj.count >= 2 else { return nil }
                     
                     var midIdx: Int? = nil
@@ -445,10 +449,15 @@ class RecoveryManager {
                         candResult.x = Float(cand.x)
                         candResult.y = Float(cand.y)
                         candResult.absolute_heading = curPmResult.absolute_heading
-
+                        
+                        let distWithFirst = dist2(resultWhenFisrtPeak.x, resultWhenFisrtPeak.y, Float(cand.x), Float(cand.y))
+                        if distWithFirst > Float(indexDiff*2.5) {
+                            continue
+                        }
+                        
                         guard let candLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
                                                                                      result: candResult,
-                                                                                     checkAll: true) else {
+                                                                                     checkAll: true, acceptDist: 15) else {
                             continue
                         }
                         if candLink.group_id != firstLinkGroupId {
@@ -477,19 +486,20 @@ class RecoveryManager {
                                                                        heading: first.heading,
                                                                        isUseHeading: false,
                                                                        mode: mode,
-                                                                        paddingValues: JupiterMode.PADDING_VALUES_PDR) else { continue }
+                                                                       paddingValues: JupiterMode.PADDING_VALUES_PDR) else { continue }
 
                         var tailResult = curPmResult
                         tailResult.x = tail.x
                         tailResult.y = tail.y
                         tailResult.absolute_heading = tail.heading
 
-                        guard let tailLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
-                                                                                    result: tailResult,
-                                                                                    checkAll: true) else {
-                            continue
-                        }
-                        let tailLinkGroupId = tailLink.group_id
+//                        guard let tailLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
+//                                                                                    result: tailResult,
+//                                                                                     checkAll: true, acceptDist: 15) else {
+//                            JupiterLogger.i(tag: "RecoveryManager", message: "(recover) tail link fail [\(tailResult.x),\(tailResult.y)]")
+//                            continue
+//                        }
+//                        let tailLinkGroupId = tailLink.group_id
                         
                         // Mid PM
                         guard let body = await self.pmGate.pathMatching(sectorId: sectorId,
@@ -507,11 +517,12 @@ class RecoveryManager {
                         bodyResult.y = body.y
                         bodyResult.absolute_heading = body.heading
                         
-                        guard let bodyLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
-                                                                                     result: bodyResult,
-                                                                                     checkAll: true) else {
-                            continue
-                        }
+//                        guard let bodyLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
+//                                                                                     result: bodyResult,
+//                                                                                     checkAll: true, acceptDist: 15) else {
+//                            JupiterLogger.i(tag: "RecoveryManager", message: "(recover) body link fail [\(bodyResult.x),\(bodyResult.y)]")
+//                            continue
+//                        }
                         
                         // Head PM
                         guard let head = await self.pmGate.pathMatching(sectorId: sectorId,
@@ -532,18 +543,20 @@ class RecoveryManager {
                         
                         guard let headLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
                                                                                      result: headResult,
-                                                                                     checkAll: true) else {
+                                                                                     checkAll: true, acceptDist: 15) else {
+                            JupiterLogger.i(tag: "RecoveryManager", message: "(recover) head link fail [\(headResult.x),\(headResult.y)]")
                             continue
                         }
 
                         // Stronger plausibility filter: ensure head -> body -> tail is connectable on the map graph.
-                        guard self.isHeadBodyTailConnectedViaGraph(nodeData: nodeData,
-                                                                  headLink: headLink,
-                                                                  bodyLink: bodyLink,
-                                                                  tailLink: tailLink) else {
-                            // JupiterLogger.i(tag: "RecoveryManager", message: "(recover_v2) graph connectivity failed")
-                            continue
-                        }
+//                        guard self.isHeadBodyTailConnectedViaGraph(nodeData: nodeData,
+//                                                                  linkData: linkData,
+//                                                                  headLink: headLink,
+//                                                                  bodyLink: bodyLink,
+//                                                                  tailLink: tailLink) else {
+//                             JupiterLogger.i(tag: "RecoveryManager", message: "(recover) graph connectivity failed")
+//                            continue
+//                        }
 
                         // dist0: body? -> best second landmark (optionally group-constrained)
                         var dist0 = Float.greatestFiniteMagnitude
@@ -555,18 +568,27 @@ class RecoveryManager {
                             tmp.y = Float(sc.y)
 
                             let peakDist = dist2(Float(sc.x), Float(sc.y), Float(cand.x), Float(cand.y))
-                            if peakDist < 5 { continue }
+                            if peakDist < 2 { continue }
                             tmp.absolute_heading = tail.heading
 
                             let d = dist2(Float(body.x), Float(body.y), Float(sc.x), Float(sc.y))
                             if d < dist0 {
                                 dist0 = d
                                 localSecondCand = sc
+                                bodyResult.x = Float(sc.x)
+                                bodyResult.y = Float(sc.y)
                             }
                         }
                         
                         if dist0 == Float.greatestFiniteMagnitude {
                             dist0 = 1_000_000
+                        }
+                        
+                        guard let bodyLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
+                                                                                     result: bodyResult,
+                                                                                     checkAll: true, acceptDist: 15) else {
+                            JupiterLogger.i(tag: "RecoveryManager", message: "(recover) body link fail [\(bodyResult.x),\(bodyResult.y)]")
+                            continue
                         }
                         
                         // dist1: tail? -> best third landmark (optionally group-constrained)
@@ -580,12 +602,14 @@ class RecoveryManager {
                             
                             if let sc = localSecondCand {
                                 let peakDist = dist2(Float(th.x), Float(th.y), Float(sc.x), Float(sc.y))
-                                if peakDist < 5 { continue }
+                                if peakDist < 2 { continue }
                                 
                                 let d = dist2(Float(tail.x), Float(tail.y), Float(th.x), Float(th.y))
                                 if d < dist1 {
                                     dist1 = d
                                     localThirdCand = th
+                                    tailResult.x = Float(th.x)
+                                    tailResult.y = Float(th.y)
                                 }
                             }
                         }
@@ -593,7 +617,24 @@ class RecoveryManager {
                         if dist1 == Float.greatestFiniteMagnitude {
                             dist1 = 1_000_000
                         }
-
+                        
+                        guard let tailLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
+                                                                                    result: tailResult,
+                                                                                     checkAll: true, acceptDist: 15) else {
+                            JupiterLogger.i(tag: "RecoveryManager", message: "(recover) tail link fail [\(tailResult.x),\(tailResult.y)]")
+                            continue
+                        }
+                        let tailLinkGroupId = tailLink.group_id
+                        
+//                        guard self.isHeadBodyTailConnectedViaGraph(nodeData: nodeData,
+//                                                                  linkData: linkData,
+//                                                                  headLink: headLink,
+//                                                                  bodyLink: bodyLink,
+//                                                                  tailLink: tailLink) else {
+//                            JupiterLogger.i(tag: "RecoveryManager", message: "(recover) graph connectivity failed")
+//                            continue
+//                        }
+                        
                         // dist2: tail -> TU result at third peak
                         let dist2v = dist2(Float(tail.x), Float(tail.y), Float(tuResultWhenThirdPeak.x), Float(tuResultWhenThirdPeak.y))
 
@@ -674,85 +715,131 @@ class RecoveryManager {
     }
     // MARK: - Link connectivity validation (graph-based)
 
-    /// Returns the endpoint node-id set for a link.
-    private func linkNodes(_ link: LinkData) -> Set<Int> {
-        return [link.start_node, link.end_node]
-    }
+    /// 0-1 BFS on the *link graph* (links are adjacent if they share an endpoint node).
+    /// Cost rule: moving to a neighbor link with the SAME group_id costs 0, otherwise costs 1.
+    /// This effectively counts "group switches" instead of raw link hops.
+    /// 0-1 BFS on the *link graph* (links are adjacent if they share an endpoint node).
+    /// Cost rule: moving to a neighbor link with the SAME group_id costs 0, otherwise costs 1.
+    /// This effectively counts "group switches" instead of raw link hops.
+    private func isLinkReachableWithGroupSwitchLimit(nodeData: [Int: NodeData],
+                                                    linkData: [Int: LinkData],
+                                                    from startLink: LinkData,
+                                                    to targetLink: LinkData,
+                                                    maxGroupSwitches: Int = 1) -> Bool {
+        if startLink.id == targetLink.id { return true }
+        if maxGroupSwitches < 0 { return false }
 
-    /// BFS reachability on the node graph (using NodeData.connected_nodes).
-    /// - Parameters:
-    ///   - nodeData: map of nodeId -> NodeData
-    ///   - from: starting node ids
-    ///   - to: target node ids
-    ///   - maxHops: limits search depth to avoid expensive searches on large graphs
-    private func isReachable(nodeData: [Int: NodeData],
-                             from: Set<Int>,
-                             to: Set<Int>,
-                             maxHops: Int = 30) -> Bool {
-        if !from.intersection(to).isEmpty { return true }
-        guard !from.isEmpty, !to.isEmpty else { return false }
+        // Distance = min group-switch count to reach linkId
+        var dist: [Int: Int] = [startLink.id: 0]
 
-        // (nodeId, depth)
-        var queue: [(Int, Int)] = []
-        queue.reserveCapacity(from.count)
+        // Safe deque for 0-1 BFS: front stack + back queue + index
+        var front: [Int] = [startLink.id]   // pushFront = append, popFront = popLast
+        var back: [Int] = []                // pushBack = append, popFront when front empty uses back[backHead]
+        var backHead = 0
 
-        var visited = Set<Int>()
-        visited.reserveCapacity(256)
+        @inline(__always)
+        func popFront() -> Int? {
+            if let v = front.popLast() { return v }
+            guard backHead < back.count else { return nil }
+            let v = back[backHead]
+            backHead += 1
 
-        for s in from {
-            visited.insert(s)
-            queue.append((s, 0))
+            // periodic compaction to avoid unbounded growth
+            if backHead > 1024 && backHead * 2 > back.count {
+                back.removeFirst(backHead)
+                backHead = 0
+            }
+            return v
         }
 
-        var qIndex = 0
-        while qIndex < queue.count {
-            let (cur, depth) = queue[qIndex]
-            qIndex += 1
+        @inline(__always)
+        func pushFront(_ v: Int) { front.append(v) }
 
-            if depth >= maxHops { continue }
-            guard let nd = nodeData[cur] else { continue }
+        @inline(__always)
+        func pushBack(_ v: Int) { back.append(v) }
 
-            for nxt in nd.connected_nodes {
-                if visited.contains(nxt) { continue }
-                if to.contains(nxt) { return true }
-                visited.insert(nxt)
-                queue.append((nxt, depth + 1))
+        func neighbors(of link: LinkData) -> [Int] {
+            var out: [Int] = []
+            out.reserveCapacity(16)
+
+            if let s = nodeData[link.start_node] {
+                out.append(contentsOf: s.connected_links)
+            }
+            if let e = nodeData[link.end_node] {
+                out.append(contentsOf: e.connected_links)
+            }
+
+            // Remove self and duplicates
+            var unique: [Int] = []
+            unique.reserveCapacity(out.count)
+            for id in out {
+                if id == link.id { continue }
+                if unique.contains(id) { continue }
+                unique.append(id)
+            }
+            return unique
+        }
+
+        while let curId = popFront() {
+            guard let curLink = linkData[curId] else { continue }
+            let curDist = dist[curId] ?? Int.max
+            if curDist > maxGroupSwitches { continue }
+
+            for nbId in neighbors(of: curLink) {
+                guard let nbLink = linkData[nbId] else { continue }
+
+                let cost = (nbLink.group_id == curLink.group_id) ? 0 : 1
+                let nd = curDist + cost
+                if nd > maxGroupSwitches { continue }
+
+                let prev = dist[nbId] ?? Int.max
+                if nd < prev {
+                    dist[nbId] = nd
+                    if nbId == targetLink.id { return true }
+
+                    if cost == 0 {
+                        pushFront(nbId)
+                    } else {
+                        pushBack(nbId)
+                    }
+                }
             }
         }
 
         return false
     }
 
-    /// Ensures `headLink -> bodyLink -> tailLink` can be connected on the node graph.
-    /// This allows intermediate nodes/links (not only direct endpoint sharing).
+    /// Ensures `tailLink -> bodyLink -> headLink` can be connected on the map, while limiting
+    /// how many times we switch link-groups along the way.
+    /// - Rule: traversing links within the same group_id does NOT count as a hop.
+    /// - We reject paths that require switching groups 2+ times.
     private func isHeadBodyTailConnectedViaGraph(nodeData: [Int: NodeData],
+                                                linkData: [Int: LinkData],
                                                 headLink: LinkData,
                                                 bodyLink: LinkData,
                                                 tailLink: LinkData) -> Bool {
-        // We treat the node connectivity as undirected using `connected_nodes`.
-        // Chain condition:
-        // 1) tail nodes can reach body nodes
-        // 2) body nodes can reach head nodes
+        // Allow at most 1 group switch between segments.
+        let maxGroupSwitches = 1
 
-        // Only allow at most 1 intermediate link between segments.
-        // In node-edge terms: allow path length <= 1 (0 = shared node, 1 = one connecting link).
-        // Any path requiring 2+ connecting links (edges) is rejected.
-        let maxHopsBetweenLinks = 1
-
-        let tailNodes = linkNodes(tailLink)
-        let bodyNodes = linkNodes(bodyLink)
-        let headNodes = linkNodes(headLink)
-
-        // Quick wins: direct adjacency (shared endpoint)
-        if !tailNodes.intersection(bodyNodes).isEmpty && !bodyNodes.intersection(headNodes).isEmpty {
+        // Quick pass: if everything already in the same group, accept.
+        if tailLink.group_id == bodyLink.group_id && bodyLink.group_id == headLink.group_id {
             return true
         }
 
-        // Graph reachability (allows intermediate nodes)
-        let tailToBody = isReachable(nodeData: nodeData, from: tailNodes, to: bodyNodes, maxHops: maxHopsBetweenLinks)
+        // tail -> body (by link graph)
+        let tailToBody = isLinkReachableWithGroupSwitchLimit(nodeData: nodeData,
+                                                            linkData: linkData,
+                                                            from: tailLink,
+                                                            to: bodyLink,
+                                                            maxGroupSwitches: maxGroupSwitches)
         if !tailToBody { return false }
 
-        let bodyToHead = isReachable(nodeData: nodeData, from: bodyNodes, to: headNodes, maxHops: maxHopsBetweenLinks)
+        // body -> head (by link graph)
+        let bodyToHead = isLinkReachableWithGroupSwitchLimit(nodeData: nodeData,
+                                                            linkData: linkData,
+                                                            from: bodyLink,
+                                                            to: headLink,
+                                                            maxGroupSwitches: maxGroupSwitches)
         return bodyToHead
     }
 
