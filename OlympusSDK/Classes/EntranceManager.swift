@@ -186,23 +186,23 @@ class EntranceManager {
     func setEntPeakData() {
         let ent1 = EntrancePeakData(number: 1,
                                     velocityScale: 1.2,
-                                    inner_ward: InnerWardData(type: 1, wardId: "TJ-00CB-00000320-0000", coord: [252, 105], direction: [90]),
+                                    inner_ward: InnerWardData(type: 1, wardId: "TJ-00CB-00000320-0000", building: "COEX", level: "B2", x: 252, y: 95, direction: [90]),
                                     outerWardId: "TJ-00CB-000003F8-0000")
         let ent2 = EntrancePeakData(number: 2,
                                     velocityScale: 0.6,
-                                    inner_ward: InnerWardData(type: 1, wardId: "TJ-00CB-00000323-0000", coord: [250, 170], direction: [90]),
+                                    inner_ward: InnerWardData(type: 1, wardId: "TJ-00CB-00000323-0000", building: "COEX", level: "B2", x: 250, y: 170, direction: [90]),
                                     outerWardId: "TJ-00CB-00000324-0000")
         let ent3 = EntrancePeakData(number: 3,
                                     velocityScale: 0.65,
-                                    inner_ward: InnerWardData(type: 0, wardId: "TJ-00CB-00000344-0000", coord: [291, 300], direction: [90, 180]),
+                                    inner_ward: InnerWardData(type: 0, wardId: "TJ-00CB-00000344-0000", building: "COEX", level: "B2", x: 291, y: 300, direction: [90, 180]),
                                     outerWardId: "TJ-00CB-000003FA-0000")
         let ent4 = EntrancePeakData(number: 4,
                                     velocityScale: 0.75,
-                                    inner_ward: InnerWardData(type: 1, wardId: "TJ-00CB-0000026B-0000", coord: [250, 442], direction: [180]),
+                                    inner_ward: InnerWardData(type: 1, wardId: "TJ-00CB-0000026B-0000", building: "COEX", level: "B2", x: 235, y: 442, direction: [180]),
                                     outerWardId: "TJ-00CB-00000221-0000")
         let ent5 = EntrancePeakData(number: 5,
                                     velocityScale: 0.75,
-                                    inner_ward: InnerWardData(type: 1, wardId: "TJ-00CB-000002B1-0000", coord: [235, 442], direction: [270]),
+                                    inner_ward: InnerWardData(type: 1, wardId: "TJ-00CB-000002B1-0000", building: "COEX", level: "B2", x: 59, y: 335, direction: [270]),
                                     outerWardId: "TJ-00CB-00000369-0000")
         self.entPeakMap["6_COEX_B0_1"] = ent1
         self.entPeakMap["6_COEX_B0_2"] = ent2
