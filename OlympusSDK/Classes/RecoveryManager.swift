@@ -383,10 +383,13 @@ class RecoveryManager {
                                                  resultWhenFisrtPeak: FineLocationTrackingOutput,
                                                  curPmResult: FineLocationTrackingOutput,
                                                  mode: UserMode) async -> RecoveryResult_v2? {
-        guard userPeakAndLinkBuffer.count >= 3 else { return nil }
+        guard userPeakAndLinkBuffer.count >= 3 else {
+            JupiterLogger.i(tag: "RecoveryManager", message: "(recover) userPeakAndLinkBuffer is less than 3")
+            return nil
+        }
         let key = "\(sectorId)_\(curPmResult.building_name)_\(curPmResult.level_name)"
         guard let nodeData = PathMatcher.shared.nodeData[key], let linkData = PathMatcher.shared.linkData[key] else { return nil }
-        // Base link-group constraint: first landmark must be on the same link-group as current PM result.
+
         guard let firstLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
                                                                       result: resultWhenFisrtPeak,
                                                                       checkAll: true,
@@ -418,7 +421,10 @@ class RecoveryManager {
         let bestCandidate: _RecoveryCandidate_v2? = await withTaskGroup(of: _RecoveryCandidate_v2?.self) { group in
             for recoveryTraj in recoveryTrajList {
                 group.addTask { [sectorId = self.sectorId, nodeData = nodeData, linkData = linkData, firstLinkGroupId = firstLinkGroupId] in
-                    guard recoveryTraj.count >= 2 else { return nil }
+                    guard recoveryTraj.count >= 2 else {
+                        JupiterLogger.i(tag: "RecoveryManager", message: "(recover) recoveryTraj size is less than 2")
+                        return nil
+                    }
                     
                     var midIdx: Int? = nil
                     var anchorIdx: Int? = nil
@@ -432,7 +438,10 @@ class RecoveryManager {
                             break
                         }
                     }
-                    guard let aIdx = anchorIdx, let mIdx = midIdx else { return nil }
+                    guard let aIdx = anchorIdx, let mIdx = midIdx else {
+                        JupiterLogger.i(tag: "RecoveryManager", message: "(recover) anchorIdx or midIdx fail")
+                        return nil
+                    }
 
                     var localBestLoss = Float.greatestFiniteMagnitude
                     var localBestShiftedTraj: [RecoveryTrajectory]? = nil
@@ -541,12 +550,12 @@ class RecoveryManager {
                         headResult.y = head.y
                         headResult.absolute_heading = head.heading
                         
-                        guard let headLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
-                                                                                     result: headResult,
-                                                                                     checkAll: true, acceptDist: 15) else {
-                            JupiterLogger.i(tag: "RecoveryManager", message: "(recover) head link fail [\(headResult.x),\(headResult.y)]")
-                            continue
-                        }
+//                        guard let headLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
+//                                                                                     result: headResult,
+//                                                                                     checkAll: true, acceptDist: 15) else {
+//                            JupiterLogger.i(tag: "RecoveryManager", message: "(recover) head link fail [\(headResult.x),\(headResult.y)]")
+//                            continue
+//                        }
 
                         // Stronger plausibility filter: ensure head -> body -> tail is connectable on the map graph.
 //                        guard self.isHeadBodyTailConnectedViaGraph(nodeData: nodeData,
@@ -692,11 +701,10 @@ class RecoveryManager {
             return best
         }
 
-        guard let best = bestCandidate else { return nil }
-
-        let thirdCandMsg = best.thirdCand.map { "(\($0.x),\($0.y))" } ?? "nil"
-//        JupiterLogger.i(tag: "RecoveryManager", message: "(recover) selected recentCand=(\(best.recentCand.x),\(best.recentCand.y)) olderCand=\(olderCandMsg) olderPeakIdx=\(olderUserPeak.peak_index) olderLinkGroup=\(olderUserLink.group_id) bestLoss=\(best.loss)")
-
+        guard let best = bestCandidate else {
+            JupiterLogger.i(tag: "RecoveryManager", message: "(recover) bestCandidate nil")
+            return nil
+        }
         var resultTraj = [[Double]]()
         resultTraj.reserveCapacity(best.shiftedTraj.count)
         for value in best.shiftedTraj {
