@@ -108,13 +108,19 @@ public struct EntrancePeakData: Codable {
 public struct InnerWardData: Codable {
     public var type: Int = -1
     public var wardId: String = ""
-    public var coord: [Float] = []
+    public var building: String = ""
+    public var level: String = ""
+    public var x: Float = 0
+    public var y: Float = 0
     public var direction: [Float] = []
     
-    public init(type: Int, wardId: String, coord: [Float], direction: [Float]) {
+    public init(type: Int, wardId: String, building: String, level: String, x: Float, y: Float, direction: [Float]) {
         self.type = type
         self.wardId = wardId
-        self.coord = coord
+        self.building = building
+        self.level = level
+        self.x = x
+        self.y = y
         self.direction = direction
     }
 }
