@@ -70,6 +70,7 @@ public struct JupiterDebugResult: Codable {
     public var recon_raw_traj: [[Double]]?
     public var recon_corr_traj: [FineLocationTrackingOutput]?
     public var recovery_result: RecoveryResult?
+    public var recovery_result_v2: RecoveryResult_v2?
 }
 
 public struct RecoveryResult: Codable {
@@ -78,4 +79,42 @@ public struct RecoveryResult: Codable {
     public let bestOlder: [Int]
     public let bestRecent: [Int]
     public let bestResult: FineLocationTrackingOutput?
+}
+
+public struct RecoveryResult_v2: Codable {
+    public let traj: [[Double]]
+    public let loss: Float
+    public let bestThird: [Int]
+    public let bestSecond: [Int]
+    public let bestFirst: [Int]
+    public let bestResult: FineLocationTrackingOutput?
+}
+
+// Temp
+public struct EntrancePeakData: Codable {
+    public var number: Int = 0
+    public var velocityScale: Float = 1.0
+    public var inner_ward: InnerWardData
+    public var outerWardId: String = ""
+    
+    public init(number: Int, velocityScale: Float, inner_ward: InnerWardData, outerWardId: String) {
+        self.number = number
+        self.velocityScale = velocityScale
+        self.inner_ward = inner_ward
+        self.outerWardId = outerWardId
+    }
+}
+
+public struct InnerWardData: Codable {
+    public var type: Int = -1
+    public var wardId: String = ""
+    public var coord: [Float] = []
+    public var direction: [Float] = []
+    
+    public init(type: Int, wardId: String, coord: [Float], direction: [Float]) {
+        self.type = type
+        self.wardId = wardId
+        self.coord = coord
+        self.direction = direction
+    }
 }

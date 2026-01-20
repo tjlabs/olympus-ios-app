@@ -171,6 +171,7 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         
         serviceManager = JupiterManager(id: uniqueId)
         serviceManager?.delegate = self
+        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_04_01_0119.csv", sensorFileName: "sensor_coex_04_01_0119.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_02_1007.csv", sensorFileName: "sensor_coex_02_02_1007.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
         serviceManager?.startJupiter(sectorId: sector_id, mode: .MODE_AUTO, debugOption: true)
@@ -194,10 +195,10 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
 
     private func setupLayout() {
         // // MARK: - Start
-        scatterChart.addSubview(saveButton)
+        view.addSubview(saveButton)
         saveButton.snp.makeConstraints { make in
-            make.top.trailing.equalToSuperview().inset(10)
-            make.width.equalTo(60)
+            make.bottom.equalToSuperview().inset(40)
+            make.leading.trailing.equalToSuperview().inset(40)
             make.height.equalTo(40)
         }
         
@@ -605,11 +606,6 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
             indexTx.text = String(debugResult.index)
 //            indexRx.text = String(serviceManager.displayOutput.indexRx) + " // " + String(serviceManager.displayOutput.phase)
 //            scc.text = String(serviceManager.displayOutput.scc)
-            
-//            let directionArray = serviceManager.displayOutput.searchDirection
-//            let stringArray = directionArray.map { String($0) }
-//            searchDirections.text = stringArray.joined(separator: ", ")
-//            resultDirection.text = String(serviceManager.displayOutput.resultDirection)
             
             let XYH: [Double] = [Double(debugResult.x), Double(debugResult.y), Double(debugResult.absolute_heading)]
             let isIndoor = debugResult.isIndoor

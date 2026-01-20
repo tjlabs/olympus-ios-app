@@ -34,6 +34,7 @@ class KalmanFilter {
     
     var stackManager: StackManager?
     var tuResult: FineLocationTrackingOutput?
+    private var paddings: [Float] = [1, 1, 1, 1]
     
     private var tuResultBuffer = [ixyhs]()
     private var usedUvdIndex: Int = 0
@@ -525,12 +526,14 @@ class KalmanFilter {
             } else if (nextTuResult.y > limitationResult.limitValues[1]) {
                 updatedTuResult.y = limitationResult.limitValues[1]
             }
+            paddings = [40, 0.4, 40, 0.4]
         } else if (limitationResult.limitType == .X_LIMIT) {
             if (nextTuResult.x < limitationResult.limitValues[0]) {
                 updatedTuResult.x = limitationResult.limitValues[0]
             } else if (nextTuResult.x > limitationResult.limitValues[1]) {
                 updatedTuResult.x = limitationResult.limitValues[1]
             }
+            paddings = [0.4, 40, 0.4, 40]
         } else if limitationResult.limitType == .SMALL_LIMIT {
             if nextTuResult.x < nextTuResult.x - limitationResult.limitValues[0] {
                 updatedTuResult.x = nextTuResult.x - limitationResult.limitValues[0]
@@ -543,10 +546,16 @@ class KalmanFilter {
             } else if nextTuResult.y > nextTuResult.y + limitationResult.limitValues[1] {
                 updatedTuResult.y = nextTuResult.y + limitationResult.limitValues[1]
             }
+            paddings = [0.8, 0.8, 0.8, 0.8]
+        } else {
+            paddings = JupiterMode.PADDING_VALUES_DR
         }
         return updatedTuResult
     }
     
+    func getPaddings() -> [Float] {
+        return self.paddings
+    }
     
     func measurementUpdate(sectorId: Int, resultForCorrection: FineLocationTrackingOutput, mode: UserMode) -> FineLocationTrackingOutput? {
         guard let tuResult = self.tuResult else { return nil }
