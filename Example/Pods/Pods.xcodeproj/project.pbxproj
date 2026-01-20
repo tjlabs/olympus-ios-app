@@ -1037,7 +1037,6 @@
 		B30E1DF78E6510F658664D5E098E822F /* JupiterValidity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 694A4AC57EFEF465B93F5A9164D514B9 /* JupiterValidity.swift */; };
 		B31F7870A6FD6409D74F6DE669D8FB52 /* FIRInstallationsAPIService.m in Sources */ = {isa = PBXBuildFile; fileRef = D0959DD1ED16DB6DB75BA6C751B92C53 /* FIRInstallationsAPIService.m */; };
 		B33096EF00BA994BDE2CF3CEB529BAFD /* FIRCLSNotificationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = DD77E5C94573B5D827C59A49E5655CB8 /* FIRCLSNotificationManager.m */; };
-		B33AD2602F1A01A8005982E0 /* RecoveryManagerOg.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33AD25F2F1A01A8005982E0 /* RecoveryManagerOg.swift */; };
 		B33EA5F55BD3BE5BD0BD60042CBAEC1A /* Infallible+Operators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EC9B47740E8B1BFE1D53D0DB33367E7 /* Infallible+Operators.swift */; };
 		B340C123654AF5F8D7C42250C8091C0F /* FBLPromise+Any.h in Headers */ = {isa = PBXBuildFile; fileRef = 046C751AECD766CA6C9E25A9339903E5 /* FBLPromise+Any.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B34E117917C61A39427BE5EF4AB6203D /* BubbleChartRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13186EB92BA931637FEFF524AEF613D1 /* BubbleChartRenderer.swift */; };
@@ -3148,7 +3147,6 @@
 		B2A39A73CD6D7D770DCE1B97A90CB38D /* FillNode.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FillNode.swift; path = Sources/Private/MainThread/NodeRenderSystem/Nodes/RenderNodes/FillNode.swift; sourceTree = "<group>"; };
 		B2AF1895E67F3A6A5986BEC7379CCD7A /* SessionsDependencies.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SessionsDependencies.swift; path = FirebaseSessions/Sources/Public/SessionsDependencies.swift; sourceTree = "<group>"; };
 		B3196087312A3605EE22E35C61E768E1 /* FirebaseInstallations.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = FirebaseInstallations.modulemap; sourceTree = "<group>"; };
-		B33AD25F2F1A01A8005982E0 /* RecoveryManagerOg.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecoveryManagerOg.swift; path = OlympusSDK/Classes/RecoveryManagerOg.swift; sourceTree = "<group>"; };
 		B33C1ABC29734F77C3866EC7F12F471D /* AnimatedZoomViewJob.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AnimatedZoomViewJob.swift; path = Source/Charts/Jobs/AnimatedZoomViewJob.swift; sourceTree = "<group>"; };
 		B38F32051DCE8B57DF8322B4B48E24D3 /* RectNode.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RectNode.swift; path = Sources/Private/MainThread/NodeRenderSystem/Nodes/PathNodes/RectNode.swift; sourceTree = "<group>"; };
 		B39EB6C534717793AA2CF689AA9D7165 /* LottieView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LottieView.swift; path = Sources/Public/Animation/LottieView.swift; sourceTree = "<group>"; };
@@ -4479,7 +4477,6 @@
 				9F76D3FD4ECE61E30BF9B01E97E01EFA /* Frameworks */,
 				BE8DA07725B73E1F2D6DAFC6F9081094 /* Pod */,
 				9249A320BA82D550A8A1BE00E2D23FD0 /* Support Files */,
-				B33AD25F2F1A01A8005982E0 /* RecoveryManagerOg.swift */,
 			);
 			name = OlympusSDK;
 			path = ../..;
@@ -8772,7 +8769,6 @@
 				5CEBE39348B2DB4B49AB81A55A8BB0E3 /* JupiterStates.swift in Sources */,
 				50AD6F978FD5F2FDEEDB6A1FFA246EC9 /* JupiterTime.swift in Sources */,
 				B30E1DF78E6510F658664D5E098E822F /* JupiterValidity.swift in Sources */,
-				B33AD2602F1A01A8005982E0 /* RecoveryManagerOg.swift in Sources */,
 				6206FC3B4852B9AC30BE51094A70A3E0 /* KalmanFilter.swift in Sources */,
 				D7D3432FF265723549EF7A56CD691606 /* LandmarkTagger.swift in Sources */,
 				040C1D91C81D456F17408ABB432E7AC5 /* NotificationExtension.swift in Sources */,
