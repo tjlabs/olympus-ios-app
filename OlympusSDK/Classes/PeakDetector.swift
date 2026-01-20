@@ -2,44 +2,21 @@ import Foundation
 
 final class PeakDetector {
 
-//    typealias WardId = String
-//
-//    struct UserPeak {
-//        let id: WardId
-//        
-//        /// Peak 검출에 사용한 Buffer의 시작 uvd Index
-//        let start_index: Int
-//        /// Peak 검출에 사용한 Buffer의 마지막 uvd Index
-//        let end_index: Int
-//        /// Peak가 존재하는 시점의 uvd Index
-//        let peak_index: Int
-//
-//        /// Peak 검출에 사용한 Buffer의 시작 rssi
-//        let start_rssi: Float
-//        /// Peak 검출에 사용한 Buffer의 마지막 rssi
-//        let end_rssi: Float
-//        /// Peak rssi (buffer 내 max)
-//        let peak_rssi: Float
-//
-//        /// 당시 적용된 adaptive threshold
-//        let threshold: Float
-//    }
-
     private struct PeakPlateauState {
         var lastPlateauMax: Float? = nil
-        var lastPeakIndex: Int? = nil   // uvd index at which peak was detected
+        var lastPeakIndex: Int? = nil
         var inMaxPlateau: Bool = false
     }
 
     
     // MARK: - Config
-    private(set) var BUFFER_SIZE: Int = 10
+    private(set) var BUFFER_SIZE: Int = 50
     
     private let MISSING_FLOOR_RSSI: Float = -100.0
 
     private var minPeakRssi: Float = -90.0
     private let TOPK_FOR_REF = 10
-    private var globalTopkRssi: [Float] = [] // sorted desc (stronger first)
+    private var globalTopkRssi: [Float] = []
     private let REF_RSSI_CAP: Float = -65.0
     private let THRESHOLD_AT_CAP: Float = -82.0
     
@@ -77,7 +54,7 @@ final class PeakDetector {
         self.maxConsecutiveMissing = max(1, maxConsecutiveMissing)
     }
 
-    func updateEpoch(uvdIndex: Int, bleAvg: [WardId: Float]) -> UserPeak? {
+    func updateEpoch(uvdIndex: Int, bleAvg: [WardId: Float], windowSize: Int) -> UserPeak? {
         // 1) Append current values for seen IDs
         for (id, rssi) in bleAvg {
             appendIndex(id: id, index: uvdIndex)
@@ -109,14 +86,19 @@ final class PeakDetector {
 
         // 4) Peak decision (buffer-center max rule)
         var best: UserPeak? = nil
-        for (id, arr) in rssiHistory {
-            guard arr.count == BUFFER_SIZE else { continue }
+        let win = max(3, windowSize)
+
+        for (id, fullArr) in rssiHistory {
+            // Use the most-recent `win` samples for peak decision
+            guard fullArr.count >= win else { continue }
+            let arr = Array(fullArr.suffix(win))
+
             let n = arr.count
             let mid = n / 2
             let left = max(0, mid - 1)
             let right = min(n - 1, mid + 1)
 
-            // Find global max (value + index)
+            // Find global max (value + index) within the window
             var maxIdx = 0
             var maxVal = arr[0]
             for i in 1..<n {
@@ -126,6 +108,7 @@ final class PeakDetector {
                 }
             }
 
+            // Peak must be near the window center (same rule as before)
             if !(left...right).contains(maxIdx) {
                 var st = plateauState[id] ?? PeakPlateauState()
                 st.inMaxPlateau = false
@@ -136,8 +119,9 @@ final class PeakDetector {
 
             guard maxVal >= minPeakRssi else { continue }
 
-            // Build peak info using indexHistory + rssi buffer (needed for plateau suppression)
-            guard let idxArr = indexHistory[id], idxArr.count == BUFFER_SIZE else { continue }
+            // Build peak info using the same window for indexHistory + rssi buffer (needed for plateau suppression)
+            guard let fullIdxArr = indexHistory[id], fullIdxArr.count >= win else { continue }
+            let idxArr = Array(fullIdxArr.suffix(win))
 
             let startIndex = idxArr[0]
             let endIndex = idxArr[n - 1]
@@ -146,9 +130,6 @@ final class PeakDetector {
             let startRssi = arr[0]
             let endRssi = arr[n - 1]
 
-            // Plateau suppression: suppress repeated detections when the plateau persists.
-            // - If maxVal is unchanged (within eps) AND peakIndex is unchanged, suppress.
-            // - If maxVal is unchanged but peakIndex moved, allow (plateau shifted).
             var st = plateauState[id] ?? PeakPlateauState()
             if st.inMaxPlateau,
                let lastMax = st.lastPlateauMax,
@@ -181,7 +162,7 @@ final class PeakDetector {
         }
         
         if let bb = best {
-            JupiterLogger.i(tag: "PeakDetector", message: "(updateEpoch) - peak detected: bufferSize = \(BUFFER_SIZE), TH = \(minPeakRssi)")
+            JupiterLogger.i(tag: "PeakDetector", message: "(updateEpoch) - peak detected: windowSize = \(max(3, windowSize)), storedBufferSize = \(BUFFER_SIZE), TH = \(minPeakRssi)")
         }
 
         return best
@@ -300,11 +281,9 @@ final class PeakDetector {
             return clamp(thr, minThreshold, maxThreshold)
         }
 
-        // Ceiling cap
         var ref = refRaw
         if ref > refCap { ref = refCap }
 
-        // delta = how much weaker than cap
         let delta = max(0.0, refCap - ref)
 
         // Saturating extra margin: extra = extraMarginMax * (1 - exp(-delta/scale))
