@@ -13527,41 +13527,6 @@
       "value": "true"
     },
     {
-      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Utils\/TJLabsCommonLogger.swift",
-      "kind": "StringLiteral",
-      "offset": 456,
-      "length": 13,
-      "value": "\"\u001B[0m\""
-    },
-    {
-      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Utils\/TJLabsCommonLogger.swift",
-      "kind": "StringLiteral",
-      "offset": 497,
-      "length": 16,
-      "value": "\"\u001B[0;31m\""
-    },
-    {
-      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Utils\/TJLabsCommonLogger.swift",
-      "kind": "StringLiteral",
-      "offset": 543,
-      "length": 16,
-      "value": "\"\u001B[0;32m\""
-    },
-    {
-      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Utils\/TJLabsCommonLogger.swift",
-      "kind": "StringLiteral",
-      "offset": 590,
-      "length": 16,
-      "value": "\"\u001B[0;33m\""
-    },
-    {
-      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Utils\/TJLabsCommonLogger.swift",
-      "kind": "StringLiteral",
-      "offset": 635,
-      "length": 16,
-      "value": "\"\u001B[0;34m\""
-    },
-    {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Utils\/TJLabsUtilFunctions.swift",
       "kind": "StringLiteral",
       "offset": 365,
