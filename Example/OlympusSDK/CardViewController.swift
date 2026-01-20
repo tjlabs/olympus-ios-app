@@ -171,10 +171,10 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         
         serviceManager = JupiterManager(id: uniqueId)
         serviceManager?.delegate = self
-        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_04_01_0119.csv", sensorFileName: "sensor_coex_04_01_0119.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_02_1007.csv", sensorFileName: "sensor_coex_02_02_1007.csv")
+        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_01_0119.csv", sensorFileName: "sensor_coex_01_01_0119.csv")
+//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_02_1007.csv", sensorFileName: "sensor_coex_01_02_1007.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
-        serviceManager?.startJupiter(sectorId: sector_id, mode: .MODE_AUTO, debugOption: true)
+        serviceManager?.startJupiter(sectorId: sector_id, mode: .MODE_VEHICLE, debugOption: true)
         
         // service
 //        serviceManager.addObserver(self)
@@ -234,6 +234,7 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
                 saveButton.isHidden = true
                 saveButton.isUserInteractionEnabled = true
                 saveButtonTitleLabel.text = "Save"
+//                saveButtonTitleLabel.textColor = .black
 //                saveButtonTitleLabel.textColor = .black
             }
             DispatchQueue.main.async {
@@ -344,6 +345,7 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
                            recon_raw_traj: [[Double]]?,
                            recon_corr_traj: [FineLocationTrackingOutput]?,
                            recovery_result: RecoveryResult?,
+                           recovery_result_v2: RecoveryResult_v2?,
                            limits: [Double], isBleOnlyMode: Bool, isPmSuccess: Bool, isIndoor: Bool) {
         let xAxisValue: [Double] = RP_X
         let yAxisValue: [Double] = RP_Y
@@ -513,6 +515,69 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
             chartData.append(setRecent)
         }
         
+        if let recovery_result_v2 = recovery_result_v2 {
+            let recovery_traj = recovery_result_v2.traj
+            var xAxisValue = [Double]()
+            var yAxisValue = [Double]()
+            for traj in recovery_traj {
+                xAxisValue.append(traj[0])
+                yAxisValue.append(traj[1])
+            }
+            
+            let valuesRecoveryTraj = (0..<xAxisValue.count).map { (i) -> ChartDataEntry in
+                return ChartDataEntry(x: xAxisValue[i], y: yAxisValue[i])
+            }
+            
+            let setRecoveryTraj = ScatterChartDataSet(entries: valuesRecoveryTraj, label: "RecoveryTraj")
+            setRecoveryTraj.drawValuesEnabled = false
+            setRecoveryTraj.setScatterShape(.circle)
+            setRecoveryTraj.setColor(.systemGreen)
+            setRecoveryTraj.scatterShapeSize = 5
+            chartData.append(setRecoveryTraj)
+            
+            let bestFirst = recovery_result_v2.bestFirst
+            let firstX: [Double] = [Double(bestFirst[0])]
+            let firstY: [Double] = [Double(bestFirst[1])]
+            let valuesFirst = (0..<firstX.count).map { (i) -> ChartDataEntry in
+                return ChartDataEntry(x: firstX[i], y: firstY[i])
+            }
+            
+            let setFirst = ScatterChartDataSet(entries: valuesFirst, label: "BestFirst")
+            setFirst.drawValuesEnabled = false
+            setFirst.setScatterShape(.square)
+            setFirst.setColor(.systemBlue)
+            setFirst.scatterShapeSize = 8
+            chartData.append(setFirst)
+            
+            let bestSecond = recovery_result_v2.bestSecond
+            let secondX: [Double] = [Double(bestSecond[0])]
+            let secondY: [Double] = [Double(bestSecond[1])]
+            let valuesSecond = (0..<secondX.count).map { (i) -> ChartDataEntry in
+                return ChartDataEntry(x: secondX[i], y: secondY[i])
+            }
+            
+            let setSecond = ScatterChartDataSet(entries: valuesSecond, label: "BestSecond")
+            setSecond.drawValuesEnabled = false
+            setSecond.setScatterShape(.square)
+            setSecond.setColor(.systemOrange)
+            setSecond.scatterShapeSize = 8
+            chartData.append(setSecond)
+            
+            let bestThird = recovery_result_v2.bestThird
+            let thirdX: [Double] = [Double(bestThird[0])]
+            let thirdY: [Double] = [Double(bestThird[1])]
+            let valuesThird = (0..<thirdX.count).map { (i) -> ChartDataEntry in
+                return ChartDataEntry(x: thirdX[i], y: thirdY[i])
+            }
+            
+            let setThird = ScatterChartDataSet(entries: valuesThird, label: "BestThird")
+            setThird.drawValuesEnabled = false
+            setThird.setScatterShape(.square)
+            setThird.setColor(.systemRed)
+            setThird.scatterShapeSize = 8
+            chartData.append(setThird)
+        }
+        
         // Heading
         let point = scatterChart.getPosition(entry: ChartDataEntry(x: XYH[0], y: XYH[1]), axis: .left)
         let imageView = UIImageView(image: headingImage!.rotate(degrees: -XYH[2]+90))
@@ -643,6 +708,7 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
                               recon_raw_traj: debugResult.recon_raw_traj,
                               recon_corr_traj: debugResult.recon_corr_traj,
                               recovery_result: debugResult.recovery_result,
+                              recovery_result_v2: debugResult.recovery_result_v2,
                               limits: [0, 0, 0, 0], isBleOnlyMode: self.isBleOnlyMode, isPmSuccess: true, isIndoor: isIndoor)
                 }
             } else {
