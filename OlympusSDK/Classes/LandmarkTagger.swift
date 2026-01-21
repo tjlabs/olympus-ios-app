@@ -11,7 +11,7 @@ class LandmarkTagger {
     var landmarkData = [String: [String: LandmarkData]]()
     var exceptionalTags: Set<String> = []
     
-    let LADNMARK_DIST_THRESHOLD: Float = 30
+    let LADNMARK_DIST_THRESHOLD: Float = 40
     
     func setLandmarkData(key: String, data: [String: LandmarkData]) {
         self.landmarkData[key] = data
@@ -66,15 +66,21 @@ class LandmarkTagger {
             guard let ld = PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId, result: lm) else { continue }
 
             // 2) UserPeak에서의 위치가 속한 Link의 Group ID와 1)에서 얻은 Link의 Group ID의 일치 확인
-//            guard ld.group_id == peakLinkGroupId else { continue }
-            guard ld.id == peakLinkId else { continue }
+            guard ld.group_id == peakLinkGroupId else { continue }
+//            guard ld.id == peakLinkId else { continue }
 
             // 3) UserPeak의 위치와 가장 가까운 Link를 2)의 후보군에서 찾기 (LADNMARK_DIST_THRESHOLD 조건도 만족)
             let dx = peakX - refX
             let dy = peakY - refY
             let dist = sqrt(dx*dx + dy*dy)
 
-            if dist < bestPeakDist && dist <= LADNMARK_DIST_THRESHOLD {
+//            if dist < bestPeakDist && dist <= LADNMARK_DIST_THRESHOLD {
+//                bestPeakDist = dist
+//                bestPeak = peak
+//                bestPeakLinkId = ld.id
+//            }
+            
+            if dist < bestPeakDist {
                 bestPeakDist = dist
                 bestPeak = peak
                 bestPeakLinkId = ld.id
