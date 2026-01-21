@@ -65,7 +65,43 @@ class RecoveryManager {
         return trajList
     }
     
-    func recoverWithMultipleTraj(recoveryTrajList: [[RecoveryTrajectory]],
+    func makeLandmarkTrajectory(uvdBuffer: [UserVelocity], majorSection: [Float], alignDir: Float) -> [RecoveryTrajectory] {
+        var trajList = [RecoveryTrajectory]()
+        if !majorSection.isEmpty {
+            let headingForCompensation = majorSection.average - uvdBuffer[0].heading
+            
+            let startHeading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(alignDir) - Double(headingForCompensation)))
+            var coord: [Float] = [0, 0]
+            var heading: Float = startHeading
+            
+            var resultBuffer: [RecoveryTrajectory] = [RecoveryTrajectory(index: uvdBuffer[0].index, x: 0, y: 0, heading: startHeading)]
+            for i in 1..<uvdBuffer.count {
+                let curUvd = uvdBuffer[i]
+                let preUvd = uvdBuffer[i-1]
+                
+                let diffHeading: Float = Float(curUvd.heading - preUvd.heading)
+                let updatedHeading = TJLabsUtilFunctions.shared.compensateDegree(Double(heading + diffHeading))
+                let updatedHeadingRadian = TJLabsUtilFunctions.shared.degree2radian(degree: updatedHeading)
+
+                let dx = curUvd.length * cos(updatedHeadingRadian)
+                let dy = curUvd.length * sin(updatedHeadingRadian)
+                
+                coord[0] += Float(dx)
+                coord[1] += Float(dy)
+                heading = Float(updatedHeading)
+                
+                resultBuffer.append(RecoveryTrajectory(index: curUvd.index, x: coord[0], y: coord[1], heading: heading))
+            }
+            
+            trajList = resultBuffer
+            let lastHeading = TJLabsUtilFunctions.shared.compensateDegree(Double(resultBuffer[resultBuffer.count-1].heading))
+            JupiterLogger.i(tag: "RecoveryManager", message: "(makeMultipleLandmarkTrajectory) 2 Peaks: alignDir= \(alignDir) // lastHeading= \(lastHeading)")
+        }
+  
+        return trajList
+    }
+    
+    func recoverWithLandmarkTraj(landmarkTraj: [RecoveryTrajectory],
                                  userPeakAndLinkBuffer: [(UserPeak, LinkData)],
                                  landmarks: (older: LandmarkData, recent: LandmarkData),
                                  tuResultWhenOlderPeak: ixyhs,
@@ -75,12 +111,246 @@ class RecoveryManager {
         var output: RecoveryResult? = nil
 
         Task {
-            output = await self.recoverWithMultipleTrajAsync(recoveryTrajList: recoveryTrajList,
+            output = await self.recoverWithLandmarkTrajAsync(landmarkTraj: landmarkTraj,
                                                             userPeakAndLinkBuffer: userPeakAndLinkBuffer,
                                                             landmarks: landmarks,
                                                             tuResultWhenOlderPeak: tuResultWhenOlderPeak,
                                                             curPmResult: curPmResult,
                                                             mode: mode)
+            semaphore.signal()
+        }
+
+        semaphore.wait()
+        return output
+    }
+    
+    private func recoverWithLandmarkTrajAsync(landmarkTraj: [RecoveryTrajectory],
+                                             userPeakAndLinkBuffer: [(UserPeak, LinkData)],
+                                             landmarks: (older: LandmarkData, recent: LandmarkData),
+                                             tuResultWhenOlderPeak: ixyhs,
+                                             curPmResult: FineLocationTrackingOutput,
+                                             mode: UserMode) async -> RecoveryResult? {
+        guard userPeakAndLinkBuffer.count >= 2 else { return nil }
+
+        let olderUserPeak = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count - 2].0
+        let olderUserLink = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count - 2].1
+
+        let recentUserPeak = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count - 1].0
+        let recentUserLink = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count - 1].1
+        
+        let recentUserPeakIndex = recentUserPeak.peak_index
+
+        JupiterLogger.i(tag: "RecoveryManager", message: "(recoverWithLandmarkTrajAsync) olderPeakId: \(olderUserPeak.id), oldPeakIndex: \(olderUserPeak.peak_index), recentPeakId: \(recentUserPeak.id), recentPeakIndex: \(recentUserPeakIndex)")
+
+        let olderLandmarkCands: [PeakData] = landmarks.older.peaks
+        let recentLandmarkCands: [PeakData] = landmarks.recent.peaks
+        
+        JupiterLogger.i(tag: "RecoveryManager", message: "(recoverWithLandmarkTrajAsync) 2 Peaks : recent // groupId=\(recentUserLink.group_id), linkId=\(recentUserLink.id)")
+        
+        func dist2(_ ax: Float, _ ay: Float, _ bx: Float, _ by: Float) -> Float {
+            let dx = ax - bx
+            let dy = ay - by
+            return sqrt(dx * dx + dy * dy)
+        }
+
+        let bestCandidate: _RecoveryCandidate? = await withTaskGroup(of: _RecoveryCandidate?.self) { group in
+            group.addTask { [sectorId = self.sectorId] in
+                guard landmarkTraj.count >= 2 else { return nil }
+
+                var anchorIdx: Int? = nil
+                for i in 0..<landmarkTraj.count {
+                    if landmarkTraj[i].index == recentUserPeakIndex {
+                        anchorIdx = i
+                        break
+                    }
+                }
+                guard let aIdx = anchorIdx else { return nil }
+
+                var localBestLoss = Float.greatestFiniteMagnitude
+                var localBestShiftedTraj: [RecoveryTrajectory]? = nil
+                var localBestRecentCand: PeakData? = nil
+                var localBestOlderCand: PeakData? = nil
+                var localBestTail: FineLocationTrackingOutput? = nil
+                var localBestHead: FineLocationTrackingOutput? = nil
+
+                for cand in recentLandmarkCands {
+                    let offsetX = Float(cand.x) - landmarkTraj[aIdx].x
+                    let offsetY = Float(cand.y) - landmarkTraj[aIdx].y
+                    
+                    var candResult = curPmResult
+                    candResult.x = Float(cand.x)
+                    candResult.y = Float(cand.y)
+                    guard let candLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
+                                                                                 result: candResult,
+                                                                                 checkAll: true,
+                                                                                 acceptDist: 15) else { continue }
+                    
+                    JupiterLogger.i(tag: "RecoveryManager", message: "(recoverWithLandmarkTrajAsync) 2 Peaks : cand // groupId=\(candLink.group_id), linkId=\(candLink.id)")
+                    if candLink.group_id != recentUserLink.group_id {
+                        JupiterLogger.i(tag: "RecoveryManager", message: "(recoverWithLandmarkTrajAsync) 2 Peaks : group ID is not same")
+                        continue
+                    }
+                    
+                    var shiftedTraj: [RecoveryTrajectory] = []
+                    shiftedTraj.reserveCapacity(landmarkTraj.count)
+                    for p in landmarkTraj {
+                        shiftedTraj.append(RecoveryTrajectory(index: p.index,
+                                                             x: p.x + offsetX,
+                                                             y: p.y + offsetY,
+                                                             heading: p.heading))
+                    }
+                    guard let first = shiftedTraj.first, let last = shiftedTraj.last else { continue }
+
+                    // Tail PM
+                    guard let tail = await self.pmGate.pathMatching(sectorId: sectorId,
+                                                                   building: curPmResult.building_name,
+                                                                   level: curPmResult.level_name,
+                                                                   x: first.x,
+                                                                   y: first.y,
+                                                                   heading: first.heading,
+                                                                   isUseHeading: false,
+                                                                   mode: mode,
+                                                                   paddingValues: JupiterMode.PADDING_VALUES_DR) else { continue }
+
+                    var tailResult = curPmResult
+                    tailResult.x = tail.x
+                    tailResult.y = tail.y
+                    tailResult.absolute_heading = tail.heading
+
+                    guard let tailLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
+                                                                                result: tailResult,
+                                                                                checkAll: true, acceptDist: 15) else {
+                        continue
+                    }
+                    let tailLinkGroupId = tailLink.group_id
+
+                    // Head PM
+                    guard let head = await self.pmGate.pathMatching(sectorId: sectorId,
+                                                                   building: curPmResult.building_name,
+                                                                   level: curPmResult.level_name,
+                                                                   x: last.x,
+                                                                   y: last.y,
+                                                                   heading: last.heading,
+                                                                   isUseHeading: false,
+                                                                   mode: mode,
+                                                                   paddingValues: JupiterMode.PADDING_VALUES_DR) else {
+                        continue
+                    }
+
+                    // dist1: tail -> best older landmark (optionally group-constrained)
+                    var dist1 = Float.greatestFiniteMagnitude
+                    var localOlderCand: PeakData? = nil
+
+                    for oc in olderLandmarkCands {
+                        var tmp = curPmResult
+                        tmp.x = Float(oc.x)
+                        tmp.y = Float(oc.y)
+
+                        let peakDist = dist2(Float(oc.x), Float(oc.y), Float(cand.x), Float(cand.y))
+                        if peakDist < 5 { continue }
+                        tmp.absolute_heading = tail.heading
+//                            guard let ocLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
+//                                                                                      result: tmp,
+//                                                                                      checkAll: true) else {
+//                                continue
+//                            }
+
+                        let d = dist2(Float(tail.x), Float(tail.y), Float(oc.x), Float(oc.y))
+                        if d < dist1 {
+                            dist1 = d
+                            localOlderCand = oc
+                        }
+                    }
+
+                    if dist1 == Float.greatestFiniteMagnitude {
+                        dist1 = 1_000_000
+                    }
+
+                    // dist2: tail -> TU result at older peak
+                    let dist2v = dist2(Float(tail.x), Float(tail.y), Float(tuResultWhenOlderPeak.x), Float(tuResultWhenOlderPeak.y))
+
+                    // dist3: head -> last (shifted traj last point)
+                    let dist3 = dist2(Float(head.x), Float(head.y), Float(last.x), Float(last.y))
+
+                    let loss = dist1 + dist2v + dist3
+                    if loss < localBestLoss {
+                        localBestLoss = loss
+                        localBestShiftedTraj = shiftedTraj
+                        localBestRecentCand = cand
+                        localBestOlderCand = localOlderCand
+
+                        var bt = curPmResult
+                        bt.x = tail.x
+                        bt.y = tail.y
+                        localBestTail = bt
+
+                        var bh = curPmResult
+                        bh.x = head.x
+                        bh.y = head.y
+                        localBestHead = bh
+
+                        _ = tailLinkGroupId
+                    }
+                }
+
+                if let st = localBestShiftedTraj, let rc = localBestRecentCand {
+                    return _RecoveryCandidate(loss: localBestLoss,
+                                             shiftedTraj: st,
+                                             recentCand: rc,
+                                             olderCand: localBestOlderCand,
+                                             tail: localBestTail,
+                                             head: localBestHead)
+                }
+                return nil
+            }
+            var best: _RecoveryCandidate? = nil
+            for await cand in group {
+                guard let cand = cand else { continue }
+                if best == nil || cand.loss < best!.loss {
+                    best = cand
+                }
+            }
+            return best
+        }
+
+        guard let best = bestCandidate else { return nil }
+
+        let olderCandMsg = best.olderCand.map { "(\($0.x),\($0.y))" } ?? "nil"
+//        JupiterLogger.i(tag: "RecoveryManager", message: "(recover) selected recentCand=(\(best.recentCand.x),\(best.recentCand.y)) olderCand=\(olderCandMsg) olderPeakIdx=\(olderUserPeak.peak_index) olderLinkGroup=\(olderUserLink.group_id) bestLoss=\(best.loss)")
+
+        var resultTraj = [[Double]]()
+        resultTraj.reserveCapacity(best.shiftedTraj.count)
+        for value in best.shiftedTraj {
+            resultTraj.append([Double(value.x), Double(value.y)])
+        }
+
+        let bestOlder: [Int] = best.olderCand != nil ? [best.olderCand!.x, best.olderCand!.y] : [0, 0]
+        let recoveryResult = RecoveryResult(traj: resultTraj,
+                                            loss: best.loss,
+                                            bestOlder: bestOlder,
+                                            bestRecent: [best.recentCand.x, best.recentCand.y],
+                                            bestResult: best.head)
+        return recoveryResult
+    }
+    
+    func recoverWithMultipleTraj(recoveryTrajList: [[RecoveryTrajectory]],
+                                 userPeakAndLinkBuffer: [(UserPeak, LinkData)],
+                                 landmarks: (older: LandmarkData, recent: LandmarkData),
+                                 tuResultWhenOlderPeak: ixyhs,
+                                 curPmResult: FineLocationTrackingOutput,
+                                 mode: UserMode,
+                                 inSameLink: Bool = false) -> RecoveryResult? {
+        let semaphore = DispatchSemaphore(value: 0)
+        var output: RecoveryResult? = nil
+
+        Task {
+            output = await self.recoverWithMultipleTrajAsync(recoveryTrajList: recoveryTrajList,
+                                                            userPeakAndLinkBuffer: userPeakAndLinkBuffer,
+                                                            landmarks: landmarks,
+                                                            tuResultWhenOlderPeak: tuResultWhenOlderPeak,
+                                                            curPmResult: curPmResult,
+                                                            mode: mode,
+                                                            inSameLink: inSameLink)
             semaphore.signal()
         }
 
@@ -102,13 +372,15 @@ class RecoveryManager {
                                              landmarks: (older: LandmarkData, recent: LandmarkData),
                                              tuResultWhenOlderPeak: ixyhs,
                                              curPmResult: FineLocationTrackingOutput,
-                                             mode: UserMode) async -> RecoveryResult? {
+                                             mode: UserMode,
+                                             inSameLink: Bool) async -> RecoveryResult? {
         guard userPeakAndLinkBuffer.count >= 2 else { return nil }
 
         let olderUserPeak = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count - 2].0
         let olderUserLink = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count - 2].1
 
         let recentUserPeak = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count - 1].0
+        let recentUserLink = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count - 1].1
         let recentUserPeakIndex = recentUserPeak.peak_index
 
 //        JupiterLogger.i(tag: "RecoveryManager", message: "(recover) olderPeakId: \(olderUserPeak.id), oldPeakIndex: \(olderUserPeak.peak_index), recentPeakId: \(recentUserPeak.id), recentPeakIndex: \(recentUserPeakIndex)")
@@ -144,6 +416,18 @@ class RecoveryManager {
                     var localBestHead: FineLocationTrackingOutput? = nil
 
                     for cand in recentLandmarkCands {
+                        if inSameLink {
+                            var candResult = curPmResult
+                            candResult.x = Float(cand.x)
+                            candResult.y = Float(cand.y)
+                            guard let candLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
+                                                                                         result: candResult,
+                                                                                         checkAll: true,
+                                                                                         acceptDist: 15) else { continue }
+                            if candLink.group_id != recentUserLink.group_id { continue }
+                            
+                        }
+                        
                         let offsetX = Float(cand.x) - recoveryTraj[aIdx].x
                         let offsetY = Float(cand.y) - recoveryTraj[aIdx].y
 
@@ -203,7 +487,7 @@ class RecoveryManager {
                             tmp.y = Float(oc.y)
 
                             let peakDist = dist2(Float(oc.x), Float(oc.y), Float(cand.x), Float(cand.y))
-                            if peakDist < 2 { continue }
+                            if peakDist < 5 { continue }
                             tmp.absolute_heading = tail.heading
 //                            guard let ocLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
 //                                                                                      result: tmp,
