@@ -43,6 +43,16 @@ class StackManager {
         return buffer
     }
     
+    func getUvdBuffer(from: Int, to: Int) -> [UserVelocity] {
+        var buffer = [UserVelocity]()
+        for uvd in uvdBuffer {
+            if uvd.index >= from && uvd.index <= to {
+                buffer.append(uvd)
+            }
+        }
+        return buffer
+    }
+    
     func stackUserPeakAndLink(userPeakAndLink: (UserPeak, LinkData)) {
         userPeakAndLinkBuffer.append(userPeakAndLink)
         if (userPeakAndLinkBuffer.count > USER_PEAK_AND_LINK_BUFFER_SIZE) {
@@ -97,7 +107,8 @@ class StackManager {
         }
     }
     
-    func checkIsBadCase() -> Bool {
+    func checkIsBadCase(jupiterPhase: JupiterPhase) -> Bool {
+        if jupiterPhase == .ENTERING { return false }
         guard curPmResultBuffer.count >= SAME_COORD_THRESHOLD else { return false }
 
         let lastX: Float = curPmResultBuffer[curPmResultBuffer.count-1].x
@@ -113,7 +124,7 @@ class StackManager {
             } else {
                 break
             }
-            JupiterLogger.i(tag: "StackManager", message: "(checkIsBadCase) sameCount: \(sameCount)")
+//            JupiterLogger.i(tag: "StackManager", message: "(checkIsBadCase) sameCount: \(sameCount)")
             if sameCount >= SAME_COORD_THRESHOLD {
                 return true
             }
@@ -148,6 +159,18 @@ class StackManager {
         } else {
             return (false, 360)
         }
+    }
+    
+    func isDrBufferStraightCircularStd(uvdBuffer: [UserVelocity], condition: Double = 5) -> (Bool, Double) {
+        var headingBuffer = [Double]()
+        for uvd in uvdBuffer {
+            let compensatedHeading = TJLabsUtilFunctions.shared.compensateDegree(uvd.heading)
+            headingBuffer.append(compensatedHeading)
+        }
+        let headingStd = TJLabsUtilFunctions.shared.calculateCircularStd(for: headingBuffer)
+        JupiterLogger.i(tag: "StackManager", message: "(isDrBufferStraightCircularStd) headingBuffer: \(headingBuffer)")
+        JupiterLogger.i(tag: "StackManager", message: "(isDrBufferStraightCircularStd) headingStd: \(headingStd)")
+        return (headingStd <= condition) ? (true, headingStd) : (false, headingStd)
     }
     
     func isResultHeadingStraight(drBufferInput: [UserVelocity], fltResult: FineLocationTrackingOutput) -> Bool {
