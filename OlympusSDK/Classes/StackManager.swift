@@ -10,7 +10,7 @@ class StackManager {
     private let DR_BUFFER_SIZE: Int = 60
     private let BLE_LEVEL_BUFFER_SIZE: Int = 8
     private let USER_PEAK_AND_LINK_BUFFER_SIZE: Int = 5
-    private let CUR_RESULT_BUFFER_SIZE: Int = 100
+    private let CUR_RESULT_BUFFER_SIZE: Int = 200
     private let CUR_PM_RESULT_BUFFER_SIZE: Int = 50
     
     private var rfdBuffer = [[String: Float]]()
@@ -105,6 +105,26 @@ class StackManager {
         if (curPmResultBuffer.count > CUR_PM_RESULT_BUFFER_SIZE) {
             curPmResultBuffer.remove(at: 0)
         }
+    }
+    
+    func getCurPmResultBuffer(from: Int) -> [FineLocationTrackingOutput] {
+        var buffer = [FineLocationTrackingOutput]()
+        for result in curPmResultBuffer {
+            if result.index >= from {
+                buffer.append(result)
+            }
+        }
+        return buffer
+    }
+    
+    func makeHeadingSet(resultBuffer: [FineLocationTrackingOutput]) -> [Float] {
+        var headingSet: Set<Float> = []
+        for result in resultBuffer {
+            let heading = result.absolute_heading
+            headingSet.insert(heading)
+        }
+    
+        return headingSet.map{$0}
     }
     
     func checkIsBadCase(jupiterPhase: JupiterPhase) -> Bool {
