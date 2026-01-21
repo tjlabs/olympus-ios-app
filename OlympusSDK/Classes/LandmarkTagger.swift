@@ -22,22 +22,35 @@ class LandmarkTagger {
     }
     
     func findMatchedLandmarkWithUserPeak(userPeak: UserPeak, curResult: FineLocationTrackingOutput?, curResultBuffer: [FineLocationTrackingOutput]) -> (landmark: LandmarkData, matchedResult: FineLocationTrackingOutput)? {
-        guard let curResult = curResult else { return nil }
-        if exceptionalTags.contains(userPeak.id) { return nil }
+        guard let curResult = curResult else {
+            JupiterLogger.i(tag: "LandmarkTagger", message: "(findMatchedLandmarkWithUserPeak) curResult nil")
+            return nil
+        }
+        if exceptionalTags.contains(userPeak.id) {
+            JupiterLogger.i(tag: "LandmarkTagger", message: "(findMatchedLandmarkWithUserPeak) userPeak \(userPeak) is exceptional")
+            return nil
+        }
         
-        var isBuildingLevelMatched = false
+        var isMatched = false
         var matchedCurResult: FineLocationTrackingOutput?
         for result in curResultBuffer {
             if result.index == userPeak.peak_index {
                 if result.building_name == curResult.building_name && result.level_name == curResult.level_name {
-                    isBuildingLevelMatched = true
+                    isMatched = true
                     matchedCurResult = result
                     break
                 }
             }
         }
         
-        if !isBuildingLevelMatched { return nil }
+        if !isMatched {
+            for r in curResultBuffer {
+                JupiterLogger.i(tag: "LandmarkTagger", message: "(findMatchedLandmarkWithUserPeak) curResultBuffer=\(r)")
+            }
+            JupiterLogger.i(tag: "LandmarkTagger", message: "(findMatchedLandmarkWithUserPeak) curResult=\(curResult)")
+            JupiterLogger.i(tag: "LandmarkTagger", message: "(findMatchedLandmarkWithUserPeak) isMatched false")
+            return nil
+        }
         let key = "\(sectorId)_\(curResult.building_name)_\(curResult.level_name)"
         guard let landmarkData = self.landmarkData[key] else { return nil }
         guard let matchedLandmark = landmarkData[userPeak.id] else { return nil }
