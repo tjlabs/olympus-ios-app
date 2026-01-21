@@ -546,7 +546,7 @@ class KalmanFilter {
             } else if nextTuResult.y > nextTuResult.y + limitationResult.limitValues[1] {
                 updatedTuResult.y = nextTuResult.y + limitationResult.limitValues[1]
             }
-            paddings = [0.8, 0.8, 0.8, 0.8]
+            paddings = JupiterMode.PADDING_VALUES_DR
         } else {
             paddings = JupiterMode.PADDING_VALUES_DR
         }
