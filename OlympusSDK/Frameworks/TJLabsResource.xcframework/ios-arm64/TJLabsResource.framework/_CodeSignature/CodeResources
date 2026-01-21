@@ -58,15 +58,15 @@
 		</data>
 		<key>Frameworks/TJLabsAuth.framework/Info.plist</key>
 		<data>
-		E+km+NQVbUV8i7NXy+/xrt27IaU=
+		Wzv4lz0Aw+TpRGeDA9StpY/013Q=
 		</data>
 		<key>Frameworks/TJLabsAuth.framework/TJLabsAuth</key>
 		<data>
-		UG3I/2pR9+hteXvbfwot94LozLM=
+		E24HhZu30+5XDgLwI9EEdO/VcGU=
 		</data>
 		<key>Frameworks/TJLabsAuth.framework/_CodeSignature/CodeResources</key>
 		<data>
-		O2fN9xvB79CobB5q6Jb+afi66B0=
+		axAjZQ7JmThDvHSOQmm+WJUzRRs=
 		</data>
 		<key>Headers/TJLabsResource.h</key>
 		<data>
@@ -74,15 +74,15 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		+rcQ4vBmUUtoRCZJXeRnRv061jA=
+		MKzx5ueCq0UAONU6cneOHkZqluc=
 		</data>
 		<key>Modules/TJLabsResource.swiftmodule/arm64-apple-ios.abi.json</key>
 		<data>
-		3/wYBCApk1WbRGM2QFtoErlOOUk=
+		nXjDQfRA1lIAghuTxxzBD/elQZ4=
 		</data>
 		<key>Modules/TJLabsResource.swiftmodule/arm64-apple-ios.private.swiftinterface</key>
 		<data>
-		jepsrGzqV2DjZGXi045IsZKnao0=
+		WZHfltBIjMjzAr6Tsq5mOBQkzdw=
 		</data>
 		<key>Modules/TJLabsResource.swiftmodule/arm64-apple-ios.swiftdoc</key>
 		<data>
@@ -90,11 +90,11 @@
 		</data>
 		<key>Modules/TJLabsResource.swiftmodule/arm64-apple-ios.swiftinterface</key>
 		<data>
-		jepsrGzqV2DjZGXi045IsZKnao0=
+		WZHfltBIjMjzAr6Tsq5mOBQkzdw=
 		</data>
 		<key>Modules/TJLabsResource.swiftmodule/arm64-apple-ios.swiftmodule</key>
 		<data>
-		Ty1zw7mn4CyMUCsM4YhojIhA3y0=
+		XgEIhriih0FyC2p5wPQtftIEYp0=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -198,21 +198,21 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			4tf2VbHm5WLbgd1JcCCLg1r4OQ3csmSwwscIj1dAEJo=
+			f2CRhJZBRBLg9nz8ScaNqiBMEZ3OartZLBPNZOmaEc4=
 			</data>
 		</dict>
 		<key>Frameworks/TJLabsAuth.framework/TJLabsAuth</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			Dn9oQcDEK9Q2iellX2bvbwP9r6clNLGqMsKEM0uU48c=
+			WZLyOIVZbHlRnTtJ7lW9W9ywxQgqXwfyhHCO1A2hIz4=
 			</data>
 		</dict>
 		<key>Frameworks/TJLabsAuth.framework/_CodeSignature/CodeResources</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			S4VK1qIa4R6A243LKqIru1RogOQG/mKskD/LgWgs3Lc=
+			GgQRIFLX+S8PbB9q/vtFmSrQ/eZuzLFIK3J8Gz6hK44=
 			</data>
 		</dict>
 		<key>Headers/TJLabsResource.h</key>
@@ -226,14 +226,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			OD+KhDT1ach2Uys11/8Fq2pBv4BYifpv8yHuV1NFFQY=
+			ZS/OMMaWZyA82WomHmFKjd1BkRB/BmBJCgi2eA6g1do=
 			</data>
 		</dict>
 		<key>Modules/TJLabsResource.swiftmodule/arm64-apple-ios.private.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			YhBFvRIYeVP+HGWUWx8yAdLIBkLCpSwUsxsSTi9VZvU=
+			aRlIGcwIGZOG5Q/B5ODfH9p+r195EUxU0rcHrziieFg=
 			</data>
 		</dict>
 		<key>Modules/TJLabsResource.swiftmodule/arm64-apple-ios.swiftdoc</key>
@@ -247,14 +247,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			YhBFvRIYeVP+HGWUWx8yAdLIBkLCpSwUsxsSTi9VZvU=
+			aRlIGcwIGZOG5Q/B5ODfH9p+r195EUxU0rcHrziieFg=
 			</data>
 		</dict>
 		<key>Modules/TJLabsResource.swiftmodule/arm64-apple-ios.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			lNzRvYMRuvY37qBmLqkRW59+60d1kCT6YhRefZWfRUY=
+			aCAg1ssVyBYl/kEQzeEvIjFhHZfWSbMW0TG+iAuCWH8=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>

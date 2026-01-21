@@ -13001,7 +13001,7 @@
           {
             "kind": "Function",
             "name": "loadJupiterResource",
-            "printedName": "loadJupiterResource(region:sectorId:completion:)",
+            "printedName": "loadJupiterResource(region:sectorId:landmarkTh:completion:)",
             "children": [
               {
                 "kind": "TypeNominal",
@@ -13019,6 +13019,13 @@
                 "name": "Int",
                 "printedName": "Swift.Int",
                 "usr": "s:Si"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Float",
+                "printedName": "Swift.Float",
+                "hasDefaultArg": true,
+                "usr": "s:Sf"
               },
               {
                 "kind": "TypeFunc",
@@ -13040,8 +13047,8 @@
               }
             ],
             "declKind": "Func",
-            "usr": "s:14TJLabsResource0aB7ManagerC011loadJupiterB06region8sectorId10completionySS_SiySbctF",
-            "mangledName": "$s14TJLabsResource0aB7ManagerC011loadJupiterB06region8sectorId10completionySS_SiySbctF",
+            "usr": "s:14TJLabsResource0aB7ManagerC011loadJupiterB06region8sectorId10landmarkTh10completionySS_SiSfySbctF",
+            "mangledName": "$s14TJLabsResource0aB7ManagerC011loadJupiterB06region8sectorId10landmarkTh10completionySS_SiSfySbctF",
             "moduleName": "TJLabsResource",
             "declAttributes": [
               "AccessControl"
@@ -14705,22 +14712,29 @@
   "ConstValues": [
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/Manager\/TJLabsLandmarkManager.swift",
+      "kind": "FloatLiteral",
+      "offset": 732,
+      "length": 6,
+      "value": "-100.0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/Manager\/TJLabsLandmarkManager.swift",
       "kind": "StringLiteral",
-      "offset": 5190,
+      "offset": 5340,
       "length": 90,
       "value": "\"(TJLabsResource) [decodeLandmarkDict] ❌ Failed to convert landmark json string to Data\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/Manager\/TJLabsLandmarkManager.swift",
       "kind": "StringLiteral",
-      "offset": 5825,
+      "offset": 5975,
       "length": 78,
       "value": "\"(TJLabsResource) [decodeLandmarkDict] ❌ Landmark decoding failed: \""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/Manager\/TJLabsLandmarkManager.swift",
       "kind": "StringLiteral",
-      "offset": 5902,
+      "offset": 6052,
       "length": 2,
       "value": "\"\""
     },
@@ -15013,8 +15027,15 @@
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/TJLabsResourceManager.swift",
+      "kind": "IntegerLiteral",
+      "offset": 11674,
+      "length": 4,
+      "value": "-100"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/TJLabsResourceManager.swift",
       "kind": "BooleanLiteral",
-      "offset": 16055,
+      "offset": 16108,
       "length": 5,
       "value": "false"
     },
