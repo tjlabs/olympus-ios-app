@@ -647,11 +647,17 @@ class PathMatcher {
             JupiterLogger.i(tag: "PathMatcher", message: "(updateNodeAndLinkInfo) [NODE] uvd=\(uvdIndex) key=\(key) node=\(nodeId) xy=(\(correctedX),\(correctedY)) userH=\(heading) bestH=\(bestHeading)(idx=\(bestIndex), is_end=\(bestIsEnd)) oppH=\(bestOppHeading)(idx=\(bestOppIndex))")
             return
         } else if let jumpInfo = jumpInfo {
-            JupiterLogger.i(tag: "PathMatcher", message: "(updateNodeAndLinkInfo) [NODE] not found and position jumped to \(jumpInfo.link_id) link")
-            for node in jumpInfo.jumped_nodes {
-                JupiterLogger.i(tag: "PathMatcher", message: "(updateNodeAndLinkInfo) [NODE] jumped_nodes : \(jumpInfo.jumped_nodes.map{$0.id})")
-                registerPassedNode(node: node.id, coord: node.coord, headings: node.headings, matchedIndex: node.matched_index, heading: node.user_heading)
+            let jumpedNodes = jumpInfo.jumped_nodes
+            if jumpedNodes.isEmpty {
+                self.initPassedNodeInfo()
+                JupiterLogger.i(tag: "PathMatcher", message: "(updateNodeAndLinkInfo) [NODE] not found -> jumped node nil (do init)")
+            } else {
+                for node in jumpInfo.jumped_nodes {
+                    JupiterLogger.i(tag: "PathMatcher", message: "(updateNodeAndLinkInfo) [NODE] jumped_nodes : \(jumpInfo.jumped_nodes.map{$0.id})")
+                    registerPassedNode(node: node.id, coord: node.coord, headings: node.headings, matchedIndex: node.matched_index, heading: node.user_heading)
+                }
             }
+            JupiterLogger.i(tag: "PathMatcher", message: "(updateNodeAndLinkInfo) [NODE] not found and position jumped to \(jumpInfo.link_id) link")
         }
 
         // 2. 현재 Node 위에 존재하지 않음
