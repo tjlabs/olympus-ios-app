@@ -90,6 +90,7 @@ final class PeakDetector {
 
         for (id, fullArr) in rssiHistory {
             // Use the most-recent `win` samples for peak decision
+
             guard fullArr.count >= win else { continue }
             let arr = Array(fullArr.suffix(win))
 
@@ -164,7 +165,7 @@ final class PeakDetector {
         if let bb = best {
             JupiterLogger.i(tag: "PeakDetector", message: "(updateEpoch) - peak detected: windowSize = \(max(3, windowSize)), storedBufferSize = \(BUFFER_SIZE), TH = \(minPeakRssi)")
         }
-
+        
         return best
     }
 
