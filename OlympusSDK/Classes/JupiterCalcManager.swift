@@ -873,7 +873,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                                                                    building: firstResult.building_name,
                                                                                    level: firstResult.level_name,
                                                                                    x: firstResult.x, y: firstResult.y, heading: firstResult.absolute_heading, isUseHeading: true, mode: .MODE_VEHICLE, paddingValues: JupiterMode.PADDING_VALUES_DR) else { continue }
-                                let dist1 = abs(firstX - firstPm.x) + abs(firstX - firstPm.y)
+                                let dist1 = abs(firstX - firstPm.x) + abs(firstY - firstPm.y)
                                 
                                 let dist = dist0+dist1
                                 if dist < minDist {
