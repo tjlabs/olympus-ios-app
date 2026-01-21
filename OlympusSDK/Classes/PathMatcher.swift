@@ -105,9 +105,11 @@ class PathMatcher {
             if !idshArray.isEmpty {
                 let updatedIxyhs = processIdshArray(idshArray: idshArray, roadX: roadX, roadY: roadY, inputXyhs: &ixyhs, bestHeading: &bestHeading, isUseHeading: isUseHeading)
                 ixyhs = updatedIxyhs
-            } else {
+            } else if isUseHeading {
                 let updatedIxyhs = processFailedIdshArray(idshArrayWhenFail: idshArrayWhenFail, mainHeading: mainHeading, roadX: roadX, roadY: roadY, inputXyhs: &ixyhs, bestHeading: &bestHeading)
                 ixyhs = updatedIxyhs
+            } else {
+                return nil
             }
         }
 
