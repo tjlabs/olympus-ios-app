@@ -11,7 +11,7 @@ class LandmarkTagger {
     var landmarkData = [String: [String: LandmarkData]]()
     var exceptionalTags: Set<String> = []
     
-    let LADNMARK_DIST_THRESHOLD: Float = 40
+    let LANDMARK_DIST_THRESHOLD: Float = 40
     
     func setLandmarkData(key: String, data: [String: LandmarkData]) {
         self.landmarkData[key] = data
@@ -84,7 +84,7 @@ class LandmarkTagger {
             let dy = peakY - refY
             let dist = sqrt(dx*dx + dy*dy)
 
-//            if dist < bestPeakDist && dist <= LADNMARK_DIST_THRESHOLD {
+//            if dist < bestPeakDist && dist <= LANDMARK_DIST_THRESHOLD {
 //                bestPeakDist = dist
 //                bestPeak = peak
 //                bestPeakLinkId = ld.id
