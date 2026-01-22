@@ -7,14 +7,13 @@ final class PeakDetector {
         var lastPeakIndex: Int? = nil
         var inMaxPlateau: Bool = false
     }
-
     
     // MARK: - Config
     private(set) var BUFFER_SIZE: Int = 50
     
     private let MISSING_FLOOR_RSSI: Float = -100.0
 
-    private var minPeakRssi: Float = -90.0
+    private var minPeakRssi: Float = -95.0
     private let TOPK_FOR_REF = 10
     private var globalTopkRssi: [Float] = []
     private let REF_RSSI_CAP: Float = -65.0
@@ -22,6 +21,8 @@ final class PeakDetector {
     
     private var maxConsecutiveMissing: Int = 60
 
+    private var minAmp: Float = 2.0
+    
     // MARK: - State
     private var indexHistory: [WardId: [Int]] = [:]
     private var rssiHistory: [WardId: [Float]] = [:]
@@ -48,7 +49,7 @@ final class PeakDetector {
         }
     }
 
-    func setPeakParams(minPeakRssi: Float = -90.0,
+    func setPeakParams(minPeakRssi: Float = -95.0,
                        maxConsecutiveMissing: Int = 60) {
         self.minPeakRssi = minPeakRssi
         self.maxConsecutiveMissing = max(1, maxConsecutiveMissing)
@@ -83,7 +84,8 @@ final class PeakDetector {
 
         // Adaptive minPeakRssi update (based on global strongest TOP-K RSSI)
         computeAdpativeMinPeakRssi(bleAvg: bleAvg)
-
+        computeMinAmp(minPeakRssi: self.minPeakRssi, highRssi: THRESHOLD_AT_CAP)
+        
         // 4) Peak decision (buffer-center max rule)
         var best: UserPeak? = nil
         let win = max(3, windowSize)
@@ -123,7 +125,7 @@ final class PeakDetector {
             // Build peak info using the same window for indexHistory + rssi buffer (needed for plateau suppression)
             guard let fullIdxArr = indexHistory[id], fullIdxArr.count >= win else { continue }
             let idxArr = Array(fullIdxArr.suffix(win))
-
+            
             let startIndex = idxArr[0]
             let endIndex = idxArr[n - 1]
             let peakIndex = idxArr[maxIdx]
@@ -152,7 +154,7 @@ final class PeakDetector {
                                      end_rssi: endRssi,
                                      peak_rssi: maxVal,
                                      threshold: minPeakRssi)
-
+            
             if let b = best {
                 if candidate.peak_rssi > b.peak_rssi {
                     best = candidate
@@ -160,10 +162,15 @@ final class PeakDetector {
             } else {
                 best = candidate
             }
-        }
-        
-        if let bb = best {
-            JupiterLogger.i(tag: "PeakDetector", message: "(updateEpoch) - peak detected: windowSize = \(max(3, windowSize)), storedBufferSize = \(BUFFER_SIZE), TH = \(minPeakRssi)")
+            
+            let observed = arr.filter { $0 >= MISSING_FLOOR_RSSI }
+            guard let minObserved = observed.min() else { continue }
+            let amplitude = maxVal - minObserved
+            JupiterLogger.i(tag: "PeakDetector", message: "(updateEpoch) - peak detected \(id) : windowSize = \(max(3, windowSize)), storedBufferSize = \(BUFFER_SIZE), TH = \(minPeakRssi), minAmp = \(minAmp) , amp = \(amplitude)")
+            if amplitude < self.minAmp && win <= 10 { continue }
+//            for value in observed {
+//                JupiterLogger.i(tag: "PeakDetector", message: "(updateEpoch) - peak detected \(id) : \(value)")
+//            }
         }
         
         return best
@@ -217,6 +224,29 @@ final class PeakDetector {
                                                maxThreshold: -60.0)
 
         minPeakRssi = thr
+    }
+    
+    func computeMinAmp(minPeakRssi: Float,
+                       ampMin: Float = 2.0, ampMax: Float = 10.0,
+                       lowRssi: Float = -100, highRssi: Float = -82.0) {
+//        let ampMin: Float = 2.0
+//        let ampMax: Float = 10.0
+//        
+//        let lowRssi: Float = -100
+//        let highRssi: Float = -82.0
+        
+        var amp: Float
+        
+        if minPeakRssi <= lowRssi {
+            amp = ampMin
+        } else if minPeakRssi >= highRssi {
+            amp = ampMax
+        } else {
+            let t = (minPeakRssi - lowRssi) / (highRssi - lowRssi)
+            amp = ampMin + t*(ampMax-ampMin)
+        }
+        
+        self.minAmp = amp
     }
 
     private func updateGlobalTopkRssi(_ globalTopk: [Float], newValues: [Float], k: Int) -> [Float] {
