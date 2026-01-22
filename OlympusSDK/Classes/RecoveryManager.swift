@@ -54,11 +54,8 @@ class RecoveryManager {
                 }
                 
                 let lastHeading = TJLabsUtilFunctions.shared.compensateDegree(Double(resultBuffer[resultBuffer.count-1].heading))
-                let diffHeading = adjustHeading(Float(lastHeading), endHeading)
 //                JupiterLogger.i(tag: "RecoveryManager", message: "(makeMultipleRecoveryTrajectory) BadCase: pathHeading= \(pathHeading) // lastHeading= \(lastHeading) // endHeading= \(endHeading) // diffHeading= \(diffHeading)")
-                if diffHeading < Float(JupiterMode.HEADING_RANGE) {
-                    trajList.append(resultBuffer)
-                }
+                trajList.append(resultBuffer)
             }
         }
   
@@ -326,6 +323,7 @@ class RecoveryManager {
 
         let bestOlder: [Int] = best.olderCand != nil ? [best.olderCand!.x, best.olderCand!.y] : [0, 0]
         let recoveryResult = RecoveryResult(traj: resultTraj,
+                                            shiftedTraj: best.shiftedTraj,
                                             loss: best.loss,
                                             bestOlder: bestOlder,
                                             bestRecent: [best.recentCand.x, best.recentCand.y],
@@ -356,15 +354,6 @@ class RecoveryManager {
 
         semaphore.wait()
         return output
-    }
-
-    private struct _RecoveryCandidate {
-        let loss: Float
-        let shiftedTraj: [RecoveryTrajectory]
-        let recentCand: PeakData
-        let olderCand: PeakData?
-        let tail: FineLocationTrackingOutput?
-        let head: FineLocationTrackingOutput?
     }
 
     private func recoverWithMultipleTrajAsync(recoveryTrajList: [[RecoveryTrajectory]],
@@ -556,10 +545,7 @@ class RecoveryManager {
         }
 
         guard let best = bestCandidate else { return nil }
-
-        let olderCandMsg = best.olderCand.map { "(\($0.x),\($0.y))" } ?? "nil"
-//        JupiterLogger.i(tag: "RecoveryManager", message: "(recover) selected recentCand=(\(best.recentCand.x),\(best.recentCand.y)) olderCand=\(olderCandMsg) olderPeakIdx=\(olderUserPeak.peak_index) olderLinkGroup=\(olderUserLink.group_id) bestLoss=\(best.loss)")
-
+        
         var resultTraj = [[Double]]()
         resultTraj.reserveCapacity(best.shiftedTraj.count)
         for value in best.shiftedTraj {
@@ -568,6 +554,7 @@ class RecoveryManager {
 
         let bestOlder: [Int] = best.olderCand != nil ? [best.olderCand!.x, best.olderCand!.y] : [0, 0]
         let recoveryResult = RecoveryResult(traj: resultTraj,
+                                            shiftedTraj: best.shiftedTraj,
                                             loss: best.loss,
                                             bestOlder: bestOlder,
                                             bestRecent: [best.recentCand.x, best.recentCand.y],
