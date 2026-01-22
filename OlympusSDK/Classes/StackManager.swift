@@ -7,11 +7,11 @@ class StackManager {
     
     private let SAME_COORD_THRESHOLD: Int = 20
     
-    private let DR_BUFFER_SIZE: Int = 60
+    private let DR_BUFFER_SIZE: Int = 200
     private let BLE_LEVEL_BUFFER_SIZE: Int = 8
     private let USER_PEAK_AND_LINK_BUFFER_SIZE: Int = 5
     private let CUR_RESULT_BUFFER_SIZE: Int = 200
-    private let CUR_PM_RESULT_BUFFER_SIZE: Int = 50
+    private let CUR_PM_RESULT_BUFFER_SIZE: Int = 200
     
     private var rfdBuffer = [[String: Float]]()
     var uvdBuffer = [UserVelocity]()
@@ -69,7 +69,7 @@ class StackManager {
         if self.userPeakAndLinkBuffer.count < 2 {
             return 0
         } else {
-            let olderPeakAndLink = self.userPeakAndLinkBuffer[self.userPeakAndLinkBuffer.count - 2]
+            let olderPeakAndLink = self.userPeakAndLinkBuffer[0]
             return olderPeakAndLink.0.peak_index
         }
     }
