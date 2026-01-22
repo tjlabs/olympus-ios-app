@@ -84,6 +84,10 @@ class KalmanFilter {
         self.tuResult = result
     }
     
+    func getTuResult() -> FineLocationTrackingOutput? {
+        return tuResult
+    }
+    
     func getTuResultWithUvdIndex(index: Int) -> ixyhs? {
         for tu in self.tuResultBuffer {
             if tu.index == index { return tu }
@@ -128,10 +132,6 @@ class KalmanFilter {
 
             return newResult
         }
-    }
-    
-    func getTuResult() -> FineLocationTrackingOutput? {
-        return self.tuResult
     }
     
     func updateTuPosition(coord: [Float]) {

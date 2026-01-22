@@ -44,9 +44,6 @@ class LandmarkTagger {
         }
         
         if !isMatched {
-            for r in curResultBuffer {
-                JupiterLogger.i(tag: "LandmarkTagger", message: "(findMatchedLandmarkWithUserPeak) curResultBuffer=\(r)")
-            }
             JupiterLogger.i(tag: "LandmarkTagger", message: "(findMatchedLandmarkWithUserPeak) curResult=\(curResult)")
             JupiterLogger.i(tag: "LandmarkTagger", message: "(findMatchedLandmarkWithUserPeak) isMatched false")
             return nil
