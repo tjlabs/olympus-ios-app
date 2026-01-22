@@ -634,6 +634,10 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                     self.debug_recovery_result = recoveryResult
                                     let recoveryCoord: [Float] = [bestResult.x, bestResult.y]
                                     self.correctionIndex = userPeak.peak_index
+                                    stackManager.editCurResultBuffer(sectorId: sectorId, mode: mode, from: userPeak.peak_index, shifteTraj: recoveryResult.shiftedTraj)
+                                    stackManager.editCurPmResultBuffer(sectorId: sectorId, mode: mode, from: recentUserPeak.peak_index, shifteTraj: recoveryResult.shiftedTraj)
+                                    kalmanFilter?.editTuResultBuffer(sectorId: sectorId, mode: mode, from: userPeak.peak_index, shifteTraj: recoveryResult.shiftedTraj, curResult: curResult)
+                                    // curResultBuffer, tuResultBuffer에서 recentPeak이 발생한 index부터 현재 index까지 수정하기
                                     if let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: bestResult.x, y: bestResult.y, heading: bestResult.absolute_heading, isUseHeading: true, mode: mode, paddingValues: JupiterMode.PADDING_VALUES_DR) {
                                         curPathMatchingResult = bestResult
                                         curPathMatchingResult?.x = pmResult.x
@@ -719,6 +723,11 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                             self.debug_recovery_result = recoveryResult
                             let recoveryCoord: [Float] = [bestResult.x, bestResult.y]
                             self.recoveryIndex = userVelocity.index
+                            
+                            stackManager.editCurResultBuffer(sectorId: sectorId, mode: mode, from: recentUserPeak.peak_index, shifteTraj: recoveryResult.shiftedTraj)
+                            stackManager.editCurPmResultBuffer(sectorId: sectorId, mode: mode, from: recentUserPeak.peak_index, shifteTraj: recoveryResult.shiftedTraj)
+                            kalmanFilter?.editTuResultBuffer(sectorId: sectorId, mode: mode, from: recentUserPeak.peak_index, shifteTraj: recoveryResult.shiftedTraj, curResult: curResult)
+                            
                             if let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: bestResult.x, y: bestResult.y, heading: bestResult.absolute_heading, isUseHeading: true, mode: mode, paddingValues: JupiterMode.PADDING_VALUES_DR) {
                                 curPathMatchingResult = bestResult
                                 curPathMatchingResult?.x = pmResult.x
