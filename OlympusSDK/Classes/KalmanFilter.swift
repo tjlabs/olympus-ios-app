@@ -91,6 +91,45 @@ class KalmanFilter {
         return nil
     }
     
+    func editTuResultBuffer(
+        sectorId: Int,
+        mode: UserMode,
+        from: Int,
+        shifteTraj: [RecoveryTrajectory],
+        curResult: FineLocationTrackingOutput
+    ) {
+        let trajByIndex = Dictionary(uniqueKeysWithValues: shifteTraj.map { ($0.index, $0) })
+
+        let building = curResult.building_name
+        let level = curResult.level_name
+
+        tuResultBuffer = tuResultBuffer.map { result in
+            guard result.index >= from else { return result }
+            guard let traj = trajByIndex[result.index] else { return result }
+            guard let pm = PathMatcher.shared.pathMatching(
+                sectorId: sectorId,
+                building: building,
+                level: level,
+                x: traj.x, y: traj.y, heading: traj.heading,
+                isUseHeading: true,
+                mode: mode,
+                paddingValues: JupiterMode.PADDING_VALUES_DR
+            ) else { return result }
+
+            var newResult = result
+            newResult.x = pm.x
+            newResult.y = pm.y
+            newResult.heading = pm.heading
+
+            JupiterLogger.i(
+                tag: "KalmanFilter",
+                message: "(editTuResultBuffer) index:\(result.index) edited // [\(result.x),\(result.y),\(result.heading)] -> [\(newResult.x),\(newResult.y),\(newResult.heading)]"
+            )
+
+            return newResult
+        }
+    }
+    
     func getTuResult() -> FineLocationTrackingOutput? {
         return self.tuResult
     }
@@ -491,7 +530,7 @@ class KalmanFilter {
         guard var nextTuResult = timeUpdate(uvd: uvd, pastUvd: pastUvd) else { return nil }
         let paddingValues = JupiterMode.PADDING_VALUES_DR
         
-        let drBufferStraightResults = stackManager.isDrBufferStraightCircularStd(numIndex: DR_HEADING_CORR_NUM_IDX, condition: 5)
+        let drBufferStraightResults = stackManager.isDrBufferStraightCircularStd(numIndex: DR_HEADING_CORR_NUM_IDX, condition: 2.5)
         let isDrStraight = nextTuResult.level_name == "B0" ? false : drBufferStraightResults.0
         
         if let pmResults = PathMatcher.shared.pathMatching(sectorId: sectorId, building: nextTuResult.building_name, level: nextTuResult.level_name, x: nextTuResult.x, y: nextTuResult.y, heading: nextTuResult.absolute_heading, isUseHeading: true, mode: .MODE_VEHICLE, paddingValues: paddingValues) {
