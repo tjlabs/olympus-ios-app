@@ -338,7 +338,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                 }
                 
                 // LandmarkTag
-                if userPeak.peak_index - correctionIndex < 2 {
+                if userPeak.peak_index - correctionIndex < 1 {
                     JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) PEAK is too close with previous landmark correction at \(userVelocity.index) uvd index")
                     break peakHandling
                 } else if userPeak.id == correctionId {
@@ -600,7 +600,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                 if jupiterPhase != .ENTERING {
                     let userPeakAndLinkBuffer = stackManager.getUserPeakAndLinkBuffer()
                     if userPeakAndLinkBuffer.count < 2 { return }
-                    guard let curResult = self.curResult, let curPmResult = self.curPathMatchingResult else { break peakHandling }
+                    guard let curResult = self.curResult, let curPmResult = self.curPathMatchingResult, let tuResult = kalmanFilter?.getTuResult() else { break peakHandling }
                     let olderUserPeak = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count-2].0
                     let recentUserPeak = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count-1].0
                     JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) 2 Peaks : older= \(olderUserPeak.id), recent= \(recentUserPeak.id)")
@@ -624,7 +624,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                             if hasMajorDirection {
                                 let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBufferForRecovery.map{ Float($0.heading) })
                                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) 2 Peaks : majorSection= \(majorSection)")
-                                let recoveryTrajList = recoveryManager.makeMultipleRecoveryTrajectory(uvdBuffer: uvdBufferForRecovery, majorSection: majorSection, pathHeadings: pathHeadings, endHeading: curResult.absolute_heading)
+                                let recoveryTrajList = recoveryManager.makeMultipleRecoveryTrajectory(uvdBuffer: uvdBufferForRecovery, majorSection: majorSection, pathHeadings: pathHeadings, endHeading: tuResult.absolute_heading)
                                 if let recoveryResult = recoveryManager.recoverWithMultipleTraj(recoveryTrajList: recoveryTrajList,
                                                                                                 userPeakAndLinkBuffer: userPeakAndLinkBuffer,
                                                                                                 landmarks: (matchedWithOlderPeak.0, matchedWithRecentPeak.0),
@@ -704,7 +704,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                                                           level: curPmResult.level_name,
                                                                           x: curPmResult.x, y: curPmResult.y,
                                                                           paddingValue: headingSearchRange, mode: mode)
-            if let tuResultWhenOlderPeak = kalmanFilter?.getTuResultWithUvdIndex(index: olderUserPeak.peak_index) {
+            if let tuResultWhenOlderPeak = kalmanFilter?.getTuResultWithUvdIndex(index: olderUserPeak.peak_index), let tuResult = kalmanFilter?.getTuResult() {
                 let curResultBuffer = stackManager.getCurResultBuffer()
                 if let matchedWithOlderPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: olderUserPeak, curResult: curResult, curResultBuffer: curResultBuffer),
                    let matchedWithRecentPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: recentUserPeak, curResult: curResult, curResultBuffer: curResultBuffer) {
@@ -713,7 +713,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                     if hasMajorDirection {
                         let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBufferForRecovery.map{ Float($0.heading) })
                         JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: majorSection= \(majorSection)")
-                        let recoveryTrajList = recoveryManager.makeMultipleRecoveryTrajectory(uvdBuffer: uvdBufferForRecovery, majorSection: majorSection, pathHeadings: pathHeadings, endHeading: curResult.absolute_heading)
+                        let recoveryTrajList = recoveryManager.makeMultipleRecoveryTrajectory(uvdBuffer: uvdBufferForRecovery, majorSection: majorSection, pathHeadings: pathHeadings, endHeading: tuResult.absolute_heading)
                         if let recoveryResult = recoveryManager.recoverWithMultipleTraj(recoveryTrajList: recoveryTrajList,
                                                                                         userPeakAndLinkBuffer: userPeakAndLinkBuffer,
                                                                                         landmarks: (matchedWithOlderPeak.0, matchedWithRecentPeak.0),
