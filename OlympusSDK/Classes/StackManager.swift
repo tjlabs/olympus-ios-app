@@ -100,6 +100,43 @@ class StackManager {
         return self.curResultBuffer
     }
     
+    func editCurResultBuffer(
+        sectorId: Int,
+        mode: UserMode,
+        from: Int,
+        shifteTraj: [RecoveryTrajectory]
+    ) {
+        let trajByIndex = Dictionary(uniqueKeysWithValues: shifteTraj.map { ($0.index, $0) })
+
+        curResultBuffer = curResultBuffer.map { result in
+            guard result.index >= from else { return result }
+
+            guard let traj = trajByIndex[result.index] else { return result }
+
+            guard let pm = PathMatcher.shared.pathMatching(
+                sectorId: sectorId,
+                building: result.building_name,
+                level: result.level_name,
+                x: traj.x, y: traj.y, heading: traj.heading,
+                isUseHeading: true,
+                mode: mode,
+                paddingValues: JupiterMode.PADDING_VALUES_DR
+            ) else { return result }
+
+            var newResult = result
+            newResult.x = pm.x
+            newResult.y = pm.y
+            newResult.absolute_heading = pm.heading
+
+            JupiterLogger.i(
+                tag: "StackManager",
+                message: "(editCurResultBuffer) index:\(result.index) edited // [\(result.x),\(result.y),\(result.absolute_heading)] -> [\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]"
+            )
+
+            return newResult
+        }
+    }
+    
     func stackCurPmResultBuffer(curPmResult: FineLocationTrackingOutput) {
         curPmResultBuffer.append(curPmResult)
         if (curPmResultBuffer.count > CUR_PM_RESULT_BUFFER_SIZE) {
@@ -115,6 +152,43 @@ class StackManager {
             }
         }
         return buffer
+    }
+    
+    func editCurPmResultBuffer(
+        sectorId: Int,
+        mode: UserMode,
+        from: Int,
+        shifteTraj: [RecoveryTrajectory]
+    ) {
+        let trajByIndex = Dictionary(uniqueKeysWithValues: shifteTraj.map { ($0.index, $0) })
+
+        curPmResultBuffer = curPmResultBuffer.map { result in
+            guard result.index >= from else { return result }
+
+            guard let traj = trajByIndex[result.index] else { return result }
+
+            guard let pm = PathMatcher.shared.pathMatching(
+                sectorId: sectorId,
+                building: result.building_name,
+                level: result.level_name,
+                x: traj.x, y: traj.y, heading: traj.heading,
+                isUseHeading: true,
+                mode: mode,
+                paddingValues: JupiterMode.PADDING_VALUES_DR
+            ) else { return result }
+
+            var newResult = result
+            newResult.x = pm.x
+            newResult.y = pm.y
+            newResult.absolute_heading = pm.heading
+
+            JupiterLogger.i(
+                tag: "StackManager",
+                message: "(editCurResultBuffer) index:\(result.index) edited // [\(result.x),\(result.y),\(result.absolute_heading)] -> [\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]"
+            )
+
+            return newResult
+        }
     }
     
     func makeHeadingSet(resultBuffer: [FineLocationTrackingOutput]) -> [Float] {
