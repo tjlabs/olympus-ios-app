@@ -12,6 +12,8 @@ class JupiterMode {
 
     static var PADDING_VALUES_PDR: [Float] = Array(repeating: PADDING_VALUE_SMALL, count: 4)
     static var PADDING_VALUES_DR: [Float] = Array(repeating: PADDING_VALUE_LARGE, count: 4)
+    static var PADDING_VALUES_LARGE: [Float] = Array(repeating: PADDING_VALUE_LARGE*2, count: 4)
+    static var PADDING_VALUES_VERY_LARGE: [Float] = Array(repeating: PADDING_VALUE_LARGE*3, count: 4)
     
     static let HEADING_UNCERTANTIY: Float = 2.0
     

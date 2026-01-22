@@ -84,6 +84,7 @@ public struct RecoveryResult: Codable {
 
 public struct RecoveryResult_v2: Codable {
     public let traj: [[Double]]
+    public let shiftedTraj: [RecoveryTrajectory]
     public let loss: Float
     public let bestThird: [Int]
     public let bestSecond: [Int]
