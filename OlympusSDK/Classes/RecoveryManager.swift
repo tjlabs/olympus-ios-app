@@ -54,8 +54,12 @@ class RecoveryManager {
                 }
                 
                 let lastHeading = TJLabsUtilFunctions.shared.compensateDegree(Double(resultBuffer[resultBuffer.count-1].heading))
+                let diffHeading = adjustHeading(Float(lastHeading), endHeading)
+                if diffHeading < Float(JupiterMode.HEADING_RANGE) {
+                    trajList.append(resultBuffer)
+                }
 //                JupiterLogger.i(tag: "RecoveryManager", message: "(makeMultipleRecoveryTrajectory) BadCase: pathHeading= \(pathHeading) // lastHeading= \(lastHeading) // endHeading= \(endHeading) // diffHeading= \(diffHeading)")
-                trajList.append(resultBuffer)
+//                trajList.append(resultBuffer)
             }
         }
   
