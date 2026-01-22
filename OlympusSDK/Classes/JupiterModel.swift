@@ -75,6 +75,7 @@ public struct JupiterDebugResult: Codable {
 
 public struct RecoveryResult: Codable {
     public let traj: [[Double]]
+    public let shiftedTraj: [RecoveryTrajectory]
     public let loss: Float
     public let bestOlder: [Int]
     public let bestRecent: [Int]
@@ -88,6 +89,15 @@ public struct RecoveryResult_v2: Codable {
     public let bestSecond: [Int]
     public let bestFirst: [Int]
     public let bestResult: FineLocationTrackingOutput?
+}
+
+struct _RecoveryCandidate {
+    let loss: Float
+    let shiftedTraj: [RecoveryTrajectory]
+    let recentCand: PeakData
+    let olderCand: PeakData?
+    let tail: FineLocationTrackingOutput?
+    let head: FineLocationTrackingOutput?
 }
 
 // Temp

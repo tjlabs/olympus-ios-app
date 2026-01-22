@@ -51,7 +51,7 @@ struct PassedLinkInfo {
     var oppsite_heading: Float
 }
 
-struct RecoveryTrajectory {
+public struct RecoveryTrajectory: Codable {
     var index: Int
     var x: Float
     var y: Float
