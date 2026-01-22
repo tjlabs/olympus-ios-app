@@ -621,7 +621,8 @@ class RecoveryManager {
                                     tuResultWhenThirdPeak: ixyhs,
                                     resultWhenFisrtPeak: FineLocationTrackingOutput,
                                     curPmResult: FineLocationTrackingOutput,
-                                    mode: UserMode) -> RecoveryResult_v2? {
+                                    mode: UserMode,
+                                    inSameLink: Bool = false) -> RecoveryResult_v2? {
         let semaphore = DispatchSemaphore(value: 0)
         var output: RecoveryResult_v2? = nil
 
@@ -632,7 +633,7 @@ class RecoveryManager {
                                                             tuResultWhenThirdPeak: tuResultWhenThirdPeak,
                                                             resultWhenFisrtPeak: resultWhenFisrtPeak,
                                                             curPmResult: curPmResult,
-                                                            mode: mode)
+                                                            mode: mode, inSameLink: inSameLink)
             semaphore.signal()
         }
 
@@ -657,9 +658,10 @@ class RecoveryManager {
                                                  tuResultWhenThirdPeak: ixyhs,
                                                  resultWhenFisrtPeak: FineLocationTrackingOutput,
                                                  curPmResult: FineLocationTrackingOutput,
-                                                 mode: UserMode) async -> RecoveryResult_v2? {
+                                                 mode: UserMode,
+                                                 inSameLink: Bool) async -> RecoveryResult_v2? {
         guard userPeakAndLinkBuffer.count >= 3 else {
-            JupiterLogger.i(tag: "RecoveryManager", message: "(recover) userPeakAndLinkBuffer is less than 3")
+            JupiterLogger.i(tag: "RecoveryManager", message: "(recoverWithMultipleTrajAsync_v2) userPeakAndLinkBuffer is less than 3")
             return nil
         }
         let key = "\(sectorId)_\(curPmResult.building_name)_\(curPmResult.level_name)"
@@ -681,7 +683,8 @@ class RecoveryManager {
         let firstUserPeak = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count - 1].0
         let firstUserPeakIndex = firstUserPeak.peak_index
 
-        JupiterLogger.i(tag: "RecoveryManager", message: "(recover) third: \(thirdUserPeak.id), second: \(secondUserPeak.id), first: \(firstUserPeak.id)")
+        JupiterLogger.i(tag: "RecoveryManager", message: "(recoverWithMultipleTrajAsync_v2) third: \(thirdUserPeak.id), second: \(secondUserPeak.id), first: \(firstUserPeak.id)")
+        JupiterLogger.i(tag: "RecoveryManager", message: "(recoverWithMultipleTrajAsync_v2) thirdIndex: \(thirdUserPeak.peak_index), secondIndex: \(secondUserPeak.peak_index), firstIndex: \(firstUserPeak.peak_index)")
         
         let thirdLandmarkCands: [PeakData] = landmarks.third.peaks
         let secondLandmarkCands: [PeakData] = landmarks.second.peaks
@@ -697,10 +700,11 @@ class RecoveryManager {
             for recoveryTraj in recoveryTrajList {
                 group.addTask { [sectorId = self.sectorId, nodeData = nodeData, linkData = linkData, firstLinkGroupId = firstLinkGroupId] in
                     guard recoveryTraj.count >= 2 else {
-                        JupiterLogger.i(tag: "RecoveryManager", message: "(recover) recoveryTraj size is less than 2")
+                        JupiterLogger.i(tag: "RecoveryManager", message: "(recoverWithMultipleTrajAsync_v2) recoveryTraj size is less than 2")
                         return nil
                     }
                     
+                    JupiterLogger.i(tag: "RecoveryManager", message: "(recoverWithMultipleTrajAsync_v2) recoveryTraj: \(recoveryTraj.map {$0.index})")
                     var midIdx: Int? = nil
                     var anchorIdx: Int? = nil
                     for i in 0..<recoveryTraj.count {
@@ -714,7 +718,7 @@ class RecoveryManager {
                         }
                     }
                     guard let aIdx = anchorIdx, let mIdx = midIdx else {
-                        JupiterLogger.i(tag: "RecoveryManager", message: "(recover) anchorIdx or midIdx fail")
+                        JupiterLogger.i(tag: "RecoveryManager", message: "(recoverWithMultipleTrajAsync_v2) anchorIdx or midIdx fail")
                         return nil
                     }
 
@@ -729,24 +733,22 @@ class RecoveryManager {
 
                     for cand in firstLandmarkCands {
                         // Enforce: the first-landmark candidate must lie on the same link-group as the current PM result.
-                        var candResult = curPmResult
-                        candResult.x = Float(cand.x)
-                        candResult.y = Float(cand.y)
-                        candResult.absolute_heading = curPmResult.absolute_heading
-                        
-                        let distWithFirst = dist2(resultWhenFisrtPeak.x, resultWhenFisrtPeak.y, Float(cand.x), Float(cand.y))
-                        if distWithFirst > Float(indexDiff*2.5) {
-                            continue
+                        if inSameLink {
+                            var candResult = curPmResult
+                            candResult.x = Float(cand.x)
+                            candResult.y = Float(cand.y)
+                            candResult.absolute_heading = curPmResult.absolute_heading
+                            
+                            guard let candLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
+                                                                                         result: candResult,
+                                                                                         checkAll: true, acceptDist: 15) else {
+                                continue
+                            }
+                            if candLink.group_id != firstLinkGroupId {
+                                continue
+                            }
                         }
                         
-                        guard let candLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
-                                                                                     result: candResult,
-                                                                                     checkAll: true, acceptDist: 15) else {
-                            continue
-                        }
-                        if candLink.group_id != firstLinkGroupId {
-                            continue
-                        }
                         let offsetX = Float(cand.x) - recoveryTraj[aIdx].x
                         let offsetY = Float(cand.y) - recoveryTraj[aIdx].y
 
@@ -770,7 +772,7 @@ class RecoveryManager {
                                                                        heading: first.heading,
                                                                        isUseHeading: false,
                                                                        mode: mode,
-                                                                       paddingValues: JupiterMode.PADDING_VALUES_PDR) else { continue }
+                                                                       paddingValues: JupiterMode.PADDING_VALUES_VERY_LARGE) else { continue }
 
                         var tailResult = curPmResult
                         tailResult.x = tail.x
@@ -794,7 +796,7 @@ class RecoveryManager {
                                                                        heading: mid.heading,
                                                                        isUseHeading: false,
                                                                        mode: mode,
-                                                                       paddingValues: JupiterMode.PADDING_VALUES_PDR) else { continue }
+                                                                       paddingValues: JupiterMode.PADDING_VALUES_LARGE) else { continue }
 
                         var bodyResult = curPmResult
                         bodyResult.x = body.x
@@ -817,7 +819,7 @@ class RecoveryManager {
                                                                        heading: last.heading,
                                                                        isUseHeading: false,
                                                                        mode: mode,
-                                                                       paddingValues: JupiterMode.PADDING_VALUES_PDR) else {
+                                                                       paddingValues: JupiterMode.PADDING_VALUES_VERY_LARGE) else {
                             continue
                         }
                         var headResult = curPmResult
@@ -868,12 +870,12 @@ class RecoveryManager {
                             dist0 = 1_000_000
                         }
                         
-                        guard let bodyLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
-                                                                                     result: bodyResult,
-                                                                                     checkAll: true, acceptDist: 15) else {
-                            JupiterLogger.i(tag: "RecoveryManager", message: "(recover) body link fail [\(bodyResult.x),\(bodyResult.y)]")
-                            continue
-                        }
+//                        guard let bodyLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
+//                                                                                     result: bodyResult,
+//                                                                                     checkAll: true, acceptDist: 15) else {
+//                            JupiterLogger.i(tag: "RecoveryManager", message: "(recover) body link fail [\(bodyResult.x),\(bodyResult.y)]")
+//                            continue
+//                        }
                         
                         // dist1: tail? -> best third landmark (optionally group-constrained)
                         var dist1 = Float.greatestFiniteMagnitude
@@ -904,8 +906,8 @@ class RecoveryManager {
                         
                         guard let tailLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
                                                                                     result: tailResult,
-                                                                                     checkAll: true, acceptDist: 15) else {
-                            JupiterLogger.i(tag: "RecoveryManager", message: "(recover) tail link fail [\(tailResult.x),\(tailResult.y)]")
+                                                                                     checkAll: true, acceptDist: 60) else {
+                            JupiterLogger.i(tag: "RecoveryManager", message: "(recoverWithMultipleTrajAsync_v2) tail link fail [\(tailResult.x),\(tailResult.y)]")
                             continue
                         }
                         let tailLinkGroupId = tailLink.group_id
@@ -977,7 +979,7 @@ class RecoveryManager {
         }
 
         guard let best = bestCandidate else {
-            JupiterLogger.i(tag: "RecoveryManager", message: "(recover) bestCandidate nil")
+            JupiterLogger.i(tag: "RecoveryManager", message: "(recoverWithMultipleTrajAsync_v2) bestCandidate nil")
             return nil
         }
         var resultTraj = [[Double]]()
@@ -989,6 +991,7 @@ class RecoveryManager {
         let bestThird: [Int] = best.thirdCand != nil ? [best.thirdCand!.x, best.thirdCand!.y] : [0, 0]
         let bestSecond: [Int] = best.secondCand != nil ? [best.secondCand!.x, best.secondCand!.y] : [0, 0]
         let recoveryResult = RecoveryResult_v2(traj: resultTraj,
+                                               shiftedTraj: best.shiftedTraj,
                                                loss: best.loss,
                                                bestThird: bestThird,
                                                bestSecond: bestSecond,
