@@ -84,7 +84,7 @@ final class PeakDetector {
 
         // Adaptive minPeakRssi update (based on global strongest TOP-K RSSI)
         computeAdpativeMinPeakRssi(bleAvg: bleAvg)
-        computeMinAmp(minPeakRssi: self.minPeakRssi, highRssi: THRESHOLD_AT_CAP)
+//        computeMinAmp(minPeakRssi: self.minPeakRssi, highRssi: THRESHOLD_AT_CAP)
         
         // 4) Peak decision (buffer-center max rule)
         var best: UserPeak? = nil
@@ -155,22 +155,26 @@ final class PeakDetector {
                                      peak_rssi: maxVal,
                                      threshold: minPeakRssi)
             
+            let observed = arr.filter { $0 > MISSING_FLOOR_RSSI }
+            guard let minObserved = observed.min() else { continue }
+            let amplitude = maxVal - minObserved
+            var isGoodAmp: Bool = true
+            if amplitude < self.minAmp && win > 10 {
+                JupiterLogger.i(tag: "PeakDetector", message: "(updateEpoch) - peak detected \(id) but skipped : windowSize = \(max(3, windowSize)), storedBufferSize = \(BUFFER_SIZE), TH = \(minPeakRssi), minAmp = \(minAmp) , amp = \(amplitude)")
+                isGoodAmp = false
+            } else {
+                JupiterLogger.i(tag: "PeakDetector", message: "(updateEpoch) - peak detected \(id) : windowSize = \(max(3, windowSize)), storedBufferSize = \(BUFFER_SIZE), TH = \(minPeakRssi), minAmp = \(minAmp) , amp = \(amplitude)")
+            }
+            
             if let b = best {
-                if candidate.peak_rssi > b.peak_rssi {
+                if candidate.peak_rssi > b.peak_rssi && isGoodAmp {
                     best = candidate
                 }
-            } else {
+            } else if isGoodAmp {
                 best = candidate
             }
             
-            let observed = arr.filter { $0 >= MISSING_FLOOR_RSSI }
-            guard let minObserved = observed.min() else { continue }
-            let amplitude = maxVal - minObserved
-            JupiterLogger.i(tag: "PeakDetector", message: "(updateEpoch) - peak detected \(id) : windowSize = \(max(3, windowSize)), storedBufferSize = \(BUFFER_SIZE), TH = \(minPeakRssi), minAmp = \(minAmp) , amp = \(amplitude)")
-            if amplitude < self.minAmp && win <= 10 { continue }
-//            for value in observed {
-//                JupiterLogger.i(tag: "PeakDetector", message: "(updateEpoch) - peak detected \(id) : \(value)")
-//            }
+            
         }
         
         return best
@@ -227,14 +231,8 @@ final class PeakDetector {
     }
     
     func computeMinAmp(minPeakRssi: Float,
-                       ampMin: Float = 2.0, ampMax: Float = 10.0,
+                       ampMin: Float = 2.0, ampMax: Float = 8.0,
                        lowRssi: Float = -100, highRssi: Float = -82.0) {
-//        let ampMin: Float = 2.0
-//        let ampMax: Float = 10.0
-//        
-//        let lowRssi: Float = -100
-//        let highRssi: Float = -82.0
-        
         var amp: Float
         
         if minPeakRssi <= lowRssi {
