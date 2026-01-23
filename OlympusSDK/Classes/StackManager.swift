@@ -104,7 +104,8 @@ class StackManager {
         sectorId: Int,
         mode: UserMode,
         from: Int,
-        shifteTraj: [RecoveryTrajectory]
+        shifteTraj: [RecoveryTrajectory],
+        paddings: [Float]
     ) {
         let trajByIndex = Dictionary(uniqueKeysWithValues: shifteTraj.map { ($0.index, $0) })
 
@@ -120,7 +121,7 @@ class StackManager {
                 x: traj.x, y: traj.y, heading: traj.heading,
                 isUseHeading: true,
                 mode: mode,
-                paddingValues: JupiterMode.PADDING_VALUES_DR
+                paddingValues: paddings
             ) else { return result }
 
             var newResult = result
@@ -158,7 +159,8 @@ class StackManager {
         sectorId: Int,
         mode: UserMode,
         from: Int,
-        shifteTraj: [RecoveryTrajectory]
+        shifteTraj: [RecoveryTrajectory],
+        paddings: [Float]
     ) {
         let trajByIndex = Dictionary(uniqueKeysWithValues: shifteTraj.map { ($0.index, $0) })
 
@@ -174,7 +176,7 @@ class StackManager {
                 x: traj.x, y: traj.y, heading: traj.heading,
                 isUseHeading: true,
                 mode: mode,
-                paddingValues: JupiterMode.PADDING_VALUES_DR
+                paddingValues: paddings
             ) else { return result }
 
             var newResult = result
@@ -184,7 +186,7 @@ class StackManager {
 
             JupiterLogger.i(
                 tag: "StackManager",
-                message: "(editCurResultBuffer) index:\(result.index) edited // [\(result.x),\(result.y),\(result.absolute_heading)] -> [\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]"
+                message: "(editCurPmResultBuffer) index:\(result.index) edited // [\(result.x),\(result.y),\(result.absolute_heading)] -> [\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]"
             )
 
             return newResult
@@ -201,12 +203,16 @@ class StackManager {
         return headingSet.map{$0}
     }
     
-    func checkIsBadCase(jupiterPhase: JupiterPhase) -> Bool {
+    func checkIsBadCase(jupiterPhase: JupiterPhase, uvdIndexWhenCorrection: Int) -> Bool {
         if jupiterPhase == .ENTERING { return false }
         guard curPmResultBuffer.count >= SAME_COORD_THRESHOLD else { return false }
-
-        let lastX: Float = curPmResultBuffer[curPmResultBuffer.count-1].x
-        let lastY: Float = curPmResultBuffer[curPmResultBuffer.count-1].y
+        let last = curPmResultBuffer[curPmResultBuffer.count-1]
+        let lastIndex: Int = last.index
+        
+        if lastIndex - uvdIndexWhenCorrection < SAME_COORD_THRESHOLD { return false }
+        
+        let lastX: Float = last.x
+        let lastY: Float = last.y
         var sameCount = 0
 
         for result in curPmResultBuffer.reversed() {
