@@ -53,6 +53,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     // MARK: - Recovery
     private var recoveryIndex: Int = 0
+    private var recentUserPeakIndex: Int = 0
+    private var recentLandmarkPeaks: [PeakData]?
     
     // MARK: - Etc..
     private var pathMatchingCondition = PathMatchingCondition()
@@ -322,6 +324,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         
         var jumpInfo: JumpInfo?
         var blTagResult: BuildingLevelTagResult?
+        
         let windowSize = jupiterPhase == .NONE ? 10 : 50
         if let userPeak = peakDetector.updateEpoch(uvdIndex: curIndex, bleAvg: avgBleData, windowSize: windowSize) {
             self.debug_recovery_result = nil
@@ -761,6 +764,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                     }
                                 }
                             }
+                            recentUserPeakIndex = recentUserPeak.peak_index
+                            recentLandmarkPeaks = matchedWithRecentPeak.landmark.peaks
                         }
                     }
                 }
@@ -792,11 +797,20 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         guard let curPmResult = curPathMatchingResult else { return }
         stackManager.stackCurPmResultBuffer(curPmResult: curPmResult)
         
-        // Bad Case 확인 (같은 좌표 20개)
+        // Bad Case 확인
+        // 1. 같은 좌표 20개
         if stackManager.checkIsBadCase(jupiterPhase: jupiterPhase, uvdIndexWhenCorrection: self.uvdIndexWhenCorrection) {
-            JupiterResultState.isInRecoveryProcess = true
+            // 2. 최근 Peak발생 Index ~ 현재 Index 까지 길이
+            // 3. 에서 결정된 길이만큼 현 위치 기준으로 landmark들 간의 거리 검사
+            // 4. 범위 내에 Landmark가 있으면 스킵
+            let diffIndex = userVelocity.index - recentUserPeakIndex
+            let searchRange: Float = Float(max(diffIndex, 25))
+            let isPossible = self.checkPossibleBadCase(landmarkPeaks: recentLandmarkPeaks, curPmResult: curPmResult, searchRange: searchRange)
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase : index= \(userVelocity.index), isPossible= \(isPossible)")
+            if !isPossible { return }
             let userPeakAndLinkBuffer = stackManager.getUserPeakAndLinkBuffer()
             if userPeakAndLinkBuffer.count < 2 { return }
+            JupiterResultState.isInRecoveryProcess = true
             let olderUserPeak = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count-2].0
             let recentUserPeak = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count-1].0
             let uvdBufferForRecovery = recoveryManager.getUvdBufferForRecovery(startIndex: olderUserPeak.peak_index, endIndex: userVelocity.index, uvdBuffer: uvdBuffer)
@@ -1306,6 +1320,21 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         }
 
         return jumpInfo
+    }
+    
+    private func checkPossibleBadCase(landmarkPeaks: [PeakData]?, curPmResult: FineLocationTrackingOutput, searchRange: Float) -> Bool {
+        guard let landmarkPeaks = landmarkPeaks else { return true }
+        for lm in landmarkPeaks {
+            let diffX = Float(lm.x) - curPmResult.x
+            let diffY = Float(lm.y) - curPmResult.y
+            let dist = sqrt(diffX*diffX + diffY*diffY)
+            
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(checkPossibleBadCase) BadCase : searchRange= \(searchRange), dist= \(dist)")
+            if dist <= searchRange {
+                return false
+            }
+        }
+        return true
     }
     
     func determineUserMode(mode: UserMode) {
