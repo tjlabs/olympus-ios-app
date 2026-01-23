@@ -100,7 +100,8 @@ class KalmanFilter {
         mode: UserMode,
         from: Int,
         shifteTraj: [RecoveryTrajectory],
-        curResult: FineLocationTrackingOutput
+        curResult: FineLocationTrackingOutput,
+        paddings: [Float]
     ) {
         let trajByIndex = Dictionary(uniqueKeysWithValues: shifteTraj.map { ($0.index, $0) })
 
@@ -117,7 +118,7 @@ class KalmanFilter {
                 x: traj.x, y: traj.y, heading: traj.heading,
                 isUseHeading: true,
                 mode: mode,
-                paddingValues: JupiterMode.PADDING_VALUES_DR
+                paddingValues: paddings
             ) else { return result }
 
             var newResult = result
