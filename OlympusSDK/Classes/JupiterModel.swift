@@ -71,6 +71,18 @@ public struct JupiterDebugResult: Codable {
     public var recon_corr_traj: [FineLocationTrackingOutput]?
     public var recovery_result: RecoveryResult?
     public var recovery_result_v2: RecoveryResult_v2?
+    public var ratio: Float?
+}
+
+struct _RecoveryCandidateWide {
+    let loss: Float
+    let shiftedTraj: [RecoveryTrajectory]
+    let recentCand: PeakData
+    let olderCand: PeakData?
+    let tail: FineLocationTrackingOutput?
+    let head: FineLocationTrackingOutput?
+    let recentCandLinkId: Int
+    let recentCandGroupId: Int
 }
 
 public struct RecoveryResult: Codable {
@@ -80,7 +92,29 @@ public struct RecoveryResult: Codable {
     public let bestOlder: [Int]
     public let bestRecent: [Int]
     public let bestResult: FineLocationTrackingOutput?
+
+    public var recentCandLinkId: Int?
+    public var recentCandGroupId: Int?
+
+    public init(traj: [[Double]],
+                shiftedTraj: [RecoveryTrajectory],
+                loss: Float,
+                bestOlder: [Int],
+                bestRecent: [Int],
+                bestResult: FineLocationTrackingOutput?,
+                recentCandLinkId: Int? = nil,
+                recentCandGroupId: Int? = nil) {
+        self.traj = traj
+        self.shiftedTraj = shiftedTraj
+        self.loss = loss
+        self.bestOlder = bestOlder
+        self.bestRecent = bestRecent
+        self.bestResult = bestResult
+        self.recentCandLinkId = recentCandLinkId
+        self.recentCandGroupId = recentCandGroupId
+    }
 }
+
 
 public struct RecoveryResult_v2: Codable {
     public let traj: [[Double]]
