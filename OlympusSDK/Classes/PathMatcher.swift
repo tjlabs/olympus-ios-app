@@ -380,6 +380,37 @@ class PathMatcher {
         return (limitType, limitValues)
     }
     
+    func getLimitationTypeWithLink(link: LinkData) -> LimitationType {
+        var limitType: LimitationType = .NO_LIMIT
+
+        JupiterLogger.i(tag: "KalmanFilter", message: "(getTimeUpdateLimitation) - link: \(link)")
+        let curLink = link
+        let directions = curLink.included_heading
+        if (directions.contains(0) && directions.contains(180)) {
+            limitType = .Y_LIMIT
+        } else if (directions.contains(90) && directions.contains(270)) {
+            limitType = .X_LIMIT
+        } else {
+            limitType = .SMALL_LIMIT
+        }
+        
+        return limitType
+    }
+    
+    func getLimitationRangeWithType(limitType: LimitationType) -> [Float] {
+        var paddings = JupiterMode.PADDING_VALUES_DR
+        
+        if limitType == .Y_LIMIT {
+            paddings = [60, 0.4, 60, 0.4]
+        } else if limitType == .X_LIMIT {
+            paddings = [0.4, 60, 0.4, 60]
+        } else if limitType == .SMALL_LIMIT {
+            paddings = [0.8, 0.8, 0.8, 0.8]
+        }
+        
+        return paddings
+    }
+    
     // MARK: - Node & Link
     var anchorNode = PassedNodeInfo(id: -1, coord: [], headings: [], matched_index: -1, user_heading: 0)
     var anchorSection = -1
