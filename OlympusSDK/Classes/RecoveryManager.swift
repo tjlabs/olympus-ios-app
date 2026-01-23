@@ -566,6 +566,367 @@ class RecoveryManager {
         return recoveryResult
     }
     
+    func recoverWithMultipleTrajWide(recoveryTrajList: [[RecoveryTrajectory]],
+                                     userPeakAndLinkBuffer: [(UserPeak, LinkData)],
+                                     landmarks: (older: LandmarkData, recent: LandmarkData),
+                                     tuResultWhenOlderPeak: ixyhs,
+                                     tuResultWhenRecentPeak: ixyhs,
+                                     curPmResult: FineLocationTrackingOutput,
+                                     mode: UserMode) -> [RecoveryResult] {
+        let semaphore = DispatchSemaphore(value: 0)
+        var output: [RecoveryResult] = []
+
+        Task {
+            output = await self.recoverWithMultipleTrajAsyncWide(recoveryTrajList: recoveryTrajList,
+                                                                 userPeakAndLinkBuffer: userPeakAndLinkBuffer,
+                                                                 landmarks: landmarks,
+                                                                 tuResultWhenOlderPeak: tuResultWhenOlderPeak,
+                                                                 tuResultWhenRecentPeak: tuResultWhenRecentPeak,
+                                                                 curPmResult: curPmResult,
+                                                                 mode: mode)
+            semaphore.signal()
+        }
+
+        semaphore.wait()
+        return output
+    }
+    
+    private func recoverWithMultipleTrajAsyncWide(recoveryTrajList: [[RecoveryTrajectory]],
+                                                  userPeakAndLinkBuffer: [(UserPeak, LinkData)],
+                                                  landmarks: (older: LandmarkData, recent: LandmarkData),
+                                                  tuResultWhenOlderPeak: ixyhs,
+                                                  tuResultWhenRecentPeak: ixyhs,
+                                                  curPmResult: FineLocationTrackingOutput,
+                                                  mode: UserMode) async -> [RecoveryResult] {
+        guard userPeakAndLinkBuffer.count >= 2 else { return [] }
+        let key = "\(sectorId)_\(curPmResult.building_name)_\(curPmResult.level_name)"
+        guard let nodeData = PathMatcher.shared.nodeData[key], let linkData = PathMatcher.shared.linkData[key] else { return [] }
+        
+        let olderUserPeak = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count - 2].0
+        let olderUserLink = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count - 2].1
+        
+        let recentUserPeak = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count - 1].0
+        let recentUserLink = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count - 1].1
+        let recentUserPeakIndex = recentUserPeak.peak_index
+        
+        let olderLandmarkCands: [PeakData] = landmarks.older.peaks
+        let recentLandmarkCands: [PeakData] = landmarks.recent.peaks
+        
+        func dist2(_ ax: Float, _ ay: Float, _ bx: Float, _ by: Float) -> Float {
+            let dx = ax - bx
+            let dy = ay - by
+            return sqrt(dx * dx + dy * dy)
+        }
+        
+        let bestCandidate: [ _RecoveryCandidate? ]? = await withTaskGroup(of: _RecoveryCandidate?.self) { group in
+            for recoveryTraj in recoveryTrajList {
+                group.addTask { [sectorId = self.sectorId, nodeData = nodeData, linkData = linkData] in
+                    guard recoveryTraj.count >= 2 else { return nil }
+                    
+                    var anchorIdx: Int? = nil
+                    for i in 0..<recoveryTraj.count {
+                        if recoveryTraj[i].index == recentUserPeakIndex {
+                            anchorIdx = i
+                            break
+                        }
+                    }
+                    guard let aIdx = anchorIdx else { return nil }
+                    
+                    var localBestLoss = Float.greatestFiniteMagnitude
+                    var localBestShiftedTraj: [RecoveryTrajectory]? = nil
+                    var localBestRecentCand: PeakData? = nil
+                    var localBestOlderCand: PeakData? = nil
+                    var localBestTail: FineLocationTrackingOutput? = nil
+                    var localBestHead: FineLocationTrackingOutput? = nil
+                    
+                    var selectedCands: [(PeakData, Int, Int)] = []  // (cand, candGroupId, candLinkId)
+                    selectedCands.reserveCapacity(recentLandmarkCands.count)
+                    
+                    var inLinkBest: (cand: PeakData, dist: Float)? = nil
+                    var outLinkGroupId: Int?
+                    var outLinkId: Int?
+                    var connectableBest: (cand: PeakData, dist: Float)? = nil
+                    
+                    for cand in recentLandmarkCands {
+                        var candResult = curPmResult
+                        candResult.x = Float(cand.x)
+                        candResult.y = Float(cand.y)
+                        
+                        guard let candLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
+                                                                                     result: candResult,
+                                                                                     checkAll: true,
+                                                                                     acceptDist: 15) else { continue }
+                        
+                        let d = dist2(Float(cand.x), Float(cand.y), Float(tuResultWhenRecentPeak.x), Float(tuResultWhenRecentPeak.y))
+                        
+                        if candLink.group_id == recentUserLink.group_id {
+                            if let best = inLinkBest {
+                                if d < best.dist {
+                                    inLinkBest = (cand: cand, dist: d)
+                                }
+                            } else {
+                                inLinkBest = (cand: cand, dist: d)
+                            }
+                            selectedCands.append((cand, candLink.group_id, candLink.id))
+                            continue
+                        }
+                        
+                        let candNodes = [candLink.start_node, candLink.end_node]
+                        let recentNodes = [recentUserLink.start_node, recentUserLink.end_node]
+                        let isDirectlyConnectable = candNodes.contains(where: { recentNodes.contains($0) })
+                        guard isDirectlyConnectable else { continue }
+                        
+                        if let best = connectableBest {
+                            if d < best.dist {
+                                connectableBest = (cand: cand, dist: d)
+                                outLinkGroupId = candLink.group_id
+                                outLinkId = candLink.id
+                            }
+                        } else {
+                            connectableBest = (cand: cand, dist: d)
+                            outLinkGroupId = candLink.group_id
+                            outLinkId = candLink.id
+                        }
+                    }
+                    
+                    if let inLinkBest = inLinkBest, let outLinkBest = connectableBest {
+                        if outLinkBest.dist > inLinkBest.dist {
+                            connectableBest = nil
+                        }
+                    }
+                    
+                    // Add the single best directly-connectable candidate (if any), avoiding duplicates.
+                    if let extra = connectableBest?.cand, let extraGroupId = outLinkGroupId, let extraLinkId = outLinkId {
+                        let extraCands = selectedCands.map{ $0.0 as PeakData }
+                        if !extraCands.contains(where: { $0.x == extra.x && $0.y == extra.y && $0.rssi == extra.rssi }) {
+                            selectedCands.append((extra, extraGroupId, extraLinkId))
+                        }
+                    }
+                    
+                    for candTuple in selectedCands {
+                        let cand = candTuple.0
+                        let candLinkGroupId = candTuple.1
+                        let candLinkId = candTuple.2
+                        
+                        let offsetX = Float(cand.x) - recoveryTraj[aIdx].x
+                        let offsetY = Float(cand.y) - recoveryTraj[aIdx].y
+                        
+                        var shiftedTraj: [RecoveryTrajectory] = []
+                        shiftedTraj.reserveCapacity(recoveryTraj.count)
+                        for p in recoveryTraj {
+                            shiftedTraj.append(RecoveryTrajectory(index: p.index,
+                                                                  x: p.x + offsetX,
+                                                                  y: p.y + offsetY,
+                                                                  heading: p.heading))
+                        }
+                        guard let first = shiftedTraj.first, let last = shiftedTraj.last else { continue }
+                        
+                        // Tail PM
+                        guard let tail = await self.pmGate.pathMatching(sectorId: sectorId,
+                                                                        building: curPmResult.building_name,
+                                                                        level: curPmResult.level_name,
+                                                                        x: first.x,
+                                                                        y: first.y,
+                                                                        heading: first.heading,
+                                                                        isUseHeading: false,
+                                                                        mode: mode,
+                                                                        paddingValues: JupiterMode.PADDING_VALUES_DR) else { continue }
+                        
+                        var tailResult = curPmResult
+                        tailResult.x = tail.x
+                        tailResult.y = tail.y
+                        tailResult.absolute_heading = tail.heading
+                        
+                        guard let tailLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
+                                                                                     result: tailResult,
+                                                                                     checkAll: true, acceptDist: 15) else {
+                            continue
+                        }
+                        let tailLinkGroupId = tailLink.group_id
+                        
+                        // Head PM
+                        guard let head = await self.pmGate.pathMatching(sectorId: sectorId,
+                                                                        building: curPmResult.building_name,
+                                                                        level: curPmResult.level_name,
+                                                                        x: last.x,
+                                                                        y: last.y,
+                                                                        heading: last.heading,
+                                                                        isUseHeading: false,
+                                                                        mode: mode,
+                                                                        paddingValues: JupiterMode.PADDING_VALUES_DR) else {
+                            continue
+                        }
+                        var headResult = curPmResult
+                        headResult.x = head.x
+                        headResult.y = head.y
+                        headResult.absolute_heading = head.heading
+                        
+                        guard let headLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
+                                                                                     result: headResult,
+                                                                                     checkAll: true, acceptDist: 15) else {
+                            continue
+                        }
+                        
+                        
+                        var dist1 = Float.greatestFiniteMagnitude
+                        var localOlderCand: PeakData? = nil
+                        
+                        for oc in olderLandmarkCands {
+                            var tmp = curPmResult
+                            tmp.x = Float(oc.x)
+                            tmp.y = Float(oc.y)
+                            
+                            let peakDist = dist2(Float(oc.x), Float(oc.y), Float(cand.x), Float(cand.y))
+                            if peakDist < 5 { continue }
+                            tmp.absolute_heading = tail.heading
+                            
+                            let d = dist2(Float(tail.x), Float(tail.y), Float(oc.x), Float(oc.y))
+                            if d < dist1 {
+                                dist1 = d
+                                localOlderCand = oc
+                            }
+                        }
+                        
+                        if dist1 == Float.greatestFiniteMagnitude {
+                            dist1 = 1_000_000
+                        }
+                        
+                        // dist2: tail -> TU result at older peak
+                        let dist2v = dist2(Float(tail.x), Float(tail.y), Float(tuResultWhenOlderPeak.x), Float(tuResultWhenOlderPeak.y))
+                        
+                        // dist3: head -> last (shifted traj last point)
+                        let dist3 = dist2(Float(head.x), Float(head.y), Float(last.x), Float(last.y))
+                        
+                        var penalty: Float = 1.0
+
+                        // Penalty rule:
+                        // 1) Apply only when cand link group differs from the user's recent link group.
+                        // 2) If reaching `recentUserLink` from the candidate link requires switching link-groups 2+ times,
+                        //    set penalty to 2.0.
+                        if candLinkGroupId != recentUserLink.group_id {
+                            if let candLink = linkData[candLinkId] {
+                                let reachableWithinOneSwitch = self.isLinkReachableWithGroupSwitchLimit(
+                                    nodeData: nodeData,
+                                    linkData: linkData,
+                                    from: candLink,
+                                    to: recentUserLink,
+                                    maxGroupSwitches: 1
+                                )
+                                if !reachableWithinOneSwitch {
+                                    penalty = 2.0
+                                }
+                            } else {
+                                // If link lookup fails, be conservative and penalize.
+                                penalty = 2.0
+                            }
+                        }
+                        
+                        let loss = (dist1 + dist2v + dist3)*penalty
+                        if loss < localBestLoss {
+                            localBestLoss = loss
+                            localBestShiftedTraj = shiftedTraj
+                            localBestRecentCand = cand
+                            localBestOlderCand = localOlderCand
+                            
+                            var bt = curPmResult
+                            bt.x = tail.x
+                            bt.y = tail.y
+                            localBestTail = bt
+                            
+                            var bh = curPmResult
+                            bh.x = head.x
+                            bh.y = head.y
+                            localBestHead = bh
+                            
+                            _ = tailLinkGroupId
+                        }
+                    }
+                    
+                    if let st = localBestShiftedTraj, let rc = localBestRecentCand {
+                        return _RecoveryCandidate(loss: localBestLoss,
+                                                  shiftedTraj: st,
+                                                  recentCand: rc,
+                                                  olderCand: localBestOlderCand,
+                                                  tail: localBestTail,
+                                                  head: localBestHead)
+                    }
+                    return nil
+                }
+            }
+            
+            var best: _RecoveryCandidate? = nil
+            var second: _RecoveryCandidate? = nil
+            
+            for await cand in group {
+                guard let cand = cand else { continue }
+                if best == nil || cand.loss < best!.loss {
+                    second = best
+                    best = cand
+                } else if second == nil || cand.loss < second!.loss {
+                    second = cand
+                }
+            }
+            return [best, second]
+        }
+        
+        guard let candidates = bestCandidate else { return [] }
+        var results: [RecoveryResult] = []
+
+        for cand in candidates.compactMap({ $0 }) {
+            var resultTraj = [[Double]]()
+            resultTraj.reserveCapacity(cand.shiftedTraj.count)
+            for value in cand.shiftedTraj {
+                resultTraj.append([Double(value.x), Double(value.y)])
+            }
+
+            let bestOlder: [Int] = cand.olderCand != nil ? [cand.olderCand!.x, cand.olderCand!.y] : [0, 0]
+            let recoveryResult = RecoveryResult(traj: resultTraj,
+                                                shiftedTraj: cand.shiftedTraj,
+                                                loss: cand.loss,
+                                                bestOlder: bestOlder,
+                                                bestRecent: [cand.recentCand.x, cand.recentCand.y],
+                                                bestResult: cand.head)
+            results.append(recoveryResult)
+        }
+        return results
+    }
+    
+    func selectRecoveryResult(list: [RecoveryResult], alwaysFirst: Bool = true) -> RecoveryResult? {
+        let TT_LOW: Float = 20
+        let TT_HIGH: Float = 30
+        let RT_LOW: Float = 0.3
+        let RT_HIGH: Float = 0.5
+        
+        JupiterLogger.i(tag: "RecoveryManager", message: "(selectRecoveryResult) list: \(list)")
+        
+        guard !list.isEmpty else { return nil }
+        
+        let first = list[0]
+        if alwaysFirst { return first }
+        guard list.count >= 2 else { return first }
+
+        let second = list[1]
+
+        let best = (first.loss <= second.loss) ? first : second
+        let runnerUp = (first.loss <= second.loss) ? second : first
+
+        if runnerUp.loss <= 0 {
+            return best
+        }
+
+        let ratio = best.loss / runnerUp.loss
+//        if ratio <= RT && best.loss < TT_HIGH {
+//            return best
+//        }
+        if best.loss < TT_LOW && ratio < RT_HIGH  {
+            return best
+        } else if best.loss < TT_HIGH && ratio < RT_LOW {
+            return best
+        }
+        
+        return nil
+    }
+    
     private actor _PathMatcherGate {
         func pathMatching(sectorId: Int,
                           building: String,
