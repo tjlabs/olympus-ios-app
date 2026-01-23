@@ -59,12 +59,11 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
     @IBOutlet weak var imgViewLevel: UIImageView!
     @IBOutlet weak var scatterChart: ScatterChartView!
     
-    @IBOutlet weak var indexTx: UILabel!
-    @IBOutlet weak var indexRx: UILabel!
-    @IBOutlet weak var scc: UILabel!
-    @IBOutlet weak var searchDirections: UILabel!
-    @IBOutlet weak var resultDirection: UILabel!
-        
+    @IBOutlet weak var indexLabel: UILabel!
+    @IBOutlet weak var peakIdLabel: UILabel!
+    @IBOutlet weak var lossLabel: UILabel!
+    @IBOutlet weak var ratioLabel: UILabel!
+    
     @IBOutlet weak var inOutStatusLabel: UILabel!
     
     var headingImage = UIImage(named: "heading")
@@ -174,7 +173,7 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_01_0119.csv", sensorFileName: "sensor_coex_01_01_0119.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_02_1007.csv", sensorFileName: "sensor_coex_01_02_1007.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
-        serviceManager?.startJupiter(sectorId: sector_id, mode: .MODE_VEHICLE, debugOption: true)
+        serviceManager?.startJupiter(sectorId: sector_id, mode: .MODE_AUTO, debugOption: true)
         
         // service
 //        serviceManager.addObserver(self)
@@ -379,6 +378,7 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         set1.setColor(valueColor)
         set1.scatterShapeSize = 16
         
+        
         let values2 = (0..<1).map { (i) -> ChartDataEntry in
             return ChartDataEntry(x: tuXYH[0], y: tuXYH[1])
         }
@@ -468,6 +468,7 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         
         if let recovery_result = recovery_result {
             let recovery_traj = recovery_result.traj
+            lossLabel.text = String(recovery_result.loss)
             var xAxisValue = [Double]()
             var yAxisValue = [Double]()
             for traj in recovery_traj {
@@ -482,7 +483,7 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
             let setRecoveryTraj = ScatterChartDataSet(entries: valuesRecoveryTraj, label: "RecoveryTraj")
             setRecoveryTraj.drawValuesEnabled = false
             setRecoveryTraj.setScatterShape(.circle)
-            setRecoveryTraj.setColor(.systemGreen)
+            setRecoveryTraj.setColor(.systemBrown)
             setRecoveryTraj.scatterShapeSize = 5
             chartData.append(setRecoveryTraj)
             
@@ -516,6 +517,7 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         }
         
         if let recovery_result_v2 = recovery_result_v2 {
+            lossLabel.text = String(recovery_result_v2.loss) + " // Recovery"
             let recovery_traj = recovery_result_v2.traj
             var xAxisValue = [Double]()
             var yAxisValue = [Double]()
@@ -668,9 +670,7 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
             let ioStatus = "DEBUGING"
             self.inOutStatusLabel.text = "\(ioStatus)"
             
-            indexTx.text = String(debugResult.index)
-//            indexRx.text = String(serviceManager.displayOutput.indexRx) + " // " + String(serviceManager.displayOutput.phase)
-//            scc.text = String(serviceManager.displayOutput.scc)
+            indexLabel.text = String(debugResult.index)
             
             let XYH: [Double] = [Double(debugResult.x), Double(debugResult.y), Double(debugResult.absolute_heading)]
             let isIndoor = debugResult.isIndoor
@@ -682,8 +682,13 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
                 }
             }
             if let landmark = debugResult.landmark {
-                scc.text = String(landmark.ward_id)
+                peakIdLabel.text = String(landmark.ward_id)
 
+            }
+            if let ratio = debugResult.ratio {
+                ratioLabel.text = String(format: "%.4f", ratio)
+            } else {
+                ratioLabel.text = "N/A"
             }
             
             pastBuilding = currentBuilding
