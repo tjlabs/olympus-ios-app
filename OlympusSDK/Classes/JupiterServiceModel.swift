@@ -30,6 +30,11 @@ struct UserPeak {
     let threshold: Float
 }
 
+struct PathMatchingResult {
+    let xyhs: ixyhs
+    let matchedHeadings: [Float]
+}
+
 struct PassedNodeInfo {
     var id: Int
     var coord: [Float]
@@ -62,6 +67,14 @@ public struct RecoveryTrajectory: Codable {
     var x: Float
     var y: Float
     var heading: Float
+}
+
+struct LossPointResult: Codable {
+    let index: Int
+    let traj: [Float]
+    let pm: [Float]
+    let lossDist: Float
+    let lossHeading: Float
 }
 
 struct BuildingLevelTagResult {
