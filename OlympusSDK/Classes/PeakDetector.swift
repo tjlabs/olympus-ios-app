@@ -21,7 +21,7 @@ final class PeakDetector {
     
     private var maxConsecutiveMissing: Int = 60
 
-    private var minAmp: Float = 2.0
+    private var minAmp: Float = 2
     
     // MARK: - State
     private var indexHistory: [WardId: [Int]] = [:]
@@ -164,7 +164,7 @@ final class PeakDetector {
                                      peak_rssi: maxVal,
                                      threshold: minPeakRssi)
             
-            let observed = arr.filter { $0 > MISSING_FLOOR_RSSI }
+            let observed = arr.filter { $0 >= MISSING_FLOOR_RSSI }
             guard let minObserved = observed.min() else { continue }
             let amplitude = maxVal - minObserved
             var isGoodAmp: Bool = true
