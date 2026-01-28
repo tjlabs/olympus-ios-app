@@ -51,6 +51,12 @@ struct PassedLinkInfo {
     var oppsite_heading: Float
 }
 
+struct PassingLink {
+    var uvd_index: Int
+    var link_id: Int
+    var link_group_Id: Int
+}
+
 public struct RecoveryTrajectory: Codable {
     var index: Int
     var x: Float
