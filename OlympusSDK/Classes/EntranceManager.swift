@@ -21,11 +21,11 @@ class EntranceManager {
     deinit { }
     
     private var entRouteMap = [String: EntranceRouteData]()
-    private var entVelocityScalesMap = [String: Float]()
+//    private var entVelocityScalesMap = [String: Float]()
     private var entOuterWardIdMap = [String: String]()
     private var entInnerWardIdMap = [String: String]()
-    private var entInnerWardRssiMap = [String: Float]()
     private var entInnerWardCoordMap = [String: ixyhs]()
+    private var entInnerWardIds = [String]()
     
     //temp
     private var entPeakMap = [String: EntrancePeakData]()
@@ -54,10 +54,10 @@ class EntranceManager {
     }
     
     func setEntData(key: String, data: EntranceData) {
-        self.entVelocityScalesMap[key] = data.velocityScale
+//        self.entVelocityScalesMap[key] = data.velocityScale
         self.entOuterWardIdMap[key] = data.outerWardId
-        self.entInnerWardIdMap[key] = data.innerWardId
-        self.entInnerWardRssiMap[key] = data.innerWardRssi
+//        self.entInnerWardIdMap[key] = data.innerWardId
+//        self.entInnerWardRssiMap[key] = data.innerWardRssi
         self.entInnerWardCoordMap[key] = ixyhs(x: data.innerWardCoord[0], y: data.innerWardCoord[1], heading: data.innerWardCoord[2])
     }
     
@@ -189,12 +189,12 @@ class EntranceManager {
     // Temp
     func setEntPeakData() {
         let ent1 = EntrancePeakData(number: 1,
-                                    velocityScale: 1.2,
+                                    velocityScale: 1.25,
                                     inner_ward: InnerWardData(type: 1, wardId: "TJ-00CB-00000320-0000", building: "COEX", level: "B2", x: 252, y: 95, direction: [90]),
                                     outerWardId: "TJ-00CB-000003F8-0000")
         let ent2 = EntrancePeakData(number: 2,
                                     velocityScale: 0.68,
-                                    inner_ward: InnerWardData(type: 1, wardId: "TJ-00CB-00000323-0000", building: "COEX", level: "B2", x: 250, y: 170, direction: [90]),
+                                    inner_ward: InnerWardData(type: 0, wardId: "TJ-00CB-00000323-0000", building: "COEX", level: "B2", x: 250, y: 170, direction: [90]),
                                     outerWardId: "TJ-00CB-00000324-0000")
         let ent3 = EntrancePeakData(number: 3,
                                     velocityScale: 0.68,
@@ -213,11 +213,24 @@ class EntranceManager {
         self.entPeakMap["6_COEX_B0_3"] = ent3
         self.entPeakMap["6_COEX_B0_4"] = ent4
         self.entPeakMap["6_COEX_B0_5"] = ent5
+        
+        self.entInnerWardIdMap["6_COEX_B0_1"] = ent1.inner_ward.wardId
+        self.entInnerWardIdMap["6_COEX_B0_2"] = ent2.inner_ward.wardId
+        self.entInnerWardIdMap["6_COEX_B0_3"] = ent3.inner_ward.wardId
+        self.entInnerWardIdMap["6_COEX_B0_4"] = ent4.inner_ward.wardId
+        self.entInnerWardIdMap["6_COEX_B0_5"] = ent5.inner_ward.wardId
+        
+        for (key, value) in self.entInnerWardIdMap {
+            self.entInnerWardIds.append(value)
+        }
     }
     
-    func stopEntTrack_v2(curResult: FineLocationTrackingOutput?, wardId: String) -> EntrancePeakData? {
+    func getEntInnerWardIds() -> [String] {
+        return self.entInnerWardIds
+    }
+    
+    func stopEntTrack_v2(wardId: String) -> EntrancePeakData? {
         guard let curEntKey = self.curEntKey else { return nil }
-        guard let curResult = curResult else { return nil }
         guard let innerWardId = entInnerWardIdMap[curEntKey] else { return nil }
         guard let entPeak = entPeakMap[curEntKey] else { return nil }
         
