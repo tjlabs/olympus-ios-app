@@ -17,6 +17,7 @@ class StackManager {
     var uvdBuffer = [UserVelocity]()
     
     var userPeakAndLinkBuffer = [(UserPeak, LinkData)]()
+    var userPeakAndLinksBuffer = [(UserPeak, [LinkData])]()
     var curResultBuffer = [FineLocationTrackingOutput]()
     var curPmResultBuffer = [FineLocationTrackingOutput]()
 
@@ -53,16 +54,17 @@ class StackManager {
         return buffer
     }
     
-    func stackUserPeakAndLink(userPeakAndLink: (UserPeak, LinkData)) {
-        userPeakAndLinkBuffer.append(userPeakAndLink)
-        if (userPeakAndLinkBuffer.count > USER_PEAK_AND_LINK_BUFFER_SIZE) {
-            userPeakAndLinkBuffer.remove(at: 0)
+    
+    func stackUserPeakAndLinks(userPeakAndLinks: (UserPeak, [LinkData])) {
+        userPeakAndLinksBuffer.append(userPeakAndLinks)
+        if (userPeakAndLinksBuffer.count > USER_PEAK_AND_LINK_BUFFER_SIZE) {
+            userPeakAndLinksBuffer.remove(at: 0)
         }
 //        JupiterLogger.i(tag: "StackManager", message: "(stackUserPeakAndLink) userPeakAndLinkBuffer: \(userPeakAndLinkBuffer)")
     }
     
-    func getUserPeakAndLinkBuffer() -> [(UserPeak, LinkData)] {
-        return self.userPeakAndLinkBuffer
+    func getUserPeakAndLinksBuffer() -> [(UserPeak, [LinkData])] {
+        return self.userPeakAndLinksBuffer
     }
     
     func getOlderPeakIndex() -> Int {
