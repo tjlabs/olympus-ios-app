@@ -5,7 +5,7 @@ import TJLabsResource
 class StackManager {
     init() { }
     
-    private let SAME_COORD_THRESHOLD: Int = 20
+    private let SAME_COORD_THRESHOLD: Int = 10
     
     private let DR_BUFFER_SIZE: Int = 200
     private let BLE_LEVEL_BUFFER_SIZE: Int = 8
@@ -205,13 +205,16 @@ class StackManager {
         return headingSet.map{$0}
     }
     
-    func checkIsBadCase(jupiterPhase: JupiterPhase, uvdIndexWhenCorrection: Int) -> Bool {
+    func checkIsBadCase(jupiterPhase: JupiterPhase, uvdIndexWhenCorrection: Int, travelingLinkDist: Float) -> Bool {
         if jupiterPhase == .ENTERING { return false }
-        guard curPmResultBuffer.count >= SAME_COORD_THRESHOLD else { return false }
+        
+        let adaptive_th = max(Int(travelingLinkDist*0.2), SAME_COORD_THRESHOLD)
+        JupiterLogger.i(tag: "StackManager", message: "(checkIsBadCase) adaptive_th: \(adaptive_th)")
+        guard curPmResultBuffer.count >= adaptive_th else { return false }
         let last = curPmResultBuffer[curPmResultBuffer.count-1]
         let lastIndex: Int = last.index
         
-        if lastIndex - uvdIndexWhenCorrection < SAME_COORD_THRESHOLD { return false }
+        if lastIndex - uvdIndexWhenCorrection < adaptive_th { return false }
         
         let lastX: Float = last.x
         let lastY: Float = last.y
@@ -226,8 +229,9 @@ class StackManager {
             } else {
                 break
             }
-//            JupiterLogger.i(tag: "StackManager", message: "(checkIsBadCase) sameCount: \(sameCount)")
-            if sameCount >= SAME_COORD_THRESHOLD {
+            
+            if sameCount >= adaptive_th {
+                JupiterLogger.i(tag: "StackManager", message: "(checkIsBadCase) sameCount: \(sameCount)")
                 return true
             }
         }
