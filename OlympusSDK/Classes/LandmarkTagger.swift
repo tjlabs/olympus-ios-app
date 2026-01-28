@@ -83,12 +83,6 @@ class LandmarkTagger {
             let dx = peakX - refX
             let dy = peakY - refY
             let dist = sqrt(dx*dx + dy*dy)
-
-//            if dist < bestPeakDist && dist <= LANDMARK_DIST_THRESHOLD {
-//                bestPeakDist = dist
-//                bestPeak = peak
-//                bestPeakLinkId = ld.id
-//            }
             
             if dist < bestPeakDist {
                 bestPeakDist = dist
@@ -147,7 +141,7 @@ class LandmarkTagger {
             rawResultBuffer.append([coord[0], coord[1], heading])
             
             var fltResult = defaultResult
-            if let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: matchedResult.building_name, level: matchedResult.level_name, x: Float(pmCoord[0]), y: Float(pmCoord[1]), heading: Float(heading), isUseHeading: true, mode: mode, paddingValues: JupiterMode.PADDING_VALUES_DR) {
+            if let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: matchedResult.building_name, level: matchedResult.level_name, x: Float(pmCoord[0]), y: Float(pmCoord[1]), heading: Float(heading), isUseHeading: true, mode: mode, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) {
                 pmCoord = [Double(pmResult.x), Double(pmResult.y)]
                 fltResult.x = pmResult.x
                 fltResult.y = pmResult.y
