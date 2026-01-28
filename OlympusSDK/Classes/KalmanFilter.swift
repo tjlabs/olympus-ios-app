@@ -529,7 +529,7 @@ class KalmanFilter {
     func drTimeUpdate(region: String, sectorId: Int, uvd: UserVelocity, pastUvd: UserVelocity) -> FineLocationTrackingOutput? {
         guard let stackManager = self.stackManager else { return nil }
         guard var nextTuResult = timeUpdate(uvd: uvd, pastUvd: pastUvd) else { return nil }
-        let paddingValues = JupiterMode.PADDING_VALUES_DR
+        let paddingValues = JupiterMode.PADDING_VALUES_MEDIUM
         
         let drBufferStraightResults = stackManager.isDrBufferStraightCircularStd(numIndex: DR_HEADING_CORR_NUM_IDX, condition: 2.5)
         let isDrStraight = nextTuResult.level_name == "B0" ? false : drBufferStraightResults.0
@@ -586,9 +586,9 @@ class KalmanFilter {
             } else if nextTuResult.y > nextTuResult.y + limitationResult.limitValues[1] {
                 updatedTuResult.y = nextTuResult.y + limitationResult.limitValues[1]
             }
-            paddings = JupiterMode.PADDING_VALUES_DR
+            paddings = JupiterMode.PADDING_VALUES_SMALL
         } else {
-            paddings = JupiterMode.PADDING_VALUES_DR
+            paddings = JupiterMode.PADDING_VALUES_SMALL
         }
         return updatedTuResult
     }
@@ -599,7 +599,7 @@ class KalmanFilter {
     
     func measurementUpdate(sectorId: Int, resultForCorrection: FineLocationTrackingOutput, mode: UserMode) -> FineLocationTrackingOutput? {
         guard let tuResult = self.tuResult else { return nil }
-        let paddingValues = mode == .MODE_PEDESTRIAN ? JupiterMode.PADDING_VALUES_PDR : JupiterMode.PADDING_VALUES_DR
+        let paddingValues = mode == .MODE_PEDESTRIAN ? JupiterMode.PADDING_VALUES_SMALL : JupiterMode.PADDING_VALUES_MEDIUM
         
         var updatedResult = resultForCorrection
         JupiterLogger.i(tag: "KalmanFilter", message: "(measurementUpdate) - resultForCorrection:[\(resultForCorrection.x),\(resultForCorrection.y),\(resultForCorrection.absolute_heading)]")
