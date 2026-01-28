@@ -398,14 +398,14 @@ class PathMatcher {
     }
     
     func getLimitationRangeWithType(limitType: LimitationType) -> [Float] {
-        var paddings = JupiterMode.PADDING_VALUES_DR
+        var paddings = JupiterMode.PADDING_VALUES_MEDIUM
         
         if limitType == .Y_LIMIT {
-            paddings = [60, 0.4, 60, 0.4]
+            paddings = [60, 2, 60, 2]
         } else if limitType == .X_LIMIT {
-            paddings = [0.4, 60, 0.4, 60]
+            paddings = [2, 60, 2, 60]
         } else if limitType == .SMALL_LIMIT {
-            paddings = [0.8, 0.8, 0.8, 0.8]
+            paddings = [4, 4, 4, 4]
         }
         
         return paddings
@@ -418,6 +418,7 @@ class PathMatcher {
     var isInNode = false
     var curPassedNodeInfo = PassedNodeInfo(id: -1, coord: [], headings: [], matched_index: -1, user_heading: 0)
     var curPassedLinkInfo: PassedLinkInfo?
+    var passingLinkBuffer = [PassingLink]()
     var passedNodeInfoBuffer = [PassedNodeInfo]()
     
     var isNeedClearBuffer = false
@@ -629,7 +630,7 @@ class PathMatcher {
         return paddingValues
     }
     
-    func updateNodeAndLinkInfo(sectorId: Int, uvdIndex: Int, curResult: FineLocationTrackingOutput, mode: UserMode, jumpInfo: JumpInfo?, isInLevelChangeArea: Bool = false) {
+    func updateNodeAndLinkInfo(sectorId: Int, uvdIndex: Int, curResult: FineLocationTrackingOutput, mode: UserMode, jumpInfo: JumpInfo?, isInLevelChangeArea: Bool = false, pLinkCutIndex: Int? = nil) {
         let checkAll = jumpInfo != nil || isInLevelChangeArea ? true : false
         let x = curResult.x
         let y = curResult.y
@@ -754,12 +755,46 @@ class PathMatcher {
 
         self.curPassedLinkInfo = PassedLinkInfo(id: curLinkId, start_node: ld.start_node, end_node: ld.end_node, distance: ld.distance, included_heading: curLinkDirs, group_id: ld.group_id, user_coord: [correctedX, correctedY], user_heading: heading, matched_heading: curLinkBestHeading, oppsite_heading: curLinkOppHeading)
         JupiterLogger.i(tag: "PathMatcher", message: "(updateNodeAndLinkInfo) [LINK] uvd=\(uvdIndex) key=\(key) link=\(curLinkId) (\(ld.start_node)->\(ld.end_node)) dirs=\(curLinkDirs) xy=(\(correctedX),\(correctedY)) userH=\(heading) bestH=\(bestH)(idx=\(bestIdx)) oppH=\(bestOppH)(idx=\(bestOppIdx)) dist=\(bestLinkDist)")
+        
+        let passingLink = PassingLink(uvd_index: uvdIndex, link_id: curLinkId, link_group_Id: ld.group_id)
+        controlPassingLinkBuffer(passingLink: passingLink, cutIndex: pLinkCutIndex)
     }
     
     private func registerPassedNode(node: Int, coord: [Float], headings: [Float], matchedIndex: Int, heading: Float) {
         curPassedNodeInfo = PassedNodeInfo(id: node, coord: coord, headings: headings, matched_index: matchedIndex, user_heading: heading)
         controlPassedNodeInfo(passedNodeInfo: curPassedNodeInfo)
 //        JupiterLogger.i(tag: "PathMatcher", message: "(registerPassedNode) - registerPassedNode : passedNode = \(curPassedNodeInfo.id) // passedNodeMatchedIndex = \(curPassedNodeInfo.matched_index) // passedNodeCoord = \(curPassedNodeInfo.coord) // passedNodeHeadings = \(curPassedNodeInfo.headings)")
+    }
+    
+    private func controlPassingLinkBuffer(passingLink: PassingLink, cutIndex: Int?) {
+        if let cutIndex = cutIndex {
+            var newBuffer = [PassingLink]()
+            for pLink in passingLinkBuffer {
+                if pLink.uvd_index >= cutIndex {
+                    newBuffer.append(pLink)
+                }
+            }
+            self.passingLinkBuffer = newBuffer
+        } else {
+            self.passingLinkBuffer.append(passingLink)
+        }
+        
+        JupiterLogger.i(tag: "PathMatcher", message: "(controlPassingLinkBuffer) - passingLinkBuffer cutted under \(cutIndex)")
+        
+        guard !self.passingLinkBuffer.isEmpty else { return }
+
+        let lastIndex = self.passingLinkBuffer.count - 1
+        let last = self.passingLinkBuffer[lastIndex]
+
+        if last.uvd_index == passingLink.uvd_index {
+            self.passingLinkBuffer[lastIndex] = passingLink
+        }
+        
+//        JupiterLogger.i(tag: "PathMatcher", message: "(controlPassingLinkBuffer) : passingLinkBuffer=\(passingLinkBuffer)")
+    }
+    
+    func getPassingLinkBuffer() -> [PassingLink] {
+        return self.passingLinkBuffer
     }
     
     private func updatePassedNodeInJump(sectorId: Int, curResult: FineLocationTrackingOutput, linkId: Int) {
@@ -778,6 +813,59 @@ class PathMatcher {
         
 //        curPassedNodeInfo = PassedNodeInfo(id: node, coord: coord, headings: headings, matched_index: matchedIndex, user_heading: heading)
 //        controlPassedNodeInfo(passedNodeInfo: curPassedNodeInfo)
+    }
+    
+    func getNodeInfoWithResult(sectorId: Int,
+                               result: FineLocationTrackingOutput,
+                               checkAll: Bool = false,
+                               acceptDist: Float = 5) -> NodeData? {
+        let building = result.building_name
+        let level = result.level_name
+        guard !building.isEmpty, !level.isEmpty else { return nil }
+
+        let levelName = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: level)
+        let key = "\(sectorId)_\(building)_\(levelName)"
+        guard let nodeData = self.nodeData[key] else { return nil }
+
+        let correctedX = round(result.x)
+        let correctedY = round(result.y)
+
+        func dist(_ ax: Float, _ ay: Float, _ bx: Float, _ by: Float) -> Float {
+            let dx = ax - bx
+            let dy = ay - by
+            return sqrt(dx * dx + dy * dy)
+        }
+
+        // 후보 노드 집합
+        var candidateNodeIds: [Int] = []
+
+        if checkAll {
+            candidateNodeIds = Array(nodeData.keys)
+        } else {
+            // 가능하면 현재 링크의 양 끝 노드만 검사 (빠름)
+            if let link = self.curPassedLinkInfo {
+                candidateNodeIds = [link.start_node, link.end_node]
+            } else {
+                candidateNodeIds = Array(nodeData.keys)
+            }
+        }
+
+        var bestNode: NodeData? = nil
+        var bestDist: Float = Float.greatestFiniteMagnitude
+
+        for nid in candidateNodeIds {
+            guard let nd = nodeData[nid], nd.coords.count >= 2 else { continue }
+            let nx = nd.coords[0]
+            let ny = nd.coords[1]
+            let d = dist(correctedX, correctedY, nx, ny)
+            if d < bestDist {
+                bestDist = d
+                bestNode = nd
+            }
+        }
+
+        guard let node = bestNode, bestDist <= acceptDist else { return nil }
+        return node
     }
     
     func getLinkInfoWithResult(sectorId: Int, result: FineLocationTrackingOutput, checkAll: Bool = false, acceptDist: Float = 5) -> LinkData? {
@@ -826,6 +914,46 @@ class PathMatcher {
         guard bestLinkId != -1, bestLinkDist <= acceptDist else { return nil }
 
         return linkData[bestLinkId]
+    }
+
+    func getLinkInfosWithResult(sectorId: Int,
+                                result: FineLocationTrackingOutput,
+                                checkAll: Bool = false,
+                                acceptDist: Float = 5) -> [LinkData]? {
+        let building = result.building_name
+        let level = result.level_name
+        guard !building.isEmpty, !level.isEmpty else { return nil }
+
+        let levelName = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: level)
+        let key = "\(sectorId)_\(building)_\(levelName)"
+
+        guard let nodeData = self.nodeData[key] else { return nil }
+        guard let linkData = self.linkData[key] else { return nil }
+
+        let correctedX = round(result.x)
+        let correctedY = round(result.y)
+
+        var matchedNodeId: Int? = nil
+        for (nodeId, nd) in nodeData {
+            guard nd.coords.count >= 2 else { continue }
+            if nd.coords[0] == correctedX && nd.coords[1] == correctedY {
+                matchedNodeId = nodeId
+                break
+            }
+        }
+
+        if let nodeId = matchedNodeId, let nd = nodeData[nodeId] {
+            let links: [LinkData] = nd.connected_links.compactMap { linkData[$0] }
+            return links.isEmpty ? nil : links
+        }
+
+        guard let one = getLinkInfoWithResult(sectorId: sectorId,
+                                              result: result,
+                                              checkAll: checkAll,
+                                              acceptDist: acceptDist) else {
+            return nil
+        }
+        return [one]
     }
     
     private func pointToSegmentDistance(px: Float, py: Float, ax: Float, ay: Float, bx: Float, by: Float) -> (dist: Float, t: Float) {
