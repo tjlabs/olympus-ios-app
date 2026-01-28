@@ -31,6 +31,9 @@ final class PeakDetector {
     private var plateauState: [WardId: PeakPlateauState] = [:]
     private let PLATEAU_EPS: Float = 1e-6
     
+    // MARK: - Inner Ward
+    private var innerWardIds = [String]()
+    
     init() { }
 
     // MARK: - Public APIs
@@ -54,8 +57,12 @@ final class PeakDetector {
         self.minPeakRssi = minPeakRssi
         self.maxConsecutiveMissing = max(1, maxConsecutiveMissing)
     }
+    
+    func setInnerWardIds(ids: [String]) {
+        self.innerWardIds = ids
+    }
 
-    func updateEpoch(uvdIndex: Int, bleAvg: [WardId: Float], windowSize: Int) -> UserPeak? {
+    func updateEpoch(uvdIndex: Int, bleAvg: [WardId: Float], windowSize: Int, jupiterPhase: JupiterPhase) -> UserPeak? {
         // 1) Append current values for seen IDs
         for (id, rssi) in bleAvg {
             appendIndex(id: id, index: uvdIndex)
@@ -88,6 +95,8 @@ final class PeakDetector {
         
         // 4) Peak decision (buffer-center max rule)
         var best: UserPeak? = nil
+        var bestInner: UserPeak? = nil
+        let innerSet = Set(innerWardIds)
         let win = max(3, windowSize)
 
         for (id, fullArr) in rssiHistory {
@@ -160,24 +169,40 @@ final class PeakDetector {
             let amplitude = maxVal - minObserved
             var isGoodAmp: Bool = true
             if amplitude < self.minAmp && win > 10 {
-                JupiterLogger.i(tag: "PeakDetector", message: "(updateEpoch) - peak detected \(id) but skipped : windowSize = \(max(3, windowSize)), storedBufferSize = \(BUFFER_SIZE), TH = \(minPeakRssi), minAmp = \(minAmp) , amp = \(amplitude)")
-                isGoodAmp = false
+                if jupiterPhase == .ENTERING {
+                    JupiterLogger.i(tag: "PeakDetector", message: "(updateEpoch) - peak detected in Entering \(id) : windowSize = \(max(3, windowSize)), storedBufferSize = \(BUFFER_SIZE), TH = \(minPeakRssi), minAmp = \(minAmp) , amp = \(amplitude) , rssi = \(maxVal)")
+                    isGoodAmp = true
+                } else {
+                    JupiterLogger.i(tag: "PeakDetector", message: "(updateEpoch) - peak detected \(id) but skipped : windowSize = \(max(3, windowSize)), storedBufferSize = \(BUFFER_SIZE), TH = \(minPeakRssi), minAmp = \(minAmp) , amp = \(amplitude) , rssi = \(maxVal)")
+                    isGoodAmp = false
+                }
             } else {
-                JupiterLogger.i(tag: "PeakDetector", message: "(updateEpoch) - peak detected \(id) : windowSize = \(max(3, windowSize)), storedBufferSize = \(BUFFER_SIZE), TH = \(minPeakRssi), minAmp = \(minAmp) , amp = \(amplitude)")
+                JupiterLogger.i(tag: "PeakDetector", message: "(updateEpoch) - peak detected \(id) : windowSize = \(max(3, windowSize)), storedBufferSize = \(BUFFER_SIZE), TH = \(minPeakRssi), minAmp = \(minAmp) , amp = \(amplitude) , rssi = \(maxVal)")
             }
-            
-            if let b = best {
-                if candidate.peak_rssi > b.peak_rssi && isGoodAmp {
+
+            guard isGoodAmp else { continue }
+
+            let isInner = innerSet.contains(id)
+            if jupiterPhase == .ENTERING && isInner {
+                if let bi = bestInner {
+                    if candidate.peak_rssi > bi.peak_rssi {
+                        bestInner = candidate
+                    }
+                } else {
+                    bestInner = candidate
+                }
+            } else {
+                if let b = best {
+                    if candidate.peak_rssi > b.peak_rssi {
+                        best = candidate
+                    }
+                } else {
                     best = candidate
                 }
-            } else if isGoodAmp {
-                best = candidate
             }
-            
-            
         }
         
-        return best
+        return bestInner ?? best
     }
 
     func reset() {
