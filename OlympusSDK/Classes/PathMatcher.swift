@@ -6,10 +6,27 @@ class PathMatcher {
     static var shared = PathMatcher()
     init() { }
     
+    func initialize() {
+        self.anchorNode = PassedNodeInfo(id: -1, coord: [], headings: [], matched_index: -1, user_heading: 0)
+        self.anchorSection = -1
+        
+        self.isInNode = false
+        self.curPassedNodeInfo = PassedNodeInfo(id: -1, coord: [], headings: [], matched_index: -1, user_heading: 0)
+        self.curPassedLinkInfo = nil
+        self.passingLinkBuffer = [PassingLink]()
+        self.passedNodeInfoBuffer = [PassedNodeInfo]()
+        self.preLinkId = -1
+        self.preGroupId = -1
+        self.groupLen = 0
+        
+        self.isNeedClearBuffer = false
+    }
+    
     let ACCEPT_DIST: Float = 5
     var pathPixelData = [String: PathPixelData]()
     var nodeData = [String: [Int: NodeData]]()
     var linkData = [String: [Int: LinkData]]()
+    var linkGroupLenData = [String: [Int: Float]]()
     var entranceMatchingArea = [String: [[Float]]]()
     var entranceArea = [String: [[Float]]]()
     
@@ -23,6 +40,22 @@ class PathMatcher {
     
     func setLinkData(key: String, data: [Int: LinkData]) {
         self.linkData[key] = data
+    }
+    
+    func setLinkGroupLength(key: String) {
+        guard let linkData = self.linkData[key] else { return }
+
+        var groupSums: [Int: Float] = [:]
+
+        for (_, link) in linkData {
+            let gid = link.group_id
+            groupSums[gid, default: 0] += link.distance
+        }
+        self.linkGroupLenData[key] = groupSums
+    }
+
+    func getLinkGroupLength(key: String, groupId: Int) -> Float? {
+        return self.linkGroupLenData[key]?[groupId]
     }
     
     func setEntranceMatchingArea(key: String, data: [[Float]]) {
@@ -57,7 +90,7 @@ class PathMatcher {
         let mainHeading = pathPixelData.roadHeading
         var idshArray = [[Float]]()
         var idshArrayWhenFail = [[Float]]()
-        
+        var headingArray = [String]()
         if !mainRoad.isEmpty {
             let roadX = mainRoad[0]
             let roadY = mainRoad[1]
@@ -94,10 +127,12 @@ class PathMatcher {
                             if isValid {
                                 idsh[3] = correctedHeading
                                 idshArray.append(idsh)
+                                headingArray.append(mainHeading[i])
                             }
                         }
                     } else {
                         idshArray.append(idsh)
+                        headingArray.append(mainHeading[i])
                     }
                 }
             }
@@ -116,6 +151,102 @@ class PathMatcher {
         ixyhs.heading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(ixyhs.heading)))
         
         return ixyhs
+    }
+
+    func pathMatchingWithHeadings(
+        sectorId: Int,
+        building: String,
+        level: String,
+        x: Float,
+        y: Float,
+        heading: Float,
+        headingRange: Float = 46,
+        isUseHeading: Bool,
+        mode: UserMode,
+        paddingValues: [Float]
+    ) -> PathMatchingResult? {
+        var ixyhs = ixyhs(x: x, y: y, heading: heading, scale: 1.0)
+        var bestHeading = heading
+
+        guard !building.isEmpty, !level.isEmpty else { return nil }
+
+        let levelName = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: level)
+        let key = "\(sectorId)_\(building)_\(levelName)"
+
+        guard let pathPixelData = checkIsAvailablePathPixelData(key: key) else { return nil }
+        let mainType = pathPixelData.roadType
+        let mainRoad = pathPixelData.road
+        let mainMagScale = pathPixelData.roadScale
+        let mainHeading = pathPixelData.roadHeading
+        var idshArray = [[Float]]()
+        var idshArrayWhenFail = [[Float]]()
+        var matchedHeadingCandidates = [Float]()
+        if !mainRoad.isEmpty {
+            let roadX = mainRoad[0]
+            let roadY = mainRoad[1]
+
+            var xMin = x - paddingValues[0]
+            var xMax = x + paddingValues[2]
+            var yMin = y - paddingValues[1]
+            var yMax = y + paddingValues[3]
+
+            if paddingValues[0] != 0 || paddingValues[1] != 0 || paddingValues[2] != 0 || paddingValues[3] != 0 {
+                if let pathMatchingArea = self.checkInEntranceMatchingArea(sectorId: sectorId, building: building, level: level, x: x, y: y) {
+                    xMin = pathMatchingArea[0]
+                    yMin = pathMatchingArea[1]
+                    xMax = pathMatchingArea[2]
+                    yMax = pathMatchingArea[3]
+                }
+            }
+
+            for i in 0..<roadX.count {
+                let xPath = roadX[i]
+                let yPath = roadY[i]
+                let pathTypeLoaded = mainType[i]
+
+                if mode == .MODE_VEHICLE && pathTypeLoaded != 1 { continue }
+                if xPath >= xMin && xPath <= xMax, yPath >= yMin && yPath <= yMax {
+                    let distance = sqrt(pow(x - xPath, 2) + pow(y - yPath, 2))
+                    let magScale = mainMagScale[i]
+                    var idsh: [Float] = [Float(i), distance, magScale, heading]
+                    idshArrayWhenFail.append(idsh)
+
+                    if isUseHeading {
+                        if let hs = getHeadingDataArray(mainHeading[i]) {
+                            let (isValid, correctedHeading) = validateHeading(heading: heading, headingRange: headingRange, headingData: hs, x: xPath, y: yPath)
+                            if isValid {
+                                idsh[3] = correctedHeading
+                                idshArray.append(idsh)
+                                matchedHeadingCandidates.append(contentsOf: hs)
+                            }
+                        }
+                    } else {
+                        idshArray.append(idsh)
+                        if let hs = getHeadingDataArray(mainHeading[i]) {
+                            matchedHeadingCandidates.append(contentsOf: hs)
+                        }
+                    }
+                }
+            }
+
+            if !idshArray.isEmpty {
+                let updatedIxyhs = processIdshArray(idshArray: idshArray, roadX: roadX, roadY: roadY, inputXyhs: &ixyhs, bestHeading: &bestHeading, isUseHeading: isUseHeading)
+                ixyhs = updatedIxyhs
+            } else if isUseHeading {
+                let updatedIxyhs = processFailedIdshArray(idshArrayWhenFail: idshArrayWhenFail, mainHeading: mainHeading, roadX: roadX, roadY: roadY, inputXyhs: &ixyhs, bestHeading: &bestHeading)
+                ixyhs = updatedIxyhs
+            } else {
+                return nil
+            }
+        }
+
+        let finalHeading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(ixyhs.heading)))
+        let matched = matchedHeadingCandidates
+            .filter { abs(circularDiffDeg(Double($0), Double(finalHeading))) < Double(headingRange) }
+
+        ixyhs.heading = finalHeading
+
+        return PathMatchingResult(xyhs: ixyhs, matchedHeadings: matched.isEmpty ? [finalHeading] : matched)
     }
     
     func getPathMatchingHeadings(sectorId: Int, building: String, level: String, x: Float, y: Float, paddingValue: Float, mode: UserMode) -> [Float] {
@@ -420,6 +551,9 @@ class PathMatcher {
     var curPassedLinkInfo: PassedLinkInfo?
     var passingLinkBuffer = [PassingLink]()
     var passedNodeInfoBuffer = [PassedNodeInfo]()
+    var preLinkId: Int = -1
+    var preGroupId: Int = -1
+    var groupLen: Float = 0
     
     var isNeedClearBuffer = false
     
@@ -451,7 +585,17 @@ class PathMatcher {
         let nodeInfoBuffer = passedNodeInfoBuffer
         
         var resultPassedNodeInfo = PassedNodeInfo(id: -1, coord: [], headings: [], matched_index: -1, user_heading: 0)
-        guard let curLink = getCurPassedLinkInfo() else { return resultPassedNodeInfo }
+        var curLink: PassedLinkInfo?
+        if let passedLink = getCurPassedLinkInfo() {
+            curLink = passedLink
+        } else {
+            guard let matchedLink = getLinkInfoWithResult(sectorId: sectorId, result: fltResult, checkAll: true) else { return resultPassedNodeInfo }
+            let close = closestHeading(to: fltResult.absolute_heading, candidates: matchedLink.included_heading)
+            let op = oppositeOf(close.0)
+            let opClose = closestHeading(to: op, candidates: matchedLink.included_heading)
+            curLink = PassedLinkInfo(id: matchedLink.id, start_node: matchedLink.start_node, end_node: matchedLink.end_node, distance: matchedLink.distance, included_heading: matchedLink.included_heading, group_id: matchedLink.group_id, user_coord: [fltResult.x, fltResult.y], user_heading: fltResult.absolute_heading, matched_heading: close.0, oppsite_heading: opClose.0)
+        }
+        guard let curLink = curLink else { return resultPassedNodeInfo }
         let startCoord = curLink.user_coord
         let heading: Float = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(fltResult.absolute_heading)))
         var diffHeading = [Float]()
@@ -477,24 +621,23 @@ class PathMatcher {
         let sectionLength: Double = 100
         let PIXELS_TO_CHECK = Int(sectionLength)
         
+        let link = curLink
         if (candidateDirections.count == 1) {
             let direction = candidateDirections[0]
             var candidateNodeNumbers = [Int]()
             
             if direction.truncatingRemainder(dividingBy: 90) != 0 {
-                if let link = curPassedLinkInfo {
-                    let linkDirs = link.included_heading
-                    for item in nodeInfoBuffer.reversed() {
-                        var validCount = 0
-                        for heading in linkDirs {
-                            if item.headings.contains(heading) {
-                                validCount += 1
-                            }
+                let linkDirs = link.included_heading
+                for item in nodeInfoBuffer.reversed() {
+                    var validCount = 0
+                    for heading in linkDirs {
+                        if item.headings.contains(heading) {
+                            validCount += 1
                         }
-                        if validCount == linkDirs.count {
-                            resultPassedNodeInfo = item
-                            return resultPassedNodeInfo
-                        }
+                    }
+                    if validCount == linkDirs.count {
+                        resultPassedNodeInfo = item
+                        return resultPassedNodeInfo
                     }
                 }
             }
@@ -519,19 +662,17 @@ class PathMatcher {
                 }
             }
         } else {
-            if let link = curPassedLinkInfo {
-                let linkDirs = link.included_heading
-                for item in nodeInfoBuffer.reversed() {
-                    var validCount = 0
-                    for heading in linkDirs {
-                        if item.headings.contains(heading) {
-                            validCount += 1
-                        }
+            let linkDirs = link.included_heading
+            for item in nodeInfoBuffer.reversed() {
+                var validCount = 0
+                for heading in linkDirs {
+                    if item.headings.contains(heading) {
+                        validCount += 1
                     }
-                    if validCount == linkDirs.count {
-                        resultPassedNodeInfo = item
-                        return resultPassedNodeInfo
-                    }
+                }
+                if validCount == linkDirs.count {
+                    resultPassedNodeInfo = item
+                    return resultPassedNodeInfo
                 }
             }
         }
@@ -789,8 +930,33 @@ class PathMatcher {
         if last.uvd_index == passingLink.uvd_index {
             self.passingLinkBuffer[lastIndex] = passingLink
         }
-        
-//        JupiterLogger.i(tag: "PathMatcher", message: "(controlPassingLinkBuffer) : passingLinkBuffer=\(passingLinkBuffer)")
+    }
+    
+    func editPassingLinkBuffer(from: Int, sectorId: Int, curPmResultBuffer: [FineLocationTrackingOutput]) {
+        var pmByIndex: [Int: FineLocationTrackingOutput] = [:]
+        pmByIndex.reserveCapacity(curPmResultBuffer.count)
+        for pm in curPmResultBuffer {
+            pmByIndex[pm.index] = pm
+        }
+
+        var newBuffer = [PassingLink]()
+        newBuffer.reserveCapacity(passingLinkBuffer.count)
+
+        for pLink in passingLinkBuffer {
+            if pLink.uvd_index >= from {
+                if let matchedResult = pmByIndex[pLink.uvd_index],
+                   let matchedLink = getLinkInfoWithResult(sectorId: sectorId, result: matchedResult, checkAll: true) {
+                    let newLink = PassingLink(uvd_index: from, link_id: matchedLink.id, link_group_Id: matchedLink.group_id)
+                    newBuffer.append(newLink)
+                } else {
+                    newBuffer.append(pLink)
+                }
+            } else {
+                newBuffer.append(pLink)
+            }
+        }
+
+        self.passingLinkBuffer = newBuffer
     }
     
     func getPassingLinkBuffer() -> [PassingLink] {
@@ -1014,5 +1180,25 @@ class PathMatcher {
     
     func getCurPassedLinkInfo() -> PassedLinkInfo? {
         return self.curPassedLinkInfo
+    }
+    
+    func getCurPassedLinksDist() -> Float {
+        if let linkInfo = getCurPassedLinkInfo() {
+            let curLinkId = linkInfo.id
+            let curGroupId = linkInfo.group_id
+            if curGroupId == preGroupId {
+                if curLinkId != preLinkId {
+                    groupLen += linkInfo.distance
+                }
+            } else {
+                groupLen = linkInfo.distance
+            }
+            preLinkId = curLinkId
+            preGroupId = curGroupId
+        } else {
+            return 1
+        }
+        
+        return groupLen
     }
 }
