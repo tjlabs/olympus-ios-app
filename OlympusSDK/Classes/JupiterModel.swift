@@ -92,7 +92,9 @@ public struct RecoveryResult: Codable {
     public let bestOlder: [Int]
     public let bestRecent: [Int]
     public let bestResult: FineLocationTrackingOutput?
-
+    
+    public var curLinkId: Int?
+    public var curGroupId: Int?
     public var recentCandLinkId: Int?
     public var recentCandGroupId: Int?
 
@@ -102,6 +104,8 @@ public struct RecoveryResult: Codable {
                 bestOlder: [Int],
                 bestRecent: [Int],
                 bestResult: FineLocationTrackingOutput?,
+                curLinkId: Int? = nil,
+                curGroupId: Int? = nil,
                 recentCandLinkId: Int? = nil,
                 recentCandGroupId: Int? = nil) {
         self.traj = traj
@@ -110,6 +114,8 @@ public struct RecoveryResult: Codable {
         self.bestOlder = bestOlder
         self.bestRecent = bestRecent
         self.bestResult = bestResult
+        self.curLinkId = curLinkId
+        self.curGroupId = curGroupId
         self.recentCandLinkId = recentCandLinkId
         self.recentCandGroupId = recentCandGroupId
     }
