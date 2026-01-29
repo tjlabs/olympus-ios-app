@@ -194,11 +194,11 @@ class EntranceManager {
                                     outerWardId: "TJ-00CB-000003F8-0000")
         let ent2 = EntrancePeakData(number: 2,
                                     velocityScale: 0.68,
-                                    inner_ward: InnerWardData(type: 0, wardId: "TJ-00CB-00000323-0000", building: "COEX", level: "B2", x: 250, y: 170, direction: [90]),
+                                    inner_ward: InnerWardData(type: 0, wardId: "TJ-00CB-00000323-0000", building: "COEX", level: "B2", x: 250, y: 182, direction: [90]),
                                     outerWardId: "TJ-00CB-00000324-0000")
         let ent3 = EntrancePeakData(number: 3,
                                     velocityScale: 0.68,
-                                    inner_ward: InnerWardData(type: 0, wardId: "TJ-00CB-00000344-0000", building: "COEX", level: "B2", x: 291, y: 300, direction: [90, 180]),
+                                    inner_ward: InnerWardData(type: 0, wardId: "TJ-00CB-00000344-0000", building: "COEX", level: "B2", x: 291, y: 292, direction: [90]),
                                     outerWardId: "TJ-00CB-000003FA-0000")
         let ent4 = EntrancePeakData(number: 4,
                                     velocityScale: 0.75,
