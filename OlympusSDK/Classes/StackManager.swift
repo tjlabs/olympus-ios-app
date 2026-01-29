@@ -136,17 +136,15 @@ class StackManager {
                 guard let preTraj = trajByIndex[preIndex] else { return result }
                 let dx = traj.x - preTraj.x
                 let dy = traj.y - preTraj.y
-                let dh = traj.heading - preTraj.heading
                 
                 let newX = preResult.x + dx
                 let newY = preResult.y + dy
-                let newH = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(preResult.absolute_heading + dh)))
                 
                 guard let pm = PathMatcher.shared.pathMatching(
                     sectorId: sectorId,
                     building: result.building_name,
                     level: result.level_name,
-                    x: newX, y: newY, heading: newH,
+                    x: newX, y: newY, heading: traj.heading,
                     isUseHeading: true,
                     mode: mode,
                     paddingValues: paddings
@@ -218,17 +216,15 @@ class StackManager {
                 guard let preTraj = trajByIndex[preIndex] else { return result }
                 let dx = traj.x - preTraj.x
                 let dy = traj.y - preTraj.y
-                let dh = traj.heading - preTraj.heading
                 
                 let newX = preResult.x + dx
                 let newY = preResult.y + dy
-                let newH = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(preResult.absolute_heading + dh)))
                 
                 guard let pm = PathMatcher.shared.pathMatching(
                     sectorId: sectorId,
                     building: result.building_name,
                     level: result.level_name,
-                    x: newX, y: newY, heading: newH,
+                    x: newX, y: newY, heading: traj.heading,
                     isUseHeading: true,
                     mode: mode,
                     paddingValues: paddings
@@ -237,6 +233,10 @@ class StackManager {
                 newResult.x = pm.x
                 newResult.y = pm.y
                 newResult.absolute_heading = pm.heading
+                JupiterLogger.i(
+                    tag: "StackManager",
+                    message: "(editCurPmResultBuffer) index:\(result.index) do pm // [\(newX),\(newY),\(traj.heading)] -> pm [\(pm.x),\(pm.y),\(pm.heading)]"
+                )
             }
             preResult = newResult
             
@@ -264,7 +264,7 @@ class StackManager {
     func checkIsBadCase(jupiterPhase: JupiterPhase, uvdIndexWhenCorrection: Int, travelingLinkDist: Float) -> Bool {
         if jupiterPhase == .ENTERING { return false }
         
-        let adaptive_th = max(Int(travelingLinkDist*0.2), SAME_COORD_THRESHOLD)
+        let adaptive_th = max(Int(travelingLinkDist*0.3), SAME_COORD_THRESHOLD)
         JupiterLogger.i(tag: "StackManager", message: "(checkIsBadCase) adaptive_th: \(adaptive_th)")
         guard curPmResultBuffer.count >= adaptive_th else { return false }
         let last = curPmResultBuffer[curPmResultBuffer.count-1]

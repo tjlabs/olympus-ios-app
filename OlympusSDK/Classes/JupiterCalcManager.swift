@@ -43,7 +43,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     var curUserModeEnum: UserMode = .MODE_AUTO
     
     // MARK: - Constants
-    private let AVG_BUFFER_SIZE = 5
+    private let AVG_BUFFER_SIZE = 2
     
     // MARK: - Landmark Correction
     private var correctionId: String = ""
@@ -101,7 +101,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     // MARK: - Functions
     func start(completion: @escaping (Bool, String) -> Void) {
-        tjlabsResourceManager.loadJupiterResource(region: region, sectorId: sectorId, landmarkTh: -88, completion: { isSuccess in
+        tjlabsResourceManager.loadJupiterResource(region: region, sectorId: sectorId, landmarkTh: -85, completion: { isSuccess in
             let msg: String = isSuccess ? "JupiterCalcManager start success" : "JupiterCalcManager start failed"
             completion(isSuccess, msg)
         })
@@ -341,7 +341,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                 }
                 
                 // LandmarkTag
-                if userPeak.peak_index - correctionIndex < 15 {
+                if userPeak.peak_index - correctionIndex < 10 {
                     JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) PEAK is too close with previous landmark correction at \(userVelocity.index) uvd index")
                     break peakHandling
                 } else if userPeak.id == correctionId {
@@ -391,20 +391,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                 }
                                 
                                 let passingLinkBuffer = PathMatcher.shared.getPassingLinkBuffer()
-                                let passingLinkGroupIdBuffer = passingLinkBuffer.map{$0.link_group_Id}
-                                var lastLinkGroupId: Int?
-                                var connectionCondition: Bool = false
-                                if !passingLinkGroupIdBuffer.isEmpty {
-                                    lastLinkGroupId = passingLinkGroupIdBuffer[passingLinkGroupIdBuffer.count-1]
-                                }
-                                if let lastLinkGroupId = lastLinkGroupId {
-                                    let mostFreq = mostFrequent(passingLinkGroupIdBuffer)
-                                    connectionCondition = mostFreq == lastLinkGroupId ? true : false
-                                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) 2 Peaks : passingLinkGroupIdBuffer= \(passingLinkGroupIdBuffer) // mostFreq=\(mostFreq) , lastLinkGroupId=\(lastLinkGroupId)")
-                                }
-                                
-                                let linkConnection = !isDrStraight.0 && connectionCondition ? true : false
-                                if !isDrStraight.0 && connectionCondition {
+                                let passingLinkGroupIdSet = Set(passingLinkBuffer.map{$0.link_group_Id})
+                                let linkConnection = !isDrStraight.0 && passingLinkGroupIdSet.count == 1 ? true : false
+                                if !isDrStraight.0 && passingLinkGroupIdSet.count == 1 {
                                     JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) 2 Peaks : Turn occured but group_id is same")
                                 }
                                 

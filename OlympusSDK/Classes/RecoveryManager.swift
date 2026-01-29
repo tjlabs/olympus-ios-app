@@ -424,10 +424,10 @@ class RecoveryManager {
                             }
 
                             if outGroupBestOnly {
-//                                let candNodes = [candLink.start_node, candLink.end_node]
-//                                let recentNodes = [recentUserLink.start_node, recentUserLink.end_node]
-//                                let isDirectlyConnectable = candNodes.contains(where: { recentNodes.contains($0) })
-//                                guard isDirectlyConnectable else { continue }
+                                let candNodes = [candLink.start_node, candLink.end_node]
+                                let recentNodes = [recentUserLink.start_node, recentUserLink.end_node]
+                                let isDirectlyConnectable = candNodes.contains(where: { recentNodes.contains($0) })
+                                guard isDirectlyConnectable else { continue }
 
                                 if let best = connectableBest {
                                     if d < best.dist {
@@ -520,7 +520,7 @@ class RecoveryManager {
                                                                         heading: first.heading,
                                                                         isUseHeading: false,
                                                                         mode: mode,
-                                                                        paddingValues: JupiterMode.PADDING_VALUES_LARGE) else {
+                                                                        paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else {
                             JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) tail pm fail // cand:[\(cand.x),\(cand.y)] // first:[\(first.x),\(first.y)]")
                             continue }
 
@@ -546,7 +546,7 @@ class RecoveryManager {
                                                                         heading: last.heading,
                                                                         isUseHeading: false,
                                                                         mode: mode,
-                                                                        paddingValues: JupiterMode.PADDING_VALUES_LARGE) else {
+                                                                        paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else {
                             JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) head pm fail // cand:[\(cand.x),\(cand.y)] // first:[\(last.x),\(last.y)]")
                             continue
                         }
@@ -759,6 +759,7 @@ class RecoveryManager {
             JupiterLogger.i(tag: "RecoveryManager", message: "(selectRecoveryResult) alwaysFirst // first: \(first.loss)")
             return (first, 0.0)
         }
+        
         guard list.count >= 2 else {
             JupiterLogger.i(tag: "RecoveryManager", message: "(selectRecoveryResult) list size \(list.count) // first: \(first.loss)")
             return (first, 0.0)

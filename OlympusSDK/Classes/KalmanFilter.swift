@@ -133,17 +133,15 @@ class KalmanFilter {
                 guard let preTraj = trajByIndex[preIndex] else { return result }
                 let dx = traj.x - preTraj.x
                 let dy = traj.y - preTraj.y
-                let dh = traj.heading - preTraj.heading
                 
                 let newX = preResult.x + dx
                 let newY = preResult.y + dy
-                let newH = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(preResult.heading + dh)))
                 
                 guard let pm = PathMatcher.shared.pathMatching(
                     sectorId: sectorId,
                     building: curResult.building_name,
                     level: curResult.level_name,
-                    x: newX, y: newY, heading: newH,
+                    x: newX, y: newY, heading: traj.heading,
                     isUseHeading: true,
                     mode: mode,
                     paddingValues: paddings
