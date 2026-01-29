@@ -43,7 +43,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     var curUserModeEnum: UserMode = .MODE_AUTO
     
     // MARK: - Constants
-    private let AVG_BUFFER_SIZE = 2
+    private let AVG_BUFFER_SIZE = 5
     
     // MARK: - Landmark Correction
     private var correctionId: String = ""
@@ -101,7 +101,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     // MARK: - Functions
     func start(completion: @escaping (Bool, String) -> Void) {
-        tjlabsResourceManager.loadJupiterResource(region: region, sectorId: sectorId, landmarkTh: -85, completion: { isSuccess in
+        tjlabsResourceManager.loadJupiterResource(region: region, sectorId: sectorId, landmarkTh: -88, completion: { isSuccess in
             let msg: String = isSuccess ? "JupiterCalcManager start success" : "JupiterCalcManager start failed"
             completion(isSuccess, msg)
         })
@@ -341,7 +341,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                 }
                 
                 // LandmarkTag
-                if userPeak.peak_index - correctionIndex < 10 {
+                if userPeak.peak_index - correctionIndex < 15 {
                     JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) PEAK is too close with previous landmark correction at \(userVelocity.index) uvd index")
                     break peakHandling
                 } else if userPeak.id == correctionId {
@@ -351,146 +351,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                     JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) Recovery worked at \(recoveryIndex) uvd index")
                     break peakHandling
                 }
-                
-                // MARK: - With 3 Peaks
-                //                let curResultBuffer = stackManager.getCurResultBuffer()
-                //                if let matchedWithUserPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: userPeak, curResult: self.curResult, curResultBuffer: curResultBuffer) {
-                //                    self.debug_landmark = matchedWithUserPeak.landmark
-                //                    if let linkInfoWhenPeak = PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId, result: matchedWithUserPeak.matchedResult) {
-                //                        stackManager.stackUserPeakAndLink(userPeakAndLink: (userPeak, linkInfoWhenPeak))
-                //                    }
-                //                }
-                //
-                //                if jupiterPhase != .ENTERING {
-                //                    guard let curResult = self.curResult, let curPmResult = self.curPathMatchingResult else { break peakHandling }
-                //                    JupiterResultState.isInRecoveryProcess = true
-                //                    let userPeakAndLinkBuffer = stackManager.getUserPeakAndLinkBuffer()
-                //                    if userPeakAndLinkBuffer.count < 3 { return }
-                //                    let thirdUserPeak = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count-3].0
-                //                    let secondUserPeak = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count-2].0
-                //                    let firstUserPeak = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count-1].0
-                //
-                //                    let uvdBufferForRecovery = recoveryManager.getUvdBufferForRecovery(startIndex: thirdUserPeak.peak_index, endIndex: userVelocity.index, uvdBuffer: uvdBuffer)
-                //                    let headingSearchRange = recoveryManager.getRecoveryRange(olderPeakIndex: thirdUserPeak.peak_index, curIndex: curIndex)
-                //                    let pathHeadings = PathMatcher.shared.getPathMatchingHeadings(sectorId: sectorId,
-                //                                                                                  building: curPmResult.building_name,
-                //                                                                                  level: curPmResult.level_name,
-                //                                                                                  x: curPmResult.x, y: curPmResult.y,
-                //                                                                                  paddingValue: headingSearchRange, mode: mode)
-                //                    if let tuResultWhenThirdPeak = kalmanFilter?.getTuResultWithUvdIndex(index: thirdUserPeak.peak_index) {
-                //                        let curResultBuffer = stackManager.getCurResultBuffer()
-                //                        if let matchedWithThirdPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: thirdUserPeak, curResult: curResult, curResultBuffer: curResultBuffer),
-                //                           let matchedWithSecondPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: secondUserPeak, curResult: curResult, curResultBuffer: curResultBuffer),
-                //                           let matchedWithFirstPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: firstUserPeak, curResult: curResult, curResultBuffer: curResultBuffer) {
-                //                            let hasMajorDirection = stackManager.checkHasMajorDirection(uvdBuffer: uvdBufferForRecovery)
-                //                            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: hasMajorDirection = \(hasMajorDirection)")
-                //                            if hasMajorDirection {
-                //                                let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBufferForRecovery.map{ Float($0.heading) })
-                //                                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: majorSection= \(majorSection)")
-                //                                let recoveryTrajList = recoveryManager.makeMultipleRecoveryTrajectory(uvdBuffer: uvdBufferForRecovery, majorSection: majorSection, pathHeadings: pathHeadings, endHeading: curResult.absolute_heading)
-                //                                if let recoveryResult = recoveryManager.recoverWithMultipleTraj_v2(recoveryTrajList: recoveryTrajList,
-                //                                                                                                userPeakAndLinkBuffer: userPeakAndLinkBuffer,
-                //                                                                                                landmarks: (matchedWithThirdPeak.0, matchedWithSecondPeak.0, matchedWithFirstPeak.0),
-                //                                                                                                tuResultWhenThirdPeak: tuResultWhenThirdPeak,
-                //                                                                                                resultWhenFisrtPeak: matchedWithFirstPeak.1,
-                //                                                                                                curPmResult: curPmResult, mode: mode),
-                //                                let bestResult = recoveryResult.bestResult {
-                //                                    self.debug_recovery_result_v2 = recoveryResult
-                //                                    let recoveryCoord: [Float] = [bestResult.x, bestResult.y]
-                //                                    kalmanFilter?.updateTuPosition(coord: recoveryCoord)
-                //                                    self.curResult? = bestResult
-                //
-                //                                    if let matchedLink = PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId, result: bestResult, checkAll: true) {
-                //                                        let jumpInfo = JumpInfo(link_id: matchedLink.id, jumped_nodes: [])
-                //                                        PathMatcher.shared.updateNodeAndLinkInfo(sectorId: sectorId, uvdIndex: curIndex, curResult: bestResult, mode: mode, jumpInfo: jumpInfo)
-                //                                    } else {
-                //                                        PathMatcher.shared.initPassedLinkInfo()
-                //                                    }
-                //                                    correctionId = userPeak.id
-                //                                    correctionIndex = userPeak.peak_index
-                //                                }
-                //                            }
-                //                        }
-                //                    }
-                //                }
-                
-                // MARK: - With 3 Peaks v2
-                //                let curResultBuffer = stackManager.getCurResultBuffer()
-                //                if let matchedWithUserPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: userPeak, curResult: self.curResult, curResultBuffer: curResultBuffer) {
-                //                    self.debug_landmark = matchedWithUserPeak.landmark
-                //                    if let linkInfoWhenPeak = PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId, result: matchedWithUserPeak.matchedResult, checkAll: true) {
-                //                        stackManager.stackUserPeakAndLink(userPeakAndLink: (userPeak, linkInfoWhenPeak))
-                //                    }
-                //                }
-                //
-                //                if jupiterPhase != .ENTERING {
-                //                    guard let curResult = self.curResult, let curPmResult = self.curPathMatchingResult else { break peakHandling }
-                //                    JupiterResultState.isInRecoveryProcess = true
-                //                    let userPeakAndLinkBuffer = stackManager.getUserPeakAndLinkBuffer()
-                //                    if userPeakAndLinkBuffer.count < 3 { return }
-                //                    olderPeakIndex = stackManager.getOlderPeakIndex()
-                //                    let thirdUserPeak = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count-3].0
-                //                    let secondUserPeak = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count-2].0
-                //                    let firstUserPeak = userPeakAndLinkBuffer[userPeakAndLinkBuffer.count-1].0
-                //
-                //                    let uvdBufferForRecovery = recoveryManager.getUvdBufferForRecovery(startIndex: thirdUserPeak.peak_index, endIndex: userVelocity.index, uvdBuffer: uvdBuffer)
-                //                    let pmResultBuffer = stackManager.getCurPmResultBuffer(from: thirdUserPeak.peak_index)
-                //                    let pathHeadings = stackManager.makeHeadingSet(resultBuffer: pmResultBuffer)
-                //
-                //                    if let tuResultWhenThirdPeak = kalmanFilter?.getTuResultWithUvdIndex(index: thirdUserPeak.peak_index) {
-                //                        let curResultBuffer = stackManager.getCurResultBuffer()
-                //                        if let matchedWithThirdPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: thirdUserPeak, curResult: curResult, curResultBuffer: curResultBuffer),
-                //                           let matchedWithSecondPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: secondUserPeak, curResult: curResult, curResultBuffer: curResultBuffer),
-                //                           let matchedWithFirstPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: firstUserPeak, curResult: curResult, curResultBuffer: curResultBuffer) {
-                //                            let hasMajorDirection = stackManager.checkHasMajorDirection(uvdBuffer: uvdBufferForRecovery)
-                //                            if hasMajorDirection {
-                //                                let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBufferForRecovery.map{ Float($0.heading) })
-                //                                let recoveryTrajList = recoveryManager.makeMultipleRecoveryTrajectory(uvdBuffer: uvdBufferForRecovery, majorSection: majorSection, pathHeadings: pathHeadings, endHeading: curResult.absolute_heading)
-                //                                if let recoveryResult = recoveryManager.recoverWithMultipleTraj_v2(recoveryTrajList: recoveryTrajList,
-                //                                                                                                userPeakAndLinkBuffer: userPeakAndLinkBuffer,
-                //                                                                                                landmarks: (matchedWithThirdPeak.0, matchedWithSecondPeak.0, matchedWithFirstPeak.0),
-                //                                                                                                tuResultWhenThirdPeak: tuResultWhenThirdPeak,
-                //                                                                                                resultWhenFisrtPeak: matchedWithFirstPeak.1,
-                //                                                                                                   curPmResult: curPmResult, mode: mode, inSameLink: true),
-                //
-                //                                let bestResult = recoveryResult.bestResult {
-                //                                    self.debug_recovery_result_v2 = recoveryResult
-                //                                    let recoveryCoord: [Float] = [bestResult.x, bestResult.y]
-                //                                    self.correctionIndex = userPeak.peak_index
-                //                                    stackManager.editCurResultBuffer(sectorId: sectorId, mode: mode, from: secondUserPeak.peak_index, shifteTraj: recoveryResult.shiftedTraj)
-                //                                    stackManager.editCurPmResultBuffer(sectorId: sectorId, mode: mode, from: secondUserPeak.peak_index, shifteTraj: recoveryResult.shiftedTraj)
-                //                                    kalmanFilter?.editTuResultBuffer(sectorId: sectorId, mode: mode, from: secondUserPeak.peak_index, shifteTraj: recoveryResult.shiftedTraj, curResult: curResult)
-                //
-                //                                    // curResultBuffer, tuResultBuffer에서 recentPeak이 발생한 index부터 현재 index까지 수정하기
-                //                                    if let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: bestResult.x, y: bestResult.y, heading: bestResult.absolute_heading, isUseHeading: true, mode: mode, paddingValues: JupiterMode.PADDING_VALUES_DR) {
-                //                                        curPathMatchingResult = bestResult
-                //                                        curPathMatchingResult?.x = pmResult.x
-                //                                        curPathMatchingResult?.y = pmResult.y
-                //                                        curPathMatchingResult?.absolute_heading = pmResult.heading
-                //                                        JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) 3 Peaks : best= \(bestResult.x),\(bestResult.y),\(bestResult.absolute_heading)")
-                //                                        kalmanFilter?.updateTuPosition(coord: [pmResult.x, pmResult.y])
-                //                                        self.curResult? = curPathMatchingResult!
-                //                                    } else {
-                //                                        kalmanFilter?.updateTuPosition(coord: recoveryCoord)
-                //                                        self.curResult? = bestResult
-                //                                    }
-                //
-                //                                    if let matchedLink = PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId, result: bestResult, checkAll: true) {
-                //                                        let jumpInfo = JumpInfo(link_id: matchedLink.id, jumped_nodes: [])
-                //                                        PathMatcher.shared.updateNodeAndLinkInfo(sectorId: sectorId, uvdIndex: curIndex, curResult: bestResult, mode: mode, jumpInfo: jumpInfo)
-                //                                    } else {
-                //                                        PathMatcher.shared.initPassedLinkInfo()
-                //                                    }
-                //                                }
-                //                            }
-                //                        } else {
-                //                            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) 3 Peaks : matchedWithPeak fail")
-                //                        }
-                //                    } else {
-                //                        JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) 3 Peaks : tuResultWhenThirdPeak fail")
-                //                    }
-                //                }
-                
                 
                 // MARK: - Use Two peaks anytime
                 let curResultBuffer = stackManager.getCurResultBuffer()
@@ -517,8 +377,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                     let uvdBufferForStraight = stackManager.getUvdBuffer(from: userPeak.peak_index)
                     let isDrStraight = stackManager.isDrBufferStraightCircularStd(uvdBuffer: uvdBufferForStraight, condition: 5)
                     
-                    if let tuResultWhenOlderPeak = kalmanFilter?.getTuResultWithUvdIndex(index: olderUserPeak.peak_index),
-                       let tuResultWhenRecentPeak = kalmanFilter?.getTuResultWithUvdIndex(index: recentUserPeak.peak_index) {
+                    if let tuResultWhenRecentPeak = kalmanFilter?.getTuResultWithUvdIndex(index: recentUserPeak.peak_index) {
                         let curResultBuffer = stackManager.getCurResultBuffer()
                         if let matchedWithOlderPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: olderUserPeak, curResult: curResult, curResultBuffer: curResultBuffer),
                            let matchedWithRecentPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: recentUserPeak, curResult: curResult, curResultBuffer: curResultBuffer) {
@@ -533,22 +392,25 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                 
                                 let passingLinkBuffer = PathMatcher.shared.getPassingLinkBuffer()
                                 let passingLinkGroupIdBuffer = passingLinkBuffer.map{$0.link_group_Id}
-                                let mid = passingLinkGroupIdBuffer.count / 2
-                                let frontHalf = Array(passingLinkGroupIdBuffer.prefix(mid))
-                                let backHalf  = Array(passingLinkGroupIdBuffer.suffix(passingLinkGroupIdBuffer.count - mid))
-                                let frontMost = mostFrequent(frontHalf)
-                                let backMost  = mostFrequent(backHalf)
+                                var lastLinkGroupId: Int?
+                                var connectionCondition: Bool = false
+                                if !passingLinkGroupIdBuffer.isEmpty {
+                                    lastLinkGroupId = passingLinkGroupIdBuffer[passingLinkGroupIdBuffer.count-1]
+                                }
+                                if let lastLinkGroupId = lastLinkGroupId {
+                                    let mostFreq = mostFrequent(passingLinkGroupIdBuffer)
+                                    connectionCondition = mostFreq == lastLinkGroupId ? true : false
+                                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) 2 Peaks : passingLinkGroupIdBuffer= \(passingLinkGroupIdBuffer) // mostFreq=\(mostFreq) , lastLinkGroupId=\(lastLinkGroupId)")
+                                }
                                 
-                                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) 2 Peaks : passingLinkGroupIdBuffer= \(passingLinkGroupIdBuffer) // frontMost=\(frontMost) , backMost=\(backMost)")
-                                let linkConnection = !isDrStraight.0 && frontMost == backMost ? true : false
-                                if !isDrStraight.0 && frontMost == backMost {
+                                let linkConnection = !isDrStraight.0 && connectionCondition ? true : false
+                                if !isDrStraight.0 && connectionCondition {
                                     JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) 2 Peaks : Turn occured but group_id is same")
                                 }
                                 
                                 let trackingResultList = recoveryManager.trackWith2Peaks(recoveryTrajList: recoveryTrajList,
                                                                                          userPeakAndLinksBuffer: userPeakAndLinksBuffer,
                                                                                          landmarks: (matchedWithOlderPeak.0, matchedWithRecentPeak.0),
-                                                                                         tuResultWhenOlderPeak: tuResultWhenOlderPeak,
                                                                                          tuResultWhenRecentPeak: tuResultWhenRecentPeak,
                                                                                          curPmResult: curPmResult, mode: mode, matchedNode: matchedNode,
                                                                                          outGroupBestOnly: !linkConnection)
@@ -567,24 +429,24 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                                 let limitType = PathMatcher.shared.getLimitationTypeWithLink(link: matchedLink)
                                                 paddings = PathMatcher.shared.getLimitationRangeWithType(limitType: limitType)
                                             }
-                                            trackingCoord = [trackingResult.shiftedTraj[trackingResult.shiftedTraj.count-1].x, trackingResult.shiftedTraj[trackingResult.shiftedTraj.count-1].y]
+//                                            trackingCoord = [trackingResult.shiftedTraj[trackingResult.shiftedTraj.count-1].x, trackingResult.shiftedTraj[trackingResult.shiftedTraj.count-1].y]
                                         } else {
-                                            trackingCoord = [bestResult.x, bestResult.y]
+//                                            trackingCoord = [bestResult.x, bestResult.y]
                                         }
                                         self.debug_recovery_result = trackingResult
                                         self.correctionIndex = userPeak.peak_index
                                         self.uvdIndexWhenCorrection = userVelocity.index
                                         stackManager.editCurResultBuffer(sectorId: sectorId, mode: mode, from: userPeak.peak_index, shifteTraj: trackingResult.shiftedTraj,
                                                                          paddings: paddings)
-                                        stackManager.editCurPmResultBuffer(sectorId: sectorId, mode: mode, from: recentUserPeak.peak_index, shifteTraj: trackingResult.shiftedTraj, paddings: paddings)
+                                        let updatedCurPmResult = stackManager.editCurPmResultBuffer(sectorId: sectorId, mode: mode, from: recentUserPeak.peak_index, shifteTraj: trackingResult.shiftedTraj, paddings: paddings)
                                         kalmanFilter?.editTuResultBuffer(sectorId: sectorId, mode: mode, from: userPeak.peak_index, shifteTraj: trackingResult.shiftedTraj, curResult: curResult, paddings: paddings)
-                                        
+                                        trackingCoord = [updatedCurPmResult.x, updatedCurPmResult.y, updatedCurPmResult.absolute_heading]
                                         if !linkConnection {
                                             let curPmResultBuffer = stackManager.getCurPmResultBuffer(from: recentUserPeak.peak_index)
                                             PathMatcher.shared.editPassingLinkBuffer(from: recentUserPeak.peak_index, sectorId: sectorId, curPmResultBuffer: curPmResultBuffer)
                                         }
                                         
-                                        if let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: trackingCoord[0], y: trackingCoord[1], heading: bestResult.absolute_heading, isUseHeading: true, mode: mode, paddingValues: paddings) {
+                                        if let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: trackingCoord[0], y: trackingCoord[1], heading: trackingCoord[2], isUseHeading: true, mode: mode, paddingValues: paddings) {
                                             curPathMatchingResult = bestResult
                                             curPathMatchingResult?.x = pmResult.x
                                             curPathMatchingResult?.y = pmResult.y
@@ -666,11 +528,11 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             // 2. 최근 Peak발생 Index ~ 현재 Index 까지 길이
             // 3. 에서 결정된 길이만큼 현 위치 기준으로 landmark들 간의 거리 검사
             // 4. 범위 내에 Landmark가 있으면 스킵
-            let diffIndex = userVelocity.index - recentUserPeakIndex
-            let searchRange: Float = Float(min(max(diffIndex, 25), 50))
-            let isPossible = self.checkPossibleBadCase(landmarkPeaks: recentLandmarkPeaks, curPmResult: curPmResult, searchRange: searchRange)
-            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase : index= \(userVelocity.index), isPossible= \(isPossible)")
-            if !isPossible { return }
+//            let diffIndex = userVelocity.index - recentUserPeakIndex
+//            let searchRange: Float = Float(min(max(diffIndex, 25), 50))
+//            let isPossible = self.checkPossibleBadCase(landmarkPeaks: recentLandmarkPeaks, curPmResult: curPmResult, searchRange: searchRange)
+//            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase : index= \(userVelocity.index), isPossible= \(isPossible)")
+//            if !isPossible { return }
             let userPeakAndLinksBuffer = stackManager.getUserPeakAndLinksBuffer()
             if userPeakAndLinksBuffer.count < 2 { return }
             JupiterResultState.isInRecoveryProcess = true
@@ -700,33 +562,31 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                                                                         curPmResult: curPmResult, mode: mode),
                         let bestResult = recoveryResult.bestResult {
                             self.debug_recovery_result = recoveryResult
-                            let recoveryCoord: [Float] = [bestResult.x, bestResult.y]
+//                            let recoveryCoord: [Float] = [bestResult.x, bestResult.y]
                             self.recoveryIndex = userVelocity.index
                             let paddings = JupiterMode.PADDING_VALUES_MEDIUM
                             stackManager.editCurResultBuffer(sectorId: sectorId, mode: mode, from: recentUserPeak.peak_index, shifteTraj: recoveryResult.shiftedTraj, paddings: paddings)
-                            stackManager.editCurPmResultBuffer(sectorId: sectorId, mode: mode, from: recentUserPeak.peak_index, shifteTraj: recoveryResult.shiftedTraj, paddings: paddings)
+                            let updatedCurPmResult = stackManager.editCurPmResultBuffer(sectorId: sectorId, mode: mode, from: recentUserPeak.peak_index, shifteTraj: recoveryResult.shiftedTraj, paddings: paddings)
                             kalmanFilter?.editTuResultBuffer(sectorId: sectorId, mode: mode, from: recentUserPeak.peak_index, shifteTraj: recoveryResult.shiftedTraj, curResult: curResult, paddings: paddings)
                             
                             let curPmResultBuffer = stackManager.getCurPmResultBuffer(from: recentUserPeak.peak_index)
                             PathMatcher.shared.editPassingLinkBuffer(from: recentUserPeak.peak_index, sectorId: sectorId, curPmResultBuffer: curPmResultBuffer)
-                            
-                            if let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: bestResult.x, y: bestResult.y, heading: bestResult.absolute_heading, isUseHeading: true, mode: mode, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) {
+                            let recoveryCoord: [Float] = [updatedCurPmResult.x, updatedCurPmResult.y, updatedCurPmResult.absolute_heading]
+                            if let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: recoveryCoord[0], y: recoveryCoord[1], heading: recoveryCoord[2], isUseHeading: true, mode: mode, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) {
                                 curPathMatchingResult = bestResult
                                 curPathMatchingResult?.x = pmResult.x
                                 curPathMatchingResult?.y = pmResult.y
                                 curPathMatchingResult?.absolute_heading = pmResult.heading
-                                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: best= \(bestResult.x),\(bestResult.y),\(bestResult.absolute_heading)")
+                                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: recoveryCoord= \(recoveryCoord)")
                                 kalmanFilter?.updateTuPosition(coord: [pmResult.x, pmResult.y])
                                 self.curResult? = curPathMatchingResult!
+                                if let matchedLink = PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId, result: curPathMatchingResult!, checkAll: true) {
+                                    let jumpInfo = JumpInfo(link_id: matchedLink.id, jumped_nodes: [])
+                                    PathMatcher.shared.updateNodeAndLinkInfo(sectorId: sectorId, uvdIndex: curIndex, curResult: bestResult, mode: mode, jumpInfo: jumpInfo)
+                                }
                             } else {
                                 kalmanFilter?.updateTuPosition(coord: recoveryCoord)
                                 self.curResult? = bestResult
-                            }
-
-                            if let matchedLink = PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId, result: bestResult, checkAll: true) {
-                                let jumpInfo = JumpInfo(link_id: matchedLink.id, jumped_nodes: [])
-                                PathMatcher.shared.updateNodeAndLinkInfo(sectorId: sectorId, uvdIndex: curIndex, curResult: bestResult, mode: mode, jumpInfo: jumpInfo)
-                            } else {
                                 PathMatcher.shared.initPassedLinkInfo()
                             }
                         }
