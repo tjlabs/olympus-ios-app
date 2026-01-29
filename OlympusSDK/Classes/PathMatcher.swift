@@ -1183,6 +1183,7 @@ class PathMatcher {
     }
     
     func getCurPassedLinksDist() -> Float {
+        if isInNode { return groupLen }
         if let linkInfo = getCurPassedLinkInfo() {
             let curLinkId = linkInfo.id
             let curGroupId = linkInfo.group_id
