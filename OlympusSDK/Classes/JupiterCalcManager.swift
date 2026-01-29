@@ -532,10 +532,16 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                 }
                                 
                                 let passingLinkBuffer = PathMatcher.shared.getPassingLinkBuffer()
-                                let passingLinkGroupIdSet = Set(passingLinkBuffer.map{$0.link_group_Id})
-                                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) 2 Peaks : passingLinkGroupIdSet= \(passingLinkGroupIdSet)")
-                                let linkConnection = !isDrStraight.0 && passingLinkGroupIdSet.count == 1 ? true : false
-                                if !isDrStraight.0 && passingLinkGroupIdSet.count == 1 {
+                                let passingLinkGroupIdBuffer = passingLinkBuffer.map{$0.link_group_Id}
+                                let mid = passingLinkGroupIdBuffer.count / 2
+                                let frontHalf = Array(passingLinkGroupIdBuffer.prefix(mid))
+                                let backHalf  = Array(passingLinkGroupIdBuffer.suffix(passingLinkGroupIdBuffer.count - mid))
+                                let frontMost = mostFrequent(frontHalf)
+                                let backMost  = mostFrequent(backHalf)
+                                
+                                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) 2 Peaks : passingLinkGroupIdBuffer= \(passingLinkGroupIdBuffer) // frontMost=\(frontMost) , backMost=\(backMost)")
+                                let linkConnection = !isDrStraight.0 && frontMost == backMost ? true : false
+                                if !isDrStraight.0 && frontMost == backMost {
                                     JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) 2 Peaks : Turn occured but group_id is same")
                                 }
                                 
@@ -610,11 +616,19 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             }
         }
         
+        var uturnLink = false
+        
         switch (jupiterPhase) {
         case .ENTERING:
             calcEntranceResult(currentTime: currentTime, entManager: entManager, uvd: userVelocity)
         case .TRACKING:
-            calcIndoorResult(mode: mode, uvd: userVelocity, olderPeakIndex: olderPeakIndex, jumpInfo: jumpInfo)
+            if let curLink = PathMatcher.shared.getCurPassedLinkInfo() {
+                if curLink.id == 131 || curLink.id == 29 {
+                    uturnLink = true
+                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) Link Checker : you are in U-Turn link")
+                }
+            }
+            calcIndoorResult(mode: mode, uvd: userVelocity, olderPeakIndex: olderPeakIndex, jumpInfo: jumpInfo, uturnLink: uturnLink)
         case .SEARCHING:
             print("Searching")
         case .NONE:
@@ -648,7 +662,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         let travelingLinkDist = PathMatcher.shared.getCurPassedLinksDist()
         JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) Link Checker : travelingLinkDist = \(travelingLinkDist)")
         
-        if stackManager.checkIsBadCase(jupiterPhase: jupiterPhase, uvdIndexWhenCorrection: self.uvdIndexWhenCorrection, travelingLinkDist: travelingLinkDist) {
+        if stackManager.checkIsBadCase(jupiterPhase: jupiterPhase, uvdIndexWhenCorrection: self.uvdIndexWhenCorrection, travelingLinkDist: travelingLinkDist) && !uturnLink {
             // 2. 최근 Peak발생 Index ~ 현재 Index 까지 길이
             // 3. 에서 결정된 길이만큼 현 위치 기준으로 landmark들 간의 거리 검사
             // 4. 범위 내에 Landmark가 있으면 스킵
@@ -895,8 +909,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         JupiterResultState.isIndoor = true
     }
     
-    private func calcIndoorResult(mode: UserMode, uvd: UserVelocity, olderPeakIndex: Int?, jumpInfo: JumpInfo?) {
-        let (tuResult, isDidPathTrajMatching) = updateResultFromTimeUpdate(mode: mode, uvd: uvd, pastUvd: pastUvd, pathMatchingCondition: self.pathMatchingCondition)
+    private func calcIndoorResult(mode: UserMode, uvd: UserVelocity, olderPeakIndex: Int?, jumpInfo: JumpInfo?, uturnLink: Bool = false) {
+        let (tuResult, isDidPathTrajMatching) = updateResultFromTimeUpdate(mode: mode, uvd: uvd, pastUvd: pastUvd, pathMatchingCondition: self.pathMatchingCondition, uturnLink: uturnLink)
         guard var tuResult = tuResult else { return }
         guard let curResult = self.curResult else { return }
         let pathMatchingArea = PathMatcher.shared.checkInEntranceMatchingArea(sectorId: sectorId, building: tuResult.building_name, level: tuResult.level_name, x: tuResult.x, y: tuResult.y)
@@ -932,13 +946,13 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     }
     
     private func updateResultFromTimeUpdate(mode: UserMode, uvd: UserVelocity, pastUvd: UserVelocity,
-                                            pathMatchingCondition: PathMatchingCondition) -> (FineLocationTrackingOutput?, Bool) {
+                                            pathMatchingCondition: PathMatchingCondition, uturnLink: Bool) -> (FineLocationTrackingOutput?, Bool) {
         guard let kalmanFilter = self.kalmanFilter else { return (nil, false) }
         if mode == .MODE_PEDESTRIAN {
 //            result = kalmanFilter.pdrTimeUpdate(region: region, sectorId: sectorId, uvd: uvd, pastUvd: pastUvd, pathMatchingCondition: pathMatchingCondition)
             return (nil, false)
         } else {
-            guard let drTuResult = kalmanFilter.drTimeUpdate(region: region, sectorId: sectorId, uvd: uvd, pastUvd: pastUvd) else { return (nil, false) }
+            guard let drTuResult = kalmanFilter.drTimeUpdate(region: region, sectorId: sectorId, uvd: uvd, pastUvd: pastUvd, uturnLink: uturnLink) else { return (nil, false) }
             return (drTuResult, false)
         }
     }
@@ -1165,6 +1179,15 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         } else {
             self.curUserMode = "UNKNOWN"
         }
+    }
+    
+    private func mostFrequent<T: Hashable>(_ array: [T]) -> T? {
+        guard !array.isEmpty else { return nil }
+        
+        let freq = Dictionary(grouping: array, by: { $0 })
+            .mapValues { $0.count }
+        
+        return freq.max(by: { $0.value < $1.value })?.key
     }
     
     func onVelocityResult(_ generator: UVDGenerator, kmPh: Double) {
