@@ -110,27 +110,54 @@ class StackManager {
         paddings: [Float]
     ) {
         let trajByIndex = Dictionary(uniqueKeysWithValues: shifteTraj.map { ($0.index, $0) })
-
+        
+        var preResult = curResultBuffer[curResultBuffer.count-1]
         curResultBuffer = curResultBuffer.map { result in
             guard result.index >= from else { return result }
-
             guard let traj = trajByIndex[result.index] else { return result }
-
-            guard let pm = PathMatcher.shared.pathMatching(
-                sectorId: sectorId,
-                building: result.building_name,
-                level: result.level_name,
-                x: traj.x, y: traj.y, heading: traj.heading,
-                isUseHeading: true,
-                mode: mode,
-                paddingValues: paddings
-            ) else { return result }
-
+            
             var newResult = result
-            newResult.x = pm.x
-            newResult.y = pm.y
-            newResult.absolute_heading = pm.heading
-
+            if result.index == from {
+                guard let pm = PathMatcher.shared.pathMatching(
+                    sectorId: sectorId,
+                    building: result.building_name,
+                    level: result.level_name,
+                    x: traj.x, y: traj.y, heading: traj.heading,
+                    isUseHeading: true,
+                    mode: mode,
+                    paddingValues: paddings
+                ) else { return result }
+                
+                newResult.x = pm.x
+                newResult.y = pm.y
+                newResult.absolute_heading = pm.heading
+            } else {
+                let preIndex = result.index - 1
+                guard let preTraj = trajByIndex[preIndex] else { return result }
+                let dx = traj.x - preTraj.x
+                let dy = traj.y - preTraj.y
+                let dh = traj.heading - preTraj.heading
+                
+                let newX = preResult.x + dx
+                let newY = preResult.y + dy
+                let newH = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(preResult.absolute_heading + dh)))
+                
+                guard let pm = PathMatcher.shared.pathMatching(
+                    sectorId: sectorId,
+                    building: result.building_name,
+                    level: result.level_name,
+                    x: newX, y: newY, heading: newH,
+                    isUseHeading: true,
+                    mode: mode,
+                    paddingValues: paddings
+                ) else { return result }
+                
+                newResult.x = pm.x
+                newResult.y = pm.y
+                newResult.absolute_heading = pm.heading
+            }
+            preResult = newResult
+            
             JupiterLogger.i(
                 tag: "StackManager",
                 message: "(editCurResultBuffer) index:\(result.index) edited // [\(result.x),\(result.y),\(result.absolute_heading)] -> [\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]"
@@ -163,29 +190,56 @@ class StackManager {
         from: Int,
         shifteTraj: [RecoveryTrajectory],
         paddings: [Float]
-    ) {
+    ) -> FineLocationTrackingOutput {
         let trajByIndex = Dictionary(uniqueKeysWithValues: shifteTraj.map { ($0.index, $0) })
-
+        
+        var preResult = curPmResultBuffer[curPmResultBuffer.count-1]
         curPmResultBuffer = curPmResultBuffer.map { result in
             guard result.index >= from else { return result }
-
             guard let traj = trajByIndex[result.index] else { return result }
-
-            guard let pm = PathMatcher.shared.pathMatching(
-                sectorId: sectorId,
-                building: result.building_name,
-                level: result.level_name,
-                x: traj.x, y: traj.y, heading: traj.heading,
-                isUseHeading: true,
-                mode: mode,
-                paddingValues: paddings
-            ) else { return result }
-
+            
             var newResult = result
-            newResult.x = pm.x
-            newResult.y = pm.y
-            newResult.absolute_heading = pm.heading
-
+            if result.index == from {
+                guard let pm = PathMatcher.shared.pathMatching(
+                    sectorId: sectorId,
+                    building: result.building_name,
+                    level: result.level_name,
+                    x: traj.x, y: traj.y, heading: traj.heading,
+                    isUseHeading: true,
+                    mode: mode,
+                    paddingValues: paddings
+                ) else { return result }
+                
+                newResult.x = pm.x
+                newResult.y = pm.y
+                newResult.absolute_heading = pm.heading
+            } else {
+                let preIndex = result.index - 1
+                guard let preTraj = trajByIndex[preIndex] else { return result }
+                let dx = traj.x - preTraj.x
+                let dy = traj.y - preTraj.y
+                let dh = traj.heading - preTraj.heading
+                
+                let newX = preResult.x + dx
+                let newY = preResult.y + dy
+                let newH = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(preResult.absolute_heading + dh)))
+                
+                guard let pm = PathMatcher.shared.pathMatching(
+                    sectorId: sectorId,
+                    building: result.building_name,
+                    level: result.level_name,
+                    x: newX, y: newY, heading: newH,
+                    isUseHeading: true,
+                    mode: mode,
+                    paddingValues: paddings
+                ) else { return result }
+                
+                newResult.x = pm.x
+                newResult.y = pm.y
+                newResult.absolute_heading = pm.heading
+            }
+            preResult = newResult
+            
             JupiterLogger.i(
                 tag: "StackManager",
                 message: "(editCurPmResultBuffer) index:\(result.index) edited // [\(result.x),\(result.y),\(result.absolute_heading)] -> [\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]"
@@ -193,6 +247,8 @@ class StackManager {
 
             return newResult
         }
+        
+        return curPmResultBuffer[curPmResultBuffer.count-1]
     }
     
     func makeHeadingSet(resultBuffer: [FineLocationTrackingOutput]) -> [Float] {
