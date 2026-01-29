@@ -526,7 +526,7 @@ class KalmanFilter {
         return result_deg
     }
     
-    func drTimeUpdate(region: String, sectorId: Int, uvd: UserVelocity, pastUvd: UserVelocity) -> FineLocationTrackingOutput? {
+    func drTimeUpdate(region: String, sectorId: Int, uvd: UserVelocity, pastUvd: UserVelocity, uturnLink: Bool) -> FineLocationTrackingOutput? {
         guard let stackManager = self.stackManager else { return nil }
         guard var nextTuResult = timeUpdate(uvd: uvd, pastUvd: pastUvd) else { return nil }
         let paddingValues = JupiterMode.PADDING_VALUES_MEDIUM
@@ -546,7 +546,7 @@ class KalmanFilter {
                 JupiterLogger.i(tag: "KalmanFilter", message: "(timeUpdate) - pmResultsWithoutHeading :[\(nextTuResult.x),\(nextTuResult.y),\(nextTuResult.absolute_heading)]")
             }
         }
-        nextTuResult = updateLimitationResult(nextTuResult: nextTuResult)
+        nextTuResult = updateLimitationResult(nextTuResult: nextTuResult, uturnLink: uturnLink)
         updateTuResult(result: nextTuResult)
         kalmanP += kalmanQ
         headingKalmanP += headingKalmanQ
@@ -555,25 +555,26 @@ class KalmanFilter {
         return nextTuResult
     }
     
-    private func updateLimitationResult(nextTuResult: FineLocationTrackingOutput) -> FineLocationTrackingOutput {
+    private func updateLimitationResult(nextTuResult: FineLocationTrackingOutput, uturnLink: Bool) -> FineLocationTrackingOutput {
         var updatedTuResult = nextTuResult
         let limitationResult = PathMatcher.shared.getTimeUpdateLimitation(level: nextTuResult.level_name)
         JupiterLogger.i(tag: "KalmanFilter", message: "(updateLimitationResult) - limitationResult: \(limitationResult)")
         
+        let scale: Float = uturnLink ? 0.5 : 1
         if (limitationResult.limitType == .Y_LIMIT) {
             if (nextTuResult.y < limitationResult.limitValues[0]) {
                 updatedTuResult.y = limitationResult.limitValues[0]
             } else if (nextTuResult.y > limitationResult.limitValues[1]) {
                 updatedTuResult.y = limitationResult.limitValues[1]
             }
-            paddings = [40, 0.4, 40, 0.4]
+            paddings = [40*scale, 0.4, 40*scale, 0.4]
         } else if (limitationResult.limitType == .X_LIMIT) {
             if (nextTuResult.x < limitationResult.limitValues[0]) {
                 updatedTuResult.x = limitationResult.limitValues[0]
             } else if (nextTuResult.x > limitationResult.limitValues[1]) {
                 updatedTuResult.x = limitationResult.limitValues[1]
             }
-            paddings = [0.4, 40, 0.4, 40]
+            paddings = [0.4, 40*scale, 0.4, 40*scale]
         } else if limitationResult.limitType == .SMALL_LIMIT {
             if nextTuResult.x < nextTuResult.x - limitationResult.limitValues[0] {
                 updatedTuResult.x = nextTuResult.x - limitationResult.limitValues[0]
