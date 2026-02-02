@@ -1044,10 +1044,10 @@ class PathMatcher {
 
         guard let nodeData = self.nodeData[key] else { return nil }
         guard let linkData = self.linkData[key] else { return nil }
-
+        
         let correctedX = round(result.x)
         let correctedY = round(result.y)
-
+        
         var candidateLinkIds: [Int]
         if checkAll {
             candidateLinkIds = Array(linkData.keys)
@@ -1180,6 +1180,17 @@ class PathMatcher {
     
     func getCurPassedLinkInfo() -> PassedLinkInfo? {
         return self.curPassedLinkInfo
+    }
+    
+    func isInUturnLink() -> Bool {
+        if let curLink = PathMatcher.shared.getCurPassedLinkInfo() {
+            if curLink.id == 131 || curLink.id == 29 {
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) Link Checker : you are in U-Turn link")
+                return true
+            }
+        }
+        
+        return false
     }
     
     func getCurPassedLinksDist() -> Float {
