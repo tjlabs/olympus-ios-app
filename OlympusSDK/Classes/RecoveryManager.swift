@@ -770,7 +770,7 @@ class RecoveryManager {
         
         guard list.count >= 2 else {
             JupiterLogger.i(tag: "RecoveryManager", message: "(selectRecoveryResult) list size \(list.count) // first: \(first.loss)")
-            if first.loss > 100 {
+            if first.loss > 40 {
                 return nil
             } else {
                 return (first, 0.0)
