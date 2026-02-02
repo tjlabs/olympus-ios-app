@@ -17,7 +17,7 @@ public protocol JupiterManagerDelegate: AnyObject {
 }
 
 public enum JupiterPhase {
-    case NONE, ENTERING, SEARCHING, TRACKING
+    case ENTERING, SEARCHING, TRACKING
 }
 
 // MARK: - JupiterResult
