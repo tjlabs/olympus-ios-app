@@ -13,7 +13,7 @@ final class PeakDetector {
     
     private let MISSING_FLOOR_RSSI: Float = -100.0
 
-    private var minPeakRssi: Float = -95.0
+    var minPeakRssi: Float = -95.0
     private let TOPK_FOR_REF = 10
     private var globalTopkRssi: [Float] = []
     private let REF_RSSI_CAP: Float = -65.0
@@ -21,7 +21,7 @@ final class PeakDetector {
     
     private var maxConsecutiveMissing: Int = 60
 
-    private var minAmp: Float = 2
+    var minAmp: Float = 2
     
     // MARK: - State
     private var indexHistory: [WardId: [Int]] = [:]
