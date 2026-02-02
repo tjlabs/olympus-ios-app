@@ -14,7 +14,7 @@
 		</data>
 		<key>Frameworks/TJLabsAuth.framework/TJLabsAuth</key>
 		<data>
-		RQioi7sWdDvVDiyK16sNYC47DkY=
+		n5y6+joAM8oJRhL3t5wSOFyIaLw=
 		</data>
 		<key>Frameworks/TJLabsAuth.framework/_CodeSignature/CodeResources</key>
 		<data>
@@ -90,7 +90,7 @@
 		</data>
 		<key>Frameworks/TJLabsResource.framework/TJLabsResource</key>
 		<data>
-		fqSOSdliu08oM/fYVqqXD5NMjUA=
+		F5wFSVf/0vWLFLvsdTHcHSsNSy0=
 		</data>
 		<key>Frameworks/TJLabsResource.framework/_CodeSignature/CodeResources</key>
 		<data>
@@ -106,7 +106,7 @@
 		</data>
 		<key>Modules/TJLabsMap.swiftmodule/arm64-apple-ios.abi.json</key>
 		<data>
-		0RbN6dOiIss+m4228UXx9f75Y3w=
+		gljSZSz9+PhDdZ4KCDdSyXSsdt8=
 		</data>
 		<key>Modules/TJLabsMap.swiftmodule/arm64-apple-ios.private.swiftinterface</key>
 		<data>
@@ -122,7 +122,7 @@
 		</data>
 		<key>Modules/TJLabsMap.swiftmodule/arm64-apple-ios.swiftmodule</key>
 		<data>
-		4w7fOST2A+4ujeztIyoZmbF7k4U=
+		VFNux4aEM/UPchAwZzF63EEKQ/w=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -149,7 +149,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			O+A+cokdG4fJlteMuR4CniQRh0MuTzVWaMWlKgxBeD0=
+			qzkSkYXMwu30EWRpywwtgbt5b/Y84RpWm00nV6IVACY=
 			</data>
 		</dict>
 		<key>Frameworks/TJLabsAuth.framework/_CodeSignature/CodeResources</key>
@@ -282,7 +282,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			oD/ZdPfrNupWIL1n7ITm83RWuz+BC8h3rtElY6f7ABE=
+			wTHu9+SBvUJRnlhSbtmquRiIGXJ4y00GMutUsm+KzkQ=
 			</data>
 		</dict>
 		<key>Frameworks/TJLabsResource.framework/_CodeSignature/CodeResources</key>
@@ -303,7 +303,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			/jrnEt67+18/tgsl5kaKCurE8SLKNmE/TOoOnXI5nr4=
+			R+KilG7wmJc3ieHNfTngvCDr6Tinq/YxlNOJLK5t280=
 			</data>
 		</dict>
 		<key>Modules/TJLabsMap.swiftmodule/arm64-apple-ios.private.swiftinterface</key>
@@ -331,7 +331,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			ZmvMbE4qOQLC31tgm3Maamd/syvRdmaCIXUoCyWQhsM=
+			HbmksEVqJw/ZQ6U09TAhfgEQNuaDF1JGmyU9EfqU5mc=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>

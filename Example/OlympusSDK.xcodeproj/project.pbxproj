@@ -754,6 +754,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = G75UAV755N;
 				INFOPLIST_FILE = OlympusSDK/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = JupiterDemo;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -779,6 +780,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = G75UAV755N;
 				INFOPLIST_FILE = OlympusSDK/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = JupiterDemo;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";

@@ -68,12 +68,34 @@ class MapViewController: UIViewController, JupiterManagerDelegate {
     
     let topView = TJLabsTopView()
     var guideView: TJLabsParkingGuideView?
+    var progressingView: ProgressingView?
     let mapView = TJLabsMapView()
     var isParkingGuideRendered: Bool = false
+    
+    private var saveButton: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor.white
+        view.alpha = 0.8
+        view.isUserInteractionEnabled = false
+        view.cornerRadius = 15
+        view.isHidden = false
+        return view
+    }()
+    
+    private let saveButtonTitleLabel: UILabel = {
+        let label = UILabel()
+        label.backgroundColor = .clear
+        label.font = UIFont.systemFont(ofSize: 12, weight: .bold)
+        label.textColor = .black
+        label.textAlignment = .center
+        label.text = "Save"
+        return label
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupLayout()
+        bindActions()
         startService()
     }
     
@@ -96,8 +118,8 @@ class MapViewController: UIViewController, JupiterManagerDelegate {
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_05_1007.csv", sensorFileName: "sensor_coex_02_05_1007.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_05_1007.csv", sensorFileName: "sensor_coex_03_05_1007.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
-        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_test4_0129.csv", sensorFileName: "sensor_coex_test4_0129.csv")
-        serviceManager?.startJupiter(sectorId: sectorId, mode: .MODE_AUTO)
+//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_test4_0129.csv", sensorFileName: "sensor_coex_test4_0129.csv")
+        serviceManager?.startJupiter(sectorId: sectorId, mode: .MODE_AUTO, debugOption: true)
     }
     
     func stopSerivce() {
@@ -110,6 +132,19 @@ class MapViewController: UIViewController, JupiterManagerDelegate {
         topView.snp.makeConstraints{ make in
             make.top.leading.trailing.equalToSuperview()
             make.height.equalTo(120)
+        }
+        
+        topView.addSubview(saveButton)
+        saveButton.snp.makeConstraints { make in
+            make.bottom.equalToSuperview().inset(10)
+            make.trailing.equalToSuperview().inset(10)
+            make.width.equalTo(60)
+            make.height.equalTo(30)
+        }
+        
+        saveButton.addSubview(saveButtonTitleLabel)
+        saveButtonTitleLabel.snp.makeConstraints { make in
+            make.leading.trailing.top.bottom.equalToSuperview().inset(5)
         }
         
         view.addSubview(containerView)
@@ -130,11 +165,43 @@ class MapViewController: UIViewController, JupiterManagerDelegate {
         mapView.setDebugOption(flag: false)
     }
     
+    private func bindActions() {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleSaveButton))
+        saveButton.isUserInteractionEnabled = true
+        saveButton.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc func handleSaveButton() {
+        DispatchQueue.main.async { [self] in
+            saveButton.isUserInteractionEnabled = false
+            saveButtonTitleLabel.text = "ing..."
+            
+            self.progressingView = ProgressingView()
+            UIView.animate(withDuration: 0.2, animations: {
+                view.addSubview(progressingView!)
+                progressingView!.snp.makeConstraints { make in
+                    make.top.bottom.leading.trailing.equalToSuperview()
+                }
+            })
+        }
+        
+        serviceManager?.saveFilesForSimulation(completion: { [self] isSuccess in
+            DispatchQueue.main.async { [self] in
+                saveButton.isHidden = true
+                saveButton.isUserInteractionEnabled = true
+                saveButtonTitleLabel.text = "Save"
+            }
+            DispatchQueue.main.async {
+                self.progressingView?.removeFromSuperview()
+            }
+        })
+    }
+    
     func setupNaviView() {
         mapView.initialize(region: self.region, sectorId: self.sectorId)
         mapView.configureFrame(to: mainView)
-        mapView.setPointOffset(offset: 180)
-        mapView.setZoomAndMarkerScale(zoom: 2.5)
+        mapView.setPointOffset(offset: 200)
+        mapView.setZoomAndMarkerScale(zoom: 2.0)
         mainView.addSubview(mapView)
     }
     

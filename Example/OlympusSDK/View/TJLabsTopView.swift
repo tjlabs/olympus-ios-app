@@ -12,8 +12,9 @@ class TJLabsTopView: UIView {
 
     private let backButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setImage(UIImage(named: "ic_back"), for: .normal)
+        button.setImage(UIImage(named: "image_back"), for: .normal)
         button.tintColor = .white
+        button.isHidden = true
         return button
     }()
 
@@ -54,7 +55,7 @@ class TJLabsTopView: UIView {
 //        }
         
         backButton.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(16)
+            make.leading.equalToSuperview().inset(16)
             make.top.equalTo(self.safeAreaLayoutGuide.snp.top).offset(6)   // ⬅️ safeArea 아래에 붙임
             make.width.height.equalTo(24)
         }
