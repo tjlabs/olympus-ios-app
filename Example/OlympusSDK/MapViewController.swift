@@ -96,6 +96,7 @@ class MapViewController: UIViewController, JupiterManagerDelegate {
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_05_1007.csv", sensorFileName: "sensor_coex_02_05_1007.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_05_1007.csv", sensorFileName: "sensor_coex_03_05_1007.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
+        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_test4_0129.csv", sensorFileName: "sensor_coex_test4_0129.csv")
         serviceManager?.startJupiter(sectorId: sectorId, mode: .MODE_AUTO)
     }
     
@@ -132,6 +133,8 @@ class MapViewController: UIViewController, JupiterManagerDelegate {
     func setupNaviView() {
         mapView.initialize(region: self.region, sectorId: self.sectorId)
         mapView.configureFrame(to: mainView)
+        mapView.setPointOffset(offset: 180)
+        mapView.setZoomAndMarkerScale(zoom: 2.5)
         mainView.addSubview(mapView)
     }
     

@@ -341,7 +341,7 @@ public class TJLabsResourceManager {
   weak public var delegate: (any TJLabsResource.TJLabsResourceManagerDelegate)?
   public init()
   public func loadMapResource(region: Swift.String, sectorId: Swift.Int, completion: @escaping (Swift.Bool) -> Swift.Void)
-  public func loadJupiterResource(region: Swift.String, sectorId: Swift.Int, completion: @escaping (Swift.Bool) -> Swift.Void)
+  public func loadJupiterResource(region: Swift.String, sectorId: Swift.Int, landmarkTh: Swift.Float = -100, completion: @escaping (Swift.Bool) -> Swift.Void)
   #if compiler(>=5.3) && $NonescapableTypes
   public func loadSector(region: Swift.String, sectorId: Swift.Int, forceUpdate: Swift.Bool = false, completion: @escaping (TJLabsResource.SectorOutput?) -> Swift.Void)
   #endif

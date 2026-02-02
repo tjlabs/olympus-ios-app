@@ -34,6 +34,7 @@ public struct MapNavigationNode {
   @_Concurrency.MainActor @preconcurrency public func configureFrame(to matchView: UIKit.UIView)
   @_Concurrency.MainActor @preconcurrency public func setDebugOption(flag: Swift.Bool)
   @_Concurrency.MainActor @preconcurrency public func setPointOffset(offset: CoreFoundation.CGFloat)
+  @_Concurrency.MainActor @preconcurrency public func setZoomAndMarkerScale(zoom: CoreFoundation.CGFloat, marker: CoreFoundation.CGFloat = 3.0)
   @_Concurrency.MainActor @preconcurrency public func setButtonHidden(isHidden: Swift.Bool)
   @_Concurrency.MainActor @preconcurrency public func updateResultInMap(result: TJLabsMap.TJLabsUserCoordinate)
   @_Concurrency.MainActor @preconcurrency public func stopTimer()

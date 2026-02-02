@@ -90,7 +90,7 @@
 		</data>
 		<key>Frameworks/TJLabsResource.framework/TJLabsResource</key>
 		<data>
-		/8e3pjCGj9mdQitcsm6MNN33Oso=
+		XJSyfIIDp/X44WFijYxVvU2CiEU=
 		</data>
 		<key>Frameworks/TJLabsResource.framework/_CodeSignature/CodeResources</key>
 		<data>
@@ -106,11 +106,11 @@
 		</data>
 		<key>Modules/TJLabsMap.swiftmodule/arm64-apple-ios-simulator.abi.json</key>
 		<data>
-		fzuSFa26PMa7mBBhM6BDamKIwNM=
+		SVPB59kypZCzshhchPPfueYZLpU=
 		</data>
 		<key>Modules/TJLabsMap.swiftmodule/arm64-apple-ios-simulator.private.swiftinterface</key>
 		<data>
-		cWrJQQzpRjS1p6kY3yWOcEmvsVg=
+		RpzYdB4u9x3YHYrMFp5EZnW8h4A=
 		</data>
 		<key>Modules/TJLabsMap.swiftmodule/arm64-apple-ios-simulator.swiftdoc</key>
 		<data>
@@ -118,19 +118,19 @@
 		</data>
 		<key>Modules/TJLabsMap.swiftmodule/arm64-apple-ios-simulator.swiftinterface</key>
 		<data>
-		cWrJQQzpRjS1p6kY3yWOcEmvsVg=
+		RpzYdB4u9x3YHYrMFp5EZnW8h4A=
 		</data>
 		<key>Modules/TJLabsMap.swiftmodule/arm64-apple-ios-simulator.swiftmodule</key>
 		<data>
-		Gj2sq0sA9xpJZ/FzHXmvXB84GiA=
+		Lp2MgW8I4bjd04KnlUOdPKT5ZBk=
 		</data>
 		<key>Modules/TJLabsMap.swiftmodule/x86_64-apple-ios-simulator.abi.json</key>
 		<data>
-		fzuSFa26PMa7mBBhM6BDamKIwNM=
+		SVPB59kypZCzshhchPPfueYZLpU=
 		</data>
 		<key>Modules/TJLabsMap.swiftmodule/x86_64-apple-ios-simulator.private.swiftinterface</key>
 		<data>
-		fbqp21EXMrAwcJE0lYWvh7tp0pk=
+		b/MlPDBe80g4EaoMBZzOXNmKaT8=
 		</data>
 		<key>Modules/TJLabsMap.swiftmodule/x86_64-apple-ios-simulator.swiftdoc</key>
 		<data>
@@ -138,11 +138,11 @@
 		</data>
 		<key>Modules/TJLabsMap.swiftmodule/x86_64-apple-ios-simulator.swiftinterface</key>
 		<data>
-		fbqp21EXMrAwcJE0lYWvh7tp0pk=
+		b/MlPDBe80g4EaoMBZzOXNmKaT8=
 		</data>
 		<key>Modules/TJLabsMap.swiftmodule/x86_64-apple-ios-simulator.swiftmodule</key>
 		<data>
-		o9S5zz6x1Ze4S3zbIBbewe3x46A=
+		KWc7UJeMJ0Drf7AtWAxsCS6+znY=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -302,7 +302,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			UryE1vIH76FZ+oKllmvvX54+LEDh1r37yAQJO1TXhnw=
+			wuV+/oJUtrcOl3NOcNsePV2DKgP46+jupERBzFjLkEg=
 			</data>
 		</dict>
 		<key>Frameworks/TJLabsResource.framework/_CodeSignature/CodeResources</key>
@@ -323,14 +323,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			rIUsVWiTciPdCoMnT0O8pgSTOKb+WoHlIUib1jIh6Kk=
+			/rxXQ32IYPgQ4Q5342e+u2my2qNjeCSJ7ttmfkNlCa4=
 			</data>
 		</dict>
 		<key>Modules/TJLabsMap.swiftmodule/arm64-apple-ios-simulator.private.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			moHaXVFUR+d08kYnb7xzqIdW1Ny7J1LjJbY9rjbeLj4=
+			if5arijCQuxpKpblWBenyA84g+lrFUtlP11oBgJzGeM=
 			</data>
 		</dict>
 		<key>Modules/TJLabsMap.swiftmodule/arm64-apple-ios-simulator.swiftdoc</key>
@@ -344,28 +344,28 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			moHaXVFUR+d08kYnb7xzqIdW1Ny7J1LjJbY9rjbeLj4=
+			if5arijCQuxpKpblWBenyA84g+lrFUtlP11oBgJzGeM=
 			</data>
 		</dict>
 		<key>Modules/TJLabsMap.swiftmodule/arm64-apple-ios-simulator.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			3EsC48BC5ouSXk9qoO6EAEOZ/zMICbDHv/pmpNe7NYM=
+			9RtjudRWi7MRo2S3j0ut73pSEAkdxU/grnHD8UtbCA0=
 			</data>
 		</dict>
 		<key>Modules/TJLabsMap.swiftmodule/x86_64-apple-ios-simulator.abi.json</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			rIUsVWiTciPdCoMnT0O8pgSTOKb+WoHlIUib1jIh6Kk=
+			/rxXQ32IYPgQ4Q5342e+u2my2qNjeCSJ7ttmfkNlCa4=
 			</data>
 		</dict>
 		<key>Modules/TJLabsMap.swiftmodule/x86_64-apple-ios-simulator.private.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			LZtauE3PSuyfUHV15AFQ7ZWhnMXtcvEwEi1Ft3ggn3g=
+			Lof/6dNvDESG2Ub+UizgzGMYqckvrv3/dAkcpwpX1GM=
 			</data>
 		</dict>
 		<key>Modules/TJLabsMap.swiftmodule/x86_64-apple-ios-simulator.swiftdoc</key>
@@ -379,14 +379,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			LZtauE3PSuyfUHV15AFQ7ZWhnMXtcvEwEi1Ft3ggn3g=
+			Lof/6dNvDESG2Ub+UizgzGMYqckvrv3/dAkcpwpX1GM=
 			</data>
 		</dict>
 		<key>Modules/TJLabsMap.swiftmodule/x86_64-apple-ios-simulator.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			Ky8xH7ISGacE+gQrHbUVholIZJ5HTIwcSWsvGUgfcJs=
+			ttqdK2CW8wvxA6jbCLapFL/59Cf0KcBG/iVwRqmVzKA=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>
