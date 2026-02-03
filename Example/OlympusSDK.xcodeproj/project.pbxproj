@@ -751,7 +751,7 @@
 			baseConfigurationReference = EDA8292140E0F10C97BF2877 /* Pods-OlympusSDK_Example.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = G75UAV755N;
 				INFOPLIST_FILE = OlympusSDK/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = JupiterDemo;
@@ -777,7 +777,7 @@
 			baseConfigurationReference = 5D6664D531781DD3607F35F3 /* Pods-OlympusSDK_Example.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = G75UAV755N;
 				INFOPLIST_FILE = OlympusSDK/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = JupiterDemo;

@@ -56,18 +56,6 @@
 		<data>
 		lcnid6ZZOJzeQnGp0qIppJ3yUgY=
 		</data>
-		<key>Frameworks/TJLabsAuth.framework/Info.plist</key>
-		<data>
-		Wzv4lz0Aw+TpRGeDA9StpY/013Q=
-		</data>
-		<key>Frameworks/TJLabsAuth.framework/TJLabsAuth</key>
-		<data>
-		E24HhZu30+5XDgLwI9EEdO/VcGU=
-		</data>
-		<key>Frameworks/TJLabsAuth.framework/_CodeSignature/CodeResources</key>
-		<data>
-		axAjZQ7JmThDvHSOQmm+WJUzRRs=
-		</data>
 		<key>Headers/TJLabsResource.h</key>
 		<data>
 		gRDIHuLWtPfy+Y4ixRILV8PONac=
@@ -192,27 +180,6 @@
 			<key>hash2</key>
 			<data>
 			mo6EQho8AoBnAJv8zD6KevejiRxvBbJX6JXO6s0X5Lk=
-			</data>
-		</dict>
-		<key>Frameworks/TJLabsAuth.framework/Info.plist</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			f2CRhJZBRBLg9nz8ScaNqiBMEZ3OartZLBPNZOmaEc4=
-			</data>
-		</dict>
-		<key>Frameworks/TJLabsAuth.framework/TJLabsAuth</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			WZLyOIVZbHlRnTtJ7lW9W9ywxQgqXwfyhHCO1A2hIz4=
-			</data>
-		</dict>
-		<key>Frameworks/TJLabsAuth.framework/_CodeSignature/CodeResources</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			GgQRIFLX+S8PbB9q/vtFmSrQ/eZuzLFIK3J8Gz6hK44=
 			</data>
 		</dict>
 		<key>Headers/TJLabsResource.h</key>

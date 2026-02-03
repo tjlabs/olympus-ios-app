@@ -17,11 +17,28 @@ TODO: Add long description of the pod here.
 
   s.static_framework = true
   s.source_files = 'OlympusSDK/Classes/**/*'
-#  s.vendored_frameworks = [
-#    'OlympusSDK/Frameworks/TJLabsAuth.xcframework',
-#    'OlympusSDK/Frameworks/TJLabsCommon.xcframework'
-#  ]
+
+  
   s.vendored_frameworks = 'OlympusSDK/Frameworks/*.xcframework'
+#  s.subspec 'TJLabsAuth' do |ss|
+#      ss.vendored_frameworks = 'OlympusSDK/Frameworks/TJLabsAuth.xcframework'
+#    end
+#
+#    s.subspec 'TJLabsCommon' do |ss|
+#      ss.vendored_frameworks = 'OlympusSDK/Frameworks/TJLabsCommon.xcframework'
+#    end
+#
+#    s.subspec 'TJLabsResource' do |ss|
+#      ss.vendored_frameworks = 'OlympusSDK/Frameworks/TJLabsResource.xcframework'
+#      ss.dependency 'OlympusSDK/Frameworks/TJLabsAuth/xcframework'
+#    end
+#
+#    s.subspec 'TJLabsMap' do |ss|
+#      ss.vendored_frameworks = 'OlympusSDK/Frameworks/TJLabsMap.xcframework'
+#      ss.dependency 'OlympusSDK/Frameworks/TJLabsAuth.xcframework'
+#      ss.dependency 'OlympusSDK/Frameworks/TJLabsResource/xcframework'
+#    end
+    
   
   s.pod_target_xcconfig = { 'SWIFT_OPTIMIZATION_LEVEL' => '-Owholemodule' }
 end

@@ -81,6 +81,7 @@ public class JupiterManager {
                     if debugOption {
                         JupiterFileManager.shared.setDebugOption(flag: debugOption)
                         JupiterFileManager.shared.createFiles(region: region, sector_id: sectorId, deviceModel: deviceModel, osVersion: deviceOsVersion)
+                        JupiterFileManager.shared.createFileWithName(region: region, sector_id: sectorId, deviceModel: deviceModel, osVersion: deviceOsVersion, fileName: "_")
                     }
                     jupiterCalcManager?.setSendRfdLength(sendRfdLength)
                     jupiterCalcManager?.setSendUvdLength(sendUvdLength)
@@ -205,6 +206,12 @@ public class JupiterManager {
     
     public func saveFilesForSimulation(completion: @escaping (Bool) -> Void) {
         JupiterFileManager.shared.saveFilesForSimulation(completion: { isSuccess in
+            completion(isSuccess)
+        })
+    }
+    
+    public func saveDebugFile(completion: @escaping (Bool) -> Void) {
+        JupiterFileManager.shared.saveDebugFile(completion: { isSuccess in
             completion(isSuccess)
         })
     }

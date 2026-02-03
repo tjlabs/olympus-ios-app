@@ -294,6 +294,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         }
         let uvdDataString = "\(currentTime),\(userVelocity.index),\(userVelocity.length),\(userVelocity.heading),\(peakDetector.minPeakRssi),\(peakDetector.minAmp)\(rfdDataString)"
 //        JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult): \(uvdDataString)")
+        JupiterFileManager.shared.writeDebugData(data: uvdDataString)
         
         // Update Current UVD
         self.curUvd = userVelocity

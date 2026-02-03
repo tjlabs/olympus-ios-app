@@ -171,7 +171,8 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         serviceManager = JupiterManager(id: uniqueId)
         serviceManager?.delegate = self
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_01_0119.csv", sensorFileName: "sensor_coex_01_01_01;'19.csv")
-        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_test1_0129.csv", sensorFileName: "sensor_coex_test1_0129.csv")
+//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_test1_0129.csv", sensorFileName: "sensor_coex_test1_0129.csv")
+        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_test6_0203.csv", sensorFileName: "sensor_coex_test6_0203.csv")
         
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_02_1007.csv", sensorFileName: "sensor_coex_01_02_1007.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
@@ -230,13 +231,12 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
             })
         }
         
-        serviceManager?.saveFilesForSimulation(completion: { [self] isSuccess in
+//        serviceManager?.saveFilesForSimulation(completion: { [self] isSuccess in
+        serviceManager?.saveDebugFile(completion: { [self] isSuccess in
             DispatchQueue.main.async { [self] in
                 saveButton.isHidden = true
                 saveButton.isUserInteractionEnabled = true
                 saveButtonTitleLabel.text = "Save"
-//                saveButtonTitleLabel.textColor = .black
-//                saveButtonTitleLabel.textColor = .black
             }
             DispatchQueue.main.async {
                 self.progressingView?.removeFromSuperview()
