@@ -101,7 +101,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     // MARK: - Functions
     func start(completion: @escaping (Bool, String) -> Void) {
-        tjlabsResourceManager.loadJupiterResource(region: region, sectorId: sectorId, landmarkTh: -85, completion: { isSuccess in
+        tjlabsResourceManager.loadJupiterResource(region: region, sectorId: sectorId, landmarkTh: -92, completion: { isSuccess in
             let msg: String = isSuccess ? "JupiterCalcManager start success" : "JupiterCalcManager start failed"
             completion(isSuccess, msg)
         })
@@ -716,6 +716,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
 
             let uvdBufferForStraight = stackManager.getUvdBuffer(from: userPeak.peak_index)
             let isDrStraight = stackManager.isDrBufferStraightCircularStd(uvdBuffer: uvdBufferForStraight, condition: 5)
+            let isTurn = !stackManager.isDrBufferStraightCircularStd(uvdBuffer: uvdBufferForStraight, condition: 15).0
 
             guard let tuResultWhenRecentPeak = kalmanFilter.getTuResultWithUvdIndex(index: recentUserPeak.peak_index) else {
                 break peakHandling
@@ -746,7 +747,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
 
                     let passingLinkBuffer = PathMatcher.shared.getPassingLinkBuffer()
                     let passingLinkGroupIdSet = Set(passingLinkBuffer.map { $0.link_group_Id })
-                    let linkConnection = !isDrStraight.0 && passingLinkGroupIdSet.count == 1 && !PathMatcher.shared.isInNode ? true : false
+//                    let linkConnection = !isDrStraight.0 && passingLinkGroupIdSet.count == 1 && !PathMatcher.shared.isInNode ? true : false
+                    let linkConnection = isTurn && passingLinkGroupIdSet.count == 1 && !PathMatcher.shared.isInNode ? true : false
 
                     let trackingResultList = recoveryManager.trackWith2Peaks(recoveryTrajList: recoveryTrajList,
                                                                              userPeakAndLinksBuffer: userPeakAndLinksBuffer,
