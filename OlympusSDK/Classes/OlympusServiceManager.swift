@@ -409,18 +409,18 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         self.debugOption = isSimulationMode ? false : flag
     }
     
-    public func startService(user_id: String, region: String, sector_id: Int, service: String, mode: String, completion: @escaping (Bool, String) -> Void) {
+    public func startService(user_id: String, region: String, sector_id: Int, service: String, mode: String, completion: @escaping (StartServiceResult) -> Void) {
         self.initialize(isStopService: true)
         let success_msg: String =  " , (Olympus) Success : Service Start"
         if (user_id.isEmpty || user_id.contains(" ")) {
             let msg: String = getLocalTimeString() + " , (Olympus) Error : User ID(input = \(user_id)) cannot be empty or contain space"
-            completion(false, msg)
+            completion(StartServiceResult(isSuccess: false, error: .INVALID_USER_ID, message: msg))
         } else {
             let initService = initService(service: service, mode: mode)
-            if (initService.0) {
+            if (initService.isSuccess) {
                 if (!OlympusNetworkChecker.shared.isConnectedToInternet()) {
                     let msg: String = getLocalTimeString() + " , (Olympus) Error : Network is not connected"
-                    completion(false, msg)
+                    completion(StartServiceResult(isSuccess: false, error: .NETWORK_ERROR, message: msg))
                 } else {
                     setServerURL(region: region)
                     let loginInput = LoginInput(user_id: user_id, device_model: self.deviceModel, os_version: self.deviceOsVersion, sdk_version: OlympusServiceManager.sdkVersion)
@@ -442,7 +442,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                             
                                             if (!OlympusBluetoothManager.shared.bluetoothReady) {
                                                 let msg: String = getLocalTimeString() + " , (Olympus) Error : Bluetooth is not enabled"
-                                                completion(false, msg)
+                                                completion(StartServiceResult(isSuccess: false, error: .BLUETOOTH_ERROR, message: msg))
                                             } else {
                                                 OlympusNetworkManager.shared.getUserAffineTrans(url: USER_AFFINE_URL, input: sector_id, completion: { statusCode, returnedString, inputSectorId in
                                                     if statusCode == 200 {
@@ -452,13 +452,13 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                                             print(getLocalTimeString() + " , (Olympus) AffineParam : sector \(sector_id) -> \(OlympusAffineConverter.shared.AffineParam[sector_id])")
                                                         } else {
                                                             let msg: String = getLocalTimeString() + " , (Olympus) Error : Cannot decode affine converting param"
-                                                            completion(false, msg)
+                                                            completion(StartServiceResult(isSuccess: false, error: .AFFINE_PARAM_ERROR, message: msg))
                                                         }
                                                     } else if statusCode >= 400 && statusCode < 500 {
                                                         print(getLocalTimeString() + " , (Olympus) AffineParam : sector \(sector_id) is not support coord converting")
                                                     } else {
                                                         let msg: String = getLocalTimeString() + " , (Olympus) Error : Cannot load affine converting param"
-                                                        completion(false, msg)
+                                                        completion(StartServiceResult(isSuccess: false, error: .AFFINE_PARAM_ERROR, message: msg))
                                                     }
                                                     
                                                     if (!self.isSimulationMode) {
@@ -471,38 +471,36 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                                     self.startTimer()
                                                     NotificationCenter.default.post(name: .serviceStarted, object: nil, userInfo: nil)
                                                     print(getLocalTimeString() + " , (Olympus) Service Start : \(user_id)")
-                                                    completion(true, getLocalTimeString() + success_msg)
+                                                    completion(StartServiceResult(isSuccess: true, error: nil, message: getLocalTimeString() + success_msg))
                                                 })
                                             }
                                         } else {
-                                            completion(false, returnedString)
+                                            completion(StartServiceResult(isSuccess: false, error: .RSSI_COMPENSATIOM_ERROR, message: returnedString))
                                         }
                                     })
                                 } else {
-                                    completion(false, message)
+                                    completion(StartServiceResult(isSuccess: false, error: .SECTOR_INFO_ERROR, message: message))
                                 }
                             })
                         } else {
                             let msg: String = getLocalTimeString() + " , (Olympus) Error : User ID(input = \(user_id)) Login Error"
-                            completion(false, msg)
+                            completion(StartServiceResult(isSuccess: false, error: .LOGIN_ERROR, message: msg))
                         }
                     })
                 }
             } else {
-                let msg: String = initService.1
-                completion(false, msg)
+                completion(initService)
             }
         }
     }
     
-    private func initService(service: String, mode: String) -> (Bool, String) {
+    private func initService(service: String, mode: String) -> StartServiceResult {
         let localTime = getLocalTimeString()
-        var isSuccess: Bool = true
         var msg: String = ""
         
         if (!OlympusConstants.OLYMPUS_SERVICES.contains(service)) {
             msg = localTime + " , (Olympus) Error : Invalid Service Name"
-            return (isSuccess, msg)
+            return StartServiceResult(isSuccess: false, error: .INVALID_SERVICE, message: msg)
         } else {
             self.mode = mode
             if (service.contains(OlympusConstants.SERVICE_FLT)) {
@@ -520,9 +518,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     // DR Mode
                     self.runMode = OlympusConstants.MODE_DR
                 } else {
-                    isSuccess = false
                     msg = localTime + " , (Olympus) Error : Invalid Service Mode"
-                    return (isSuccess, msg)
+                    return StartServiceResult(isSuccess: false, error: .INVALID_MODE, message: msg)
                 }
                 self.setModeParam(mode: self.runMode, phase: phaseController.PHASE)
             }
@@ -530,20 +527,18 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             // Init Sensors
             let initSensors = sensorManager.initSensors()
             if (!initSensors.0) {
-                isSuccess = initSensors.0
                 msg = initSensors.1
-                return (isSuccess, msg)
+                return StartServiceResult(isSuccess: false, error: .SENSOR_ERROR, message: msg)
             }
             
             // Init Bluetooth
             let initBle = OlympusBluetoothManager.shared.initBle()
             if (!initBle.0) {
-                isSuccess = initBle.0
                 msg = initBle.1
-                return (isSuccess, msg)
+                return StartServiceResult(isSuccess: false, error: .BLUETOOTH_ERROR, message: msg)
             }
         }
-        return (isSuccess, msg)
+        return StartServiceResult(isSuccess: true, error: nil, message: msg)
     }
     
     public func setSimulationMode(flag: Bool, bleFileName: String, sensorFileName: String) {

@@ -889,3 +889,22 @@ public enum InOutState: Int, Codable {
 enum SleepModeType {
     case UVD, RFD
 }
+
+public struct StartServiceResult {
+    public let isSuccess: Bool
+    public let error: StartServiceError?
+    public let message: String
+}
+
+public enum StartServiceError: Int, Codable {
+    case INVALID_USER_ID = 1
+    case INVALID_SERVICE = 2
+    case INVALID_MODE = 3
+    case SENSOR_ERROR = 4
+    case BLUETOOTH_ERROR = 5
+    case NETWORK_ERROR = 6
+    case LOGIN_ERROR = 7
+    case SECTOR_INFO_ERROR = 8
+    case RSSI_COMPENSATIOM_ERROR = 9
+    case AFFINE_PARAM_ERROR = 10
+}
