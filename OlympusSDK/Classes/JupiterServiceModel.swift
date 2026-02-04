@@ -5,6 +5,7 @@ struct ixyhs {
     var y: Float = 0
     var heading: Float = 0
     var scale: Float = 1.0
+    var headingFail: Bool = false
 }
 
 typealias WardId = String

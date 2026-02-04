@@ -143,6 +143,7 @@ class PathMatcher {
             } else if isUseHeading {
                 let updatedIxyhs = processFailedIdshArray(idshArrayWhenFail: idshArrayWhenFail, mainHeading: mainHeading, roadX: roadX, roadY: roadY, inputXyhs: &ixyhs, bestHeading: &bestHeading)
                 ixyhs = updatedIxyhs
+                ixyhs.headingFail = true
             } else {
                 return nil
             }

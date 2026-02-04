@@ -126,6 +126,7 @@ class RecoveryManager {
                     var localBestHead: FineLocationTrackingOutput? = nil
                     
                     for cand in recentLandmarkCands {
+                        JupiterLogger.i(tag: "RecoveryManager", message: "(recover) cand: [\(cand.x),\(cand.y)]")
                         let offsetX = Float(cand.x) - recoveryTraj[aIdx].x
                         let offsetY = Float(cand.y) - recoveryTraj[aIdx].y
 
@@ -148,7 +149,10 @@ class RecoveryManager {
                                                                        heading: first.heading,
                                                                        isUseHeading: false,
                                                                        mode: mode,
-                                                                       paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else { continue }
+                                                                        paddingValues: JupiterMode.PADDING_VALUES_LARGE) else {
+                            JupiterLogger.i(tag: "RecoveryManager", message: "(recover) tail pm fail // [\(first.x),\(first.y),\(first.heading)]")
+                            continue
+                        }
 
                         var tailResult = curPmResult
                         tailResult.x = tail.x
@@ -165,6 +169,7 @@ class RecoveryManager {
                                                                        isUseHeading: false,
                                                                        mode: mode,
                                                                        paddingValues: JupiterMode.PADDING_VALUES_LARGE) else {
+                            JupiterLogger.i(tag: "RecoveryManager", message: "(recover) head pm fail // [\(last.x),\(last.y),\(last.heading)]")
                             continue
                         }
 
@@ -197,11 +202,10 @@ class RecoveryManager {
                                                                                    curPmResult: curPmResult,
                                                                                    shiftedTraj: shiftedTraj,
                                                                                    targetIndices: residualIndices,
-                                                                                   mode: mode) else { continue }
-                        
-//                            let dist2v = dist2(Float(tail.x), Float(tail.y), Float(first.x), Float(first.y))
-//                            let dist3 = dist2(Float(head.x), Float(head.y), Float(last.x), Float(last.y))
-//                            let loss = dist1 + dist2v + dist3
+                                                                                   mode: mode) else {
+                            JupiterLogger.i(tag: "RecoveryManager", message: "(recover) lossPointResult fail")
+                            continue
+                        }
                         let lossDistSum = sqrt(
                             lossPointResult
                                 .map { ($0.lossDist) * ($0.lossDist) }
@@ -327,7 +331,7 @@ class RecoveryManager {
         if let _ = matchedNode {
             isInNode = true
         }
-        JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) curPmResult [\(curPmResult.x),\(curPmResult.y)] is in \(curLinkForConnectionCheck?.id) , isInNode = \(isInNode)")
+        JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) curPmResult [\(curPmResult.x),\(curPmResult.y),\(curPmResult.absolute_heading)] is in \(curLinkForConnectionCheck?.id) , isInNode = \(isInNode)")
         
         let olderUserPeak = userPeakAndLinksBuffer[userPeakAndLinksBuffer.count - 2].0
         let olderUserLinks = userPeakAndLinksBuffer[userPeakAndLinksBuffer.count - 2].1
@@ -365,12 +369,13 @@ class RecoveryManager {
                     
                     var selectedCands: [(PeakData, Int, Int, Bool, Float)] = []  // (cand, candGroupId, candLinkId, penalty)
                     selectedCands.reserveCapacity(recentLandmarkCands.count)
-
+                    var selectedCandKeySet = Set<PeakXYLinkKey>()
+                    
                     var inLinkBest: (cand: PeakData, dist: Float)? = nil
 
                     // Out-of-group candidate policy
-                    // - outGroupBestOnly == true  : keep only the single best *directly connectable* candidate
-                    // - outGroupBestOnly == false : allow up to OUT_GROUP_MAX candidates reachable within 3 link-groups
+                    // - distBestOnly == true  : keep only the single best *directly connectable* candidate
+                    // - distBestOnly == false : allow up to OUT_GROUP_MAX candidates reachable within 3 link-groups
                     let DBEST_GROUP_MAX: Int = 20
 
                     var dbestLinkGroupId: Int?
@@ -417,8 +422,16 @@ class RecoveryManager {
                                     inLinkBest = (cand: cand, dist: d)
                                 }
                                 
-                                selectedCands.append((cand, candLink.group_id, candLink.id, true, 1.0))
-                                continue
+                                let candKey = PeakXYLinkKey(
+                                    x: cand.x,
+                                    y: cand.y,
+                                    linkId: candLink.id
+                                )
+
+                                if selectedCandKeySet.insert(candKey).inserted {
+                                    selectedCands.append((cand, candLink.group_id, candLink.id, true, 1.0))
+                                    continue
+                                }
                             }
 
                             if distBestOnly {
@@ -471,11 +484,18 @@ class RecoveryManager {
                         if let extra = connectableBest?.cand, let extraGroupId = dbestLinkGroupId, let extraLinkId = dbestLinkId {
                             let extraCands = selectedCands.map{ $0.0 as PeakData }
                             if !extraCands.contains(where: { $0.x == extra.x && $0.y == extra.y && $0.rssi == extra.rssi }) {
-                                selectedCands.append((extra, extraGroupId, extraLinkId, false, 2.0))
+                                let candKey = PeakXYLinkKey(
+                                    x: extra.x,
+                                    y: extra.y,
+                                    linkId: extraLinkId
+                                )
+
+                                if selectedCandKeySet.insert(candKey).inserted {
+                                    selectedCands.append((extra, extraGroupId, extraLinkId, false, 2.0))
+                                }
                             }
                         }
                     } else {
-                        // Add up to OUT_GROUP_MAX out-of-group candidates (sorted by TU-distance), avoiding duplicates.
                         dbestGroupPool.sort { $0.dist < $1.dist }
                         if dbestGroupPool.count > DBEST_GROUP_MAX {
                             dbestGroupPool = Array(dbestGroupPool.prefix(DBEST_GROUP_MAX))
@@ -487,7 +507,16 @@ class RecoveryManager {
                             if existing.contains(where: { $0.x == cand.x && $0.y == cand.y && $0.rssi == cand.rssi }) {
                                 continue
                             }
-                            selectedCands.append((cand, item.groupId, item.linkId, false, 2.0))
+                            
+                            let candKey = PeakXYLinkKey(
+                                x: cand.x,
+                                y: cand.y,
+                                linkId: item.linkId
+                            )
+
+                            if selectedCandKeySet.insert(candKey).inserted {
+                                selectedCands.append((cand, item.groupId, item.linkId, false, 2.0))
+                            }
                         }
                     }
                     JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) selectedCands: groupIds = \(selectedCands.map{$0.1})")
@@ -551,7 +580,7 @@ class RecoveryManager {
                                                                         isUseHeading: isUseHeading,
                                                                         mode: mode,
                                                                         paddingValues: JupiterMode.PADDING_VALUES_LARGE) else {
-                            JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) head pm fail // cand:[\(cand.x),\(cand.y)] // first:[\(last.x),\(last.y)]")
+                            JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) head pm fail // cand:[\(cand.x),\(cand.y)] // last:[\(last.x),\(last.y),\(last.heading)]")
                             continue
                         }
 
@@ -563,7 +592,7 @@ class RecoveryManager {
                             headResult.y = head.y
                             headResult.absolute_heading = head.heading
 
-                            guard let headLink = await self.pmGate.getLinkInfoWithResult(sectorId: sectorId,
+                            guard let headLinks = await self.pmGate.getLinkInfosWithResult(sectorId: sectorId,
                                                                                           result: headResult,
                                                                                           checkAll: true,
                                                                                           acceptDist: 15) else {
@@ -571,23 +600,26 @@ class RecoveryManager {
                                 continue
                             }
                             
+                            
                             let headNode = await self.pmGate.getNodeInfoWithResult(sectorId: sectorId, result: headResult)
                             let isHeadInNode = headNode == nil ? false : true
-                            
-                            if headLink.group_id == curLink.group_id && !isHeadInNode {
-                                JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) headPos = [\(head.x),\(head.y)]")
+                            let headLinkGroupIds = headLinks.map{$0.group_id}
+                            if headLinkGroupIds.contains(curLink.group_id) && !isHeadInNode && !head.headingFail && curPmResult.absolute_heading != head.heading {
+                                JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) headPos = [\(head.x),\(head.y),\(head.heading)]")
                                 JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) headLink and curLink is in same group")
                                 continue
                             }
-
-                            let reachable = self.isLinkReachableWithGroupSwitchLimit(nodeData: nodeData,
-                                                                                    linkData: linkData,
-                                                                                    from: curLink,
-                                                                                    to: headLink,
-                                                                                    maxGroupSwitches: 1)
-                            JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) reachable fail // curLink:\(curLink.id) -> headLink:\(headLink.id)")
-                            if !reachable {
-                                continue
+                            
+                            for headLink in headLinks {
+                                let reachable = self.isLinkReachableWithGroupSwitchLimit(nodeData: nodeData,
+                                                                                        linkData: linkData,
+                                                                                        from: curLink,
+                                                                                        to: headLink,
+                                                                                        maxGroupSwitches: 1)
+                                JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) reachable fail //  headPos = [\(head.x),\(head.y)] // curLink:\(curLink.id) -> headLink:\(headLink.id)")
+                                if !reachable {
+                                    continue
+                                }
                             }
                         }
 
@@ -802,7 +834,7 @@ class RecoveryManager {
         if coordDist <= COORD_DIST_TH {
             if best.loss < TT_HIGH {
                 JupiterLogger.i(tag: "RecoveryManager", message: "(selectRecoveryResult) close coords (dist=\(coordDist)) -> accept best // best: \(best.loss), ratio: \(ratio)")
-                return (best, ratio)
+                return (best, 2.0)
             }
         }
         
@@ -847,6 +879,15 @@ class RecoveryManager {
                                                             checkAll: checkAll,
                                                             acceptDist: acceptDist)
         }
+        
+        func getLinkInfosWithResult(sectorId: Int,
+                                    result: FineLocationTrackingOutput,
+                                    checkAll: Bool, acceptDist: Float = 5) -> [LinkData]? {
+             return PathMatcher.shared.getLinkInfosWithResult(sectorId: sectorId,
+                                                             result: result,
+                                                             checkAll: checkAll,
+                                                             acceptDist: acceptDist)
+         }
         
         func getNodeInfoWithResult(sectorId: Int,
                                    result: FineLocationTrackingOutput) -> NodeData? {
@@ -1459,5 +1500,11 @@ class RecoveryManager {
         }
         
         return lossPointResults.isEmpty ? nil : lossPointResults
+    }
+    
+    struct PeakXYLinkKey: Hashable {
+        let x: Int
+        let y: Int
+        let linkId: Int
     }
 }
