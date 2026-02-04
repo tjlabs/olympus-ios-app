@@ -892,11 +892,11 @@ enum SleepModeType {
 
 public struct StartServiceResult {
     public let isSuccess: Bool
-    public let error: StartServiceError?
+    public let error: JupiterServiceError?
     public let message: String
 }
 
-public enum StartServiceError: Int, Codable {
+public enum JupiterServiceError: Int, Codable {
     case INVALID_USER_ID = 1
     case INVALID_SERVICE = 2
     case INVALID_MODE = 3
@@ -905,6 +905,6 @@ public enum StartServiceError: Int, Codable {
     case NETWORK_ERROR = 6
     case LOGIN_ERROR = 7
     case SECTOR_INFO_ERROR = 8
-    case RSSI_COMPENSATIOM_ERROR = 9
+    case RSSI_COMPENSATION_ERROR = 9
     case AFFINE_PARAM_ERROR = 10
 }
