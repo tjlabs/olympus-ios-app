@@ -162,7 +162,7 @@ class CardViewController: UIViewController, Observer {
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250818_test10.csv", sensorFileName: "sensor_songdo_250818_test10.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250822_stop.csv", sensorFileName: "sensor_songdo_250822_stop.csv")
         
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
+        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
         
         // collect
 //        isCollect = true
@@ -176,13 +176,13 @@ class CardViewController: UIViewController, Observer {
         // service
         serviceManager.addObserver(self)
         serviceManager.setDebugOption(flag: true)
-        serviceManager.startService(user_id: uniqueId, region: self.region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
+        serviceManager.startService(user_id: uniqueId, region: self.region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] startServiceResult in
 //        serviceManager.startService(user_id: uniqueId, region: "Korea", sector_id: 16, service: "FLT", mode: "pdr", completion: { [self] isStart, returnedString in
-            if (isStart) {
+            if (startServiceResult.isSuccess) {
                 serviceState = true
                 self.startTimer()
             } else {
-                print(returnedString)
+                print(startServiceResult.message)
             }
         })
     }
@@ -219,11 +219,11 @@ class CardViewController: UIViewController, Observer {
             }
         } else {
             let uniqueId = makeUniqueId(uuid: self.userId)
-            serviceManager.startService(user_id: uniqueId, region: self.region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
-                if (isStart) {
+            serviceManager.startService(user_id: uniqueId, region: self.region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] startServiceResult in
+                if (startServiceResult.isSuccess) {
                     serviceState = true
                 } else {
-                    print(returnedString)
+                    print(startServiceResult.message)
                 }
             })
         }
