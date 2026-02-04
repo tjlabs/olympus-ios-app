@@ -475,7 +475,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                                 })
                                             }
                                         } else {
-                                            completion(StartServiceResult(isSuccess: false, error: .RSSI_COMPENSATIOM_ERROR, message: returnedString))
+                                            completion(StartServiceResult(isSuccess: false, error: .RSSI_COMPENSATION_ERROR, message: returnedString))
                                         }
                                     })
                                 } else {
