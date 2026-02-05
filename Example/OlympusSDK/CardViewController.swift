@@ -171,8 +171,8 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         serviceManager = JupiterManager(id: uniqueId)
         serviceManager?.delegate = self
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_01_0119.csv", sensorFileName: "sensor_coex_01_01_01;'19.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_test1_0129.csv", sensorFileName: "sensor_coex_test1_0129.csv")
-        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_test5_0203.csv", sensorFileName: "sensor_coex_test5_0203.csv")
+        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_test1_0129.csv", sensorFileName: "sensor_coex_test1_0129.csv")
+//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_test5_0203.csv", sensorFileName: "sensor_coex_test5_0203.csv")
         
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_02_1007.csv", sensorFileName: "sensor_coex_01_02_1007.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
@@ -346,7 +346,7 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
                            recon_raw_traj: [[Double]]?,
                            recon_corr_traj: [FineLocationTrackingOutput]?,
                            recovery_result: RecoveryResult?,
-                           recovery_result_v2: RecoveryResult_v2?,
+                           recovery_result3Peaks: RecoveryResult3Peaks?,
                            limits: [Double], isBleOnlyMode: Bool, isPmSuccess: Bool, isIndoor: Bool) {
         let xAxisValue: [Double] = RP_X
         let yAxisValue: [Double] = RP_Y
@@ -503,7 +503,7 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
             setOld.scatterShapeSize = 8
             chartData.append(setOld)
             
-            let bestRecent = recovery_result.bestRecent
+            let bestRecent = [recovery_result.bestRecentCand.x, recovery_result.bestRecentCand.y]
             let recentX: [Double] = [Double(bestRecent[0])]
             let recentY: [Double] = [Double(bestRecent[1])]
             let valuesRecent = (0..<oldX.count).map { (i) -> ChartDataEntry in
@@ -518,9 +518,9 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
             chartData.append(setRecent)
         }
         
-        if let recovery_result_v2 = recovery_result_v2 {
-            lossLabel.text = String(recovery_result_v2.loss) + " // Recovery"
-            let recovery_traj = recovery_result_v2.traj
+        if let recovery_result3Peaks = recovery_result3Peaks {
+            lossLabel.text = String(recovery_result3Peaks.loss) + " // Recovery"
+            let recovery_traj = recovery_result3Peaks.traj
             var xAxisValue = [Double]()
             var yAxisValue = [Double]()
             for traj in recovery_traj {
@@ -539,7 +539,7 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
             setRecoveryTraj.scatterShapeSize = 5
             chartData.append(setRecoveryTraj)
             
-            let bestFirst = recovery_result_v2.bestFirst
+            let bestFirst = recovery_result3Peaks.bestFirst
             let firstX: [Double] = [Double(bestFirst[0])]
             let firstY: [Double] = [Double(bestFirst[1])]
             let valuesFirst = (0..<firstX.count).map { (i) -> ChartDataEntry in
@@ -553,7 +553,7 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
             setFirst.scatterShapeSize = 8
             chartData.append(setFirst)
             
-            let bestSecond = recovery_result_v2.bestSecond
+            let bestSecond = recovery_result3Peaks.bestSecond
             let secondX: [Double] = [Double(bestSecond[0])]
             let secondY: [Double] = [Double(bestSecond[1])]
             let valuesSecond = (0..<secondX.count).map { (i) -> ChartDataEntry in
@@ -567,7 +567,7 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
             setSecond.scatterShapeSize = 8
             chartData.append(setSecond)
             
-            let bestThird = recovery_result_v2.bestThird
+            let bestThird = recovery_result3Peaks.bestThird
             let thirdX: [Double] = [Double(bestThird[0])]
             let thirdY: [Double] = [Double(bestThird[1])]
             let valuesThird = (0..<thirdX.count).map { (i) -> ChartDataEntry in
@@ -715,7 +715,7 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
                               recon_raw_traj: debugResult.recon_raw_traj,
                               recon_corr_traj: debugResult.recon_corr_traj,
                               recovery_result: debugResult.recovery_result,
-                              recovery_result_v2: debugResult.recovery_result_v2,
+                              recovery_result3Peaks: debugResult.recovery_result3Peaks,
                               limits: [0, 0, 0, 0], isBleOnlyMode: self.isBleOnlyMode, isPmSuccess: true, isIndoor: isIndoor)
                 }
             } else {

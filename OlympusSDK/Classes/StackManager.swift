@@ -265,7 +265,7 @@ class StackManager {
         if jupiterPhase == .ENTERING { return false }
         
         let adaptive_th = max(Int(travelingLinkDist*0.3), SAME_COORD_THRESHOLD)
-        JupiterLogger.i(tag: "StackManager", message: "(checkIsBadCase) adaptive_th: \(adaptive_th)")
+        JupiterLogger.i(tag: "StackManager", message: "(checkIsBadCase) travelingLinkDist: \(travelingLinkDist), adaptive_th: \(adaptive_th)")
         guard curPmResultBuffer.count >= adaptive_th else { return false }
         let last = curPmResultBuffer[curPmResultBuffer.count-1]
         let lastIndex: Int = last.index
