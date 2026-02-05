@@ -392,6 +392,13 @@ public struct MobileReport: Encodable {
     public var report: Int
 }
 
+public struct MobileEvent: Encodable {
+    public var user_id: String
+    public var mobile_time: Int
+    public var event_code: Int
+    public var message: String
+}
+
 // Recent
 struct RecentResult: Encodable {
     var user_id: String
@@ -897,14 +904,14 @@ public struct StartServiceResult {
 }
 
 public enum JupiterServiceError: Int, Codable {
-    case INVALID_USER_ID = 1
-    case INVALID_SERVICE = 2
-    case INVALID_MODE = 3
-    case SENSOR_ERROR = 4
-    case BLUETOOTH_ERROR = 5
-    case NETWORK_ERROR = 6
-    case LOGIN_ERROR = 7
-    case SECTOR_INFO_ERROR = 8
-    case RSSI_COMPENSATION_ERROR = 9
-    case AFFINE_PARAM_ERROR = 10
+    case INVALID_USER_ID = 5001
+    case INVALID_SERVICE = 5002
+    case INVALID_MODE = 5003
+    case SENSOR_ERROR = 5004
+    case BLUETOOTH_ERROR = 5005
+    case NETWORK_ERROR = 5006
+    case LOGIN_ERROR = 5007
+    case SECTOR_INFO_ERROR = 5008
+    case RSSI_COMPENSATION_ERROR = 5009
+    case AFFINE_PARAM_ERROR = 5010
 }
