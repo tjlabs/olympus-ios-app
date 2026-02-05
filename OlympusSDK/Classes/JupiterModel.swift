@@ -70,59 +70,40 @@ public struct JupiterDebugResult: Codable {
     public var recon_raw_traj: [[Double]]?
     public var recon_corr_traj: [FineLocationTrackingOutput]?
     public var recovery_result: RecoveryResult?
-    public var recovery_result_v2: RecoveryResult_v2?
+    public var recovery_result3Peaks: RecoveryResult3Peaks?
     public var ratio: Float?
-}
-
-struct _RecoveryCandidateWide {
-    let loss: Float
-    let shiftedTraj: [RecoveryTrajectory]
-    let recentCand: PeakData
-    let olderCand: PeakData?
-    let tail: FineLocationTrackingOutput?
-    let head: FineLocationTrackingOutput?
-    let recentCandLinkId: Int
-    let recentCandGroupId: Int
 }
 
 public struct RecoveryResult: Codable {
     public let traj: [[Double]]
     public let shiftedTraj: [RecoveryTrajectory]
     public let loss: Float
+    public var bestRecentCand: PeakData
     public let bestOlder: [Int]
-    public let bestRecent: [Int]
     public let bestResult: FineLocationTrackingOutput?
-    
     public var curLinkId: Int?
     public var curGroupId: Int?
-    public var recentCandLinkId: Int?
-    public var recentCandGroupId: Int?
-
+    
     public init(traj: [[Double]],
                 shiftedTraj: [RecoveryTrajectory],
                 loss: Float,
+                bestRecentCand: PeakData,
                 bestOlder: [Int],
-                bestRecent: [Int],
                 bestResult: FineLocationTrackingOutput?,
                 curLinkId: Int? = nil,
-                curGroupId: Int? = nil,
-                recentCandLinkId: Int? = nil,
-                recentCandGroupId: Int? = nil) {
+                curGroupId: Int? = nil) {
         self.traj = traj
         self.shiftedTraj = shiftedTraj
         self.loss = loss
+        self.bestRecentCand = bestRecentCand
         self.bestOlder = bestOlder
-        self.bestRecent = bestRecent
         self.bestResult = bestResult
         self.curLinkId = curLinkId
         self.curGroupId = curGroupId
-        self.recentCandLinkId = recentCandLinkId
-        self.recentCandGroupId = recentCandGroupId
     }
 }
 
-
-public struct RecoveryResult_v2: Codable {
+public struct RecoveryResult3Peaks: Codable {
     public let traj: [[Double]]
     public let shiftedTraj: [RecoveryTrajectory]
     public let loss: Float
