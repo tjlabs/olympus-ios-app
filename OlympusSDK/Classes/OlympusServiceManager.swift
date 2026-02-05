@@ -409,11 +409,21 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         self.debugOption = isSimulationMode ? false : flag
     }
     
+    private func sendMobileEvent(user_id: String, currentTime: Int, jupiterServiceError: JupiterServiceError, msg: String) {
+        let mobileEvent = MobileEvent(user_id: user_id, mobile_time: currentTime, event_code: jupiterServiceError.rawValue, message: msg)
+        OlympusNetworkManager.shared.postMobileEvent(url: REC_ME_URL, input: mobileEvent, completion: { isSuccess, returnedString in
+            
+        })
+    }
+    
     public func startService(user_id: String, region: String, sector_id: Int, service: String, mode: String, completion: @escaping (StartServiceResult) -> Void) {
         self.initialize(isStopService: true)
+        setServerURL(region: region)
+        
         let success_msg: String =  " , (Olympus) Success : Service Start"
         if (user_id.isEmpty || user_id.contains(" ")) {
             let msg: String = getLocalTimeString() + " , (Olympus) Error : User ID(input = \(user_id)) cannot be empty or contain space"
+            self.sendMobileEvent(user_id: user_id, currentTime: getCurrentTimeInMilliseconds(), jupiterServiceError: .INVALID_USER_ID, msg: msg)
             completion(StartServiceResult(isSuccess: false, error: .INVALID_USER_ID, message: msg))
         } else {
             let initService = initService(service: service, mode: mode)
@@ -422,7 +432,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     let msg: String = getLocalTimeString() + " , (Olympus) Error : Network is not connected"
                     completion(StartServiceResult(isSuccess: false, error: .NETWORK_ERROR, message: msg))
                 } else {
-                    setServerURL(region: region)
                     let loginInput = LoginInput(user_id: user_id, device_model: self.deviceModel, os_version: self.deviceOsVersion, sdk_version: OlympusServiceManager.sdkVersion)
                     OlympusNetworkManager.shared.postUserLogin(url: USER_LOGIN_URL, input: loginInput, completion: { [self] statusCode, returnedString in
                         if (statusCode == 200) {
@@ -442,6 +451,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                             
                                             if (!OlympusBluetoothManager.shared.bluetoothReady) {
                                                 let msg: String = getLocalTimeString() + " , (Olympus) Error : Bluetooth is not enabled"
+                                                self.sendMobileEvent(user_id: user_id, currentTime: getCurrentTimeInMilliseconds(), jupiterServiceError: .BLUETOOTH_ERROR, msg: msg)
                                                 completion(StartServiceResult(isSuccess: false, error: .BLUETOOTH_ERROR, message: msg))
                                             } else {
                                                 OlympusNetworkManager.shared.getUserAffineTrans(url: USER_AFFINE_URL, input: sector_id, completion: { statusCode, returnedString, inputSectorId in
@@ -452,12 +462,14 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                                             print(getLocalTimeString() + " , (Olympus) AffineParam : sector \(sector_id) -> \(OlympusAffineConverter.shared.AffineParam[sector_id])")
                                                         } else {
                                                             let msg: String = getLocalTimeString() + " , (Olympus) Error : Cannot decode affine converting param"
+                                                            self.sendMobileEvent(user_id: user_id, currentTime: getCurrentTimeInMilliseconds(), jupiterServiceError: .AFFINE_PARAM_ERROR, msg: msg)
                                                             completion(StartServiceResult(isSuccess: false, error: .AFFINE_PARAM_ERROR, message: msg))
                                                         }
                                                     } else if statusCode >= 400 && statusCode < 500 {
                                                         print(getLocalTimeString() + " , (Olympus) AffineParam : sector \(sector_id) is not support coord converting")
                                                     } else {
                                                         let msg: String = getLocalTimeString() + " , (Olympus) Error : Cannot load affine converting param"
+                                                        self.sendMobileEvent(user_id: user_id, currentTime: getCurrentTimeInMilliseconds(), jupiterServiceError: .AFFINE_PARAM_ERROR, msg: msg)
                                                         completion(StartServiceResult(isSuccess: false, error: .AFFINE_PARAM_ERROR, message: msg))
                                                     }
                                                     
@@ -465,7 +477,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                                         OlympusFileManager.shared.setRegion(region: region)
                                                         OlympusFileManager.shared.createFiles(region: region, sector_id: sector_id, deviceModel: deviceModel, osVersion: deviceOsVersion)
                                                     }
-                                                    
                                                     
                                                     self.isStartComplete = true
                                                     self.startTimer()
@@ -475,10 +486,12 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                                 })
                                             }
                                         } else {
+                                            self.sendMobileEvent(user_id: user_id, currentTime: getCurrentTimeInMilliseconds(), jupiterServiceError: .RSSI_COMPENSATION_ERROR, msg: returnedString)
                                             completion(StartServiceResult(isSuccess: false, error: .RSSI_COMPENSATION_ERROR, message: returnedString))
                                         }
                                     })
                                 } else {
+                                    self.sendMobileEvent(user_id: user_id, currentTime: getCurrentTimeInMilliseconds(), jupiterServiceError: .SECTOR_INFO_ERROR, msg: message)
                                     completion(StartServiceResult(isSuccess: false, error: .SECTOR_INFO_ERROR, message: message))
                                 }
                             })
@@ -489,6 +502,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     })
                 }
             } else {
+                if let error = initService.error {
+                    self.sendMobileEvent(user_id: user_id, currentTime: getCurrentTimeInMilliseconds(), jupiterServiceError: error, msg: initService.message)
+                }
                 completion(initService)
             }
         }
