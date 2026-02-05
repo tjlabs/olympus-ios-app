@@ -262,6 +262,7 @@ public struct PeakData : Swift.Codable {
   public let x: Swift.Int
   public let y: Swift.Int
   public let rssi: Swift.Float
+  public let matched_links: [Swift.Int]
   public func encode(to encoder: any Swift.Encoder) throws
   public init(from decoder: any Swift.Decoder) throws
 }
