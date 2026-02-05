@@ -176,7 +176,7 @@ class CardViewController: UIViewController, Observer {
         // service
         serviceManager.addObserver(self)
         serviceManager.setDebugOption(flag: true)
-        serviceManager.startService(user_id: uniqueId, region: self.region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] startServiceResult in
+        serviceManager.startService(user_id: uniqueId, region: self.region, sector_id: sector_id, service: "DED", mode: mode, completion: { [self] startServiceResult in
 //        serviceManager.startService(user_id: uniqueId, region: "Korea", sector_id: 16, service: "FLT", mode: "pdr", completion: { [self] isStart, returnedString in
             if (startServiceResult.isSuccess) {
                 serviceState = true
