@@ -57,6 +57,19 @@ class LandmarkTagger {
         return (matchedLandmark, matchedCurResult!)
     }
     
+    func findMatchedLandmarkWithUserPeak(userPeak: UserPeak, building: String, level: String) -> LandmarkData? {
+        if exceptionalTags.contains(userPeak.id) {
+            JupiterLogger.i(tag: "LandmarkTagger", message: "(findMatchedLandmarkWithUserPeak) userPeak \(userPeak) is exceptional")
+            return nil
+        }
+        
+        let key = "\(sectorId)_\(building)_\(level)"
+        guard let landmarkData = self.landmarkData[key] else { return nil }
+        guard let matchedLandmark = landmarkData[userPeak.id] else { return nil }
+        
+        return matchedLandmark
+    }
+    
     func findBestLandmark(userPeak: UserPeak, landmark: LandmarkData, matchedResult: FineLocationTrackingOutput, peakLinkId: Int, peakLinkGroupId: Int) -> (PeakData, Int)? {
         let refX = Float(matchedResult.x)
         let refY = Float(matchedResult.y)
