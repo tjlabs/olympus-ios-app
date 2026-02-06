@@ -296,6 +296,25 @@ class BuildingLevelChanger {
         }
     }
     
+    func getMatchedBuildingLevelByUserPeak(userPeak: UserPeak) -> (building: String, level: String)? {
+        let userPeakWardId = userPeak.id
+        for (key, value) in levelWardsMap {
+            let wardIds = value.map{$0.name}
+            if wardIds.contains(userPeakWardId) {
+                if let buildingLevel = getBuidlingLevelInKey(key: key) {
+                    return buildingLevel
+                }
+            }
+        }
+        return nil
+    }
+    
+    func isIndoorLevel(buildingLevelByPeakBuffer: [(String, String)]) -> Bool {
+        JupiterLogger.i(tag: "BuildingLevelChanger", message: "(isIndoorLevel) buildingLevelByPeakBuffer: \(buildingLevelByPeakBuffer)")
+        guard let first = buildingLevelByPeakBuffer.first else { return false }
+        return first.1 != "B0" && buildingLevelByPeakBuffer.allSatisfy { $0.0 == first.0 && $0.1 == first.1 }
+    }
+
 //    func calculateLevelByBle(data: (Int, [(String, Float)])) -> String {
 //        var result: String = "UNKNOWN"
 //        var strongestBleData: (String, String, Float)?
@@ -342,6 +361,14 @@ class BuildingLevelChanger {
     private func getLevelInKey(key: String) -> String {
         let splittedKey = key.split(separator: "_")
         return String(splittedKey[splittedKey.count-1])
+    }
+    
+    private func getBuidlingLevelInKey(key: String) -> (building: String, level: String)? {
+        let splittedKey = key.split(separator: "_")
+        if splittedKey.count < 3 { return nil }
+        let building = String(splittedKey[splittedKey.count-2])
+        let level = String(splittedKey[splittedKey.count-1])
+        return (building, level)
     }
     
     func mostFrequentCheckerValue(from checker: [(String, String, Float)]) -> String {
