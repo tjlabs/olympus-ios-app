@@ -23,7 +23,7 @@ class RecoveryManager {
         return slicedUvd
     }
     
-    func makeMultipleRecoveryTrajectory(uvdBuffer: [UserVelocity], majorSection: [Float], pathHeadings: [Float], endHeading: Float) -> [[RecoveryTrajectory]] {
+    func makeMultipleRecoveryTrajectory(uvdBuffer: [UserVelocity], majorSection: [Float], pathHeadings: [Float], endHeading: Float? = nil) -> [[RecoveryTrajectory]] {
         var trajList = [[RecoveryTrajectory]]()
 //        JupiterLogger.i(tag: "RecoveryManager", message: "(makeMultipleRecoveryTrajectory) BadCase: pathHeadings= \(pathHeadings)")
         if !majorSection.isEmpty {
@@ -53,9 +53,13 @@ class RecoveryManager {
                     resultBuffer.append(RecoveryTrajectory(index: curUvd.index, x: coord[0], y: coord[1], heading: heading))
                 }
                 
-                let lastHeading = TJLabsUtilFunctions.shared.compensateDegree(Double(resultBuffer[resultBuffer.count-1].heading))
-                let diffHeading = adjustHeading(Float(lastHeading), endHeading)
-                if diffHeading < Float(JupiterMode.HEADING_RANGE) {
+                if let endHeading = endHeading {
+                    let lastHeading = TJLabsUtilFunctions.shared.compensateDegree(Double(resultBuffer[resultBuffer.count-1].heading))
+                    let diffHeading = adjustHeading(Float(lastHeading), endHeading)
+                    if diffHeading < Float(JupiterMode.HEADING_RANGE) {
+                        trajList.append(resultBuffer)
+                    }
+                } else {
                     trajList.append(resultBuffer)
                 }
             }
@@ -249,6 +253,221 @@ class RecoveryManager {
                                                  olderCand: localBestOlderCand,
                                                  tail: localBestTail,
                                                  head: localBestHead)
+                    }
+                    return nil
+                }
+            }
+
+            var best: _RecoveryCandidate? = nil
+            for await cand in group {
+                guard let cand = cand else { continue }
+                if best == nil || cand.loss < best!.loss {
+                    best = cand
+                }
+            }
+            return best
+        }
+
+        guard let best = bestCandidate else { return nil }
+        
+        var resultTraj = [[Double]]()
+        resultTraj.reserveCapacity(best.shiftedTraj.count)
+        for value in best.shiftedTraj {
+            resultTraj.append([Double(value.x), Double(value.y)])
+        }
+
+        let bestOlder: [Int] = best.olderCand != nil ? [best.olderCand!.x, best.olderCand!.y] : [0, 0]
+        let recoveryResult = RecoveryResult(traj: resultTraj,
+                                            shiftedTraj: best.shiftedTraj,
+                                            loss: best.loss,
+                                            bestRecentCand: best.recentCand,
+                                            bestOlder: bestOlder,
+                                            bestResult: best.head)
+        return recoveryResult
+    }
+    
+    func searchWithMultipleTraj(recoveryTrajList: [[RecoveryTrajectory]],
+                                userPeakBuffer: [UserPeak],
+                                buildingLevelByUserPeak: (String, String),
+                                landmarks: (older: LandmarkData, recent: LandmarkData),
+                                mode: UserMode) -> RecoveryResult? {
+        let semaphore = DispatchSemaphore(value: 0)
+        var output: RecoveryResult? = nil
+
+        Task {
+            output = await self.searchWithMultipleTrajAsync(recoveryTrajList: recoveryTrajList,
+                                                            userPeakBuffer: userPeakBuffer,
+                                                            buildingLevelByUserPeak: buildingLevelByUserPeak,
+                                                            landmarks: landmarks,
+                                                            mode: mode)
+            semaphore.signal()
+        }
+
+        semaphore.wait()
+        return output
+    }
+
+    private func searchWithMultipleTrajAsync(recoveryTrajList: [[RecoveryTrajectory]],
+                                             userPeakBuffer: [UserPeak],
+                                             buildingLevelByUserPeak: (String, String),
+                                             landmarks: (older: LandmarkData, recent: LandmarkData),
+                                             mode: UserMode) async -> RecoveryResult? {
+        guard userPeakBuffer.count >= 2 else { return nil }
+        let building = buildingLevelByUserPeak.0
+        let level = buildingLevelByUserPeak.1
+        
+        let olderUserPeak = userPeakBuffer[userPeakBuffer.count - 2]
+        let recentUserPeak = userPeakBuffer[userPeakBuffer.count - 1]
+        let recentUserPeakIndex = recentUserPeak.peak_index
+
+        JupiterLogger.i(tag: "RecoveryManager", message: "(searchWithMultipleTrajAsync) olderPeakId: \(olderUserPeak.id), oldPeakIndex: \(olderUserPeak.peak_index), recentPeakId: \(recentUserPeak.id), recentPeakIndex: \(recentUserPeakIndex)")
+
+        let olderLandmarkCands: [PeakData] = landmarks.older.peaks
+        let recentLandmarkCands: [PeakData] = landmarks.recent.peaks
+
+        let bestCandidate: _RecoveryCandidate? = await withTaskGroup(of: _RecoveryCandidate?.self) { group in
+            for recoveryTraj in recoveryTrajList {
+                group.addTask { [self, sectorId = self.sectorId] in
+                    guard recoveryTraj.count >= 2 else { return nil }
+
+                    var anchorIdx: Int? = nil
+                    for i in 0..<recoveryTraj.count {
+                        if recoveryTraj[i].index == recentUserPeakIndex {
+                            anchorIdx = i
+                            break
+                        }
+                    }
+                    guard let aIdx = anchorIdx else { return nil }
+
+                    var localBestLoss = Float.greatestFiniteMagnitude
+                    var localBestShiftedTraj: [RecoveryTrajectory]? = nil
+                    var localBestRecentCand: PeakData? = nil
+                    var localBestOlderCand: PeakData? = nil
+                    var localBestTail: FineLocationTrackingOutput? = nil
+                    var localBestHead: FineLocationTrackingOutput? = nil
+                    
+                    for cand in recentLandmarkCands {
+                        JupiterLogger.i(tag: "RecoveryManager", message: "(searchWithMultipleTrajAsync) cand: [\(cand.x),\(cand.y)]")
+                        let offsetX = Float(cand.x) - recoveryTraj[aIdx].x
+                        let offsetY = Float(cand.y) - recoveryTraj[aIdx].y
+
+                        var shiftedTraj: [RecoveryTrajectory] = []
+                        shiftedTraj.reserveCapacity(recoveryTraj.count)
+                        for p in recoveryTraj {
+                            shiftedTraj.append(RecoveryTrajectory(index: p.index,
+                                                                 x: p.x + offsetX,
+                                                                 y: p.y + offsetY,
+                                                                 heading: p.heading))
+                        }
+                        guard let first = shiftedTraj.first, let last = shiftedTraj.last else { continue }
+
+                        // Tail PM
+                        guard let tail = await self.pmGate.pathMatching(sectorId: sectorId,
+                                                                       building: building,
+                                                                       level: level,
+                                                                       x: first.x,
+                                                                       y: first.y,
+                                                                       heading: first.heading,
+                                                                       isUseHeading: false,
+                                                                       mode: mode,
+                                                                        paddingValues: JupiterMode.PADDING_VALUES_LARGE) else {
+                            JupiterLogger.i(tag: "RecoveryManager", message: "(searchWithMultipleTrajAsync) tail pm fail // [\(first.x),\(first.y),\(first.heading)]")
+                            continue
+                        }
+                        
+                        // Head PM
+                        guard let head = await self.pmGate.pathMatching(sectorId: sectorId,
+                                                                       building: building,
+                                                                       level: level,
+                                                                       x: last.x,
+                                                                       y: last.y,
+                                                                       heading: last.heading,
+                                                                       isUseHeading: false,
+                                                                       mode: mode,
+                                                                       paddingValues: JupiterMode.PADDING_VALUES_LARGE) else {
+                            JupiterLogger.i(tag: "RecoveryManager", message: "(searchWithMultipleTrajAsync) head pm fail // [\(last.x),\(last.y),\(last.heading)]")
+                            continue
+                        }
+                        JupiterLogger.i(tag: "RecoveryManager", message: "(searchWithMultipleTrajAsync) : tail Heading=\(first.heading) , head Heading=\(last.heading)")
+                        var dist1 = Float.greatestFiniteMagnitude
+                        var localOlderCand: PeakData? = nil
+
+                        for oc in olderLandmarkCands {
+                            let ocX = Float(oc.x)
+                            let ocY = Float(oc.y)
+                            
+                            let peakDist = dist2(ocX, ocY, Float(cand.x), Float(cand.y))
+                            if peakDist < 5 { continue }
+                            
+                            let d = dist2(Float(first.x), Float(first.y), ocX, ocY)
+                            if d < dist1 {
+                                dist1 = d
+                                localOlderCand = oc
+                            }
+                        }
+
+                        if dist1 == Float.greatestFiniteMagnitude {
+                            dist1 = 1_000_000
+                        }
+                        
+                        let curPmResult = FineLocationTrackingOutput(mobile_time: 0, index: recoveryTraj[0].index, building_name: building, level_name: level, scc: 1.0, x: 0, y: 0, absolute_heading: 0)
+                        let residualIndices = buildIndicesBySizeAndBase(N: shiftedTraj.count, parts: 10)
+                        JupiterLogger.i(tag: "RecoveryManager", message: "(searchWithMultipleTrajAsync) shiftedTraj.count: \(shiftedTraj.count) -> residualIndices \(residualIndices)")
+                        guard let lossPointResult = computeIntermediateLossByIndex(sectorId: sectorId,
+                                                                                   curPmResult: curPmResult,
+                                                                                   shiftedTraj: shiftedTraj,
+                                                                                   targetIndices: residualIndices,
+                                                                                   mode: mode) else {
+                            JupiterLogger.i(tag: "RecoveryManager", message: "(searchWithMultipleTrajAsync) lossPointResult fail")
+                            continue
+                        }
+                        let lossDistSum = sqrt(
+                            lossPointResult
+                                .map { ($0.lossDist) * ($0.lossDist) }
+                                .reduce(0.0, +)
+                            / Float(residualIndices.count)
+                        )
+                        
+                        let lossHeadingSum = sqrt(
+                            lossPointResult
+                                .map { ($0.lossHeading) * ($0.lossHeading) }
+                                .reduce(0.0, +)
+                            / Float(residualIndices.count)
+                        )
+                        
+                        let loss_g_d: Float = lossDistSum
+                        let loss_g_h: Float = lossHeadingSum
+                        let loss_l = dist1
+                        
+                        let loss = loss_g_d + loss_g_h + loss_l
+                        
+                        if loss < localBestLoss {
+                            localBestLoss = loss
+                            localBestShiftedTraj = shiftedTraj
+                            localBestRecentCand = cand
+                            localBestOlderCand = localOlderCand
+
+                            var bt = curPmResult
+                            bt.x = tail.x
+                            bt.y = tail.y
+                            bt.absolute_heading = tail.heading
+                            localBestTail = bt
+
+                            var bh = curPmResult
+                            bh.x = head.x
+                            bh.y = head.y
+                            bh.absolute_heading = head.heading
+                            localBestHead = bh
+                        }
+                    }
+
+                    if let st = localBestShiftedTraj, let rc = localBestRecentCand {
+                        return _RecoveryCandidate(loss: localBestLoss,
+                                                  shiftedTraj: st,
+                                                  recentCand: rc,
+                                                  olderCand: localBestOlderCand,
+                                                  tail: localBestTail,
+                                                  head: localBestHead)
                     }
                     return nil
                 }
