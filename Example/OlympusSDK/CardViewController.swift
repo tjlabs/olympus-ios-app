@@ -171,8 +171,8 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         serviceManager = JupiterManager(id: uniqueId)
         serviceManager?.delegate = self
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_01_0119.csv", sensorFileName: "sensor_coex_01_01_01;'19.csv")
-        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_test1_0129.csv", sensorFileName: "sensor_coex_test1_0129.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_test5_0203.csv", sensorFileName: "sensor_coex_test5_0203.csv")
+        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_test5_0129.csv", sensorFileName: "sensor_coex_test5_0129.csv")
+//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_test6_0203.csv", sensorFileName: "sensor_coex_test6_0203.csv")
         
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_02_1007.csv", sensorFileName: "sensor_coex_01_02_1007.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
