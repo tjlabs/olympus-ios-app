@@ -39,3 +39,20 @@ struct MobileReport: Encodable {
     let mobile_time: Int
     let code: Int
 }
+
+struct Point: Codable {
+    let x: Int
+    let y: Int
+}
+
+struct Origin: Codable {
+    let x: Int
+    let y: Int
+    let absolute_heading: Int
+}
+
+struct DirectionsRequest: Encodable {
+    let origin: Origin
+    let destination: Point
+    let waypoints: [Point]
+}

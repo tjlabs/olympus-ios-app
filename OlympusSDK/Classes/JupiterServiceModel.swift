@@ -93,3 +93,13 @@ struct JumpInfo {
 enum LimitationType {
     case X_LIMIT, Y_LIMIT, SMALL_LIMIT, NO_LIMIT
 }
+
+public struct NavigationRoute: Codable {
+    public let building: String
+    public let level: String
+    public let section: Int
+    public var turnPoint: Bool
+    public var x: Float
+    public var y: Float
+    public var heading: Float
+}

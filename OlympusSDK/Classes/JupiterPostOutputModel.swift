@@ -24,12 +24,12 @@ public struct FineLocationTrackingOutput: Codable, Equatable {
 //    }
 }
 
-// MARK: - RSSI Compensation
-public struct RcInfo: Codable {
-    let os_version: Int
-    let normalization_scale: Float
+struct Route: Codable {
+    let origin: Point
+    let destination: Point
+    let node_ids: [Int]
 }
 
-public struct RcInfoOutputList: Codable {
-    let rss_compensations: [RcInfo]
+struct DirectionsResponse: Codable {
+    let routes: [Route]
 }

@@ -72,6 +72,8 @@ public struct JupiterDebugResult: Codable {
     public var recovery_result: RecoveryResult?
     public var recovery_result3Peaks: RecoveryResult3Peaks?
     public var ratio: Float?
+    public var navi_route: [NavigationRoute]?
+    public var navi_xyh: [Float]
 }
 
 public struct RecoveryResult: Codable {
