@@ -170,9 +170,10 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         
         serviceManager = JupiterManager(id: uniqueId)
         serviceManager?.delegate = self
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_01_0119.csv", sensorFileName: "sensor_coex_01_01_01;'19.csv")
-        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_test5_0129.csv", sensorFileName: "sensor_coex_test5_0129.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_test6_0203.csv", sensorFileName: "sensor_coex_test6_0203.csv")
+        serviceManager?.navigationMode(flag: true)
+        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_01_0119.csv", sensorFileName: "sensor_coex_03_01_0119.csv")
+//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_test1_0129.csv", sensorFileName: "sensor_coex_test1_0129.csv")
+//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_test1_0203.csv", sensorFileName: "sensor_coex_test1_0203.csv")
         
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_02_1007.csv", sensorFileName: "sensor_coex_01_02_1007.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
@@ -347,6 +348,8 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
                            recon_corr_traj: [FineLocationTrackingOutput]?,
                            recovery_result: RecoveryResult?,
                            recovery_result3Peaks: RecoveryResult3Peaks?,
+                           navi_route: [[Float]],
+                           naviXYH: [Double],
                            limits: [Double], isBleOnlyMode: Bool, isPmSuccess: Bool, isIndoor: Bool) {
         let xAxisValue: [Double] = RP_X
         let yAxisValue: [Double] = RP_Y
@@ -378,7 +381,7 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         set1.drawValuesEnabled = false
         set1.setScatterShape(.circle)
         set1.setColor(valueColor)
-        set1.scatterShapeSize = 16
+        set1.scatterShapeSize = 18
         
         
         let values2 = (0..<1).map { (i) -> ChartDataEntry in
@@ -389,12 +392,44 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         set2.drawValuesEnabled = false
         set2.setScatterShape(.circle)
         set2.setColor(.systemGreen)
-        set2.scatterShapeSize = 12
+        set2.scatterShapeSize = 15
+        
+        let valuesNaviXyh = (0..<1).map { (i) -> ChartDataEntry in
+            return ChartDataEntry(x: naviXYH[0], y: naviXYH[1])
+        }
+        
+        let setNaviXyh = ScatterChartDataSet(entries: valuesNaviXyh, label: "NaviXyh")
+        setNaviXyh.drawValuesEnabled = false
+        setNaviXyh.setScatterShape(.circle)
+        setNaviXyh.setColor(.systemBlue)
+        setNaviXyh.scatterShapeSize = 12
         
         let chartData = ScatterChartData(dataSet: set0)
         chartData.append(set1)
         chartData.append(set2)
+        chartData.append(setNaviXyh)
         chartData.setDrawValues(false)
+        
+        if !navi_route.isEmpty {
+            var xAxisValue = [Double]()
+            var yAxisValue = [Double]()
+            
+            for route in navi_route {
+                xAxisValue.append(Double(route[0]))
+                yAxisValue.append(Double(route[1]))
+            }
+            
+            let valuesNaviRoute = (0..<xAxisValue.count).map { (i) -> ChartDataEntry in
+                return ChartDataEntry(x: xAxisValue[i], y: yAxisValue[i])
+            }
+            
+            let setNaviRoute = ScatterChartDataSet(entries: valuesNaviRoute, label: "NaviRoute")
+            setNaviRoute.drawValuesEnabled = false
+            setNaviRoute.setScatterShape(.circle)
+            setNaviRoute.setColor(UIColor.orange)
+            setNaviRoute.scatterShapeSize = 8.5
+            chartData.append(setNaviRoute)
+        }
         
         if let landmark = landmark {
             let xAxisValue: [Double] = landmark.peaks.map({Double($0.x)})
@@ -585,7 +620,7 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         // Heading
         let point = scatterChart.getPosition(entry: ChartDataEntry(x: XYH[0], y: XYH[1]), axis: .left)
         let imageView = UIImageView(image: headingImage!.rotate(degrees: -XYH[2]+90))
-        imageView.frame = CGRect(x: point.x - 15, y: point.y - 15, width: 30, height: 30)
+        imageView.frame = CGRect(x: point.x - 20, y: point.y - 20, width: 40, height: 40)
         imageView.contentMode = .center
         imageView.tag = 100
         if let viewWithTag = scatterChart.viewWithTag(100) {
@@ -593,15 +628,25 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         }
         scatterChart.addSubview(imageView)
         
-        let point3 = scatterChart.getPosition(entry: ChartDataEntry(x: tuXYH[0], y: tuXYH[1]), axis: .left)
-        let imageView3 = UIImageView(image: headingImage!.rotate(degrees: -tuXYH[2]+90))
-        imageView3.frame = CGRect(x: point3.x - 15, y: point3.y - 15, width: 30, height: 30)
-        imageView3.contentMode = .center
-        imageView3.tag = 300
-        if let viewWithTag3 = scatterChart.viewWithTag(300) {
-            viewWithTag3.removeFromSuperview()
+        let pointTu = scatterChart.getPosition(entry: ChartDataEntry(x: tuXYH[0], y: tuXYH[1]), axis: .left)
+        let imageViewTu = UIImageView(image: headingImage!.rotate(degrees: -tuXYH[2]+90))
+        imageViewTu.frame = CGRect(x: pointTu.x - 18, y: pointTu.y - 18, width: 36, height: 36)
+        imageViewTu.contentMode = .center
+        imageViewTu.tag = 200
+        if let viewWithTagTu = scatterChart.viewWithTag(200) {
+            viewWithTagTu.removeFromSuperview()
         }
-        scatterChart.addSubview(imageView3)
+        scatterChart.addSubview(imageViewTu)
+        
+        let pointNavi = scatterChart.getPosition(entry: ChartDataEntry(x: naviXYH[0], y: naviXYH[1]), axis: .left)
+        let imageViewNavi = UIImageView(image: headingImage!.rotate(degrees: -naviXYH[2]+90))
+        imageViewNavi.frame = CGRect(x: pointNavi.x - 15, y: pointNavi.y - 15, width: 30, height: 30)
+        imageViewNavi.contentMode = .center
+        imageViewNavi.tag = 300
+        if let viewWithTagNavi = scatterChart.viewWithTag(300) {
+            viewWithTagNavi.removeFromSuperview()
+        }
+        scatterChart.addSubview(imageViewNavi)
         
         let chartFlag: Bool = false
         scatterChart.isHidden = false
@@ -699,6 +744,16 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
             let key = "\(currentBuilding)_\(currentLevel)"
             let condition: ((String, [[Double]])) -> Bool = { $0.0.contains(key) }
             let pathPixel: [[Double]] = PathPixel[key] ?? [[Double]]()
+            
+            var naviRoute = [[Float]]()
+            if let navi_route = debugResult.navi_route {
+                for route in navi_route {
+                    if route.building  == currentBuilding && route.level == currentLevel {
+                        naviRoute.append([route.x, route.y])
+                    }
+                }
+            }
+            
             if (PathPixel.contains(where: condition)) {
                 if (pathPixel.isEmpty) {
                     PathPixel[key] = loadPp(fileName: key)
@@ -708,6 +763,12 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
                     for value in debugResult.tu_xyh {
                         tu_xyh.append(Double(value))
                     }
+                    
+                    var navi_xyh = [Double]()
+                    for value in debugResult.navi_xyh {
+                        navi_xyh.append(Double(value))
+                    }
+                    
                     drawDebug(XYH: XYH, RP_X: pathPixel[0], RP_Y: pathPixel[1],
                               tuXYH: tu_xyh,
                               landmark: debugResult.landmark,
@@ -716,6 +777,8 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
                               recon_corr_traj: debugResult.recon_corr_traj,
                               recovery_result: debugResult.recovery_result,
                               recovery_result3Peaks: debugResult.recovery_result3Peaks,
+                              navi_route: naviRoute,
+                              naviXYH: navi_xyh,
                               limits: [0, 0, 0, 0], isBleOnlyMode: self.isBleOnlyMode, isPmSuccess: true, isIndoor: isIndoor)
                 }
             } else {
