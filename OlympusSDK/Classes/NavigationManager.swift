@@ -78,12 +78,14 @@ class NavigationManager {
             return
         }
         
-        var sectionCount: Int = 0
+        var sectionCount: Int = 1
         
         let step: Float = 1.0
         var denseNaviRoute = [NavigationRoute]()
         denseNaviRoute.reserveCapacity(order.count * 10)
         let rad2deg: Float = 180.0 / .pi
+        
+        let turnHeadingThreshold: Float = 1.0 // degrees
         
         for i in 0..<(order.count - 1) {
             let building = bOrder[i]
@@ -92,7 +94,6 @@ class NavigationManager {
             let a = order[i]
             let b = order[i + 1]
             guard a.count >= 2, b.count >= 2 else { continue }
-            sectionCount += 1
             
             let ax = a[0], ay = a[1]
             let bx = b[0], by = b[1]
@@ -117,6 +118,19 @@ class NavigationManager {
             // Heading for this segment (degrees, normalized to 0~360).
             var headingDeg = atan2(dy, dx) * rad2deg
             if headingDeg < 0 { headingDeg += 360 }
+            
+            // Detect a turn at the shared waypoint between segments.
+            // The previous segment's end point is already the last element in `denseNaviRoute`.
+            if !denseNaviRoute.isEmpty {
+                let prevHeading = denseNaviRoute[denseNaviRoute.count - 1].heading
+                let dH = headingDelta(prevHeading, headingDeg)
+                if dH > turnHeadingThreshold {
+                    var last = denseNaviRoute[denseNaviRoute.count - 1]
+                    last.turnPoint = true
+                    denseNaviRoute[denseNaviRoute.count - 1] = last
+                    sectionCount += 1
+                }
+            }
 
             let ux = dx / dist
             let uy = dy / dist
@@ -141,21 +155,24 @@ class NavigationManager {
 
             // Ensure we end exactly at the waypoint.
             if let last = denseNaviRoute.last, last.x != bx || last.y != by {
-                let naviRoute = NavigationRoute(building: building, level: level, section: sectionCount, turnPoint: true, x: bx, y: by, heading: headingDeg)
+                // Endpoint itself is not necessarily a turn; the turn is detected at the next segment boundary.
+                let naviRoute = NavigationRoute(building: building, level: level, section: sectionCount, turnPoint: false, x: bx, y: by, heading: headingDeg)
                 denseNaviRoute.append(naviRoute)
             } else {
-                // If the last point is already the endpoint, ensure its heading matches this segment.
+                // If the last point is already the endpoint, keep its existing turnPoint flag and update heading.
                 if var last = denseNaviRoute.last {
                     last.heading = headingDeg
-                    last.turnPoint = true
                     denseNaviRoute[denseNaviRoute.count - 1] = last
                 }
-                
             }
         }
 
         self.routes = denseNaviRoute
         delegate?.isNavigationRouteChanged()
+        
+        for route in self.routes {
+            JupiterLogger.i(tag: "NavigationManager", message: "(generateNavigationRoute) : [section:\(route.section), turPoint:\(route.turnPoint), x:\(route.x), y:\(route.y), h:\(route.heading)]")
+        }
     }
     
     func getNaviRoutes() -> [NavigationRoute] {
@@ -173,13 +190,6 @@ class NavigationManager {
         let maxPosDiff: Float = 2.0
         let maxHeadingDiff: Float = 46.0
 
-        @inline(__always)
-        func headingDelta(_ a: Float, _ b: Float) -> Float {
-            var d = a - b
-            d = fmod(d + 540.0, 360.0) - 180.0
-            return abs(d)
-        }
-
         for (index, route) in routes.enumerated() {
             let rx = route.x
             let ry = route.y
@@ -189,10 +199,7 @@ class NavigationManager {
             let dy = ry - resultY
             let dist = sqrt(dx * dx + dy * dy)
 
-            // Position constraint
             guard dist < maxPosDiff else { continue }
-
-            // Heading constraint
             let hDiff = headingDelta(resultH, rh)
             guard hDiff <= maxHeadingDiff else { continue }
 
@@ -231,13 +238,6 @@ class NavigationManager {
         var matchedIndex: Int = -1
         let maxHeadingDiff: Float = 46.0
 
-        @inline(__always)
-        func headingDelta(_ a: Float, _ b: Float) -> Float {
-            var d = a - b
-            d = fmod(d + 540.0, 360.0) - 180.0
-            return abs(d)
-        }
-
         for (index, route) in routes.enumerated() {
             guard index >= idx else { continue }
             let diffSection = route.section - curRoute.section
@@ -250,6 +250,8 @@ class NavigationManager {
             let dist = sqrt(dxr * dxr + dyr * dyr)
 
             let hDiff = headingDelta(newH, route.heading)
+            JupiterLogger.i(tag: "NavigationManager", message: "(calcNaviRouteResult) : compare route= [\(route.x),\(route.y),\(route.heading)] // dist=\(dist) / hDiff=\(hDiff)")
+            
             guard hDiff <= maxHeadingDiff else { continue }
 
             if dist < bestDist {
@@ -275,5 +277,11 @@ class NavigationManager {
         }
         JupiterLogger.i(tag: "NavigationManager", message: "(calcNaviRouteResult) : index= \(curResult.index), section= \(self.curRoute?.section), route= [\(self.curRoute?.x),\(self.curRoute?.y),\(self.curRoute?.heading)]")
         return self.curRoute
+    }
+    
+    func headingDelta(_ a: Float, _ b: Float) -> Float {
+        var d = a - b
+        d = fmod(d + 540.0, 360.0) - 180.0
+        return abs(d)
     }
 }
