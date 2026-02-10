@@ -13,6 +13,7 @@ public class JupiterManager {
     var deviceOsVersion: Int
     
     var jupiterCalcManager: JupiterCalcManager?
+    private var naviMode: Bool = false
     public weak var delegate: JupiterManagerDelegate?
     
     private var isStartService = false
@@ -83,6 +84,7 @@ public class JupiterManager {
                         JupiterFileManager.shared.createFiles(region: region, sector_id: sectorId, deviceModel: deviceModel, osVersion: deviceOsVersion)
                         JupiterFileManager.shared.createFileWithName(region: region, sector_id: sectorId, deviceModel: deviceModel, osVersion: deviceOsVersion, fileName: "_")
                     }
+                    jupiterCalcManager?.navigationMode(flag: self.naviMode)
                     jupiterCalcManager?.setSendRfdLength(sendRfdLength)
                     jupiterCalcManager?.setSendUvdLength(sendUvdLength)
                     startGenerator(mode: mode, completion: { [self] isSuccess, msg in
@@ -104,6 +106,11 @@ public class JupiterManager {
             self.delegate?.onJupiterError(0, msg)
             self.delegate?.onJupiterSuccess(false)
         })
+    }
+    
+    public func navigationMode(flag: Bool) {
+        self.naviMode = flag
+        jupiterCalcManager?.navigationMode(flag: self.naviMode)
     }
 
     private func performTasksWithCounter(tasks: [(_ group: DispatchGroup, _ reportError: @escaping (String) -> Void) -> Void],
