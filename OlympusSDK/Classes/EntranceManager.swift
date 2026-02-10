@@ -127,26 +127,7 @@ class EntranceManager {
 //        JupiterLogger.i(tag: "EntranceManager", message: "(trackEntRoute) - entTrackResult : \(result.building_name) , \(result.level_name) , \(result.x) , \(result.y) , \(result.absolute_heading)")
         return result
     }
-        
-    func stopEntTrack(curResult: FineLocationTrackingOutput?, wardId: String) -> FineLocationTrackingOutput? {
-        guard let curEntKey = self.curEntKey else { return nil }
-        guard let curResult = curResult else { return nil }
-        guard let innerWardId = entInnerWardIdMap[curEntKey] else { return nil }
-        guard let wardCoord = entInnerWardCoordMap[curEntKey] else { return nil }
-        
-        if innerWardId == wardId {
-            var result = curResult
-            result.x = wardCoord.x
-            result.y = wardCoord.y
-            result.absolute_heading = wardCoord.heading
-            result.level_name = getEntTrackEndLevel()
             
-            return result
-        } else {
-            return nil
-        }
-    }
-    
     func forcedStopEntTrack(bleAvg: [String: Float], sec: Int) -> Bool {
         guard let curEntKey = self.curEntKey else { return false }
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
@@ -225,14 +206,20 @@ class EntranceManager {
         }
     }
     
+    func getEntPeakInnerCoord(key: String) -> [Float]? {
+        guard let entPeak = entPeakMap[key] else { return nil }
+        let coord: [Float] = [entPeak.inner_ward.x, entPeak.inner_ward.y]
+        return coord
+    }
+    
     func getEntInnerWardIds() -> [String] {
         return self.entInnerWardIds
     }
     
     func stopEntTrack_v2(wardId: String) -> EntrancePeakData? {
-        guard let curEntKey = self.curEntKey else { return nil }
-        guard let innerWardId = entInnerWardIdMap[curEntKey] else { return nil }
-        guard let entPeak = entPeakMap[curEntKey] else { return nil }
+        guard let curEntKey = self.curEntKey,
+              let innerWardId = entInnerWardIdMap[curEntKey],
+              let entPeak = entPeakMap[curEntKey] else { return nil }
         
         if innerWardId == wardId {
             return entPeak
