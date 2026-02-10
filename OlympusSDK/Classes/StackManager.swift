@@ -15,6 +15,7 @@ class StackManager {
     private let CUR_RESULT_BUFFER_SIZE: Int = 200
     private let CUR_PM_RESULT_BUFFER_SIZE: Int = 200
     private let SEARCH_RESULT_BUFFER_SIZE: Int = 5
+    private let NAVI_ROUTE_RESULT_BUFFER_SIZE: Int = 10
     
     private var rfdBuffer = [[String: Float]]()
     var uvdBuffer = [UserVelocity]()
@@ -25,6 +26,7 @@ class StackManager {
     var curResultBuffer = [FineLocationTrackingOutput]()
     var curPmResultBuffer = [FineLocationTrackingOutput]()
     var searchResultBuffer = [FineLocationTrackingOutput]()
+    var naviRouteResultBuffer = [NavigationRoute]()
     
     var recoveryIndex: Int = 0
     
@@ -203,6 +205,15 @@ class StackManager {
         return buffer
     }
     
+    func getCurPmResultBuffer(size: Int) -> [FineLocationTrackingOutput] {
+        guard size > 0 else { return [] }
+        if curPmResultBuffer.count <= size {
+            return curPmResultBuffer
+        } else {
+            return Array(curPmResultBuffer.suffix(size))
+        }
+    }
+    
     func editCurPmResultBuffer(
         sectorId: Int,
         mode: UserMode,
@@ -285,6 +296,22 @@ class StackManager {
             return searchResultBuffer
         } else {
             return Array(searchResultBuffer.suffix(size))
+        }
+    }
+    
+    func stackNaviRouteResult(naviRouteResult: NavigationRoute) {
+        naviRouteResultBuffer.append(naviRouteResult)
+        if (naviRouteResultBuffer.count > NAVI_ROUTE_RESULT_BUFFER_SIZE) {
+            naviRouteResultBuffer.remove(at: 0)
+        }
+    }
+    
+    func getNaviRouteResultBuffer(size: Int) -> [NavigationRoute] {
+        guard size > 0 else { return [] }
+        if naviRouteResultBuffer.count <= size {
+            return naviRouteResultBuffer
+        } else {
+            return Array(naviRouteResultBuffer.suffix(size))
         }
     }
     
