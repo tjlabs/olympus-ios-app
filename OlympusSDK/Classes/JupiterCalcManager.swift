@@ -340,8 +340,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         var blTagResult: BuildingLevelTagResult?
         var curPeak: UserPeak?
         var blByPeak: (building: String, level: String)?
-        
-        //        let windowSize = jupiterPhase == .NONE || jupiterPhase == .SEARCHING ? 10 : 50
+
         let windowSize = determineWindowSize(jupiterPhase: jupiterPhase)
         if let userPeak = peakDetector.updateEpoch(uvdIndex: curIndex, bleAvg: avgBleData, windowSize: windowSize, jupiterPhase: jupiterPhase) {
             curPeak = userPeak
@@ -466,10 +465,58 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         }
         
         if hasNaviRoute && jupiterPhase == .TRACKING {
-            if let naviRouteResult = calcNaviRouteResult(uvd: userVelocity, curResult: curResult) {
-                self.debug_navi_xyh = [naviRouteResult.x, naviRouteResult.y, naviRouteResult.heading]
-            }
+            guard let naviRouteResult = calcNaviRouteResult(uvd: userVelocity, curResult: curResult) else { return }
+            self.debug_navi_xyh = [naviRouteResult.x, naviRouteResult.y, naviRouteResult.heading]
+            stackManager.stackNaviRouteResult(naviRouteResult: naviRouteResult)
+            let naviRouteResultBuffer = stackManager.getNaviRouteResultBuffer(size: 10)
+            let curPmResultBuffer = stackManager.getCurPmResultBuffer(size: 10)
+            
+            guard let followingScore = isFolllowingNavigationRoute(naviRouteResultBuffer: naviRouteResultBuffer, curPmResultBuffer: curPmResultBuffer) else { return }
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFolllowingNavigationRoute: followingScore= \(followingScore)")
         }
+    }
+    
+    private func isFolllowingNavigationRoute(naviRouteResultBuffer: [NavigationRoute], curPmResultBuffer: [FineLocationTrackingOutput]) -> Float? {
+        if naviRouteResultBuffer.count != curPmResultBuffer.count { return nil }
+    
+        let DLOSS_NORM: Float = 30
+        let DLOSS_WEIGHT: Float = 0.7
+        
+        let DHLOSS_NORM: Float = 90
+        let DHLOSS_WEIGHT: Float = 0.3
+        
+        var dSum: Float = 0
+        var dhSum: Float = 0
+        
+        for i in 0..<naviRouteResultBuffer.count {
+            let naviX = naviRouteResultBuffer[i].x
+            let naviY = naviRouteResultBuffer[i].y
+            let naviH = naviRouteResultBuffer[i].heading
+            
+            let curX = curPmResultBuffer[i].x
+            let curY = curPmResultBuffer[i].y
+            let curH = curPmResultBuffer[i].absolute_heading
+            
+            let diffX = naviX - curX
+            let diffY = naviY - curY
+            
+            let dist = sqrt(diffX*diffX + diffY*diffY)
+            dSum += dist
+            
+            var diffH = abs(naviH - curH)
+            if (diffH > 270) { diffH = 360 - diffH }
+            dhSum += diffH
+        }
+        
+        let dSumAvg = dSum/Float(naviRouteResultBuffer.count)
+        let dhSumAvg = dhSum/Float(naviRouteResultBuffer.count)
+        
+        let dLoss = min(max(dSumAvg / DLOSS_NORM, 0), 1)*DLOSS_WEIGHT
+        let dhLoss = min(max(dhSumAvg / DHLOSS_NORM, 0), 1)*DHLOSS_WEIGHT
+        
+        let score = 1 - (dLoss + dhLoss)
+        
+        return score
     }
     
     private func startEntranceTracking(currentTime: Int, entManager: EntranceManager, uvd: UserVelocity, userPeak: UserPeak, bleData: [String: Float]) {
