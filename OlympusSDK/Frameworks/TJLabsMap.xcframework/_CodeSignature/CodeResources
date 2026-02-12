@@ -8,6 +8,70 @@
 		<data>
 		DLW4QwDuI0wLbOW3YGw/XqokN6s=
 		</data>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B0_landmark.json</key>
+		<data>
+		4s8IHa+vXp8qhi6lA7SWEeLOtY0=
+		</data>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B0_link.json</key>
+		<data>
+		gjITkKjqLxHjQZyoo4KOojOX1A8=
+		</data>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B0_node.json</key>
+		<data>
+		us/ttpuM0ZehsCZ4dKcoNQ3cMlg=
+		</data>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B2_landmark.json</key>
+		<data>
+		4s8IHa+vXp8qhi6lA7SWEeLOtY0=
+		</data>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B2_link.json</key>
+		<data>
+		gjITkKjqLxHjQZyoo4KOojOX1A8=
+		</data>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B2_node.json</key>
+		<data>
+		XTAwtc0d1wUW2oZale/olG2wOOQ=
+		</data>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B3_landmark.json</key>
+		<data>
+		4s8IHa+vXp8qhi6lA7SWEeLOtY0=
+		</data>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B3_link.json</key>
+		<data>
+		gjITkKjqLxHjQZyoo4KOojOX1A8=
+		</data>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B3_node.json</key>
+		<data>
+		us/ttpuM0ZehsCZ4dKcoNQ3cMlg=
+		</data>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B4_landmark.json</key>
+		<data>
+		4s8IHa+vXp8qhi6lA7SWEeLOtY0=
+		</data>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B4_link.json</key>
+		<data>
+		gjITkKjqLxHjQZyoo4KOojOX1A8=
+		</data>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B4_node.json</key>
+		<data>
+		us/ttpuM0ZehsCZ4dKcoNQ3cMlg=
+		</data>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_bl_tag.json</key>
+		<data>
+		lcnid6ZZOJzeQnGp0qIppJ3yUgY=
+		</data>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/Info.plist</key>
+		<data>
+		MKzx5ueCq0UAONU6cneOHkZqluc=
+		</data>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/TJLabsResource</key>
+		<data>
+		EqOXtapGiS6l/3b2sWINWIY3eOQ=
+		</data>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/_CodeSignature/CodeResources</key>
+		<data>
+		/HX/LbjDN1y82wM2bJV+WJ/Yhbg=
+		</data>
 		<key>ios-arm64/TJLabsMap.framework/Headers/TJLabsMap.h</key>
 		<data>
 		hTvRBYZHWw7oRPXOa9MxMX6ms84=
@@ -18,7 +82,7 @@
 		</data>
 		<key>ios-arm64/TJLabsMap.framework/Modules/TJLabsMap.swiftmodule/arm64-apple-ios.abi.json</key>
 		<data>
-		gljSZSz9+PhDdZ4KCDdSyXSsdt8=
+		/qdzhqzlS6wCFWqDujb9kmhkM5E=
 		</data>
 		<key>ios-arm64/TJLabsMap.framework/Modules/TJLabsMap.swiftmodule/arm64-apple-ios.private.swiftinterface</key>
 		<data>
@@ -38,11 +102,11 @@
 		</data>
 		<key>ios-arm64/TJLabsMap.framework/TJLabsMap</key>
 		<data>
-		MD5uyXhcavPHRD04VQjmRPDRxZo=
+		BZlgR2eB4Zgfc/pkH5V+J0EHuXE=
 		</data>
 		<key>ios-arm64/TJLabsMap.framework/_CodeSignature/CodeResources</key>
 		<data>
-		ZGK4G9CtiMDJjSq+2uTcx0fw83c=
+		9yCpB0AVaEVUKrJjE+pCQyyXy8A=
 		</data>
 		<key>ios-arm64/dSYMs/TJLabsMap.framework.dSYM/Contents/Info.plist</key>
 		<data>
@@ -50,19 +114,83 @@
 		</data>
 		<key>ios-arm64/dSYMs/TJLabsMap.framework.dSYM/Contents/Resources/DWARF/TJLabsMap</key>
 		<data>
-		1zI4sbAaSgD8PpjjuxuZlE3go98=
+		gV0BHZOBwNRokMQ9hz+RHcFEeg4=
 		</data>
 		<key>ios-arm64/dSYMs/TJLabsMap.framework.dSYM/Contents/Resources/Relocations/aarch64/TJLabsMap.yml</key>
 		<data>
-		4wnMhT8JQdlfW/GbMOYUH9Kfnmw=
+		8vx4m+pwjwBL8QKUgQHTeAdg6VU=
 		</data>
 		<key>ios-arm64/dSYMs/TJLabsMap.framework.dSYM/Contents/Resources/Swift/aarch64/TJLabsResource.swiftinterface</key>
 		<data>
-		jAeRxdiantVXjz2RaQ2BGjmnMa0=
+		VCqAMIp/SM49OeTwBa0mFmJDVFk=
 		</data>
 		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Assets.car</key>
 		<data>
 		DLW4QwDuI0wLbOW3YGw/XqokN6s=
+		</data>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B0_landmark.json</key>
+		<data>
+		4s8IHa+vXp8qhi6lA7SWEeLOtY0=
+		</data>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B0_link.json</key>
+		<data>
+		gjITkKjqLxHjQZyoo4KOojOX1A8=
+		</data>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B0_node.json</key>
+		<data>
+		us/ttpuM0ZehsCZ4dKcoNQ3cMlg=
+		</data>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B2_landmark.json</key>
+		<data>
+		4s8IHa+vXp8qhi6lA7SWEeLOtY0=
+		</data>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B2_link.json</key>
+		<data>
+		gjITkKjqLxHjQZyoo4KOojOX1A8=
+		</data>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B2_node.json</key>
+		<data>
+		XTAwtc0d1wUW2oZale/olG2wOOQ=
+		</data>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B3_landmark.json</key>
+		<data>
+		4s8IHa+vXp8qhi6lA7SWEeLOtY0=
+		</data>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B3_link.json</key>
+		<data>
+		gjITkKjqLxHjQZyoo4KOojOX1A8=
+		</data>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B3_node.json</key>
+		<data>
+		us/ttpuM0ZehsCZ4dKcoNQ3cMlg=
+		</data>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B4_landmark.json</key>
+		<data>
+		4s8IHa+vXp8qhi6lA7SWEeLOtY0=
+		</data>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B4_link.json</key>
+		<data>
+		gjITkKjqLxHjQZyoo4KOojOX1A8=
+		</data>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B4_node.json</key>
+		<data>
+		us/ttpuM0ZehsCZ4dKcoNQ3cMlg=
+		</data>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_bl_tag.json</key>
+		<data>
+		lcnid6ZZOJzeQnGp0qIppJ3yUgY=
+		</data>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/Info.plist</key>
+		<data>
+		CVbBc7CXokV5ao751fCbSRgo2Ys=
+		</data>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/TJLabsResource</key>
+		<data>
+		Q7ddT2hBIvspJFaDOBySDvAQKas=
+		</data>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/_CodeSignature/CodeResources</key>
+		<data>
+		i/4JwoShF5Mvy0hI7dmXoKjKMfI=
 		</data>
 		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Headers/TJLabsMap.h</key>
 		<data>
@@ -74,7 +202,7 @@
 		</data>
 		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Modules/TJLabsMap.swiftmodule/arm64-apple-ios-simulator.abi.json</key>
 		<data>
-		C0b8RSeOzEkdIXBKGrmmn9dUk3E=
+		SB3+LEvoLj3Hi75FbaI1+lYrqDs=
 		</data>
 		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Modules/TJLabsMap.swiftmodule/arm64-apple-ios-simulator.private.swiftinterface</key>
 		<data>
@@ -90,7 +218,7 @@
 		</data>
 		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Modules/TJLabsMap.swiftmodule/x86_64-apple-ios-simulator.abi.json</key>
 		<data>
-		C0b8RSeOzEkdIXBKGrmmn9dUk3E=
+		SB3+LEvoLj3Hi75FbaI1+lYrqDs=
 		</data>
 		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Modules/TJLabsMap.swiftmodule/x86_64-apple-ios-simulator.private.swiftinterface</key>
 		<data>
@@ -110,11 +238,11 @@
 		</data>
 		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/TJLabsMap</key>
 		<data>
-		OmBQCAL5u0EvmfQzQg0b7J3K55k=
+		JLI4o+qXPVGyD73f5Wv12455JXI=
 		</data>
 		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/_CodeSignature/CodeResources</key>
 		<data>
-		9JS5xJ0dDcO60DdrQfUh3tKT2EM=
+		rlJGs9rQyoV7KuGeTFeXuNDPjt4=
 		</data>
 		<key>ios-arm64_x86_64-simulator/dSYMs/TJLabsMap.framework.dSYM/Contents/Info.plist</key>
 		<data>
@@ -122,23 +250,23 @@
 		</data>
 		<key>ios-arm64_x86_64-simulator/dSYMs/TJLabsMap.framework.dSYM/Contents/Resources/DWARF/TJLabsMap</key>
 		<data>
-		mG8qarotGfpyzlSzbKI1/GqexVk=
+		XvP5/cAEfLfWLeM1/aqFpgoeX7U=
 		</data>
 		<key>ios-arm64_x86_64-simulator/dSYMs/TJLabsMap.framework.dSYM/Contents/Resources/Relocations/aarch64/TJLabsMap.yml</key>
 		<data>
-		o3k9lfartIqwGdmf+Tny/63VBIE=
+		Hyt0fPhgqqlK0S4HD4FkYb8Mz+w=
 		</data>
 		<key>ios-arm64_x86_64-simulator/dSYMs/TJLabsMap.framework.dSYM/Contents/Resources/Relocations/x86_64/TJLabsMap.yml</key>
 		<data>
-		4djBEAzQILXVdX0t3vHJU6rv9Dg=
+		8PFQhuKyK+D7WLCaKGaoZ1bDWRo=
 		</data>
 		<key>ios-arm64_x86_64-simulator/dSYMs/TJLabsMap.framework.dSYM/Contents/Resources/Swift/aarch64/TJLabsResource.swiftinterface</key>
 		<data>
-		u7InKU1wPmmLcRVWQUXJVO4u2XM=
+		qAouyHmtWMnBOM9Lj/1M55JKMik=
 		</data>
 		<key>ios-arm64_x86_64-simulator/dSYMs/TJLabsMap.framework.dSYM/Contents/Resources/Swift/x86_64/TJLabsResource.swiftinterface</key>
 		<data>
-		BWIYSlZgUJIiajqf0f+69w9Mk98=
+		2iioE2384MsBfxdwiIMi9X82XxA=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -148,6 +276,118 @@
 			<key>hash2</key>
 			<data>
 			7u4X/wYZWTQsY5WqFDbL+J6hqtD2mwVJNTNB6LX+8jM=
+			</data>
+		</dict>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B0_landmark.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			FHtgGxprM/PTmi6zVm8it/cIYskAUmRHQcqyLfIfNGk=
+			</data>
+		</dict>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B0_link.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			5Qyj8mhEjtcwkcaowoFpodLzF5+eSJnfOAwkcLvMdcw=
+			</data>
+		</dict>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B0_node.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			QExLfcbhkGBc7qIcxH5vLXxRHffvltS/5mXA0nWcAzw=
+			</data>
+		</dict>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B2_landmark.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			FHtgGxprM/PTmi6zVm8it/cIYskAUmRHQcqyLfIfNGk=
+			</data>
+		</dict>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B2_link.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			5Qyj8mhEjtcwkcaowoFpodLzF5+eSJnfOAwkcLvMdcw=
+			</data>
+		</dict>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B2_node.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			yDsZdlzo08kDiJIJAycsMABUAQdmGy/Io3pFGPrqFdc=
+			</data>
+		</dict>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B3_landmark.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			FHtgGxprM/PTmi6zVm8it/cIYskAUmRHQcqyLfIfNGk=
+			</data>
+		</dict>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B3_link.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			5Qyj8mhEjtcwkcaowoFpodLzF5+eSJnfOAwkcLvMdcw=
+			</data>
+		</dict>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B3_node.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			QExLfcbhkGBc7qIcxH5vLXxRHffvltS/5mXA0nWcAzw=
+			</data>
+		</dict>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B4_landmark.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			FHtgGxprM/PTmi6zVm8it/cIYskAUmRHQcqyLfIfNGk=
+			</data>
+		</dict>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B4_link.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			5Qyj8mhEjtcwkcaowoFpodLzF5+eSJnfOAwkcLvMdcw=
+			</data>
+		</dict>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B4_node.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			QExLfcbhkGBc7qIcxH5vLXxRHffvltS/5mXA0nWcAzw=
+			</data>
+		</dict>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_bl_tag.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			mo6EQho8AoBnAJv8zD6KevejiRxvBbJX6JXO6s0X5Lk=
+			</data>
+		</dict>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/Info.plist</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			1U9z61SYwlWFV77Vqf2ZGN/S3VykJbWO/8L0dUL5Q6c=
+			</data>
+		</dict>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/TJLabsResource</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			YFH/8Gj5WV7aht+TODqpfizSa2fU48sJLf4lHFYoYeU=
+			</data>
+		</dict>
+		<key>ios-arm64/TJLabsMap.framework/Frameworks/TJLabsResource.framework/_CodeSignature/CodeResources</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			UzOI8lW7kTKH4T3+PF1UAdHE7Iwji2O1/JzxeTsn0fg=
 			</data>
 		</dict>
 		<key>ios-arm64/TJLabsMap.framework/Headers/TJLabsMap.h</key>
@@ -168,7 +408,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			R+KilG7wmJc3ieHNfTngvCDr6Tinq/YxlNOJLK5t280=
+			e8M+13q3o7U48qI80vROZYdTfj+wHypLRTi+zM4l20A=
 			</data>
 		</dict>
 		<key>ios-arm64/TJLabsMap.framework/Modules/TJLabsMap.swiftmodule/arm64-apple-ios.private.swiftinterface</key>
@@ -203,14 +443,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			fdANlTSxHy4ZGo14llbSajDW+EKZZ1hVWc9a/HLw1uY=
+			k1ZuS2AxlpRRNqx7J0fCoHEfMJFMarleBMj24P+AK/8=
 			</data>
 		</dict>
 		<key>ios-arm64/TJLabsMap.framework/_CodeSignature/CodeResources</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			jVDgkbIv/ZBj/H92UzkeWf/BS+rTZ/YkUACgbsfAPtE=
+			GPIwcqevNR8tUO41fsP9q98JHadHM8RGQSO7CS4D45k=
 			</data>
 		</dict>
 		<key>ios-arm64/dSYMs/TJLabsMap.framework.dSYM/Contents/Info.plist</key>
@@ -224,21 +464,21 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			uXRgovfvWRs9Z/VSQN295mzbgpff9QFcaYfG9Ro4gZo=
+			aHZ2dSjmXtvbDO+fHc2Wi6PfYHGrSWUfLyMMD5akJRM=
 			</data>
 		</dict>
 		<key>ios-arm64/dSYMs/TJLabsMap.framework.dSYM/Contents/Resources/Relocations/aarch64/TJLabsMap.yml</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			ZN0iP5Nv1PME6Ff8zfY487TcvTOhOlTgsW7AkgC38Zg=
+			IrBYSgFaZKPv+QnzcNIDl74Iuj61U3mr3Mv0HnwIE5E=
 			</data>
 		</dict>
 		<key>ios-arm64/dSYMs/TJLabsMap.framework.dSYM/Contents/Resources/Swift/aarch64/TJLabsResource.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			W7wqs+mo6RDk2AOzJimhnKp0qD3ctBREYUdgxlSTQRw=
+			cVviumcA8Du0Gt4u3taibh0GvBi3M+p6PJ6yN4+9PkQ=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Assets.car</key>
@@ -246,6 +486,118 @@
 			<key>hash2</key>
 			<data>
 			7u4X/wYZWTQsY5WqFDbL+J6hqtD2mwVJNTNB6LX+8jM=
+			</data>
+		</dict>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B0_landmark.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			FHtgGxprM/PTmi6zVm8it/cIYskAUmRHQcqyLfIfNGk=
+			</data>
+		</dict>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B0_link.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			5Qyj8mhEjtcwkcaowoFpodLzF5+eSJnfOAwkcLvMdcw=
+			</data>
+		</dict>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B0_node.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			QExLfcbhkGBc7qIcxH5vLXxRHffvltS/5mXA0nWcAzw=
+			</data>
+		</dict>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B2_landmark.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			FHtgGxprM/PTmi6zVm8it/cIYskAUmRHQcqyLfIfNGk=
+			</data>
+		</dict>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B2_link.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			5Qyj8mhEjtcwkcaowoFpodLzF5+eSJnfOAwkcLvMdcw=
+			</data>
+		</dict>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B2_node.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			yDsZdlzo08kDiJIJAycsMABUAQdmGy/Io3pFGPrqFdc=
+			</data>
+		</dict>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B3_landmark.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			FHtgGxprM/PTmi6zVm8it/cIYskAUmRHQcqyLfIfNGk=
+			</data>
+		</dict>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B3_link.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			5Qyj8mhEjtcwkcaowoFpodLzF5+eSJnfOAwkcLvMdcw=
+			</data>
+		</dict>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B3_node.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			QExLfcbhkGBc7qIcxH5vLXxRHffvltS/5mXA0nWcAzw=
+			</data>
+		</dict>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B4_landmark.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			FHtgGxprM/PTmi6zVm8it/cIYskAUmRHQcqyLfIfNGk=
+			</data>
+		</dict>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B4_link.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			5Qyj8mhEjtcwkcaowoFpodLzF5+eSJnfOAwkcLvMdcw=
+			</data>
+		</dict>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_COEX_B4_node.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			QExLfcbhkGBc7qIcxH5vLXxRHffvltS/5mXA0nWcAzw=
+			</data>
+		</dict>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/6_bl_tag.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			mo6EQho8AoBnAJv8zD6KevejiRxvBbJX6JXO6s0X5Lk=
+			</data>
+		</dict>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/Info.plist</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			9z2C47JstDuUUmux0+0LhFMK8vFu83kl3bBRq3oUSRM=
+			</data>
+		</dict>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/TJLabsResource</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			sL4YMw+phTXEf2dfzkOeDpw8Y5sgSUf4KAKRBqcQXpg=
+			</data>
+		</dict>
+		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Frameworks/TJLabsResource.framework/_CodeSignature/CodeResources</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			UPdJIMJ71BQA5kdzoClkxPNK1x4sKVGoQYxxGES2Q+0=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Headers/TJLabsMap.h</key>
@@ -266,7 +618,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			J7IlbmRMswRGYyCviTlU2Pssb6wSD5fy3dU7i8BqZ9c=
+			NrCPSq3o2D+yeOkGJHeKXvtXSQwLi+R3w1skcnvEJ/E=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Modules/TJLabsMap.swiftmodule/arm64-apple-ios-simulator.private.swiftinterface</key>
@@ -294,7 +646,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			J7IlbmRMswRGYyCviTlU2Pssb6wSD5fy3dU7i8BqZ9c=
+			NrCPSq3o2D+yeOkGJHeKXvtXSQwLi+R3w1skcnvEJ/E=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Modules/TJLabsMap.swiftmodule/x86_64-apple-ios-simulator.private.swiftinterface</key>
@@ -329,14 +681,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			mQbA6ApPm+tzu6XmfanQIl3EHifkIjRMw2t/JDA9W0Q=
+			hygsUcHm3u7HDpELK/XTLNwDDdKreM+9dU4wte1MZnY=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/_CodeSignature/CodeResources</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			GS5KuHFu+K14+ShxizLzcZsec3b6+AJcgOE6L5tWFLE=
+			bnW3rMqqZjxZ7ekVw0jML4dEqfq3CxCYhpzlyhGNc6Y=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/dSYMs/TJLabsMap.framework.dSYM/Contents/Info.plist</key>
@@ -350,35 +702,35 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			+VEQyu0bjxh7aaj2Wxr/K3b00pQ8vsMzw17zB4w4e2g=
+			i8dhirRrzGgOxfHf0f4F4MdtH3nc4sPR4iRmwZwUSXs=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/dSYMs/TJLabsMap.framework.dSYM/Contents/Resources/Relocations/aarch64/TJLabsMap.yml</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			3nhXGdmnmoBUmSkUhzcBnGm2Me/6mmEzhXifyfmsbgU=
+			DdXreRev9EZQMFj126KZaDpW4XM31lsFTdcasCq6VKs=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/dSYMs/TJLabsMap.framework.dSYM/Contents/Resources/Relocations/x86_64/TJLabsMap.yml</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			YBExvH4nXnKL/DmVM90ytF6tUhLK1ercxid2n2ZKUHY=
+			3wh1rBwiBCZ5eyOKcqg5yeTYf/NFnzxwc+9NkfKnrVQ=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/dSYMs/TJLabsMap.framework.dSYM/Contents/Resources/Swift/aarch64/TJLabsResource.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			LwdWs5HHlLVrr6E06L7GxE0KxS4xpSSlPRgtbG12GlA=
+			gVdlEEpzUVL78VkIZI3QNDckYXFXx9c/oJhVZ+2RY0c=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/dSYMs/TJLabsMap.framework.dSYM/Contents/Resources/Swift/x86_64/TJLabsResource.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			O3tY9iN6GIxkBlLi2XiZD7sFq0uUAZGKum0K3tUSHPw=
+			bCqMxlsXHud1zvD+V6a8xZpLXnPASxoh2S+QqvbwIuA=
 			</data>
 		</dict>
 	</dict>
