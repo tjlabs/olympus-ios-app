@@ -155,7 +155,6 @@ class NavigationManager {
 
             // Ensure we end exactly at the waypoint.
             if let last = denseNaviRoute.last, last.x != bx || last.y != by {
-                // Endpoint itself is not necessarily a turn; the turn is detected at the next segment boundary.
                 let naviRoute = NavigationRoute(building: building, level: level, section: sectionCount, turnPoint: false, x: bx, y: by, heading: headingDeg)
                 denseNaviRoute.append(naviRoute)
             } else {
@@ -167,6 +166,10 @@ class NavigationManager {
             }
         }
 
+        var lastNaviRoute = denseNaviRoute[denseNaviRoute.count-1]
+        lastNaviRoute.turnPoint = true
+        denseNaviRoute[denseNaviRoute.count-1] = lastNaviRoute
+        
         self.routes = denseNaviRoute
         delegate?.isNavigationRouteChanged()
         
@@ -241,7 +244,7 @@ class NavigationManager {
         for (index, route) in routes.enumerated() {
             guard index >= idx else { continue }
             let diffSection = route.section - curRoute.section
-            if diffSection > 2 || diffSection < 0 {
+            if diffSection > 1 || diffSection < 0 {
                 continue
             }
             
