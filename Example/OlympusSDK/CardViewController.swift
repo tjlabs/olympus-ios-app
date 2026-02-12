@@ -341,7 +341,8 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         })
     }
     
-    private func drawDebug(XYH: [Double], RP_X: [Double], RP_Y: [Double], tuXYH: [Double],
+    private func drawDebug(XYH: [Double], RP_X: [Double], RP_Y: [Double],
+                           calcXYH: [Double], tuXYH: [Double],
                            landmark: LandmarkData?,
                            best_landmark: PeakData?,
                            recon_raw_traj: [[Double]]?,
@@ -381,18 +382,27 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         set1.drawValuesEnabled = false
         set1.setScatterShape(.circle)
         set1.setColor(valueColor)
-        set1.scatterShapeSize = 18
+        set1.scatterShapeSize = 21
         
-        
-        let values2 = (0..<1).map { (i) -> ChartDataEntry in
+        let valuesCalc = (0..<1).map { (i) -> ChartDataEntry in
             return ChartDataEntry(x: tuXYH[0], y: tuXYH[1])
         }
         
-        let set2 = ScatterChartDataSet(entries: values2, label: "TU")
-        set2.drawValuesEnabled = false
-        set2.setScatterShape(.circle)
-        set2.setColor(.systemGreen)
-        set2.scatterShapeSize = 15
+        let setCalc = ScatterChartDataSet(entries: valuesCalc, label: "CALC")
+        setCalc.drawValuesEnabled = false
+        setCalc.setScatterShape(.circle)
+        setCalc.setColor(.systemPink)
+        setCalc.scatterShapeSize = 18
+        
+        let valuesTu = (0..<1).map { (i) -> ChartDataEntry in
+            return ChartDataEntry(x: tuXYH[0], y: tuXYH[1])
+        }
+        
+        let setTu = ScatterChartDataSet(entries: valuesTu, label: "TU")
+        setTu.drawValuesEnabled = false
+        setTu.setScatterShape(.circle)
+        setTu.setColor(.systemGreen)
+        setTu.scatterShapeSize = 15
         
         let valuesNaviXyh = (0..<1).map { (i) -> ChartDataEntry in
             return ChartDataEntry(x: naviXYH[0], y: naviXYH[1])
@@ -406,7 +416,8 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         
         let chartData = ScatterChartData(dataSet: set0)
         chartData.append(set1)
-        chartData.append(set2)
+        chartData.append(setCalc)
+        chartData.append(setTu)
         chartData.append(setNaviXyh)
         chartData.setDrawValues(false)
         
@@ -427,7 +438,7 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
             setNaviRoute.drawValuesEnabled = false
             setNaviRoute.setScatterShape(.circle)
             setNaviRoute.setColor(UIColor.orange)
-            setNaviRoute.scatterShapeSize = 8.5
+            setNaviRoute.scatterShapeSize = 2.5
             chartData.append(setNaviRoute)
         }
         
@@ -620,7 +631,8 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         // Heading
         let point = scatterChart.getPosition(entry: ChartDataEntry(x: XYH[0], y: XYH[1]), axis: .left)
         let imageView = UIImageView(image: headingImage!.rotate(degrees: -XYH[2]+90))
-        imageView.frame = CGRect(x: point.x - 20, y: point.y - 20, width: 40, height: 40)
+        let xyhSize: CGFloat = 44
+        imageView.frame = CGRect(x: point.x - xyhSize/2, y: point.y - xyhSize/2, width: xyhSize, height: xyhSize)
         imageView.contentMode = .center
         imageView.tag = 100
         if let viewWithTag = scatterChart.viewWithTag(100) {
@@ -628,22 +640,35 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         }
         scatterChart.addSubview(imageView)
         
+        let pointCalc = scatterChart.getPosition(entry: ChartDataEntry(x: calcXYH[0], y: calcXYH[1]), axis: .left)
+        let imageViewCalc = UIImageView(image: headingImage!.rotate(degrees: -calcXYH[2]+90))
+        let calcSize: CGFloat = 40
+        imageViewCalc.frame = CGRect(x: pointCalc.x - calcSize/2, y: pointCalc.y - calcSize/2, width: calcSize, height: calcSize)
+        imageViewCalc.contentMode = .center
+        imageViewCalc.tag = 200
+        if let viewWithTagCalc = scatterChart.viewWithTag(200) {
+            viewWithTagCalc.removeFromSuperview()
+        }
+        scatterChart.addSubview(imageViewCalc)
+        
         let pointTu = scatterChart.getPosition(entry: ChartDataEntry(x: tuXYH[0], y: tuXYH[1]), axis: .left)
         let imageViewTu = UIImageView(image: headingImage!.rotate(degrees: -tuXYH[2]+90))
-        imageViewTu.frame = CGRect(x: pointTu.x - 18, y: pointTu.y - 18, width: 36, height: 36)
+        let tuSize: CGFloat = 36
+        imageViewTu.frame = CGRect(x: pointTu.x - tuSize/2, y: pointTu.y - tuSize/2, width: tuSize, height: tuSize)
         imageViewTu.contentMode = .center
-        imageViewTu.tag = 200
-        if let viewWithTagTu = scatterChart.viewWithTag(200) {
+        imageViewTu.tag = 300
+        if let viewWithTagTu = scatterChart.viewWithTag(300) {
             viewWithTagTu.removeFromSuperview()
         }
         scatterChart.addSubview(imageViewTu)
         
         let pointNavi = scatterChart.getPosition(entry: ChartDataEntry(x: naviXYH[0], y: naviXYH[1]), axis: .left)
         let imageViewNavi = UIImageView(image: headingImage!.rotate(degrees: -naviXYH[2]+90))
-        imageViewNavi.frame = CGRect(x: pointNavi.x - 15, y: pointNavi.y - 15, width: 30, height: 30)
+        let naviSize: CGFloat = 32
+        imageViewNavi.frame = CGRect(x: pointNavi.x - naviSize/2, y: pointNavi.y - naviSize/2, width: naviSize, height: naviSize)
         imageViewNavi.contentMode = .center
-        imageViewNavi.tag = 300
-        if let viewWithTagNavi = scatterChart.viewWithTag(300) {
+        imageViewNavi.tag = 400
+        if let viewWithTagNavi = scatterChart.viewWithTag(400) {
             viewWithTagNavi.removeFromSuperview()
         }
         scatterChart.addSubview(imageViewNavi)
@@ -759,6 +784,11 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
                     PathPixel[key] = loadPp(fileName: key)
     //                scatterChart.isHidden = true
                 } else {
+                    var calc_xyh = [Double]()
+                    for value in debugResult.calc_xyh {
+                        calc_xyh.append(Double(value))
+                    }
+                    
                     var tu_xyh = [Double]()
                     for value in debugResult.tu_xyh {
                         tu_xyh.append(Double(value))
@@ -770,6 +800,7 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
                     }
                     
                     drawDebug(XYH: XYH, RP_X: pathPixel[0], RP_Y: pathPixel[1],
+                              calcXYH: calc_xyh,
                               tuXYH: tu_xyh,
                               landmark: debugResult.landmark,
                               best_landmark: debugResult.best_landmark,
