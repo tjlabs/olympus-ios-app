@@ -64,6 +64,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     // MARK: - Navigation
     private var naviMode: Bool = false
     private var hasNaviRoute: Bool = false
+    private var feedbackIndex: Int = 0
+    private var feedbackCount: Int = 0
     
     // MARK: - Etc..
     private var pathMatchingCondition = PathMatchingCondition()
@@ -497,24 +499,56 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             guard let naviRouteResult = calcNaviRouteResult(uvd: userVelocity, curResult: curResult) else { return }
             self.debug_navi_xyh = [naviRouteResult.x, naviRouteResult.y, naviRouteResult.heading]
             self.curNaviRouteResult = naviRouteResult
-            stackManager.stackNaviRouteResult(naviRouteResult: naviRouteResult)
-            let naviRouteResultBuffer = stackManager.getNaviRouteResultBuffer(size: 10)
+            stackManager.stackIndexAndNaviRouteResult(naviRouteResult: naviRouteResult, userPeak: curPeak, uvd: userVelocity)
+            let indexAndNaviRouteResultBuffer = stackManager.getIndexAndNaviRouteResultBuffer(size: 10)
+            let naviRouteResultBuffer = indexAndNaviRouteResultBuffer.map { $0.1 }
             let curPmResultBuffer = stackManager.getCurPmResultBuffer(size: 10)
             
             guard let followingResult = isFollowingNavigationRoute(naviRouteResultBuffer: naviRouteResultBuffer, curPmResultBuffer: curPmResultBuffer) else { return }
             JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFolllowingNavigationRoute: followingResult= \(followingResult)")
             
             self.jupiterResultMode = determineJupiterResultMode(jupiterResultMode: jupiterResultMode, naviCase: followingResult.naviCase)
+            let canFeedback = feedbackWhenFollowing(naviCase: followingResult.naviCase, naviRouteResultBuffer: naviRouteResultBuffer)
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) feedbackWhenFollowing: canFeedback= \(canFeedback)")
+            if canFeedback {
+                feedbackCount += 1
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) feedbackCount: \(feedbackCount)")
+                if feedbackCount >= 5 {
+                    feedbackCount = 0
+                    let paddings = JupiterMode.PADDING_VALUES_MEDIUM
+                    let indexForEdit = max(correctionIndex, feedbackIndex)
+                    let indexAndNaviRouteResultBuffer = stackManager.getIndexAndNaviRouteResultBuffer(index: indexForEdit)
+                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) getIndexAndNaviRouteResultBuffer: indexAndNaviRouteResultBuffer= [indexs:\(indexAndNaviRouteResultBuffer.map{$0.0})] // peakIndex= \(correctionIndex)")
+                    stackManager.editCurResultBuffer(sectorId: sectorId, mode: mode, from: correctionIndex, indexAndNaviRouteResultBuffer: indexAndNaviRouteResultBuffer, paddings: paddings)
+                    _ = stackManager.editCurPmResultBuffer(sectorId: sectorId, mode: mode, from: correctionIndex, indexAndNaviRouteResultBuffer: indexAndNaviRouteResultBuffer, paddings: paddings)
+                    kalmanFilter?.editTuResultBuffer(sectorId: sectorId, mode: mode, from: correctionIndex, indexAndNaviRouteResultBuffer: indexAndNaviRouteResultBuffer, curResult: curResult, paddings: paddings)
+                    
+                    feedbackIndex = userVelocity.index
+                }
+            } else {
+                feedbackCount = 0
+            }
         }
     }
     
-    private func feedbackWhenFollowing(naviCase: NaviCase, naviRouteResultBuffer: [NavigationRoute]) {
-        if naviCase != .CASE_1 { return }
-        if naviRouteResultBuffer.count < 5 { return }
-        for nr in naviRouteResultBuffer.reversed() {
-            // 뒤에서부터 5개의 요소의 x,y가 모두 다르면 반복문 빠져나옴
+    private func feedbackWhenFollowing(naviCase: NaviCase, naviRouteResultBuffer: [NavigationRoute]) -> Bool {
+        if naviCase != .CASE_1 { return false }
+        if naviRouteResultBuffer.count < 5 { return false }
+
+        var canFeedback: Bool = true
+        var coordSet = Set<String>()
+
+        for nr in naviRouteResultBuffer.suffix(5) {
+            let key = "\(nr.x)_\(nr.y)"
+
+            if coordSet.contains(key) {
+                canFeedback = false
+                break
+            }
+            coordSet.insert(key)
         }
 
+        return canFeedback
     }
     
     private func determineJupiterResultMode(jupiterResultMode: JupiterResultMode, naviCase: NaviCase) -> JupiterResultMode {
