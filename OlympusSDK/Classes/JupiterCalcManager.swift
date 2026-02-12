@@ -70,6 +70,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     private var report = -1
     
     // MARK: - Result
+    var jupiterResultMode: JupiterResultMode = .NONE
     var jupiterPhase: JupiterPhase = .NONE
     var curResult: FineLocationTrackingOutput?
     var preResult: FineLocationTrackingOutput?
@@ -77,7 +78,10 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     var curPathMatchingResult: FineLocationTrackingOutput?
     var prePathMatchingResult: FineLocationTrackingOutput?
     
+    var curNaviRouteResult: NavigationRoute?
+    
     // MARK: - Debuging
+    var debug_calc_xyh: [Float] = [0, 0, 0]
     var debug_tu_xyh: [Float] = [0, 0, 0]
     var debug_landmark: LandmarkData?
     var debug_best_landmark: PeakData?
@@ -181,12 +185,24 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     func getJupiterResult() -> JupiterResult? {
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
         guard let curPathMatchingResult = self.curPathMatchingResult else { return nil }
-        let buildingName = curPathMatchingResult.building_name
-        let levelName = curPathMatchingResult.level_name
+        self.debug_calc_xyh = [curPathMatchingResult.x, curPathMatchingResult.y, curPathMatchingResult.absolute_heading]
+        
+        var buildingName = curPathMatchingResult.building_name
+        var levelName = curPathMatchingResult.level_name
         let scc = curPathMatchingResult.scc
-        let x = curPathMatchingResult.x
-        let y = curPathMatchingResult.y
-        let absoluteHeading = curPathMatchingResult.absolute_heading
+        var x = curPathMatchingResult.x
+        var y = curPathMatchingResult.y
+        var absoluteHeading = curPathMatchingResult.absolute_heading
+        
+        if jupiterResultMode == .NAVI {
+            if let naviRouteResult = self.curNaviRouteResult {
+                buildingName = naviRouteResult.building
+                levelName = naviRouteResult.level
+                x = naviRouteResult.x
+                y = naviRouteResult.y
+                absoluteHeading = naviRouteResult.heading
+            }
+        }
         
         var llh: LLH?
         if let affineParam = AffineConverter.shared.getAffineParam(sectorId: sectorId) {
@@ -220,12 +236,24 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     func getJupiterDebugResult() -> JupiterDebugResult? {
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
         guard let curPathMatchingResult = self.curPathMatchingResult else { return nil }
-        let buildingName = curPathMatchingResult.building_name
-        let levelName = curPathMatchingResult.level_name
+        self.debug_calc_xyh = [curPathMatchingResult.x, curPathMatchingResult.y, curPathMatchingResult.absolute_heading]
+        
+        var buildingName = curPathMatchingResult.building_name
+        var levelName = curPathMatchingResult.level_name
         let scc = curPathMatchingResult.scc
-        let x = curPathMatchingResult.x
-        let y = curPathMatchingResult.y
-        let absoluteHeading = curPathMatchingResult.absolute_heading
+        var x = curPathMatchingResult.x
+        var y = curPathMatchingResult.y
+        var absoluteHeading = curPathMatchingResult.absolute_heading
+        
+        if jupiterResultMode == .NAVI {
+            if let naviRouteResult = self.curNaviRouteResult {
+                buildingName = naviRouteResult.building
+                levelName = naviRouteResult.level
+                x = naviRouteResult.x
+                y = naviRouteResult.y
+                absoluteHeading = naviRouteResult.heading
+            }
+        }
         
         var llh: LLH?
         if let affineParam = AffineConverter.shared.getAffineParam(sectorId: sectorId) {
@@ -251,6 +279,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             isIndoor: JupiterResultState.isIndoor,
             validity: false,
             validity_flag: 0,
+            calc_xyh: self.debug_calc_xyh,
             tu_xyh: self.debug_tu_xyh,
             landmark: self.debug_landmark,
             best_landmark: self.debug_best_landmark,
@@ -467,56 +496,122 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         if hasNaviRoute && jupiterPhase == .TRACKING {
             guard let naviRouteResult = calcNaviRouteResult(uvd: userVelocity, curResult: curResult) else { return }
             self.debug_navi_xyh = [naviRouteResult.x, naviRouteResult.y, naviRouteResult.heading]
+            self.curNaviRouteResult = naviRouteResult
             stackManager.stackNaviRouteResult(naviRouteResult: naviRouteResult)
             let naviRouteResultBuffer = stackManager.getNaviRouteResultBuffer(size: 10)
             let curPmResultBuffer = stackManager.getCurPmResultBuffer(size: 10)
             
-            guard let followingScore = isFolllowingNavigationRoute(naviRouteResultBuffer: naviRouteResultBuffer, curPmResultBuffer: curPmResultBuffer) else { return }
-            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFolllowingNavigationRoute: followingScore= \(followingScore)")
+            guard let followingResult = isFollowingNavigationRoute(naviRouteResultBuffer: naviRouteResultBuffer, curPmResultBuffer: curPmResultBuffer) else { return }
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFolllowingNavigationRoute: followingResult= \(followingResult)")
+            
+            self.jupiterResultMode = determineJupiterResultMode(jupiterResultMode: jupiterResultMode, naviCase: followingResult.naviCase)
         }
     }
     
-    private func isFolllowingNavigationRoute(naviRouteResultBuffer: [NavigationRoute], curPmResultBuffer: [FineLocationTrackingOutput]) -> Float? {
-        if naviRouteResultBuffer.count != curPmResultBuffer.count { return nil }
+    private func feedbackWhenFollowing(naviCase: NaviCase, naviRouteResultBuffer: [NavigationRoute]) {
+        if naviCase != .CASE_1 { return }
+        if naviRouteResultBuffer.count < 5 { return }
+        for nr in naviRouteResultBuffer.reversed() {
+            // 뒤에서부터 5개의 요소의 x,y가 모두 다르면 반복문 빠져나옴
+        }
+
+    }
     
+    private func determineJupiterResultMode(jupiterResultMode: JupiterResultMode, naviCase: NaviCase) -> JupiterResultMode {
+        switch naviCase {
+        case .CASE_1, .CASE_2:
+            return .NAVI
+        case .CASE_3:
+            return .CALC
+        case .INIT:
+            return .NAVI
+        default:
+            return .CALC
+        }
+    }
+    
+    private func isFollowingNavigationRoute(naviRouteResultBuffer: [NavigationRoute], curPmResultBuffer: [FineLocationTrackingOutput]) -> (naviCase: NaviCase, d: Float, dh: Float)? {
+        if naviRouteResultBuffer.count != curPmResultBuffer.count { return nil }
+        if naviRouteResultBuffer.count < 10 { return (NaviCase.INIT, 0, 0) }
+        
         let DLOSS_NORM: Float = 30
         let DLOSS_WEIGHT: Float = 0.7
-        
+
+        let DLOSS_THRESHOLD_15: Float = 15
+        let DLOSS_THRESHOLD_30: Float = 30
+
         let DHLOSS_NORM: Float = 90
         let DHLOSS_WEIGHT: Float = 0.3
-        
+
+        let DHLOSS_THRESHOLD_45: Float = 45
+
         var dSum: Float = 0
         var dhSum: Float = 0
-        
-        for i in 0..<naviRouteResultBuffer.count {
+
+        for i in 0..<naviRouteResultBuffer.count-1 {
             let naviX = naviRouteResultBuffer[i].x
             let naviY = naviRouteResultBuffer[i].y
             let naviH = naviRouteResultBuffer[i].heading
-            
+
             let curX = curPmResultBuffer[i].x
             let curY = curPmResultBuffer[i].y
             let curH = curPmResultBuffer[i].absolute_heading
-            
+
             let diffX = naviX - curX
             let diffY = naviY - curY
-            
             let dist = sqrt(diffX*diffX + diffY*diffY)
             dSum += dist
-            
+
             var diffH = abs(naviH - curH)
             if (diffH > 270) { diffH = 360 - diffH }
             dhSum += diffH
         }
-        
+
         let dSumAvg = dSum/Float(naviRouteResultBuffer.count)
         let dhSumAvg = dhSum/Float(naviRouteResultBuffer.count)
-        
-        let dLoss = min(max(dSumAvg / DLOSS_NORM, 0), 1)*DLOSS_WEIGHT
-        let dhLoss = min(max(dhSumAvg / DHLOSS_NORM, 0), 1)*DHLOSS_WEIGHT
-        
-        let score = 1 - (dLoss + dhLoss)
-        
-        return score
+
+        var naviCase: NaviCase = .NONE
+
+        let curPmResultFirst = curPmResultBuffer[0]
+        let naviResultFirst = naviRouteResultBuffer[0]
+
+        let isAllSamePmResult = curPmResultBuffer.allSatisfy {
+            $0.x == curPmResultFirst.x && $0.y == curPmResultFirst.y
+        }
+
+        let isAllSameNaviResult = naviRouteResultBuffer.allSatisfy {
+            $0.x == naviResultFirst.x && $0.y == naviResultFirst.y
+        }
+
+        if (dSumAvg > DLOSS_THRESHOLD_15) {
+            if (dhSumAvg > DHLOSS_THRESHOLD_45) {
+                //거리, 헤딩 오차가 모두 발생
+                //경로를 따라가지 않은 케이스로 jupiter result 를 보여줌
+                naviCase = .CASE_3
+            } else {
+                if (isAllSamePmResult) {
+                    // 위치 오차만 발생
+                    // jupiter 결과가 먼저 도달한 상태로 navi result 를 보여줌
+                    naviCase = .CASE_2
+                } else if (isAllSameNaviResult) {
+                    // 위치 오차만 발생
+                    // navi 결과가 먼저 도달한 상태로 상황에 따라 결과가 달라짐
+                    // 거리 오차가 크게 발생한 경우 (직진구간에서 경로를 지나쳐감)
+                    // 경로를 따라가지 않는 것으로 판단하여 jupiter result 를 보여줌
+                    naviCase = if (dSumAvg > DLOSS_THRESHOLD_30) {
+                        .CASE_3
+                    } else {
+                        .CASE_1
+                    }
+                } else {
+                    naviCase = .CASE_2
+                }
+            }
+        } else {
+            naviCase = NaviCase.CASE_1
+        }
+
+        return (naviCase, dSumAvg, dhSumAvg)
     }
     
     private func startEntranceTracking(currentTime: Int, entManager: EntranceManager, uvd: UserVelocity, userPeak: UserPeak, bleData: [String: Float]) {
