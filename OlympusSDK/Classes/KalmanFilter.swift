@@ -99,66 +99,91 @@ class KalmanFilter {
         sectorId: Int,
         mode: UserMode,
         from: Int,
-        shifteTraj: [RecoveryTrajectory],
+        shifteTraj: [RecoveryTrajectory]? = nil,
+        indexAndNaviRouteResultBuffer: [(Int, NavigationRoute)]? = nil,
         curResult: FineLocationTrackingOutput,
         paddings: [Float]
     ) {
-        let trajByIndex = Dictionary(uniqueKeysWithValues: shifteTraj.map { ($0.index, $0) })
+        if let shifteTraj = shifteTraj {
+            let trajByIndex = Dictionary(uniqueKeysWithValues: shifteTraj.map { ($0.index, $0) })
 
-        let building = curResult.building_name
-        let level = curResult.level_name
-        
-        var preResult = tuResultBuffer[tuResultBuffer.count-1]
-        tuResultBuffer = tuResultBuffer.map { result in
-            guard result.index >= from else { return result }
-            guard let traj = trajByIndex[result.index] else { return result }
+            let building = curResult.building_name
+            let level = curResult.level_name
             
-            var newResult = result
-            if result.index == from {
-                guard let pm = PathMatcher.shared.pathMatching(
-                    sectorId: sectorId,
-                    building: building,
-                    level: level,
-                    x: traj.x, y: traj.y, heading: traj.heading,
-                    isUseHeading: true,
-                    mode: mode,
-                    paddingValues: paddings
-                ) else { return result }
+            var preResult = tuResultBuffer[tuResultBuffer.count-1]
+            tuResultBuffer = tuResultBuffer.map { result in
+                guard result.index >= from else { return result }
+                guard let traj = trajByIndex[result.index] else { return result }
                 
-                newResult.x = pm.x
-                newResult.y = pm.y
-                newResult.heading = pm.heading
-            } else {
-                let preIndex = result.index - 1
-                guard let preTraj = trajByIndex[preIndex] else { return result }
-                let dx = traj.x - preTraj.x
-                let dy = traj.y - preTraj.y
+                var newResult = result
+                if result.index == from {
+                    guard let pm = PathMatcher.shared.pathMatching(
+                        sectorId: sectorId,
+                        building: building,
+                        level: level,
+                        x: traj.x, y: traj.y, heading: traj.heading,
+                        isUseHeading: true,
+                        mode: mode,
+                        paddingValues: paddings
+                    ) else { return result }
+                    
+                    newResult.x = pm.x
+                    newResult.y = pm.y
+                    newResult.heading = pm.heading
+                } else {
+                    let preIndex = result.index - 1
+                    guard let preTraj = trajByIndex[preIndex] else { return result }
+                    let dx = traj.x - preTraj.x
+                    let dy = traj.y - preTraj.y
+                    
+                    let newX = preResult.x + dx
+                    let newY = preResult.y + dy
+                    
+                    guard let pm = PathMatcher.shared.pathMatching(
+                        sectorId: sectorId,
+                        building: curResult.building_name,
+                        level: curResult.level_name,
+                        x: newX, y: newY, heading: traj.heading,
+                        isUseHeading: true,
+                        mode: mode,
+                        paddingValues: paddings
+                    ) else { return result }
+                    
+                    newResult.x = pm.x
+                    newResult.y = pm.y
+                    newResult.heading = pm.heading
+                }
+                preResult = newResult
                 
-                let newX = preResult.x + dx
-                let newY = preResult.y + dy
-                
-                guard let pm = PathMatcher.shared.pathMatching(
-                    sectorId: sectorId,
-                    building: curResult.building_name,
-                    level: curResult.level_name,
-                    x: newX, y: newY, heading: traj.heading,
-                    isUseHeading: true,
-                    mode: mode,
-                    paddingValues: paddings
-                ) else { return result }
-                
-                newResult.x = pm.x
-                newResult.y = pm.y
-                newResult.heading = pm.heading
+                JupiterLogger.i(
+                    tag: "KalmanFilter",
+                    message: "(editTuResultBuffer) index:\(result.index) edited // [\(result.x),\(result.y),\(result.heading)] -> [\(newResult.x),\(newResult.y),\(newResult.heading)]"
+                )
+
+                return newResult
             }
-            preResult = newResult
-            
-            JupiterLogger.i(
-                tag: "KalmanFilter",
-                message: "(editTuResultBuffer) index:\(result.index) edited // [\(result.x),\(result.y),\(result.heading)] -> [\(newResult.x),\(newResult.y),\(newResult.heading)]"
-            )
+        } else if let indexAndNaviRouteResultBuffer = indexAndNaviRouteResultBuffer {
+            let routeByIndex: [Int: NavigationRoute] =
+                Dictionary(uniqueKeysWithValues: indexAndNaviRouteResultBuffer.map { ($0.0, $0.1) })
+            tuResultBuffer = tuResultBuffer.map { result in
+                guard let route = routeByIndex[result.index] else {
+                    return result
+                }
 
-            return newResult
+                var newResult = result
+                newResult.x = route.x
+                newResult.y = route.y
+                newResult.heading = route.heading
+
+                JupiterLogger.i(
+                    tag: "StackManager",
+                    message: "(editTuResultBuffer-navi) index:\(result.index) edited // " +
+                             "[\(result.x),\(result.y),\(result.heading)] -> " +
+                             "[\(newResult.x),\(newResult.y),\(newResult.heading)]"
+                )
+
+                return newResult
+            }
         }
     }
     
