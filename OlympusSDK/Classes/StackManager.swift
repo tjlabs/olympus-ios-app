@@ -15,7 +15,7 @@ class StackManager {
     private let CUR_RESULT_BUFFER_SIZE: Int = 200
     private let CUR_PM_RESULT_BUFFER_SIZE: Int = 200
     private let SEARCH_RESULT_BUFFER_SIZE: Int = 5
-    private let NAVI_ROUTE_RESULT_BUFFER_SIZE: Int = 10
+    private let NAVI_ROUTE_RESULT_BUFFER_SIZE: Int = 200
     
     private var rfdBuffer = [[String: Float]]()
     var uvdBuffer = [UserVelocity]()
@@ -26,7 +26,7 @@ class StackManager {
     var curResultBuffer = [FineLocationTrackingOutput]()
     var curPmResultBuffer = [FineLocationTrackingOutput]()
     var searchResultBuffer = [FineLocationTrackingOutput]()
-    var naviRouteResultBuffer = [NavigationRoute]()
+    var indexAndNaviRouteResultBuffer = [(Int, NavigationRoute)]()
     
     var recoveryIndex: Int = 0
     
@@ -129,62 +129,87 @@ class StackManager {
         sectorId: Int,
         mode: UserMode,
         from: Int,
-        shifteTraj: [RecoveryTrajectory],
+        shifteTraj: [RecoveryTrajectory]? = nil,
+        indexAndNaviRouteResultBuffer: [(Int, NavigationRoute)]? = nil,
         paddings: [Float]
     ) {
-        let trajByIndex = Dictionary(uniqueKeysWithValues: shifteTraj.map { ($0.index, $0) })
-        
-        var preResult = curResultBuffer[curResultBuffer.count-1]
-        curResultBuffer = curResultBuffer.map { result in
-            guard result.index >= from else { return result }
-            guard let traj = trajByIndex[result.index] else { return result }
+        if let shifteTraj = shifteTraj {
+            let trajByIndex = Dictionary(uniqueKeysWithValues: shifteTraj.map { ($0.index, $0) })
             
-            var newResult = result
-            if result.index == from {
-                guard let pm = PathMatcher.shared.pathMatching(
-                    sectorId: sectorId,
-                    building: result.building_name,
-                    level: result.level_name,
-                    x: traj.x, y: traj.y, heading: traj.heading,
-                    isUseHeading: true,
-                    mode: mode,
-                    paddingValues: paddings
-                ) else { return result }
+            var preResult = curResultBuffer[curResultBuffer.count-1]
+            curResultBuffer = curResultBuffer.map { result in
+                guard result.index >= from else { return result }
+                guard let traj = trajByIndex[result.index] else { return result }
                 
-                newResult.x = pm.x
-                newResult.y = pm.y
-                newResult.absolute_heading = pm.heading
-            } else {
-                let preIndex = result.index - 1
-                guard let preTraj = trajByIndex[preIndex] else { return result }
-                let dx = traj.x - preTraj.x
-                let dy = traj.y - preTraj.y
+                var newResult = result
+                if result.index == from {
+                    guard let pm = PathMatcher.shared.pathMatching(
+                        sectorId: sectorId,
+                        building: result.building_name,
+                        level: result.level_name,
+                        x: traj.x, y: traj.y, heading: traj.heading,
+                        isUseHeading: true,
+                        mode: mode,
+                        paddingValues: paddings
+                    ) else { return result }
+                    
+                    newResult.x = pm.x
+                    newResult.y = pm.y
+                    newResult.absolute_heading = pm.heading
+                } else {
+                    let preIndex = result.index - 1
+                    guard let preTraj = trajByIndex[preIndex] else { return result }
+                    let dx = traj.x - preTraj.x
+                    let dy = traj.y - preTraj.y
+                    
+                    let newX = preResult.x + dx
+                    let newY = preResult.y + dy
+                    
+                    guard let pm = PathMatcher.shared.pathMatching(
+                        sectorId: sectorId,
+                        building: result.building_name,
+                        level: result.level_name,
+                        x: newX, y: newY, heading: traj.heading,
+                        isUseHeading: true,
+                        mode: mode,
+                        paddingValues: paddings
+                    ) else { return result }
+                    
+                    newResult.x = pm.x
+                    newResult.y = pm.y
+                    newResult.absolute_heading = pm.heading
+                }
+                preResult = newResult
                 
-                let newX = preResult.x + dx
-                let newY = preResult.y + dy
-                
-                guard let pm = PathMatcher.shared.pathMatching(
-                    sectorId: sectorId,
-                    building: result.building_name,
-                    level: result.level_name,
-                    x: newX, y: newY, heading: traj.heading,
-                    isUseHeading: true,
-                    mode: mode,
-                    paddingValues: paddings
-                ) else { return result }
-                
-                newResult.x = pm.x
-                newResult.y = pm.y
-                newResult.absolute_heading = pm.heading
-            }
-            preResult = newResult
-            
-            JupiterLogger.i(
-                tag: "StackManager",
-                message: "(editCurResultBuffer) index:\(result.index) edited // [\(result.x),\(result.y),\(result.absolute_heading)] -> [\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]"
-            )
+                JupiterLogger.i(
+                    tag: "StackManager",
+                    message: "(editCurResultBuffer) index:\(result.index) edited // [\(result.x),\(result.y),\(result.absolute_heading)] -> [\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]"
+                )
 
-            return newResult
+                return newResult
+            }
+        } else if let indexAndNaviRouteResultBuffer = indexAndNaviRouteResultBuffer {
+            let routeByIndex: [Int: NavigationRoute] =
+                Dictionary(uniqueKeysWithValues: indexAndNaviRouteResultBuffer.map { ($0.0, $0.1) })
+            curResultBuffer = curResultBuffer.map { result in
+                guard let route = routeByIndex[result.index] else {
+                    return result
+                }
+
+                var newResult = result
+                newResult.x = route.x
+                newResult.y = route.y
+                newResult.absolute_heading = route.heading
+
+                JupiterLogger.i(
+                    tag: "StackManager",
+                    message: "(editCurResultBuffer-navi) index:\(result.index) edited // " +
+                             "[\(result.x),\(result.y),\(result.absolute_heading)] -> " +
+                             "[\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]"
+                )
+
+                return newResult
+            }
         }
     }
     
@@ -218,66 +243,91 @@ class StackManager {
         sectorId: Int,
         mode: UserMode,
         from: Int,
-        shifteTraj: [RecoveryTrajectory],
+        shifteTraj: [RecoveryTrajectory]? = nil,
+        indexAndNaviRouteResultBuffer: [(Int, NavigationRoute)]? = nil,
         paddings: [Float]
     ) -> FineLocationTrackingOutput {
-        let trajByIndex = Dictionary(uniqueKeysWithValues: shifteTraj.map { ($0.index, $0) })
-        
-        var preResult = curPmResultBuffer[curPmResultBuffer.count-1]
-        curPmResultBuffer = curPmResultBuffer.map { result in
-            guard result.index >= from else { return result }
-            guard let traj = trajByIndex[result.index] else { return result }
+        if let shifteTraj = shifteTraj {
+            let trajByIndex = Dictionary(uniqueKeysWithValues: shifteTraj.map { ($0.index, $0) })
             
-            var newResult = result
-            if result.index == from {
-                guard let pm = PathMatcher.shared.pathMatching(
-                    sectorId: sectorId,
-                    building: result.building_name,
-                    level: result.level_name,
-                    x: traj.x, y: traj.y, heading: traj.heading,
-                    isUseHeading: true,
-                    mode: mode,
-                    paddingValues: paddings
-                ) else { return result }
+            var preResult = curPmResultBuffer[curPmResultBuffer.count-1]
+            curPmResultBuffer = curPmResultBuffer.map { result in
+                guard result.index >= from else { return result }
+                guard let traj = trajByIndex[result.index] else { return result }
                 
-                newResult.x = pm.x
-                newResult.y = pm.y
-                newResult.absolute_heading = pm.heading
-            } else {
-                let preIndex = result.index - 1
-                guard let preTraj = trajByIndex[preIndex] else { return result }
-                let dx = traj.x - preTraj.x
-                let dy = traj.y - preTraj.y
+                var newResult = result
+                if result.index == from {
+                    guard let pm = PathMatcher.shared.pathMatching(
+                        sectorId: sectorId,
+                        building: result.building_name,
+                        level: result.level_name,
+                        x: traj.x, y: traj.y, heading: traj.heading,
+                        isUseHeading: true,
+                        mode: mode,
+                        paddingValues: paddings
+                    ) else { return result }
+                    
+                    newResult.x = pm.x
+                    newResult.y = pm.y
+                    newResult.absolute_heading = pm.heading
+                } else {
+                    let preIndex = result.index - 1
+                    guard let preTraj = trajByIndex[preIndex] else { return result }
+                    let dx = traj.x - preTraj.x
+                    let dy = traj.y - preTraj.y
+                    
+                    let newX = preResult.x + dx
+                    let newY = preResult.y + dy
+                    
+                    guard let pm = PathMatcher.shared.pathMatching(
+                        sectorId: sectorId,
+                        building: result.building_name,
+                        level: result.level_name,
+                        x: newX, y: newY, heading: traj.heading,
+                        isUseHeading: true,
+                        mode: mode,
+                        paddingValues: paddings
+                    ) else { return result }
+                    
+                    newResult.x = pm.x
+                    newResult.y = pm.y
+                    newResult.absolute_heading = pm.heading
+                    JupiterLogger.i(
+                        tag: "StackManager",
+                        message: "(editCurPmResultBuffer) index:\(result.index) do pm // [\(newX),\(newY),\(traj.heading)] -> pm [\(pm.x),\(pm.y),\(pm.heading)]"
+                    )
+                }
+                preResult = newResult
                 
-                let newX = preResult.x + dx
-                let newY = preResult.y + dy
-                
-                guard let pm = PathMatcher.shared.pathMatching(
-                    sectorId: sectorId,
-                    building: result.building_name,
-                    level: result.level_name,
-                    x: newX, y: newY, heading: traj.heading,
-                    isUseHeading: true,
-                    mode: mode,
-                    paddingValues: paddings
-                ) else { return result }
-                
-                newResult.x = pm.x
-                newResult.y = pm.y
-                newResult.absolute_heading = pm.heading
                 JupiterLogger.i(
                     tag: "StackManager",
-                    message: "(editCurPmResultBuffer) index:\(result.index) do pm // [\(newX),\(newY),\(traj.heading)] -> pm [\(pm.x),\(pm.y),\(pm.heading)]"
+                    message: "(editCurPmResultBuffer) index:\(result.index) edited // [\(result.x),\(result.y),\(result.absolute_heading)] -> [\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]"
                 )
-            }
-            preResult = newResult
-            
-            JupiterLogger.i(
-                tag: "StackManager",
-                message: "(editCurPmResultBuffer) index:\(result.index) edited // [\(result.x),\(result.y),\(result.absolute_heading)] -> [\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]"
-            )
 
-            return newResult
+                return newResult
+            }
+        } else if let indexAndNaviRouteResultBuffer = indexAndNaviRouteResultBuffer {
+            let routeByIndex: [Int: NavigationRoute] =
+                Dictionary(uniqueKeysWithValues: indexAndNaviRouteResultBuffer.map { ($0.0, $0.1) })
+            curPmResultBuffer = curPmResultBuffer.map { result in
+                guard let route = routeByIndex[result.index] else {
+                    return result
+                }
+
+                var newResult = result
+                newResult.x = route.x
+                newResult.y = route.y
+                newResult.absolute_heading = route.heading
+
+                JupiterLogger.i(
+                    tag: "StackManager",
+                    message: "(editCurPmResultBuffer-navi) index:\(result.index) edited // " +
+                             "[\(result.x),\(result.y),\(result.absolute_heading)] -> " +
+                             "[\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]"
+                )
+
+                return newResult
+            }
         }
         
         return curPmResultBuffer[curPmResultBuffer.count-1]
@@ -299,20 +349,29 @@ class StackManager {
         }
     }
     
-    func stackNaviRouteResult(naviRouteResult: NavigationRoute) {
-        naviRouteResultBuffer.append(naviRouteResult)
-        if (naviRouteResultBuffer.count > NAVI_ROUTE_RESULT_BUFFER_SIZE) {
-            naviRouteResultBuffer.remove(at: 0)
+    func stackIndexAndNaviRouteResult(naviRouteResult: NavigationRoute, userPeak: UserPeak? = nil, uvd: UserVelocity) {
+        if let curPeak = userPeak {
+            let peakIndex = curPeak.peak_index
+            self.indexAndNaviRouteResultBuffer = self.indexAndNaviRouteResultBuffer.filter { $0.0 >= peakIndex }
+        }
+
+        indexAndNaviRouteResultBuffer.append((uvd.index, naviRouteResult))
+        if indexAndNaviRouteResultBuffer.count > NAVI_ROUTE_RESULT_BUFFER_SIZE {
+            indexAndNaviRouteResultBuffer.remove(at: 0)
         }
     }
     
-    func getNaviRouteResultBuffer(size: Int) -> [NavigationRoute] {
+    func getIndexAndNaviRouteResultBuffer(size: Int) -> [(Int, NavigationRoute)] {
         guard size > 0 else { return [] }
-        if naviRouteResultBuffer.count <= size {
-            return naviRouteResultBuffer
+        if indexAndNaviRouteResultBuffer.count <= size {
+            return indexAndNaviRouteResultBuffer
         } else {
-            return Array(naviRouteResultBuffer.suffix(size))
+            return Array(indexAndNaviRouteResultBuffer.suffix(size))
         }
+    }
+    
+    func getIndexAndNaviRouteResultBuffer(index: Int) -> [(Int, NavigationRoute)] {
+        return self.indexAndNaviRouteResultBuffer.filter { $0.0 >= index }
     }
     
     func makeHeadingSet(resultBuffer: [FineLocationTrackingOutput]) -> [Float] {
