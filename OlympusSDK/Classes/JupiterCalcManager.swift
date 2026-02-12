@@ -76,10 +76,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     var jupiterPhase: JupiterPhase = .NONE
     var curResult: FineLocationTrackingOutput?
     var preResult: FineLocationTrackingOutput?
-    
     var curPathMatchingResult: FineLocationTrackingOutput?
     var prePathMatchingResult: FineLocationTrackingOutput?
-    
     var curNaviRouteResult: NavigationRoute?
     
     // MARK: - Debuging
@@ -513,15 +511,15 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             if canFeedback {
                 feedbackCount += 1
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) feedbackCount: \(feedbackCount)")
-                if feedbackCount >= 5 {
+                if feedbackCount >= 10 {
                     feedbackCount = 0
                     let paddings = JupiterMode.PADDING_VALUES_MEDIUM
                     let indexForEdit = max(correctionIndex, feedbackIndex)
                     let indexAndNaviRouteResultBuffer = stackManager.getIndexAndNaviRouteResultBuffer(index: indexForEdit)
                     JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) getIndexAndNaviRouteResultBuffer: indexAndNaviRouteResultBuffer= [indexs:\(indexAndNaviRouteResultBuffer.map{$0.0})] // peakIndex= \(correctionIndex)")
-                    stackManager.editCurResultBuffer(sectorId: sectorId, mode: mode, from: correctionIndex, indexAndNaviRouteResultBuffer: indexAndNaviRouteResultBuffer, paddings: paddings)
-                    _ = stackManager.editCurPmResultBuffer(sectorId: sectorId, mode: mode, from: correctionIndex, indexAndNaviRouteResultBuffer: indexAndNaviRouteResultBuffer, paddings: paddings)
-                    kalmanFilter?.editTuResultBuffer(sectorId: sectorId, mode: mode, from: correctionIndex, indexAndNaviRouteResultBuffer: indexAndNaviRouteResultBuffer, curResult: curResult, paddings: paddings)
+                    stackManager.editCurResultBuffer(sectorId: sectorId, mode: mode, from: indexForEdit, indexAndNaviRouteResultBuffer: indexAndNaviRouteResultBuffer, paddings: paddings)
+                    _ = stackManager.editCurPmResultBuffer(sectorId: sectorId, mode: mode, from: indexForEdit, indexAndNaviRouteResultBuffer: indexAndNaviRouteResultBuffer, paddings: paddings)
+                    kalmanFilter?.editTuResultBuffer(sectorId: sectorId, mode: mode, from: indexForEdit, indexAndNaviRouteResultBuffer: indexAndNaviRouteResultBuffer, curResult: curResult, paddings: paddings)
                     
                     feedbackIndex = userVelocity.index
                 }
@@ -567,15 +565,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     private func isFollowingNavigationRoute(naviRouteResultBuffer: [NavigationRoute], curPmResultBuffer: [FineLocationTrackingOutput]) -> (naviCase: NaviCase, d: Float, dh: Float)? {
         if naviRouteResultBuffer.count != curPmResultBuffer.count { return nil }
         if naviRouteResultBuffer.count < 10 { return (NaviCase.INIT, 0, 0) }
-        
-        let DLOSS_NORM: Float = 30
-        let DLOSS_WEIGHT: Float = 0.7
 
         let DLOSS_THRESHOLD_15: Float = 15
-        let DLOSS_THRESHOLD_30: Float = 30
-
-        let DHLOSS_NORM: Float = 90
-        let DHLOSS_WEIGHT: Float = 0.3
+        let DLOSS_THRESHOLD_45: Float = 45
 
         let DHLOSS_THRESHOLD_45: Float = 45
 
@@ -632,7 +624,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                     // navi 결과가 먼저 도달한 상태로 상황에 따라 결과가 달라짐
                     // 거리 오차가 크게 발생한 경우 (직진구간에서 경로를 지나쳐감)
                     // 경로를 따라가지 않는 것으로 판단하여 jupiter result 를 보여줌
-                    naviCase = if (dSumAvg > DLOSS_THRESHOLD_30) {
+                    naviCase = if (dSumAvg > DLOSS_THRESHOLD_45) {
                         .CASE_3
                     } else {
                         .CASE_1
