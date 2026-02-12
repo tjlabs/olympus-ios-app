@@ -68,11 +68,12 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         self.navigationController?.pushViewController(mapVC, animated: true)
     }
     
-//    func goToMapScaleViewController(userId: String) {
-//        guard let mapVC = self.storyboard?.instantiateViewController(withIdentifier: "MapScaleViewController") as? MapScaleViewController else { return }
-//        mapVC.userId = userId
-//        self.navigationController?.pushViewController(mapVC, animated: true)
-//    }
+    func goToRoutingViewController(region: String, userId: String) {
+        guard let routingVC = self.storyboard?.instantiateViewController(withIdentifier: "RoutingViewController") as? RoutingViewController else { return }
+        routingVC.region = region
+        routingVC.userId = userId
+        self.navigationController?.pushViewController(routingVC, animated: true)
+    }
     
     @IBAction func tapSaveUserIdButton(_ sender: UIButton) {
         UIView.animate(withDuration: 0.2, delay: 0.0, options: .curveLinear, animations: {
@@ -129,7 +130,8 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         NetworkManager.shared.postUserLogin(url: USER_LOGIN_URL, input: loginInfo, completion: { statusCode, returnedString in
             if (statusCode == 200) {
 //                print(getLocalTimeString() + " , (InnerLabs) Success : User Login")
-                self.goToCardViewController(region: "Korea", userId: self.userId)
+                self.goToRoutingViewController(region: "Korea", userId: self.userId)
+//                self.goToCardViewController(region: "Korea", userId: self.userId)
 //                self.goToMapViewController(userId: self.userId)
 //                self.goToMapScaleViewController(userId: self.userId)
             } else {

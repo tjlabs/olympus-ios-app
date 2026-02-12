@@ -3,6 +3,7 @@ PODS:
     - Charts/Core (= 4.1.0)
   - Charts/Core (4.1.0):
     - SwiftAlgorithms (~> 1.0)
+  - DropDown (2.3.13)
   - Firebase/Analytics (10.24.0):
     - Firebase/Core
   - Firebase/Core (10.24.0):
@@ -136,6 +137,7 @@ PODS:
 
 DEPENDENCIES:
   - Charts
+  - DropDown
   - Firebase/Analytics
   - Firebase/Crashlytics
   - lottie-ios
@@ -148,6 +150,7 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - Charts
+    - DropDown
     - Firebase
     - FirebaseAnalytics
     - FirebaseCore
@@ -177,6 +180,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Charts: ce0768268078eee0336f122c3c4ca248e4e204c5
+  DropDown: 8a2116376c1981888557f72ec2ffc9a5e0e456ec
   Firebase: 91fefd38712feb9186ea8996af6cbdef41473442
   FirebaseAnalytics: b5efc493eb0f40ec560b04a472e3e1a15d39ca13
   FirebaseCore: 11dc8a16dfb7c5e3c3f45ba0e191a33ac4f50894
@@ -201,6 +205,6 @@ SPEC CHECKSUMS:
   SwiftAlgorithms: 38dda4731d19027fdeee1125f973111bf3386b53
   Then: 844265ae87834bbe1147d91d5d41a404da2ec27d
 
-PODFILE CHECKSUM: cdd28b4abc6ddec71c4a8cfc064f3bed01435e4f
+PODFILE CHECKSUM: a48cae166f016f9e3230250e41e8279bf22ab7e4
 
 COCOAPODS: 1.16.2
