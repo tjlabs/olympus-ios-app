@@ -103,7 +103,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         self.recoveryManager = RecoveryManager(sectorId: sectorId)
         self.navigationManager = NavigationManager(id: id, sectorId: sectorId)
         
-        peakDetector.setInnerWardIds(ids: self.entManager!.getEntInnerWardIds())
+        peakDetector.setInnerWardIds(ids: self.entManager!.getEntInnermostWardIds())
         
         tjlabsResourceManager.delegate = self
         buildingLevelChanger?.delegate = self
@@ -528,7 +528,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             let entTrackData = entKey.split(separator: "_")
             JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - entTrackData = \(entTrackData)")
             
-            if naviMode, let start = entManager.getEntPeakInnerCoord(key: entKey) {
+            if naviMode, let start = entManager.getEntInnermostWardCoord(key: entKey) {
                 let end: [Float] = [240, 13]
                 navigationManager?.requestNavigationRoute(start: start, end: end)
             } else {
@@ -537,46 +537,17 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         }
         
         if jupiterPhase == .ENTERING {
-//            if let stopEntTrackResult = entManager.stopEntTrack(curResult: curResult, wardId: peakId) {
-//                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - EntTrack Finished : \(stopEntTrackResult.building_name) \(stopEntTrackResult.level_name) , [\(stopEntTrackResult.x),\(stopEntTrackResult.y),\(stopEntTrackResult.absolute_heading)]")
-//                // Entrance Tracking Finshid (Normal)
-//                startIndoorTracking(fltResult: stopEntTrackResult)
-//            }
-            if let entPeak = entManager.stopEntTrack_v2(wardId: peakId) {
-                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - EntTrack Finished : peak \(entPeak)")
+            if let innermostWard = entManager.stopEntTrack(wardId: peakId) {
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - EntTrack Finished : innermostWard \(innermostWard)")
                 let uvdBuffer = stackManager.getUvdBuffer()
-                if entPeak.inner_ward.type == 1 {
-                    // Straight
-                    var length: Double = 0
-                    for uvd in uvdBuffer {
-                        if uvd.index >= userPeak.peak_index {
-                            length += uvd.length
-                        }
-                    }
-                    let dir = TJLabsUtilFunctions.shared.degree2radian(degree: Double(entPeak.inner_ward.direction[0]))
-                    let dx = length*cos(dir)
-                    let dy = length*sin(dir)
-                    
-                    let x = entPeak.inner_ward.x + Float(dx)
-                    let y = entPeak.inner_ward.y + Float(dy)
-                    if let curResult = curResult {
-                        var tempResult = curResult
-                        tempResult.building_name = entPeak.inner_ward.building
-                        tempResult.level_name = entPeak.inner_ward.level
-                        tempResult.x = x
-                        tempResult.y = y
-                        tempResult.absolute_heading = entPeak.inner_ward.direction[0]
-                        JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - EntTrack Finished : tempResult \(tempResult)")
-                        startIndoorTracking(fltResult: tempResult)
-                    }
-                } else {
+                if innermostWard.is_turn {
                     // Turn
                     let uvdBuffer = stackManager.getUvdBuffer(from: uvd.index-50)
                     let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBuffer.map{ Float($0.heading) })
                     
                     if !majorSection.isEmpty {
                         let headingForCompensation = majorSection.average - uvdBuffer[0].heading
-                        let pathHeadings = entPeak.inner_ward.direction
+                        let pathHeadings = innermostWard.headings
                         var resultDict = [Float: [[Float]]]()
                         for pathHeading in pathHeadings {
                             let startHeading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(pathHeading) - Double(headingForCompensation)))
@@ -601,8 +572,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                 heading = Float(updatedHeading)
                                 
                                 if uvdBuffer[i].index == userPeak.peak_index {
-                                    offset[0] = entPeak.inner_ward.x - coord[0]
-                                    offset[1] = entPeak.inner_ward.y - coord[1]
+                                    offset[0] = Float(innermostWard.x) - coord[0]
+                                    offset[1] = Float(innermostWard.y) - coord[1]
                                 }
                                 
                                 resultBuffer.append([coord[0], coord[1], heading])
@@ -658,10 +629,34 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                     JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - EntTrack Finished (2) : dist \(dist) // tempResult \(tempResult)")
                                 }
                             }
-                            tempResult.building_name = entPeak.inner_ward.building
-                            tempResult.level_name = entPeak.inner_ward.level
+                            tempResult.building_name = entManager.getEntTrackEndBuilding()
+                            tempResult.level_name = innermostWard.level.name
                             startIndoorTracking(fltResult: tempResult)
                         }
+                    }
+                } else {
+                    // Straight
+                    var length: Double = 0
+                    for uvd in uvdBuffer {
+                        if uvd.index >= userPeak.peak_index {
+                            length += uvd.length
+                        }
+                    }
+                    let dir = TJLabsUtilFunctions.shared.degree2radian(degree: Double(innermostWard.headings[0]))
+                    let dx = length*cos(dir)
+                    let dy = length*sin(dir)
+                    
+                    let x = Float(innermostWard.x) + Float(dx)
+                    let y = Float(innermostWard.y) + Float(dy)
+                    if let curResult = curResult {
+                        var tempResult = curResult
+                        tempResult.building_name = entManager.getEntTrackEndBuilding()
+                        tempResult.level_name = innermostWard.level.name
+                        tempResult.x = x
+                        tempResult.y = y
+                        tempResult.absolute_heading = innermostWard.headings[0]
+                        JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - EntTrack Finished : tempResult \(tempResult)")
+                        startIndoorTracking(fltResult: tempResult)
                     }
                 }
             }
@@ -1415,8 +1410,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     func onGeofenceData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: TJLabsResource.GeofenceData) {
         let levelChangeArea = data.level_change_area
-        let drModeArea = data.dr_mode_area
-        
         if let blChnager = self.buildingLevelChanger {
             blChnager.setLevelChangeArea(key: key, data: levelChangeArea)
         }
@@ -1426,7 +1419,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     func onEntranceData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: TJLabsResource.EntranceData) {
         entManager?.setEntData(key: key, data: data)
-        landmarkTagger?.setExceptionalTagInfo(id: data.innerWardId)
+        guard let innermostward = data.innermostWard else { return }
+        landmarkTagger?.setExceptionalTagInfo(id: innermostward.name)
     }
     
     func onEntranceRouteData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: TJLabsResource.EntranceRouteData) {
@@ -1435,14 +1429,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     func onImageData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: UIImage?) {
         // NONE
-    }
-    
-    func onSectorParam(_ manager: TJLabsResource.TJLabsResourceManager, data: TJLabsResource.SectorParameterOutput) {
-
-    }
-    
-    func onLevelParam(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: TJLabsResource.LevelParameterOutput) {
-
     }
     
     func onLevelWardsData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [TJLabsResource.LevelWard]) {

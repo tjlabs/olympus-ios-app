@@ -248,9 +248,9 @@ class NavigationManager {
             let dxr = route.x - newX
             let dyr = route.y - newY
             let dist = sqrt(dxr * dxr + dyr * dyr)
-
+            
             let hDiff = headingDelta(newH, route.heading)
-            JupiterLogger.i(tag: "NavigationManager", message: "(calcNaviRouteResult) : compare route= [\(route.x),\(route.y),\(route.heading)] // dist=\(dist) / hDiff=\(hDiff)")
+            JupiterLogger.i(tag: "NavigationManager", message: "(calcNaviRouteResult) : compare route= [\(route.x),\(route.y),\(route.heading)] // dist=\(dist) // hDiff=\(hDiff)")
             
             guard hDiff <= maxHeadingDiff else { continue }
 
