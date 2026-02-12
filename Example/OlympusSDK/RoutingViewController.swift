@@ -225,14 +225,11 @@ class RoutingViewController: UIViewController {
     }
 
     @objc private func didTapRoutingStart() {
-        // TODO: Hook into your routing start flow
-        print("[RoutingViewController] 길안내 시작")
 //        goToMapViewController(userId: userId)
         goToCardViewController(region: region, userId: userId)
     }
 
     @objc private func didTapSafeDrivingStart() {
-        // TODO: Hook into your safe driving start flow
         goToCardViewController(region: region, userId: userId)
     }
     
