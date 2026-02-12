@@ -103,3 +103,7 @@ public struct NavigationRoute: Codable {
     public var y: Float
     public var heading: Float
 }
+
+enum NaviCase {
+    case NONE, INIT, CASE_1, CASE_2, CASE_3
+}

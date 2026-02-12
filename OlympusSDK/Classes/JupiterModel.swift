@@ -20,6 +20,10 @@ public enum JupiterPhase {
     case NONE, ENTERING, SEARCHING, TRACKING
 }
 
+enum JupiterResultMode {
+    case NAVI, CALC, NONE
+}
+
 // MARK: - JupiterResult
 public struct JupiterResult: Codable {
     public var mobile_time: Int
@@ -45,7 +49,6 @@ public struct LLH: Codable {
     public var heading: Double
 }
 
-
 // MARK: - JupiterDebugResult
 public struct JupiterDebugResult: Codable {
     public var mobile_time: Int
@@ -64,6 +67,7 @@ public struct JupiterDebugResult: Codable {
     public var validity: Bool
     public var validity_flag: Int
     
+    public var calc_xyh: [Float]
     public var tu_xyh: [Float]
     public var landmark: LandmarkData?
     public var best_landmark: PeakData?
