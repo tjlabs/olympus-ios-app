@@ -8,7 +8,12 @@ import TJLabsResource
 import TJLabsMap
 
 
-class MapViewController: UIViewController, JupiterManagerDelegate {
+class MapViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviViewDelegate {
+    func onNavigationRoute(_ view: TJLabsMap.TJLabsNaviView, routes: [(String, String, Int, Float, Float)]) {
+        print("(MapVC) onNavigationRoute : route len= \(routes.count)")
+        self.isNaviRouteLoaded = true
+    }
+    
     func report(flag: Int) {
         // TODO
     }
@@ -47,8 +52,39 @@ class MapViewController: UIViewController, JupiterManagerDelegate {
             }
         }
         
-        mapView.updateResultInMap(result: userCoord)
-        print("(MapVC) : userCoord = \(userCoord)")
+        if result.level_name != "B0" && isNaviRouteLoaded && !isNaviRouteRendered {
+            DispatchQueue.main.async { [self] in
+                print("(MapVC) navigation route rendered")
+                UIView.animate(withDuration: 0.2, animations: {
+                    self.naviView.plotRoutelAll()
+//                    self.naviView.plotPins()
+                })
+            }
+            isNaviRouteRendered = true
+        }
+        
+        naviView.updateResultInMap(result: userCoord)
+//        print("(MapVC) : userCoord = \(userCoord)")
+    }
+    
+    func isUserGuidanceOut() {
+        print("(MapVC) isUserGuidanceOut : guidance out!!")
+    }
+    
+    func isNavigationRouteChanged(_ routes: [(String, String, Int, Float, Float)]) {
+        print("(MapVC) isNavigationRouteChanged : route len= \(routes.count)")
+        print("(MapVC) isNavigationRouteChanged : routes= \(routes)")
+        naviView.setNaviRoutes(routes: routes)
+    }
+    
+    func isNavigationRouteFailed() {
+        // TODO
+    }
+    
+    func isWaypointChanged(_ waypoints: [[Double]]) {
+        print("(MapVC) isWaypointChanged : waypoints count= \(waypoints.count)")
+        print("(MapVC) isWaypointChanged : waypoints= \(waypoints)")
+        naviView.setNaviWaypoints(waypoints: waypoints)
     }
     
     var region: String = JupiterRegion.KOREA.rawValue
@@ -69,8 +105,10 @@ class MapViewController: UIViewController, JupiterManagerDelegate {
     let topView = TJLabsTopView()
     var guideView: TJLabsParkingGuideView?
     var progressingView: ProgressingView?
-    let mapView = TJLabsMapView()
+    let naviView = TJLabsNaviView()
     var isParkingGuideRendered: Bool = false
+    var isNaviRouteLoaded: Bool = false
+    var isNaviRouteRendered: Bool = false
     
     private var saveButton: UIView = {
         let view = UIView()
@@ -78,7 +116,7 @@ class MapViewController: UIViewController, JupiterManagerDelegate {
         view.alpha = 0.8
         view.isUserInteractionEnabled = false
         view.cornerRadius = 15
-        view.isHidden = false
+        view.isHidden = true
         return view
     }()
     
@@ -114,6 +152,10 @@ class MapViewController: UIViewController, JupiterManagerDelegate {
         
         serviceManager = JupiterManager(id: uniqueId)
         serviceManager?.delegate = self
+        naviView.delegate = self
+        
+        serviceManager?.navigationMode(flag: false)
+        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_01_0119.csv", sensorFileName: "sensor_coex_03_01_0119.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_03_1007.csv", sensorFileName: "sensor_coex_01_03_1007.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_05_1007.csv", sensorFileName: "sensor_coex_02_05_1007.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_05_1007.csv", sensorFileName: "sensor_coex_03_05_1007.csv")
@@ -161,8 +203,8 @@ class MapViewController: UIViewController, JupiterManagerDelegate {
         }
         
         setupNaviView()
-        mapView.setPointOffset(offset: CGFloat(40))
-        mapView.setDebugOption(flag: false)
+        naviView.setPointOffset(offset: CGFloat(40))
+        naviView.setDebugOption(flag: false)
     }
     
     private func bindActions() {
@@ -198,11 +240,11 @@ class MapViewController: UIViewController, JupiterManagerDelegate {
     }
     
     func setupNaviView() {
-        mapView.initialize(region: self.region, sectorId: self.sectorId)
-        mapView.configureFrame(to: mainView)
-        mapView.setPointOffset(offset: 200)
-        mapView.setZoomAndMarkerScale(zoom: 2.0)
-        mainView.addSubview(mapView)
+        naviView.initialize(region: self.region, sectorId: self.sectorId)
+        naviView.configureFrame(to: mainView)
+        naviView.setPointOffset(offset: 200)
+        naviView.setZoomAndMarkerScale(zoom: 2.0)
+        mainView.addSubview(naviView)
     }
     
     private func makeUniqueId(uuid: String) -> String {

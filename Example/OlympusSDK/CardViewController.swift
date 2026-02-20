@@ -6,6 +6,22 @@ import TJLabsCommon
 import TJLabsResource
 
 class CardViewController: UIViewController, JupiterManagerDelegate {
+    func isWaypointChanged(_ waypoints: [[Double]]) {
+        // TODO
+    }
+    
+    func isUserGuidanceOut() {
+        // TODO
+    }
+    
+    func isNavigationRouteFailed() {
+        // TODO
+    }
+    
+    func isNavigationRouteChanged(_ routes: [(String, String, Int, Float, Float)]) {
+        // TODO
+    }
+
     func onJupiterSuccess(_ isSuccess: Bool) {
         print("(CardVC) onJupiterSuccess : \(isSuccess)")
     }
