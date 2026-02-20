@@ -370,6 +370,110 @@
         ]
       },
       {
+        "kind": "TypeDecl",
+        "name": "TJLabsNaviViewDelegate",
+        "printedName": "TJLabsNaviViewDelegate",
+        "children": [
+          {
+            "kind": "Function",
+            "name": "onNavigationRoute",
+            "printedName": "onNavigationRoute(_:routes:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "TJLabsNaviView",
+                "printedName": "TJLabsMap.TJLabsNaviView",
+                "usr": "c:@M@TJLabsMap@objc(cs)TJLabsNaviView"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[(Swift.String, Swift.String, Swift.Int, Swift.Float, Swift.Float)]",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Tuple",
+                    "printedName": "(Swift.String, Swift.String, Swift.Int, Swift.Float, Swift.Float)",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Float",
+                        "printedName": "Swift.Float",
+                        "usr": "s:Sf"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Float",
+                        "printedName": "Swift.Float",
+                        "usr": "s:Sf"
+                      }
+                    ]
+                  }
+                ],
+                "usr": "s:Sa"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:9TJLabsMap0A16NaviViewDelegateP17onNavigationRoute_6routesyAA0acD0C_SaySS_SSSiS2ftGtF",
+            "mangledName": "$s9TJLabsMap0A16NaviViewDelegateP17onNavigationRoute_6routesyAA0acD0C_SaySS_SSSiS2ftGtF",
+            "moduleName": "TJLabsMap",
+            "genericSig": "<τ_0_0 where τ_0_0 : TJLabsMap.TJLabsNaviViewDelegate>",
+            "sugared_genericSig": "<Self where Self : TJLabsMap.TJLabsNaviViewDelegate>",
+            "protocolReq": true,
+            "reqNewWitnessTableEntry": true,
+            "funcSelfKind": "NonMutating"
+          }
+        ],
+        "declKind": "Protocol",
+        "usr": "s:9TJLabsMap0A16NaviViewDelegateP",
+        "mangledName": "$s9TJLabsMap0A16NaviViewDelegateP",
+        "moduleName": "TJLabsMap",
+        "genericSig": "<τ_0_0 : AnyObject>",
+        "sugared_genericSig": "<Self : AnyObject>",
+        "declAttributes": [
+          "AccessControl"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP",
+            "mangledName": "$ss9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP",
+            "mangledName": "$ss8CopyableP"
+          }
+        ]
+      },
+      {
         "kind": "Import",
         "name": "Foundation",
         "printedName": "Foundation",
@@ -497,34 +601,6 @@
         "printedName": "TJLabsResource",
         "declKind": "Import",
         "moduleName": "TJLabsMap"
-      },
-      {
-        "kind": "TypeDecl",
-        "name": "MapNavigationNode",
-        "printedName": "MapNavigationNode",
-        "declKind": "Struct",
-        "usr": "s:9TJLabsMap0B14NavigationNodeV",
-        "mangledName": "$s9TJLabsMap0B14NavigationNodeV",
-        "moduleName": "TJLabsMap",
-        "declAttributes": [
-          "AccessControl"
-        ],
-        "conformances": [
-          {
-            "kind": "Conformance",
-            "name": "Copyable",
-            "printedName": "Copyable",
-            "usr": "s:s8CopyableP",
-            "mangledName": "$ss8CopyableP"
-          },
-          {
-            "kind": "Conformance",
-            "name": "Escapable",
-            "printedName": "Escapable",
-            "usr": "s:s9EscapableP",
-            "mangledName": "$ss9EscapableP"
-          }
-        ]
       },
       {
         "kind": "TypeDecl",
@@ -755,463 +831,6 @@
             "declKind": "Func",
             "usr": "s:9TJLabsMap0aB4ViewC9stopTimeryyF",
             "mangledName": "$s9TJLabsMap0aB4ViewC9stopTimeryyF",
-            "moduleName": "TJLabsMap",
-            "declAttributes": [
-              "Preconcurrency",
-              "Custom",
-              "AccessControl"
-            ],
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Var",
-            "name": "routeNaviNodes",
-            "printedName": "routeNaviNodes",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Array",
-                "printedName": "[TJLabsMap.MapNavigationNode]",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "MapNavigationNode",
-                    "printedName": "TJLabsMap.MapNavigationNode",
-                    "usr": "s:9TJLabsMap0B14NavigationNodeV"
-                  }
-                ],
-                "usr": "s:Sa"
-              }
-            ],
-            "declKind": "Var",
-            "usr": "s:9TJLabsMap0aB4ViewC14routeNaviNodesSayAA0B14NavigationNodeVGvp",
-            "mangledName": "$s9TJLabsMap0aB4ViewC14routeNaviNodesSayAA0B14NavigationNodeVGvp",
-            "moduleName": "TJLabsMap",
-            "declAttributes": [
-              "HasInitialValue",
-              "Preconcurrency",
-              "Custom",
-              "HasStorage",
-              "AccessControl",
-              "RawDocComment"
-            ],
-            "hasStorage": true,
-            "accessors": [
-              {
-                "kind": "Accessor",
-                "name": "Get",
-                "printedName": "Get()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Array",
-                    "printedName": "[TJLabsMap.MapNavigationNode]",
-                    "children": [
-                      {
-                        "kind": "TypeNominal",
-                        "name": "MapNavigationNode",
-                        "printedName": "TJLabsMap.MapNavigationNode",
-                        "usr": "s:9TJLabsMap0B14NavigationNodeV"
-                      }
-                    ],
-                    "usr": "s:Sa"
-                  }
-                ],
-                "declKind": "Accessor",
-                "usr": "s:9TJLabsMap0aB4ViewC14routeNaviNodesSayAA0B14NavigationNodeVGvg",
-                "mangledName": "$s9TJLabsMap0aB4ViewC14routeNaviNodesSayAA0B14NavigationNodeVGvg",
-                "moduleName": "TJLabsMap",
-                "implicit": true,
-                "accessorKind": "get"
-              },
-              {
-                "kind": "Accessor",
-                "name": "Set",
-                "printedName": "Set()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Void",
-                    "printedName": "()"
-                  },
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Array",
-                    "printedName": "[TJLabsMap.MapNavigationNode]",
-                    "children": [
-                      {
-                        "kind": "TypeNominal",
-                        "name": "MapNavigationNode",
-                        "printedName": "TJLabsMap.MapNavigationNode",
-                        "usr": "s:9TJLabsMap0B14NavigationNodeV"
-                      }
-                    ],
-                    "usr": "s:Sa"
-                  }
-                ],
-                "declKind": "Accessor",
-                "usr": "s:9TJLabsMap0aB4ViewC14routeNaviNodesSayAA0B14NavigationNodeVGvs",
-                "mangledName": "$s9TJLabsMap0aB4ViewC14routeNaviNodesSayAA0B14NavigationNodeVGvs",
-                "moduleName": "TJLabsMap",
-                "implicit": true,
-                "accessorKind": "set"
-              },
-              {
-                "kind": "Accessor",
-                "name": "Modify",
-                "printedName": "Modify()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Void",
-                    "printedName": "()"
-                  }
-                ],
-                "declKind": "Accessor",
-                "usr": "s:9TJLabsMap0aB4ViewC14routeNaviNodesSayAA0B14NavigationNodeVGvM",
-                "mangledName": "$s9TJLabsMap0aB4ViewC14routeNaviNodesSayAA0B14NavigationNodeVGvM",
-                "moduleName": "TJLabsMap",
-                "implicit": true,
-                "accessorKind": "_modify"
-              }
-            ]
-          },
-          {
-            "kind": "Var",
-            "name": "routeSize",
-            "printedName": "routeSize",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Int",
-                "printedName": "Swift.Int",
-                "usr": "s:Si"
-              }
-            ],
-            "declKind": "Var",
-            "usr": "s:9TJLabsMap0aB4ViewC9routeSizeSivp",
-            "mangledName": "$s9TJLabsMap0aB4ViewC9routeSizeSivp",
-            "moduleName": "TJLabsMap",
-            "declAttributes": [
-              "HasInitialValue",
-              "Preconcurrency",
-              "Custom",
-              "HasStorage",
-              "AccessControl"
-            ],
-            "hasStorage": true,
-            "accessors": [
-              {
-                "kind": "Accessor",
-                "name": "Get",
-                "printedName": "Get()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Int",
-                    "printedName": "Swift.Int",
-                    "usr": "s:Si"
-                  }
-                ],
-                "declKind": "Accessor",
-                "usr": "s:9TJLabsMap0aB4ViewC9routeSizeSivg",
-                "mangledName": "$s9TJLabsMap0aB4ViewC9routeSizeSivg",
-                "moduleName": "TJLabsMap",
-                "implicit": true,
-                "accessorKind": "get"
-              },
-              {
-                "kind": "Accessor",
-                "name": "Set",
-                "printedName": "Set()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Void",
-                    "printedName": "()"
-                  },
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Int",
-                    "printedName": "Swift.Int",
-                    "usr": "s:Si"
-                  }
-                ],
-                "declKind": "Accessor",
-                "usr": "s:9TJLabsMap0aB4ViewC9routeSizeSivs",
-                "mangledName": "$s9TJLabsMap0aB4ViewC9routeSizeSivs",
-                "moduleName": "TJLabsMap",
-                "implicit": true,
-                "accessorKind": "set"
-              },
-              {
-                "kind": "Accessor",
-                "name": "Modify",
-                "printedName": "Modify()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Void",
-                    "printedName": "()"
-                  }
-                ],
-                "declKind": "Accessor",
-                "usr": "s:9TJLabsMap0aB4ViewC9routeSizeSivM",
-                "mangledName": "$s9TJLabsMap0aB4ViewC9routeSizeSivM",
-                "moduleName": "TJLabsMap",
-                "implicit": true,
-                "accessorKind": "_modify"
-              }
-            ]
-          },
-          {
-            "kind": "Var",
-            "name": "pinLocations",
-            "printedName": "pinLocations",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Array",
-                "printedName": "[CoreFoundation.CGPoint]",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "CGPoint",
-                    "printedName": "CoreFoundation.CGPoint",
-                    "usr": "c:@S@CGPoint"
-                  }
-                ],
-                "usr": "s:Sa"
-              }
-            ],
-            "declKind": "Var",
-            "usr": "s:9TJLabsMap0aB4ViewC12pinLocationsSaySo7CGPointVGvp",
-            "mangledName": "$s9TJLabsMap0aB4ViewC12pinLocationsSaySo7CGPointVGvp",
-            "moduleName": "TJLabsMap",
-            "declAttributes": [
-              "HasInitialValue",
-              "Preconcurrency",
-              "Custom",
-              "HasStorage",
-              "AccessControl"
-            ],
-            "hasStorage": true,
-            "accessors": [
-              {
-                "kind": "Accessor",
-                "name": "Get",
-                "printedName": "Get()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Array",
-                    "printedName": "[CoreFoundation.CGPoint]",
-                    "children": [
-                      {
-                        "kind": "TypeNominal",
-                        "name": "CGPoint",
-                        "printedName": "CoreFoundation.CGPoint",
-                        "usr": "c:@S@CGPoint"
-                      }
-                    ],
-                    "usr": "s:Sa"
-                  }
-                ],
-                "declKind": "Accessor",
-                "usr": "s:9TJLabsMap0aB4ViewC12pinLocationsSaySo7CGPointVGvg",
-                "mangledName": "$s9TJLabsMap0aB4ViewC12pinLocationsSaySo7CGPointVGvg",
-                "moduleName": "TJLabsMap",
-                "implicit": true,
-                "accessorKind": "get"
-              },
-              {
-                "kind": "Accessor",
-                "name": "Set",
-                "printedName": "Set()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Void",
-                    "printedName": "()"
-                  },
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Array",
-                    "printedName": "[CoreFoundation.CGPoint]",
-                    "children": [
-                      {
-                        "kind": "TypeNominal",
-                        "name": "CGPoint",
-                        "printedName": "CoreFoundation.CGPoint",
-                        "usr": "c:@S@CGPoint"
-                      }
-                    ],
-                    "usr": "s:Sa"
-                  }
-                ],
-                "declKind": "Accessor",
-                "usr": "s:9TJLabsMap0aB4ViewC12pinLocationsSaySo7CGPointVGvs",
-                "mangledName": "$s9TJLabsMap0aB4ViewC12pinLocationsSaySo7CGPointVGvs",
-                "moduleName": "TJLabsMap",
-                "implicit": true,
-                "accessorKind": "set"
-              },
-              {
-                "kind": "Accessor",
-                "name": "Modify",
-                "printedName": "Modify()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Void",
-                    "printedName": "()"
-                  }
-                ],
-                "declKind": "Accessor",
-                "usr": "s:9TJLabsMap0aB4ViewC12pinLocationsSaySo7CGPointVGvM",
-                "mangledName": "$s9TJLabsMap0aB4ViewC12pinLocationsSaySo7CGPointVGvM",
-                "moduleName": "TJLabsMap",
-                "implicit": true,
-                "accessorKind": "_modify"
-              }
-            ]
-          },
-          {
-            "kind": "Var",
-            "name": "pinCounts",
-            "printedName": "pinCounts",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Int",
-                "printedName": "Swift.Int",
-                "usr": "s:Si"
-              }
-            ],
-            "declKind": "Var",
-            "usr": "s:9TJLabsMap0aB4ViewC9pinCountsSivp",
-            "mangledName": "$s9TJLabsMap0aB4ViewC9pinCountsSivp",
-            "moduleName": "TJLabsMap",
-            "declAttributes": [
-              "HasInitialValue",
-              "Preconcurrency",
-              "Custom",
-              "HasStorage",
-              "AccessControl"
-            ],
-            "hasStorage": true,
-            "accessors": [
-              {
-                "kind": "Accessor",
-                "name": "Get",
-                "printedName": "Get()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Int",
-                    "printedName": "Swift.Int",
-                    "usr": "s:Si"
-                  }
-                ],
-                "declKind": "Accessor",
-                "usr": "s:9TJLabsMap0aB4ViewC9pinCountsSivg",
-                "mangledName": "$s9TJLabsMap0aB4ViewC9pinCountsSivg",
-                "moduleName": "TJLabsMap",
-                "implicit": true,
-                "accessorKind": "get"
-              },
-              {
-                "kind": "Accessor",
-                "name": "Set",
-                "printedName": "Set()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Void",
-                    "printedName": "()"
-                  },
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Int",
-                    "printedName": "Swift.Int",
-                    "usr": "s:Si"
-                  }
-                ],
-                "declKind": "Accessor",
-                "usr": "s:9TJLabsMap0aB4ViewC9pinCountsSivs",
-                "mangledName": "$s9TJLabsMap0aB4ViewC9pinCountsSivs",
-                "moduleName": "TJLabsMap",
-                "implicit": true,
-                "accessorKind": "set"
-              },
-              {
-                "kind": "Accessor",
-                "name": "Modify",
-                "printedName": "Modify()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Void",
-                    "printedName": "()"
-                  }
-                ],
-                "declKind": "Accessor",
-                "usr": "s:9TJLabsMap0aB4ViewC9pinCountsSivM",
-                "mangledName": "$s9TJLabsMap0aB4ViewC9pinCountsSivM",
-                "moduleName": "TJLabsMap",
-                "implicit": true,
-                "accessorKind": "_modify"
-              }
-            ]
-          },
-          {
-            "kind": "Function",
-            "name": "setDummyRoutes",
-            "printedName": "setDummyRoutes(option:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Void",
-                "printedName": "()"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Bool",
-                "printedName": "Swift.Bool",
-                "usr": "s:Sb"
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:9TJLabsMap0aB4ViewC14setDummyRoutes6optionySb_tF",
-            "mangledName": "$s9TJLabsMap0aB4ViewC14setDummyRoutes6optionySb_tF",
-            "moduleName": "TJLabsMap",
-            "declAttributes": [
-              "Preconcurrency",
-              "Custom",
-              "AccessControl"
-            ],
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
-            "name": "setDummyPinLocations",
-            "printedName": "setDummyPinLocations(option:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Void",
-                "printedName": "()"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Bool",
-                "printedName": "Swift.Bool",
-                "usr": "s:Sb"
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:9TJLabsMap0aB4ViewC20setDummyPinLocations6optionySb_tF",
-            "mangledName": "$s9TJLabsMap0aB4ViewC20setDummyPinLocations6optionySb_tF",
             "moduleName": "TJLabsMap",
             "declAttributes": [
               "Preconcurrency",
@@ -1512,28 +1131,6 @@
             "declKind": "Func",
             "usr": "s:9TJLabsMap0aB4ViewC9plotRoute4typeyAC8RoadTypeO_tF",
             "mangledName": "$s9TJLabsMap0aB4ViewC9plotRoute4typeyAC8RoadTypeO_tF",
-            "moduleName": "TJLabsMap",
-            "declAttributes": [
-              "Preconcurrency",
-              "Custom",
-              "AccessControl"
-            ],
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
-            "name": "plotPins",
-            "printedName": "plotPins()",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Void",
-                "printedName": "()"
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:9TJLabsMap0aB4ViewC8plotPinsyyF",
-            "mangledName": "$s9TJLabsMap0aB4ViewC8plotPinsyyF",
             "moduleName": "TJLabsMap",
             "declAttributes": [
               "Preconcurrency",
@@ -1873,6 +1470,1647 @@
       },
       {
         "kind": "Import",
+        "name": "TJLabsResource",
+        "printedName": "TJLabsResource",
+        "declKind": "Import",
+        "moduleName": "TJLabsMap"
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "MapNavigationNode",
+        "printedName": "MapNavigationNode",
+        "declKind": "Struct",
+        "usr": "s:9TJLabsMap0B14NavigationNodeV",
+        "mangledName": "$s9TJLabsMap0B14NavigationNodeV",
+        "moduleName": "TJLabsMap",
+        "declAttributes": [
+          "AccessControl"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP",
+            "mangledName": "$ss8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP",
+            "mangledName": "$ss9EscapableP"
+          }
+        ]
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "TJLabsNaviView",
+        "printedName": "TJLabsNaviView",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "delegate",
+            "printedName": "delegate",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "WeakStorage",
+                "printedName": "(any TJLabsMap.TJLabsNaviViewDelegate)?"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:9TJLabsMap0A8NaviViewC8delegateAA0acD8Delegate_pSgvp",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC8delegateAA0acD8Delegate_pSgvp",
+            "moduleName": "TJLabsMap",
+            "declAttributes": [
+              "HasInitialValue",
+              "Preconcurrency",
+              "Custom",
+              "HasStorage",
+              "ReferenceOwnership",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "ownership": 1,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "(any TJLabsMap.TJLabsNaviViewDelegate)?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "TJLabsNaviViewDelegate",
+                        "printedName": "any TJLabsMap.TJLabsNaviViewDelegate",
+                        "usr": "s:9TJLabsMap0A16NaviViewDelegateP"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:9TJLabsMap0A8NaviViewC8delegateAA0acD8Delegate_pSgvg",
+                "mangledName": "$s9TJLabsMap0A8NaviViewC8delegateAA0acD8Delegate_pSgvg",
+                "moduleName": "TJLabsMap",
+                "implicit": true,
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "(any TJLabsMap.TJLabsNaviViewDelegate)?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "TJLabsNaviViewDelegate",
+                        "printedName": "any TJLabsMap.TJLabsNaviViewDelegate",
+                        "usr": "s:9TJLabsMap0A16NaviViewDelegateP"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:9TJLabsMap0A8NaviViewC8delegateAA0acD8Delegate_pSgvs",
+                "mangledName": "$s9TJLabsMap0A8NaviViewC8delegateAA0acD8Delegate_pSgvs",
+                "moduleName": "TJLabsMap",
+                "implicit": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:9TJLabsMap0A8NaviViewC8delegateAA0acD8Delegate_pSgvM",
+                "mangledName": "$s9TJLabsMap0A8NaviViewC8delegateAA0acD8Delegate_pSgvM",
+                "moduleName": "TJLabsMap",
+                "implicit": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Function",
+            "name": "initialize",
+            "printedName": "initialize(region:sectorId:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:9TJLabsMap0A8NaviViewC10initialize6region8sectorIdySS_SitF",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC10initialize6region8sectorIdySS_SitF",
+            "moduleName": "TJLabsMap",
+            "declAttributes": [
+              "Preconcurrency",
+              "Custom",
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "configureFrame",
+            "printedName": "configureFrame(to:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "UIView",
+                "printedName": "UIKit.UIView",
+                "usr": "c:objc(cs)UIView"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:9TJLabsMap0A8NaviViewC14configureFrame2toySo6UIViewC_tF",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC14configureFrame2toySo6UIViewC_tF",
+            "moduleName": "TJLabsMap",
+            "declAttributes": [
+              "Preconcurrency",
+              "Custom",
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "setDebugOption",
+            "printedName": "setDebugOption(flag:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:9TJLabsMap0A8NaviViewC14setDebugOption4flagySb_tF",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC14setDebugOption4flagySb_tF",
+            "moduleName": "TJLabsMap",
+            "declAttributes": [
+              "Preconcurrency",
+              "Custom",
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "setPointOffset",
+            "printedName": "setPointOffset(offset:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "CGFloat",
+                "printedName": "CoreGraphics.CGFloat",
+                "usr": "s:14CoreFoundation7CGFloatV"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:9TJLabsMap0A8NaviViewC14setPointOffset6offsety14CoreFoundation7CGFloatV_tF",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC14setPointOffset6offsety12CoreGraphics7CGFloatV_tF",
+            "moduleName": "TJLabsMap",
+            "declAttributes": [
+              "Preconcurrency",
+              "Custom",
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "setZoomAndMarkerScale",
+            "printedName": "setZoomAndMarkerScale(zoom:marker:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "CGFloat",
+                "printedName": "CoreGraphics.CGFloat",
+                "usr": "s:14CoreFoundation7CGFloatV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "CGFloat",
+                "printedName": "CoreGraphics.CGFloat",
+                "hasDefaultArg": true,
+                "usr": "s:14CoreFoundation7CGFloatV"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:9TJLabsMap0A8NaviViewC21setZoomAndMarkerScale4zoom6markery14CoreFoundation7CGFloatV_AItF",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC21setZoomAndMarkerScale4zoom6markery12CoreGraphics7CGFloatV_AItF",
+            "moduleName": "TJLabsMap",
+            "declAttributes": [
+              "Preconcurrency",
+              "Custom",
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "setButtonHidden",
+            "printedName": "setButtonHidden(isHidden:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:9TJLabsMap0A8NaviViewC15setButtonHidden02isG0ySb_tF",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC15setButtonHidden02isG0ySb_tF",
+            "moduleName": "TJLabsMap",
+            "declAttributes": [
+              "Preconcurrency",
+              "Custom",
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "updateResultInMap",
+            "printedName": "updateResultInMap(result:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "TJLabsUserCoordinate",
+                "printedName": "TJLabsMap.TJLabsUserCoordinate",
+                "usr": "s:9TJLabsMap0A14UserCoordinateV"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:9TJLabsMap0A8NaviViewC014updateResultInB06resultyAA0A14UserCoordinateV_tF",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC014updateResultInB06resultyAA0A14UserCoordinateV_tF",
+            "moduleName": "TJLabsMap",
+            "declAttributes": [
+              "Preconcurrency",
+              "Custom",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "stopTimer",
+            "printedName": "stopTimer()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:9TJLabsMap0A8NaviViewC9stopTimeryyF",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC9stopTimeryyF",
+            "moduleName": "TJLabsMap",
+            "declAttributes": [
+              "Preconcurrency",
+              "Custom",
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Var",
+            "name": "naviRoutes",
+            "printedName": "naviRoutes",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[(Swift.String, Swift.String, Swift.Int, Swift.Float, Swift.Float)]",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Tuple",
+                    "printedName": "(Swift.String, Swift.String, Swift.Int, Swift.Float, Swift.Float)",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Float",
+                        "printedName": "Swift.Float",
+                        "usr": "s:Sf"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Float",
+                        "printedName": "Swift.Float",
+                        "usr": "s:Sf"
+                      }
+                    ]
+                  }
+                ],
+                "usr": "s:Sa"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:9TJLabsMap0A8NaviViewC10naviRoutesSaySS_SSSiS2ftGvp",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC10naviRoutesSaySS_SSSiS2ftGvp",
+            "moduleName": "TJLabsMap",
+            "declAttributes": [
+              "HasInitialValue",
+              "Preconcurrency",
+              "Custom",
+              "HasStorage",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[(Swift.String, Swift.String, Swift.Int, Swift.Float, Swift.Float)]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(Swift.String, Swift.String, Swift.Int, Swift.Float, Swift.Float)",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Float",
+                            "printedName": "Swift.Float",
+                            "usr": "s:Sf"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Float",
+                            "printedName": "Swift.Float",
+                            "usr": "s:Sf"
+                          }
+                        ]
+                      }
+                    ],
+                    "usr": "s:Sa"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:9TJLabsMap0A8NaviViewC10naviRoutesSaySS_SSSiS2ftGvg",
+                "mangledName": "$s9TJLabsMap0A8NaviViewC10naviRoutesSaySS_SSSiS2ftGvg",
+                "moduleName": "TJLabsMap",
+                "implicit": true,
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[(Swift.String, Swift.String, Swift.Int, Swift.Float, Swift.Float)]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(Swift.String, Swift.String, Swift.Int, Swift.Float, Swift.Float)",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Float",
+                            "printedName": "Swift.Float",
+                            "usr": "s:Sf"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Float",
+                            "printedName": "Swift.Float",
+                            "usr": "s:Sf"
+                          }
+                        ]
+                      }
+                    ],
+                    "usr": "s:Sa"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:9TJLabsMap0A8NaviViewC10naviRoutesSaySS_SSSiS2ftGvs",
+                "mangledName": "$s9TJLabsMap0A8NaviViewC10naviRoutesSaySS_SSSiS2ftGvs",
+                "moduleName": "TJLabsMap",
+                "implicit": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:9TJLabsMap0A8NaviViewC10naviRoutesSaySS_SSSiS2ftGvM",
+                "mangledName": "$s9TJLabsMap0A8NaviViewC10naviRoutesSaySS_SSSiS2ftGvM",
+                "moduleName": "TJLabsMap",
+                "implicit": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "routeCounts",
+            "printedName": "routeCounts",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:9TJLabsMap0A8NaviViewC11routeCountsSivp",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC11routeCountsSivp",
+            "moduleName": "TJLabsMap",
+            "declAttributes": [
+              "HasInitialValue",
+              "Preconcurrency",
+              "Custom",
+              "HasStorage",
+              "AccessControl"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:9TJLabsMap0A8NaviViewC11routeCountsSivg",
+                "mangledName": "$s9TJLabsMap0A8NaviViewC11routeCountsSivg",
+                "moduleName": "TJLabsMap",
+                "implicit": true,
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:9TJLabsMap0A8NaviViewC11routeCountsSivs",
+                "mangledName": "$s9TJLabsMap0A8NaviViewC11routeCountsSivs",
+                "moduleName": "TJLabsMap",
+                "implicit": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:9TJLabsMap0A8NaviViewC11routeCountsSivM",
+                "mangledName": "$s9TJLabsMap0A8NaviViewC11routeCountsSivM",
+                "moduleName": "TJLabsMap",
+                "implicit": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "pinLocations",
+            "printedName": "pinLocations",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[CoreFoundation.CGPoint]",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "CGPoint",
+                    "printedName": "CoreFoundation.CGPoint",
+                    "usr": "c:@S@CGPoint"
+                  }
+                ],
+                "usr": "s:Sa"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:9TJLabsMap0A8NaviViewC12pinLocationsSaySo7CGPointVGvp",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC12pinLocationsSaySo7CGPointVGvp",
+            "moduleName": "TJLabsMap",
+            "declAttributes": [
+              "HasInitialValue",
+              "Preconcurrency",
+              "Custom",
+              "HasStorage",
+              "AccessControl"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[CoreFoundation.CGPoint]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "CGPoint",
+                        "printedName": "CoreFoundation.CGPoint",
+                        "usr": "c:@S@CGPoint"
+                      }
+                    ],
+                    "usr": "s:Sa"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:9TJLabsMap0A8NaviViewC12pinLocationsSaySo7CGPointVGvg",
+                "mangledName": "$s9TJLabsMap0A8NaviViewC12pinLocationsSaySo7CGPointVGvg",
+                "moduleName": "TJLabsMap",
+                "implicit": true,
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[CoreFoundation.CGPoint]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "CGPoint",
+                        "printedName": "CoreFoundation.CGPoint",
+                        "usr": "c:@S@CGPoint"
+                      }
+                    ],
+                    "usr": "s:Sa"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:9TJLabsMap0A8NaviViewC12pinLocationsSaySo7CGPointVGvs",
+                "mangledName": "$s9TJLabsMap0A8NaviViewC12pinLocationsSaySo7CGPointVGvs",
+                "moduleName": "TJLabsMap",
+                "implicit": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:9TJLabsMap0A8NaviViewC12pinLocationsSaySo7CGPointVGvM",
+                "mangledName": "$s9TJLabsMap0A8NaviViewC12pinLocationsSaySo7CGPointVGvM",
+                "moduleName": "TJLabsMap",
+                "implicit": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "pinCounts",
+            "printedName": "pinCounts",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:9TJLabsMap0A8NaviViewC9pinCountsSivp",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC9pinCountsSivp",
+            "moduleName": "TJLabsMap",
+            "declAttributes": [
+              "HasInitialValue",
+              "Preconcurrency",
+              "Custom",
+              "HasStorage",
+              "AccessControl"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:9TJLabsMap0A8NaviViewC9pinCountsSivg",
+                "mangledName": "$s9TJLabsMap0A8NaviViewC9pinCountsSivg",
+                "moduleName": "TJLabsMap",
+                "implicit": true,
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:9TJLabsMap0A8NaviViewC9pinCountsSivs",
+                "mangledName": "$s9TJLabsMap0A8NaviViewC9pinCountsSivs",
+                "moduleName": "TJLabsMap",
+                "implicit": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:9TJLabsMap0A8NaviViewC9pinCountsSivM",
+                "mangledName": "$s9TJLabsMap0A8NaviViewC9pinCountsSivM",
+                "moduleName": "TJLabsMap",
+                "implicit": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Function",
+            "name": "setNaviRoutes",
+            "printedName": "setNaviRoutes(routes:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[(Swift.String, Swift.String, Swift.Int, Swift.Float, Swift.Float)]",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Tuple",
+                    "printedName": "(Swift.String, Swift.String, Swift.Int, Swift.Float, Swift.Float)",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Float",
+                        "printedName": "Swift.Float",
+                        "usr": "s:Sf"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Float",
+                        "printedName": "Swift.Float",
+                        "usr": "s:Sf"
+                      }
+                    ]
+                  }
+                ],
+                "usr": "s:Sa"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:9TJLabsMap0A8NaviViewC03setC6Routes6routesySaySS_SSSiS2ftG_tF",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC03setC6Routes6routesySaySS_SSSiS2ftG_tF",
+            "moduleName": "TJLabsMap",
+            "declAttributes": [
+              "Preconcurrency",
+              "Custom",
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "setNaviPinLocations",
+            "printedName": "setNaviPinLocations(option:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:9TJLabsMap0A8NaviViewC03setC12PinLocations6optionySb_tF",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC03setC12PinLocations6optionySb_tF",
+            "moduleName": "TJLabsMap",
+            "declAttributes": [
+              "Preconcurrency",
+              "Custom",
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "setNaviWaypoints",
+            "printedName": "setNaviWaypoints(waypoints:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[[Swift.Double]]",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[Swift.Double]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Double",
+                        "printedName": "Swift.Double",
+                        "usr": "s:Sd"
+                      }
+                    ],
+                    "usr": "s:Sa"
+                  }
+                ],
+                "usr": "s:Sa"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:9TJLabsMap0A8NaviViewC03setC9Waypoints9waypointsySaySaySdGG_tF",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC03setC9Waypoints9waypointsySaySaySdGG_tF",
+            "moduleName": "TJLabsMap",
+            "declAttributes": [
+              "Preconcurrency",
+              "Custom",
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "TypeDecl",
+            "name": "RoadType",
+            "printedName": "RoadType",
+            "children": [
+              {
+                "kind": "Var",
+                "name": "FRAME",
+                "printedName": "FRAME",
+                "children": [
+                  {
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(TJLabsMap.TJLabsNaviView.RoadType.Type) -> TJLabsMap.TJLabsNaviView.RoadType",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "RoadType",
+                        "printedName": "TJLabsMap.TJLabsNaviView.RoadType",
+                        "usr": "s:9TJLabsMap0A8NaviViewC8RoadTypeO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Metatype",
+                        "printedName": "TJLabsMap.TJLabsNaviView.RoadType.Type",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "RoadType",
+                            "printedName": "TJLabsMap.TJLabsNaviView.RoadType",
+                            "usr": "s:9TJLabsMap0A8NaviViewC8RoadTypeO"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "declKind": "EnumElement",
+                "usr": "s:9TJLabsMap0A8NaviViewC8RoadTypeO5FRAMEyA2EmF",
+                "mangledName": "$s9TJLabsMap0A8NaviViewC8RoadTypeO5FRAMEyA2EmF",
+                "moduleName": "TJLabsMap"
+              },
+              {
+                "kind": "Var",
+                "name": "MAIN",
+                "printedName": "MAIN",
+                "children": [
+                  {
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(TJLabsMap.TJLabsNaviView.RoadType.Type) -> TJLabsMap.TJLabsNaviView.RoadType",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "RoadType",
+                        "printedName": "TJLabsMap.TJLabsNaviView.RoadType",
+                        "usr": "s:9TJLabsMap0A8NaviViewC8RoadTypeO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Metatype",
+                        "printedName": "TJLabsMap.TJLabsNaviView.RoadType.Type",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "RoadType",
+                            "printedName": "TJLabsMap.TJLabsNaviView.RoadType",
+                            "usr": "s:9TJLabsMap0A8NaviViewC8RoadTypeO"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "declKind": "EnumElement",
+                "usr": "s:9TJLabsMap0A8NaviViewC8RoadTypeO4MAINyA2EmF",
+                "mangledName": "$s9TJLabsMap0A8NaviViewC8RoadTypeO4MAINyA2EmF",
+                "moduleName": "TJLabsMap"
+              },
+              {
+                "kind": "Var",
+                "name": "SUB",
+                "printedName": "SUB",
+                "children": [
+                  {
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(TJLabsMap.TJLabsNaviView.RoadType.Type) -> TJLabsMap.TJLabsNaviView.RoadType",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "RoadType",
+                        "printedName": "TJLabsMap.TJLabsNaviView.RoadType",
+                        "usr": "s:9TJLabsMap0A8NaviViewC8RoadTypeO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Metatype",
+                        "printedName": "TJLabsMap.TJLabsNaviView.RoadType.Type",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "RoadType",
+                            "printedName": "TJLabsMap.TJLabsNaviView.RoadType",
+                            "usr": "s:9TJLabsMap0A8NaviViewC8RoadTypeO"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "declKind": "EnumElement",
+                "usr": "s:9TJLabsMap0A8NaviViewC8RoadTypeO3SUByA2EmF",
+                "mangledName": "$s9TJLabsMap0A8NaviViewC8RoadTypeO3SUByA2EmF",
+                "moduleName": "TJLabsMap"
+              },
+              {
+                "kind": "Constructor",
+                "name": "init",
+                "printedName": "init(rawValue:)",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "TJLabsMap.TJLabsNaviView.RoadType?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "RoadType",
+                        "printedName": "TJLabsMap.TJLabsNaviView.RoadType",
+                        "usr": "s:9TJLabsMap0A8NaviViewC8RoadTypeO"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Constructor",
+                "usr": "s:9TJLabsMap0A8NaviViewC8RoadTypeO8rawValueAESgSS_tcfc",
+                "mangledName": "$s9TJLabsMap0A8NaviViewC8RoadTypeO8rawValueAESgSS_tcfc",
+                "moduleName": "TJLabsMap",
+                "implicit": true,
+                "init_kind": "Designated"
+              },
+              {
+                "kind": "Var",
+                "name": "rawValue",
+                "printedName": "rawValue",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Var",
+                "usr": "s:9TJLabsMap0A8NaviViewC8RoadTypeO8rawValueSSvp",
+                "mangledName": "$s9TJLabsMap0A8NaviViewC8RoadTypeO8rawValueSSvp",
+                "moduleName": "TJLabsMap",
+                "implicit": true,
+                "accessors": [
+                  {
+                    "kind": "Accessor",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "declKind": "Accessor",
+                    "usr": "s:9TJLabsMap0A8NaviViewC8RoadTypeO8rawValueSSvg",
+                    "mangledName": "$s9TJLabsMap0A8NaviViewC8RoadTypeO8rawValueSSvg",
+                    "moduleName": "TJLabsMap",
+                    "implicit": true,
+                    "accessorKind": "get"
+                  }
+                ]
+              }
+            ],
+            "declKind": "Enum",
+            "usr": "s:9TJLabsMap0A8NaviViewC8RoadTypeO",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC8RoadTypeO",
+            "moduleName": "TJLabsMap",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "enumRawTypeName": "String",
+            "conformances": [
+              {
+                "kind": "Conformance",
+                "name": "Copyable",
+                "printedName": "Copyable",
+                "usr": "s:s8CopyableP",
+                "mangledName": "$ss8CopyableP"
+              },
+              {
+                "kind": "Conformance",
+                "name": "Escapable",
+                "printedName": "Escapable",
+                "usr": "s:s9EscapableP",
+                "mangledName": "$ss9EscapableP"
+              },
+              {
+                "kind": "Conformance",
+                "name": "Equatable",
+                "printedName": "Equatable",
+                "usr": "s:SQ",
+                "mangledName": "$sSQ"
+              },
+              {
+                "kind": "Conformance",
+                "name": "Hashable",
+                "printedName": "Hashable",
+                "usr": "s:SH",
+                "mangledName": "$sSH"
+              },
+              {
+                "kind": "Conformance",
+                "name": "RawRepresentable",
+                "printedName": "RawRepresentable",
+                "children": [
+                  {
+                    "kind": "TypeWitness",
+                    "name": "RawValue",
+                    "printedName": "RawValue",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ]
+                  }
+                ],
+                "usr": "s:SY",
+                "mangledName": "$sSY"
+              }
+            ]
+          },
+          {
+            "kind": "Function",
+            "name": "plotRoutelAll",
+            "printedName": "plotRoutelAll()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:9TJLabsMap0A8NaviViewC13plotRoutelAllyyF",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC13plotRoutelAllyyF",
+            "moduleName": "TJLabsMap",
+            "declAttributes": [
+              "Preconcurrency",
+              "Custom",
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "plotRoute",
+            "printedName": "plotRoute(type:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "RoadType",
+                "printedName": "TJLabsMap.TJLabsNaviView.RoadType",
+                "usr": "s:9TJLabsMap0A8NaviViewC8RoadTypeO"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:9TJLabsMap0A8NaviViewC9plotRoute4typeyAC8RoadTypeO_tF",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC9plotRoute4typeyAC8RoadTypeO_tF",
+            "moduleName": "TJLabsMap",
+            "declAttributes": [
+              "Preconcurrency",
+              "Custom",
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "plotPins",
+            "printedName": "plotPins()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:9TJLabsMap0A8NaviViewC8plotPinsyyF",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC8plotPinsyyF",
+            "moduleName": "TJLabsMap",
+            "declAttributes": [
+              "Preconcurrency",
+              "Custom",
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "collectionView",
+            "printedName": "collectionView(_:numberOfItemsInSection:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "UICollectionView",
+                "printedName": "UIKit.UICollectionView",
+                "usr": "c:objc(cs)UICollectionView"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "c:@CM@TJLabsMap@objc(cs)TJLabsNaviView(im)collectionView:numberOfItemsInSection:",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC010collectionD0_22numberOfItemsInSectionSiSo012UICollectionD0C_SitF",
+            "moduleName": "TJLabsMap",
+            "objc_name": "collectionView:numberOfItemsInSection:",
+            "declAttributes": [
+              "Dynamic",
+              "ObjC",
+              "Preconcurrency",
+              "Custom",
+              "AccessControl"
+            ],
+            "isFromExtension": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "collectionView",
+            "printedName": "collectionView(_:cellForItemAt:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "UICollectionViewCell",
+                "printedName": "UIKit.UICollectionViewCell",
+                "usr": "c:objc(cs)UICollectionViewCell"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "UICollectionView",
+                "printedName": "UIKit.UICollectionView",
+                "usr": "c:objc(cs)UICollectionView"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "IndexPath",
+                "printedName": "Foundation.IndexPath",
+                "usr": "s:10Foundation9IndexPathV"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "c:@CM@TJLabsMap@objc(cs)TJLabsNaviView(im)collectionView:cellForItemAtIndexPath:",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC010collectionD0_13cellForItemAtSo012UICollectionD4CellCSo0jD0C_10Foundation9IndexPathVtF",
+            "moduleName": "TJLabsMap",
+            "objc_name": "collectionView:cellForItemAtIndexPath:",
+            "declAttributes": [
+              "Dynamic",
+              "ObjC",
+              "Preconcurrency",
+              "Custom",
+              "AccessControl"
+            ],
+            "isFromExtension": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "collectionView",
+            "printedName": "collectionView(_:layout:sizeForItemAt:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "CGSize",
+                "printedName": "CoreFoundation.CGSize",
+                "usr": "c:@S@CGSize"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "UICollectionView",
+                "printedName": "UIKit.UICollectionView",
+                "usr": "c:objc(cs)UICollectionView"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "UICollectionViewLayout",
+                "printedName": "UIKit.UICollectionViewLayout",
+                "usr": "c:objc(cs)UICollectionViewLayout"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "IndexPath",
+                "printedName": "Foundation.IndexPath",
+                "usr": "s:10Foundation9IndexPathV"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "c:@CM@TJLabsMap@objc(cs)TJLabsNaviView(im)collectionView:layout:sizeForItemAtIndexPath:",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC010collectionD0_6layout13sizeForItemAtSo6CGSizeVSo012UICollectionD0C_So0lD6LayoutC10Foundation9IndexPathVtF",
+            "moduleName": "TJLabsMap",
+            "objc_name": "collectionView:layout:sizeForItemAtIndexPath:",
+            "declAttributes": [
+              "Dynamic",
+              "ObjC",
+              "Preconcurrency",
+              "Custom",
+              "AccessControl"
+            ],
+            "isFromExtension": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "collectionView",
+            "printedName": "collectionView(_:didSelectItemAt:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "UICollectionView",
+                "printedName": "UIKit.UICollectionView",
+                "usr": "c:objc(cs)UICollectionView"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "IndexPath",
+                "printedName": "Foundation.IndexPath",
+                "usr": "s:10Foundation9IndexPathV"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "c:@CM@TJLabsMap@objc(cs)TJLabsNaviView(im)collectionView:didSelectItemAtIndexPath:",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC010collectionD0_15didSelectItemAtySo012UICollectionD0C_10Foundation9IndexPathVtF",
+            "moduleName": "TJLabsMap",
+            "objc_name": "collectionView:didSelectItemAtIndexPath:",
+            "declAttributes": [
+              "Dynamic",
+              "ObjC",
+              "Preconcurrency",
+              "Custom",
+              "AccessControl"
+            ],
+            "isFromExtension": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "viewForZooming",
+            "printedName": "viewForZooming(in:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "UIKit.UIView?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "UIView",
+                    "printedName": "UIKit.UIView",
+                    "usr": "c:objc(cs)UIView"
+                  }
+                ],
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "UIScrollView",
+                "printedName": "UIKit.UIScrollView",
+                "usr": "c:objc(cs)UIScrollView"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "c:@CM@TJLabsMap@objc(cs)TJLabsNaviView(im)viewForZoomingInScrollView:",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC14viewForZooming2inSo6UIViewCSgSo08UIScrollD0C_tF",
+            "moduleName": "TJLabsMap",
+            "objc_name": "viewForZoomingInScrollView:",
+            "declAttributes": [
+              "Dynamic",
+              "ObjC",
+              "Preconcurrency",
+              "Custom",
+              "AccessControl"
+            ],
+            "isFromExtension": true,
+            "funcSelfKind": "NonMutating"
+          }
+        ],
+        "declKind": "Class",
+        "usr": "c:@M@TJLabsMap@objc(cs)TJLabsNaviView",
+        "mangledName": "$s9TJLabsMap0A8NaviViewC",
+        "moduleName": "TJLabsMap",
+        "declAttributes": [
+          "Preconcurrency",
+          "Custom",
+          "AccessControl",
+          "ObjC"
+        ],
+        "superclassUsr": "c:objc(cs)UIView",
+        "hasMissingDesignatedInitializers": true,
+        "inheritsConvenienceInitializers": true,
+        "superclassNames": [
+          "UIKit.UIView",
+          "UIKit.UIResponder",
+          "ObjectiveC.NSObject"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP",
+            "mangledName": "$ss8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP",
+            "mangledName": "$ss9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ",
+            "mangledName": "$sSQ"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH",
+            "mangledName": "$sSH"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CVarArg",
+            "printedName": "CVarArg",
+            "usr": "s:s7CVarArgP",
+            "mangledName": "$ss7CVarArgP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "_KeyValueCodingAndObservingPublishing",
+            "printedName": "_KeyValueCodingAndObservingPublishing",
+            "usr": "s:10Foundation37_KeyValueCodingAndObservingPublishingP",
+            "mangledName": "$s10Foundation37_KeyValueCodingAndObservingPublishingP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "_KeyValueCodingAndObserving",
+            "printedName": "_KeyValueCodingAndObserving",
+            "usr": "s:10Foundation27_KeyValueCodingAndObservingP",
+            "mangledName": "$s10Foundation27_KeyValueCodingAndObservingP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CustomStringConvertible",
+            "printedName": "CustomStringConvertible",
+            "usr": "s:s23CustomStringConvertibleP",
+            "mangledName": "$ss23CustomStringConvertibleP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CustomDebugStringConvertible",
+            "printedName": "CustomDebugStringConvertible",
+            "usr": "s:s28CustomDebugStringConvertibleP",
+            "mangledName": "$ss28CustomDebugStringConvertibleP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "UITraitChangeObservable",
+            "printedName": "UITraitChangeObservable",
+            "usr": "s:5UIKit23UITraitChangeObservableP",
+            "mangledName": "$s5UIKit23UITraitChangeObservableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "__DefaultCustomPlaygroundQuickLookable",
+            "printedName": "__DefaultCustomPlaygroundQuickLookable",
+            "usr": "s:s38__DefaultCustomPlaygroundQuickLookableP",
+            "mangledName": "$ss38__DefaultCustomPlaygroundQuickLookableP"
+          }
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "UIKit",
+        "printedName": "UIKit",
+        "declKind": "Import",
+        "moduleName": "TJLabsMap"
+      },
+      {
+        "kind": "Import",
         "name": "UIKit",
         "printedName": "UIKit",
         "declKind": "Import",
@@ -1962,273 +3200,532 @@
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 704,
+      "offset": 537,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 737,
+      "offset": 570,
       "length": 1,
       "value": "1"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 770,
+      "offset": 603,
       "length": 1,
       "value": "2"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 803,
+      "offset": 636,
       "length": 1,
       "value": "3"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 828,
+      "offset": 661,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 837,
+      "offset": 670,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "FloatLiteral",
-      "offset": 976,
+      "offset": 809,
       "length": 3,
       "value": "1.0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "FloatLiteral",
-      "offset": 984,
+      "offset": 817,
       "length": 3,
       "value": "1.0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "StringLiteral",
-      "offset": 1728,
+      "offset": 1561,
       "length": 2,
       "value": "\"\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 1763,
+      "offset": 1596,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 2286,
+      "offset": 2119,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 2325,
+      "offset": 2158,
       "length": 2,
       "value": "30"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "FloatLiteral",
-      "offset": 2415,
+      "offset": 2248,
       "length": 3,
       "value": "1.5"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 2716,
+      "offset": 2549,
       "length": 2,
       "value": "30"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 2728,
+      "offset": 2561,
       "length": 2,
       "value": "30"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "FloatLiteral",
-      "offset": 2771,
+      "offset": 2604,
       "length": 3,
       "value": "0.1"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 2826,
+      "offset": 2659,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "FloatLiteral",
-      "offset": 3330,
+      "offset": 3163,
       "length": 3,
       "value": "2.5"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "FloatLiteral",
-      "offset": 3378,
+      "offset": 3211,
       "length": 3,
       "value": "3.0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "BooleanLiteral",
-      "offset": 3498,
+      "offset": 3331,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 3630,
+      "offset": 3463,
       "length": 3,
       "value": "999"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 3716,
+      "offset": 3549,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "BooleanLiteral",
-      "offset": 3826,
+      "offset": 3659,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 3875,
+      "offset": 3708,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 3915,
+      "offset": 3748,
       "length": 2,
       "value": "20"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 3918,
+      "offset": 3751,
       "length": 4,
       "value": "1000"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 3969,
+      "offset": 3802,
       "length": 3,
       "value": "180"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "FloatLiteral",
-      "offset": 4255,
+      "offset": 4088,
       "length": 4,
       "value": "0.55"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "FloatLiteral",
-      "offset": 4310,
+      "offset": 4143,
       "length": 4,
       "value": "0.55"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "FloatLiteral",
-      "offset": 4891,
+      "offset": 4724,
       "length": 4,
       "value": "0.12"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "FloatLiteral",
-      "offset": 4975,
+      "offset": 4808,
       "length": 5,
       "value": "100.0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 5138,
+      "offset": 4971,
       "length": 3,
       "value": "180"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "FloatLiteral",
-      "offset": 6251,
+      "offset": 6084,
       "length": 3,
       "value": "3.0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "FloatLiteral",
-      "offset": 43776,
+      "offset": 43067,
       "length": 4,
       "value": "0.01"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
-      "kind": "IntegerLiteral",
-      "offset": 61860,
-      "length": 1,
-      "value": "0"
-    },
-    {
-      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
-      "kind": "IntegerLiteral",
-      "offset": 61936,
-      "length": 1,
-      "value": "0"
-    },
-    {
-      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "StringLiteral",
-      "offset": 65978,
+      "offset": 60934,
       "length": 7,
       "value": "\"FRAME\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "StringLiteral",
-      "offset": 66006,
+      "offset": 60962,
       "length": 6,
       "value": "\"MAIN\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "StringLiteral",
-      "offset": 66032,
+      "offset": 60988,
+      "length": 5,
+      "value": "\"SUB\""
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "IntegerLiteral",
+      "offset": 705,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "IntegerLiteral",
+      "offset": 738,
+      "length": 1,
+      "value": "1"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "IntegerLiteral",
+      "offset": 771,
+      "length": 1,
+      "value": "2"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "IntegerLiteral",
+      "offset": 804,
+      "length": 1,
+      "value": "3"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "IntegerLiteral",
+      "offset": 829,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "IntegerLiteral",
+      "offset": 838,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "FloatLiteral",
+      "offset": 977,
+      "length": 3,
+      "value": "1.0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "FloatLiteral",
+      "offset": 985,
+      "length": 3,
+      "value": "1.0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "StringLiteral",
+      "offset": 1729,
+      "length": 2,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1764,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "IntegerLiteral",
+      "offset": 2362,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "IntegerLiteral",
+      "offset": 2401,
+      "length": 2,
+      "value": "30"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "FloatLiteral",
+      "offset": 2491,
+      "length": 3,
+      "value": "1.5"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "IntegerLiteral",
+      "offset": 2792,
+      "length": 2,
+      "value": "30"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "IntegerLiteral",
+      "offset": 2804,
+      "length": 2,
+      "value": "30"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "FloatLiteral",
+      "offset": 2847,
+      "length": 3,
+      "value": "0.1"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "IntegerLiteral",
+      "offset": 2902,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "FloatLiteral",
+      "offset": 3406,
+      "length": 3,
+      "value": "2.5"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "FloatLiteral",
+      "offset": 3454,
+      "length": 3,
+      "value": "3.0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "BooleanLiteral",
+      "offset": 3574,
+      "length": 4,
+      "value": "true"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "IntegerLiteral",
+      "offset": 3706,
+      "length": 3,
+      "value": "999"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "IntegerLiteral",
+      "offset": 3792,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "BooleanLiteral",
+      "offset": 3902,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "IntegerLiteral",
+      "offset": 3951,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "IntegerLiteral",
+      "offset": 3991,
+      "length": 2,
+      "value": "20"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "IntegerLiteral",
+      "offset": 3994,
+      "length": 4,
+      "value": "1000"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "IntegerLiteral",
+      "offset": 4045,
+      "length": 3,
+      "value": "180"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "FloatLiteral",
+      "offset": 4331,
+      "length": 4,
+      "value": "0.55"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "FloatLiteral",
+      "offset": 4386,
+      "length": 4,
+      "value": "0.55"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "FloatLiteral",
+      "offset": 4967,
+      "length": 4,
+      "value": "0.12"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "FloatLiteral",
+      "offset": 5051,
+      "length": 5,
+      "value": "100.0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "IntegerLiteral",
+      "offset": 5214,
+      "length": 3,
+      "value": "180"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "FloatLiteral",
+      "offset": 6327,
+      "length": 3,
+      "value": "3.0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "FloatLiteral",
+      "offset": 43126,
+      "length": 4,
+      "value": "0.01"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "IntegerLiteral",
+      "offset": 61226,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "IntegerLiteral",
+      "offset": 61302,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "StringLiteral",
+      "offset": 62775,
+      "length": 7,
+      "value": "\"FRAME\""
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "StringLiteral",
+      "offset": 62803,
+      "length": 6,
+      "value": "\"MAIN\""
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "StringLiteral",
+      "offset": 62829,
       "length": 5,
       "value": "\"SUB\""
     },

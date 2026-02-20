@@ -21,12 +21,13 @@ public struct TJLabsUserCoordinate {
   public let velocity: Swift.Float
   public init(building: Swift.String, level: Swift.String, x: Swift.Float, y: Swift.Float, heading: Swift.Float, velocity: Swift.Float)
 }
+public protocol TJLabsNaviViewDelegate : AnyObject {
+  func onNavigationRoute(_ view: TJLabsMap.TJLabsNaviView, routes: [(Swift.String, Swift.String, Swift.Int, Swift.Float, Swift.Float)])
+}
 @_hasMissingDesignatedInitializers public class MapLogger {
   public static func setDebugOption(set: Swift.Bool)
   public static func setInfoOption(set: Swift.Bool)
   @objc deinit
-}
-public struct MapNavigationNode {
 }
 @objc @_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @_Concurrency.MainActor @preconcurrency public class TJLabsMapView : UIKit.UIView, UIKit.UICollectionViewDelegate, UIKit.UICollectionViewDataSource, UIKit.UICollectionViewDelegateFlowLayout, UIKit.UIScrollViewDelegate {
   @objc deinit
@@ -38,12 +39,6 @@ public struct MapNavigationNode {
   @_Concurrency.MainActor @preconcurrency public func setButtonHidden(isHidden: Swift.Bool)
   @_Concurrency.MainActor @preconcurrency public func updateResultInMap(result: TJLabsMap.TJLabsUserCoordinate)
   @_Concurrency.MainActor @preconcurrency public func stopTimer()
-  @_Concurrency.MainActor @preconcurrency public var routeNaviNodes: [TJLabsMap.MapNavigationNode]
-  @_Concurrency.MainActor @preconcurrency public var routeSize: Swift.Int
-  @_Concurrency.MainActor @preconcurrency public var pinLocations: [CoreFoundation.CGPoint]
-  @_Concurrency.MainActor @preconcurrency public var pinCounts: Swift.Int
-  @_Concurrency.MainActor @preconcurrency public func setDummyRoutes(option: Swift.Bool)
-  @_Concurrency.MainActor @preconcurrency public func setDummyPinLocations(option: Swift.Bool)
   public enum RoadType : Swift.String {
     case FRAME
     case MAIN
@@ -58,9 +53,53 @@ public struct MapNavigationNode {
   }
   @_Concurrency.MainActor @preconcurrency public func plotRoutelAll()
   @_Concurrency.MainActor @preconcurrency public func plotRoute(type: TJLabsMap.TJLabsMapView.RoadType)
-  @_Concurrency.MainActor @preconcurrency public func plotPins()
 }
 extension TJLabsMap.TJLabsMapView {
+  @_Concurrency.MainActor @preconcurrency @objc dynamic public func collectionView(_ collectionView: UIKit.UICollectionView, numberOfItemsInSection section: Swift.Int) -> Swift.Int
+  @_Concurrency.MainActor @preconcurrency @objc dynamic public func collectionView(_ collectionView: UIKit.UICollectionView, cellForItemAt indexPath: Foundation.IndexPath) -> UIKit.UICollectionViewCell
+  @_Concurrency.MainActor @preconcurrency @objc dynamic public func collectionView(_ collectionView: UIKit.UICollectionView, layout collectionViewLayout: UIKit.UICollectionViewLayout, sizeForItemAt indexPath: Foundation.IndexPath) -> CoreFoundation.CGSize
+  @_Concurrency.MainActor @preconcurrency @objc dynamic public func collectionView(_ collectionView: UIKit.UICollectionView, didSelectItemAt indexPath: Foundation.IndexPath)
+  #if compiler(>=5.3) && $NonescapableTypes
+  @_Concurrency.MainActor @preconcurrency @objc dynamic public func viewForZooming(in scrollView: UIKit.UIScrollView) -> UIKit.UIView?
+  #endif
+}
+public struct MapNavigationNode {
+}
+@objc @_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @_Concurrency.MainActor @preconcurrency public class TJLabsNaviView : UIKit.UIView, UIKit.UICollectionViewDelegate, UIKit.UICollectionViewDataSource, UIKit.UICollectionViewDelegateFlowLayout, UIKit.UIScrollViewDelegate {
+  @_Concurrency.MainActor @preconcurrency weak public var delegate: (any TJLabsMap.TJLabsNaviViewDelegate)?
+  @objc deinit
+  @_Concurrency.MainActor @preconcurrency public func initialize(region: Swift.String, sectorId: Swift.Int)
+  @_Concurrency.MainActor @preconcurrency public func configureFrame(to matchView: UIKit.UIView)
+  @_Concurrency.MainActor @preconcurrency public func setDebugOption(flag: Swift.Bool)
+  @_Concurrency.MainActor @preconcurrency public func setPointOffset(offset: CoreFoundation.CGFloat)
+  @_Concurrency.MainActor @preconcurrency public func setZoomAndMarkerScale(zoom: CoreFoundation.CGFloat, marker: CoreFoundation.CGFloat = 3.0)
+  @_Concurrency.MainActor @preconcurrency public func setButtonHidden(isHidden: Swift.Bool)
+  @_Concurrency.MainActor @preconcurrency public func updateResultInMap(result: TJLabsMap.TJLabsUserCoordinate)
+  @_Concurrency.MainActor @preconcurrency public func stopTimer()
+  @_Concurrency.MainActor @preconcurrency public var naviRoutes: [(Swift.String, Swift.String, Swift.Int, Swift.Float, Swift.Float)]
+  @_Concurrency.MainActor @preconcurrency public var routeCounts: Swift.Int
+  @_Concurrency.MainActor @preconcurrency public var pinLocations: [CoreFoundation.CGPoint]
+  @_Concurrency.MainActor @preconcurrency public var pinCounts: Swift.Int
+  @_Concurrency.MainActor @preconcurrency public func setNaviRoutes(routes: [(Swift.String, Swift.String, Swift.Int, Swift.Float, Swift.Float)])
+  @_Concurrency.MainActor @preconcurrency public func setNaviPinLocations(option: Swift.Bool)
+  @_Concurrency.MainActor @preconcurrency public func setNaviWaypoints(waypoints: [[Swift.Double]])
+  public enum RoadType : Swift.String {
+    case FRAME
+    case MAIN
+    case SUB
+    #if compiler(>=5.3) && $NonescapableTypes
+    public init?(rawValue: Swift.String)
+    #endif
+    public typealias RawValue = Swift.String
+    public var rawValue: Swift.String {
+      get
+    }
+  }
+  @_Concurrency.MainActor @preconcurrency public func plotRoutelAll()
+  @_Concurrency.MainActor @preconcurrency public func plotRoute(type: TJLabsMap.TJLabsNaviView.RoadType)
+  @_Concurrency.MainActor @preconcurrency public func plotPins()
+}
+extension TJLabsMap.TJLabsNaviView {
   @_Concurrency.MainActor @preconcurrency @objc dynamic public func collectionView(_ collectionView: UIKit.UICollectionView, numberOfItemsInSection section: Swift.Int) -> Swift.Int
   @_Concurrency.MainActor @preconcurrency @objc dynamic public func collectionView(_ collectionView: UIKit.UICollectionView, cellForItemAt indexPath: Foundation.IndexPath) -> UIKit.UICollectionViewCell
   @_Concurrency.MainActor @preconcurrency @objc dynamic public func collectionView(_ collectionView: UIKit.UICollectionView, layout collectionViewLayout: UIKit.UICollectionViewLayout, sizeForItemAt indexPath: Foundation.IndexPath) -> CoreFoundation.CGSize
@@ -72,3 +111,6 @@ extension TJLabsMap.TJLabsMapView {
 extension TJLabsMap.TJLabsMapView.RoadType : Swift.Equatable {}
 extension TJLabsMap.TJLabsMapView.RoadType : Swift.Hashable {}
 extension TJLabsMap.TJLabsMapView.RoadType : Swift.RawRepresentable {}
+extension TJLabsMap.TJLabsNaviView.RoadType : Swift.Equatable {}
+extension TJLabsMap.TJLabsNaviView.RoadType : Swift.Hashable {}
+extension TJLabsMap.TJLabsNaviView.RoadType : Swift.RawRepresentable {}
