@@ -4,6 +4,16 @@ import simd
 import TJLabsCommon
 import TJLabsResource
 
+protocol JupiterCalcManagerDelegate: AnyObject {
+    func isUserGuidanceOut()
+
+    func isNavigationRouteChanged(routes: [(String, String, Int, Float, Float)])
+    
+    func isNavigationRouteFailed()
+    
+    func isWaypointChanged(waypoints: [[Double]])
+}
+
 class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsResourceManagerDelegate, BuildingLevelChangerDelegate, NavigationManagerDelegate {
     
     // MARK: - Classes
@@ -19,6 +29,10 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     private var landmarkTagger: LandmarkTagger?
     private var recoveryManager: RecoveryManager?
     private var navigationManager: NavigationManager?
+    
+    // MARK: - Delegate
+    weak var delegate: JupiterCalcManagerDelegate?
+    var guidanceOutReported: Bool = false
     
     // MARK: - User Properties
     var id: String = ""
@@ -503,6 +517,11 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             let curPmResultBuffer = stackManager.getCurPmResultBuffer(size: 10)
             
             guard let followingResult = isFollowingNavigationRoute(naviRouteResultBuffer: naviRouteResultBuffer, curPmResultBuffer: curPmResultBuffer) else { return }
+            if followingResult.0 == .CASE_3 && !guidanceOutReported {
+                guidanceOutReported = true
+                delegate?.isUserGuidanceOut()
+            }
+            
             JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFolllowingNavigationRoute: followingResult= \(followingResult)")
             
             self.jupiterResultMode = determineJupiterResultMode(jupiterResultMode: jupiterResultMode, naviCase: followingResult.naviCase)
@@ -615,7 +634,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                 //경로를 따라가지 않은 케이스로 jupiter result 를 보여줌
                 naviCase = .CASE_3
             } else {
-                if (isAllSamePmResult) {
+                if (isAllSamePmResult && !isAllSameNaviResult) {
                     // 위치 오차만 발생
                     // jupiter 결과가 먼저 도달한 상태로 navi result 를 보여줌
                     naviCase = .CASE_2
@@ -650,7 +669,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - entTrackData = \(entTrackData)")
             
             if naviMode, let start = entManager.getEntInnermostWardCoord(key: entKey) {
-                let end: [Float] = [240, 13]
+//                let end: [Float] = [240, 13]
+                let end: [Float] = [40, 246]
                 navigationManager?.requestNavigationRoute(start: start, end: end)
             } else {
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) naviMode:\(naviMode) is false or entKey is nil:\(entKey)")
@@ -1579,6 +1599,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     //MARK: - Navigation Route
     func isUserGuidanceOut() {
         JupiterLogger.i(tag: "JupiterCalcManager", message: "(isUserGuidanceOut) user guidance out")
+        delegate?.isUserGuidanceOut()
     }
     
     func isNavigationRouteChanged() {
@@ -1586,6 +1607,10 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             hasNaviRoute = true
             let naviRoute = navigationManager?.getNaviRoutes()
             self.debug_navi_route = naviRoute
+            
+            if let naviRouteForDisplay = navigationManager?.getNaviRoutesForDisplay() {
+                delegate?.isNavigationRouteChanged(routes: naviRouteForDisplay)
+            }
         }
         
         JupiterLogger.i(tag: "JupiterCalcManager", message: "(isNavigationRouteChanged) navigation route changed")
@@ -1593,5 +1618,12 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     func isNavigationRouteFailed() {
         JupiterLogger.i(tag: "JupiterCalcManager", message: "(isNavigationRouteFailed) navigation route failed")
+        delegate?.isNavigationRouteFailed()
+    }
+    
+    func isWaypointsChanged() {
+        if let waypoints = navigationManager?.getNavigationWaypoints() {
+            delegate?.isWaypointChanged(waypoints: waypoints)
+        }
     }
 }
