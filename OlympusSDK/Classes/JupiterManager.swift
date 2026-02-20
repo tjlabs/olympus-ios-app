@@ -2,7 +2,24 @@ import Foundation
 import TJLabsCommon
 import UIKit
 
-public class JupiterManager {
+public class JupiterManager: JupiterCalcManagerDelegate {
+    
+    func isUserGuidanceOut() {
+        delegate?.isUserGuidanceOut()
+    }
+    
+    func isNavigationRouteChanged(routes: [(String, String, Int, Float, Float)]) {
+        delegate?.isNavigationRouteChanged(routes)
+    }
+    
+    func isNavigationRouteFailed() {
+        delegate?.isNavigationRouteFailed()
+    }
+    
+    func isWaypointChanged(waypoints: [[Double]]) {
+        delegate?.isWaypointChanged(waypoints)
+    }
+    
     public static let sdkVersion: String = "0.0.1"
     
     var id: String = ""
@@ -84,6 +101,7 @@ public class JupiterManager {
                         JupiterFileManager.shared.createFiles(region: region, sector_id: sectorId, deviceModel: deviceModel, osVersion: deviceOsVersion)
                         JupiterFileManager.shared.createFileWithName(region: region, sector_id: sectorId, deviceModel: deviceModel, osVersion: deviceOsVersion, fileName: "_")
                     }
+                    jupiterCalcManager?.delegate = self
                     jupiterCalcManager?.navigationMode(flag: self.naviMode)
                     jupiterCalcManager?.setSendRfdLength(sendRfdLength)
                     jupiterCalcManager?.setSendUvdLength(sendUvdLength)

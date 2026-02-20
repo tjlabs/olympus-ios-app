@@ -14,6 +14,11 @@ public protocol JupiterManagerDelegate: AnyObject {
     func onJupiterError(_ code: Int, _ msg: String)
     func onJupiterResult(_ result: JupiterResult)
     func onJupiterReport(_ flag: Int)
+    
+    func isUserGuidanceOut()
+    func isNavigationRouteChanged(_ routes: [(String, String, Int, Float, Float)])
+    func isNavigationRouteFailed()
+    func isWaypointChanged(_ waypoints: [[Double]])
 }
 
 public enum JupiterPhase {
