@@ -1545,7 +1545,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         landmarkTagger?.setLandmarkData(key: key, data: data)
     }
     
-    func onUnitData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [TJLabsResource.UnitData]) {
+    func onLevelUnitsData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [TJLabsResource.UnitData]) {
         // TO-DO
     }
     
