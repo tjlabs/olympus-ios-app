@@ -25,7 +25,7 @@
 		B31439832BAD5A27002C072F /* ColorPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31439822BAD5A27002C072F /* ColorPalette.swift */; };
 		B31439872BAD5B76002C072F /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B31439862BAD5B76002C072F /* Colors.xcassets */; };
 		B33152242CFC6D9D00D73C38 /* MapSettingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33152232CFC6D9D00D73C38 /* MapSettingView.swift */; };
-		B335370D2CC8919900468A95 /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B335370C2CC8919900468A95 /* MapViewController.swift */; };
+		B335370D2CC8919900468A95 /* NaviViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B335370C2CC8919900468A95 /* NaviViewController.swift */; };
 		B335393B2F3DBD6E004FC200 /* RoutingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B335393A2F3DBD6E004FC200 /* RoutingViewController.swift */; };
 		B33AC5462F15FBAB005982E0 /* TJLabsTopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33AC5452F15FBA8005982E0 /* TJLabsTopView.swift */; };
 		B33AC56C2F160032005982E0 /* circle_loader.json in Resources */ = {isa = PBXBuildFile; fileRef = B33AC56B2F160032005982E0 /* circle_loader.json */; };
@@ -33,7 +33,7 @@
 		B33AC74E2F172C54005982E0 /* ProgressingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33AC74D2F172C54005982E0 /* ProgressingView.swift */; };
 		B3787E4A2BD209C400D5EEBC /* ImageCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3787E492BD209C400D5EEBC /* ImageCacheManager.swift */; };
 		B3787E4C2BD20C4D00D5EEBC /* UIImageExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3787E4B2BD20C4D00D5EEBC /* UIImageExtension.swift */; };
-		B37D3C052CF80C140079E010 /* MapScaleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B37D3C042CF80C140079E010 /* MapScaleViewController.swift */; };
+		B37D3C052CF80C140079E010 /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B37D3C042CF80C140079E010 /* MapViewController.swift */; };
 		B388C21D2D053A9A00B522BA /* Solum_0F.csv in Resources */ = {isa = PBXBuildFile; fileRef = B388C21C2D053A9A00B522BA /* Solum_0F.csv */; };
 		B39464A42BE3315400A929CC /* COEX_B2.csv in Resources */ = {isa = PBXBuildFile; fileRef = B39464A32BE3315400A929CC /* COEX_B2.csv */; };
 		B39C2D5C2C0D49E400A34D0C /* COEX_B0.csv in Resources */ = {isa = PBXBuildFile; fileRef = B39C2D592C0D49E400A34D0C /* COEX_B0.csv */; };
@@ -91,7 +91,7 @@
 		B31439822BAD5A27002C072F /* ColorPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPalette.swift; sourceTree = "<group>"; };
 		B31439862BAD5B76002C072F /* Colors.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Colors.xcassets; sourceTree = "<group>"; };
 		B33152232CFC6D9D00D73C38 /* MapSettingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapSettingView.swift; sourceTree = "<group>"; };
-		B335370C2CC8919900468A95 /* MapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
+		B335370C2CC8919900468A95 /* NaviViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NaviViewController.swift; sourceTree = "<group>"; };
 		B335393A2F3DBD6E004FC200 /* RoutingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutingViewController.swift; sourceTree = "<group>"; };
 		B33AC5452F15FBA8005982E0 /* TJLabsTopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TJLabsTopView.swift; sourceTree = "<group>"; };
 		B33AC56B2F160032005982E0 /* circle_loader.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = circle_loader.json; sourceTree = "<group>"; };
@@ -99,7 +99,7 @@
 		B33AC74D2F172C54005982E0 /* ProgressingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressingView.swift; sourceTree = "<group>"; };
 		B3787E492BD209C400D5EEBC /* ImageCacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCacheManager.swift; sourceTree = "<group>"; };
 		B3787E4B2BD20C4D00D5EEBC /* UIImageExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageExtension.swift; sourceTree = "<group>"; };
-		B37D3C042CF80C140079E010 /* MapScaleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapScaleViewController.swift; sourceTree = "<group>"; };
+		B37D3C042CF80C140079E010 /* MapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
 		B388C21C2D053A9A00B522BA /* Solum_0F.csv */ = {isa = PBXFileReference; lastKnownFileType = text; path = Solum_0F.csv; sourceTree = "<group>"; };
 		B39464A32BE3315400A929CC /* COEX_B2.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = COEX_B2.csv; sourceTree = "<group>"; };
 		B39C2D592C0D49E400A34D0C /* COEX_B0.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = COEX_B0.csv; sourceTree = "<group>"; };
@@ -258,8 +258,8 @@
 			children = (
 				607FACD71AFB9204008FA782 /* LoginViewController.swift */,
 				B3A7A5532BBBCAE200561897 /* CardViewController.swift */,
-				B335370C2CC8919900468A95 /* MapViewController.swift */,
-				B37D3C042CF80C140079E010 /* MapScaleViewController.swift */,
+				B335370C2CC8919900468A95 /* NaviViewController.swift */,
+				B37D3C042CF80C140079E010 /* MapViewController.swift */,
 				B335393A2F3DBD6E004FC200 /* RoutingViewController.swift */,
 			);
 			name = ViewControllers;
@@ -586,7 +586,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B33AC5462F15FBAB005982E0 /* TJLabsTopView.swift in Sources */,
-				B37D3C052CF80C140079E010 /* MapScaleViewController.swift in Sources */,
+				B37D3C052CF80C140079E010 /* MapViewController.swift in Sources */,
 				B3A7A5632BBBE2AE00561897 /* JSONConverter.swift in Sources */,
 				B3A7A55F2BBBD11A00561897 /* NetworkConstants.swift in Sources */,
 				B31439742BAD42F2002C072F /* StringExtension.swift in Sources */,
@@ -595,7 +595,7 @@
 				B3787E4C2BD20C4D00D5EEBC /* UIImageExtension.swift in Sources */,
 				B33AC74E2F172C54005982E0 /* ProgressingView.swift in Sources */,
 				B31439802BAD439E002C072F /* UIViewControllerExtension.swift in Sources */,
-				B335370D2CC8919900468A95 /* MapViewController.swift in Sources */,
+				B335370D2CC8919900468A95 /* NaviViewController.swift in Sources */,
 				B33AC56E2F160045005982E0 /* TJLabsParkingGuideView.swift in Sources */,
 				B3A7A55C2BBBD0FE00561897 /* NetworkManager.swift in Sources */,
 				B335393B2F3DBD6E004FC200 /* RoutingViewController.swift in Sources */,

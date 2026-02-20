@@ -43,6 +43,26 @@ class RoutingViewController: UIViewController {
         return label
     }()
     
+    private var mapButton: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor(hex: "#3fb1e5")
+        view.isUserInteractionEnabled = true
+        view.addShadow(offset: CGSize(width: 0.5, height: 0.5), opacity: 0.5)
+        view.cornerRadius = 8
+        view.isHidden = false
+        return view
+    }()
+    
+    private let mapButtonTitleLabel: UILabel = {
+        let label = UILabel()
+        label.backgroundColor = .clear
+        label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+        label.textColor = .white
+        label.textAlignment = .center
+        label.text = "실내 지도"
+        return label
+    }()
+    
     private var routingButton: UIView = {
         let view = UIView()
         view.backgroundColor = UIColor(hex: "#3fb1e5")
@@ -109,7 +129,10 @@ class RoutingViewController: UIViewController {
         view.addSubview(routingMenuView)
         routingMenuView.addSubview(routingMenuLabel)
         routingMenuView.addSubview(routingMenuChevronImageView)
-
+        
+        view.addSubview(mapButton)
+        mapButton.addSubview(mapButtonTitleLabel)
+        
         view.addSubview(routingButton)
         routingButton.addSubview(routingButtonTitleLabel)
 
@@ -160,6 +183,15 @@ class RoutingViewController: UIViewController {
         routingButtonTitleLabel.snp.makeConstraints { make in
             make.center.equalToSuperview()
         }
+        
+        mapButton.snp.makeConstraints { make in
+            make.left.right.height.equalTo(routingButton)
+            make.bottom.equalTo(routingButton.snp.top).offset(-12)
+        }
+
+        mapButtonTitleLabel.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+        }
     }
     
     func setupDropDown() {
@@ -203,7 +235,10 @@ class RoutingViewController: UIViewController {
     func bindActions() {
         let menuTap = UITapGestureRecognizer(target: self, action: #selector(didTapMenu))
         routingMenuView.addGestureRecognizer(menuTap)
-
+        
+        let mapTap = UITapGestureRecognizer(target: self, action: #selector(didTapIndoorMap))
+        mapButton.addGestureRecognizer(mapTap)
+        
         let routingTap = UITapGestureRecognizer(target: self, action: #selector(didTapRoutingStart))
         routingButton.addGestureRecognizer(routingTap)
 
@@ -223,9 +258,13 @@ class RoutingViewController: UIViewController {
             dropDown.hide()
         }
     }
+    
+    @objc private func didTapIndoorMap() {
+        goToMapViewController(userId: userId)
+    }
 
     @objc private func didTapRoutingStart() {
-        goToMapViewController(userId: userId)
+        goToNaviViewController(userId: userId)
 //        goToCardViewController(region: region, userId: userId)
     }
 
@@ -245,5 +284,11 @@ class RoutingViewController: UIViewController {
         guard let mapVC = self.storyboard?.instantiateViewController(withIdentifier: "MapViewController") as? MapViewController else { return }
         mapVC.userId = userId
         self.navigationController?.pushViewController(mapVC, animated: true)
+    }
+    
+    func goToNaviViewController(userId: String) {
+        guard let naviVC = self.storyboard?.instantiateViewController(withIdentifier: "NaviViewController") as? NaviViewController else { return }
+        naviVC.userId = userId
+        self.navigationController?.pushViewController(naviVC, animated: true)
     }
 }

@@ -2,97 +2,15 @@
 import UIKit
 import SnapKit
 import Then
-import OlympusSDK
 import TJLabsCommon
 import TJLabsResource
 import TJLabsMap
 
 
-class MapViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviViewDelegate {
-    func onNavigationRoute(_ view: TJLabsMap.TJLabsNaviView, routes: [(String, String, Int, Float, Float)]) {
-        print("(MapVC) onNavigationRoute : route len= \(routes.count)")
-        self.isNaviRouteLoaded = true
-    }
-    
-    func report(flag: Int) {
-        // TODO
-    }
-    
-    func onJupiterReport(_ flag: Int) {
-        //
-    }
-    
-    func onJupiterSuccess(_ isSuccess: Bool) {
-        // TODO
-    }
-    
-    func onJupiterError(_ code: Int, _ msg: String) {
-        // TODO
-    }
-    
-    func onJupiterResult(_ result: JupiterResult) {
-        let userCoord = TJLabsUserCoordinate(building: result.building_name, level: result.level_name, x: result.x, y: result.y, heading: result.absolute_heading, velocity: result.velocity)
-        
-        if result.level_name == "B0" && !isParkingGuideRendered {
-            DispatchQueue.main.async { [self] in
-                self.guideView = TJLabsParkingGuideView()
-                UIView.animate(withDuration: 0.2, animations: {
-                    containerView.addSubview(self.guideView!)
-                    self.guideView!.snp.makeConstraints { make in
-                        make.top.bottom.leading.trailing.equalToSuperview()
-                    }
-                })
-            }
-            isParkingGuideRendered = true
-        }
-        
-        if result.level_name == "B2" && isParkingGuideRendered {
-            DispatchQueue.main.async { [self] in
-                self.guideView?.removeFromSuperview()
-            }
-        }
-        
-        if result.level_name != "B0" && isNaviRouteLoaded && !isNaviRouteRendered {
-            DispatchQueue.main.async { [self] in
-                print("(MapVC) navigation route rendered")
-                UIView.animate(withDuration: 0.2, animations: {
-                    self.naviView.plotRoutelAll()
-//                    self.naviView.plotPins()
-                })
-            }
-            isNaviRouteRendered = true
-        }
-        
-        naviView.updateResultInMap(result: userCoord)
-//        print("(MapVC) : userCoord = \(userCoord)")
-    }
-    
-    func isUserGuidanceOut() {
-        print("(MapVC) isUserGuidanceOut : guidance out!!")
-    }
-    
-    func isNavigationRouteChanged(_ routes: [(String, String, Int, Float, Float)]) {
-        print("(MapVC) isNavigationRouteChanged : route len= \(routes.count)")
-        print("(MapVC) isNavigationRouteChanged : routes= \(routes)")
-        naviView.setNaviRoutes(routes: routes)
-    }
-    
-    func isNavigationRouteFailed() {
-        // TODO
-    }
-    
-    func isWaypointChanged(_ waypoints: [[Double]]) {
-        print("(MapVC) isWaypointChanged : waypoints count= \(waypoints.count)")
-        print("(MapVC) isWaypointChanged : waypoints= \(waypoints)")
-        naviView.setNaviWaypoints(waypoints: waypoints)
-    }
-    
-    var region: String = JupiterRegion.KOREA.rawValue
+class MapViewController: UIViewController {
+    var region: String = ResourceRegion.KOREA.rawValue
     var sectorId: Int = 6
     var userId: String = ""
-    
-    var serviceManager: JupiterManager?
-    var jupiterResult: JupiterResult?
     
     private let containerView = UIView().then {
         $0.backgroundColor = .clear
@@ -105,7 +23,7 @@ class MapViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviVie
     let topView = TJLabsTopView()
     var guideView: TJLabsParkingGuideView?
     var progressingView: ProgressingView?
-    let naviView = TJLabsNaviView()
+    let mapView = TJLabsMapView()
     var isParkingGuideRendered: Bool = false
     var isNaviRouteLoaded: Bool = false
     var isNaviRouteRendered: Bool = false
@@ -149,24 +67,9 @@ class MapViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviVie
     
     func startService() {
         let uniqueId = makeUniqueId(uuid: self.userId)
-        
-        serviceManager = JupiterManager(id: uniqueId)
-        serviceManager?.delegate = self
-        naviView.delegate = self
-        
-        serviceManager?.navigationMode(flag: false)
-        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_01_0119.csv", sensorFileName: "sensor_coex_03_01_0119.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_03_1007.csv", sensorFileName: "sensor_coex_01_03_1007.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_05_1007.csv", sensorFileName: "sensor_coex_02_05_1007.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_05_1007.csv", sensorFileName: "sensor_coex_03_05_1007.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_test4_0129.csv", sensorFileName: "sensor_coex_test4_0129.csv")
-        serviceManager?.startJupiter(sectorId: sectorId, mode: .MODE_AUTO, debugOption: true)
     }
     
     func stopSerivce() {
-        serviceManager?.stopJupiter(completion: { [self] isSuccess, msg in
-        })
     }
     
     func setupLayout() {
@@ -202,9 +105,9 @@ class MapViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviVie
             make.top.bottom.leading.trailing.equalToSuperview()
         }
         
-        setupNaviView()
-        naviView.setPointOffset(offset: CGFloat(40))
-        naviView.setDebugOption(flag: false)
+        setupMapView()
+        mapView.setPointOffset(offset: CGFloat(40))
+        mapView.setDebugOption(flag: false)
     }
     
     private func bindActions() {
@@ -226,25 +129,14 @@ class MapViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviVie
                 }
             })
         }
-        
-        serviceManager?.saveFilesForSimulation(completion: { [self] isSuccess in
-            DispatchQueue.main.async { [self] in
-                saveButton.isHidden = true
-                saveButton.isUserInteractionEnabled = true
-                saveButtonTitleLabel.text = "Save"
-            }
-            DispatchQueue.main.async {
-                self.progressingView?.removeFromSuperview()
-            }
-        })
     }
     
-    func setupNaviView() {
-        naviView.initialize(region: self.region, sectorId: self.sectorId)
-        naviView.configureFrame(to: mainView)
-        naviView.setPointOffset(offset: 200)
-        naviView.setZoomAndMarkerScale(zoom: 2.0)
-        mainView.addSubview(naviView)
+    func setupMapView() {
+        mapView.initialize(region: self.region, sectorId: self.sectorId)
+        mapView.configureFrame(to: mainView)
+        mapView.setPointOffset(offset: 200)
+        mapView.setZoomAndMarkerScale(zoom: 2.0)
+        mainView.addSubview(mapView)
     }
     
     private func makeUniqueId(uuid: String) -> String {
@@ -253,5 +145,4 @@ class MapViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviVie
         
         return unique_id
     }
-    
 }

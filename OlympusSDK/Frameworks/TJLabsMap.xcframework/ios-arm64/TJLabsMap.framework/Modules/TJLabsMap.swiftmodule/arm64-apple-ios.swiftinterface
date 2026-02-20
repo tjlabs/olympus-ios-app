@@ -81,7 +81,6 @@ public struct MapNavigationNode {
   @_Concurrency.MainActor @preconcurrency public var pinLocations: [CoreFoundation.CGPoint]
   @_Concurrency.MainActor @preconcurrency public var pinCounts: Swift.Int
   @_Concurrency.MainActor @preconcurrency public func setNaviRoutes(routes: [(Swift.String, Swift.String, Swift.Int, Swift.Float, Swift.Float)])
-  @_Concurrency.MainActor @preconcurrency public func setNaviPinLocations(option: Swift.Bool)
   @_Concurrency.MainActor @preconcurrency public func setNaviWaypoints(waypoints: [[Swift.Double]])
   public enum RoadType : Swift.String {
     case FRAME

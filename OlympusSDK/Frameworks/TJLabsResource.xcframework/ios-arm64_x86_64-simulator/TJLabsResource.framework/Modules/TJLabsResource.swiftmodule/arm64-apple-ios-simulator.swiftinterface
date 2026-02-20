@@ -80,16 +80,27 @@ public struct EntranceRouteData {
   public init(routeLevel: [Swift.String], route: [[Swift.Float]])
 }
 public struct UnitData : Swift.Codable {
-  public let category: Swift.Int
-  public let number: Swift.Int
+  public let id: Swift.Int
+  public let category: TJLabsResource.Category
   public let name: Swift.String
-  public let accessibility: Swift.String
-  public let restriction: Swift.Bool
-  public let visibility: Swift.Bool
-  public let x: Swift.Float
-  public let y: Swift.Float
+  public let is_restricted: Swift.Bool
+  public let x: Swift.Double
+  public let y: Swift.Double
+  public let parking_space_code: Swift.String
   public func encode(to encoder: any Swift.Encoder) throws
   public init(from decoder: any Swift.Decoder) throws
+}
+public enum Category : Swift.String, Swift.Codable {
+  case PARKING_SPACE
+  case UNKNOWN
+  public init(from decoder: any Swift.Decoder) throws
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init?(rawValue: Swift.String)
+  #endif
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
 }
 public struct GeofenceData : Swift.Codable {
   public let entrance_area: [[Swift.Float]]
@@ -188,7 +199,8 @@ public struct ScaleOffsetOutput : Swift.Codable {
   public func encode(to encoder: any Swift.Encoder) throws
   public init(from decoder: any Swift.Decoder) throws
 }
-public struct UnitOutput : Swift.Codable {
+public struct LevelUnitsOutput : Swift.Codable {
+  public let id: Swift.Int
   public let units: [TJLabsResource.UnitData]
   public func encode(to encoder: any Swift.Encoder) throws
   public init(from decoder: any Swift.Decoder) throws
@@ -269,7 +281,7 @@ public enum ResourceError {
   case Image
   case Scale
   case Entrance
-  case Unit
+  case LevelUnits
   case Geofence
   case LevelWards
   case Affine
@@ -288,7 +300,7 @@ public protocol TJLabsResourceManagerDelegate : AnyObject {
   func onScaleOffsetData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, data: [Swift.Float])
   func onPathPixelData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, data: TJLabsResource.PathPixelData)
   func onNodeLinkData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, type: TJLabsResource.NodeLinkType, data: Any)
-  func onUnitData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, data: [TJLabsResource.UnitData])
+  func onLevelUnitsData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, data: [TJLabsResource.UnitData])
   func onGeofenceData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, data: TJLabsResource.GeofenceData)
   func onEntranceData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, data: TJLabsResource.EntranceData)
   func onEntranceRouteData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, data: TJLabsResource.EntranceRouteData)
@@ -330,7 +342,7 @@ public class TJLabsResourceManager {
   public func getBuildingLevelData() -> [Swift.Int : [TJLabsResource.BuildingOutput]]
   public func getScaleOffset() -> [Swift.String : [Swift.Float]]
   public func getPathPixelData() -> [Swift.String : TJLabsResource.PathPixelData]
-  public func getUnitData() -> [Swift.String : [TJLabsResource.UnitData]]
+  public func getLevelUnitsData() -> [Swift.String : [TJLabsResource.UnitData]]
   public func getGeofenceData() -> [Swift.String : TJLabsResource.GeofenceData]
   public func getEntranceData() -> [Swift.String : TJLabsResource.EntranceData]
   public func getEntranceRouteData() -> [Swift.String : TJLabsResource.EntranceRouteData]
@@ -340,7 +352,7 @@ public class TJLabsResourceManager {
   public func setIsSaveMobileResult(flag: Swift.Bool)
   public func updateScaleOffsetData(key: Swift.String, completion: @escaping (Swift.Bool) -> Swift.Void)
   public func updatePathPixelData(key: Swift.String, completion: @escaping (Swift.Bool) -> Swift.Void)
-  public func updateUnitData(key: Swift.String, completion: @escaping (Swift.Bool) -> Swift.Void)
+  public func updateLevelUnitsData(key: Swift.String, completion: @escaping (Swift.Bool) -> Swift.Void)
   public func updateGeofence(key: Swift.String, completion: @escaping (Swift.Bool) -> Swift.Void)
   public func updateEntracne(key: Swift.String, completion: @escaping (Swift.Bool) -> Swift.Void)
   public func updateImage(key: Swift.String, completion: @escaping (Swift.Bool) -> Swift.Void)
@@ -357,6 +369,8 @@ public class TJLabsResourceManager {
   public static func getUserScaleURL() -> Swift.String
   public static func getUserPathPixelVersion() -> Swift.String
   public static func getUserPathPixelURL() -> Swift.String
+  public static func getUserLevelUnitsVersion() -> Swift.String
+  public static func getUserLevelUnitsURL() -> Swift.String
   public static func getUserUnitVersion() -> Swift.String
   public static func getUserUnitURL() -> Swift.String
   public static func getUserGeoVersion() -> Swift.String
@@ -374,6 +388,9 @@ extension TJLabsResource.ResourceRegion : Swift.Hashable {}
 extension TJLabsResource.ResourceRegion : Swift.RawRepresentable {}
 extension TJLabsResource.NodeLinkType : Swift.Equatable {}
 extension TJLabsResource.NodeLinkType : Swift.Hashable {}
+extension TJLabsResource.Category : Swift.Equatable {}
+extension TJLabsResource.Category : Swift.Hashable {}
+extension TJLabsResource.Category : Swift.RawRepresentable {}
 extension TJLabsResource.SpotType : Swift.Equatable {}
 extension TJLabsResource.SpotType : Swift.Hashable {}
 extension TJLabsResource.ResourceError : Swift.Equatable {}
