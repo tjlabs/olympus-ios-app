@@ -11,6 +11,8 @@ protocol NavigationManagerDelegate: AnyObject {
     func isNavigationRouteChanged()
     
     func isNavigationRouteFailed()
+    
+    func isWaypointsChanged()
 }
 
 class NavigationManager {
@@ -22,6 +24,9 @@ class NavigationManager {
     private var routeIndex: Int?
     private var curRoute: NavigationRoute?
     private var isRequesting: Bool = false
+    
+    private var routesForDisplay = [(String, String, Int, Float, Float)]()
+    private var waypointsForDisplay = [[Double]]()
     
     weak var delegate: NavigationManagerDelegate?
     
@@ -35,6 +40,7 @@ class NavigationManager {
     
     func requestNavigationRoute(start: [Float], end: [Float]) {
         setNavigationRoute(start: start, end: end)
+        setNavigationWaypoints()
         JupiterLogger.i(tag: "NavigationManager", message: "(requestNavigationRoute) start:\(start) -> end:\(end)")
     }
     
@@ -44,16 +50,21 @@ class NavigationManager {
         
         let key = "\(sectorId)_\(building)_\(level)"
         guard let nodeData = PathMatcher.shared.nodeData[key] else { return }
+//        let ids: [Int] = [24, 23, 22, 6, 7, 23, 21, 301, 8, 4, 2, 1, 30, 29,
+//                          34, 40, 54, 55, 59, 63, 68, 72, 80, 82, 84, 87]
+        
         let ids: [Int] = [24, 23, 22, 6, 7, 23, 21, 301, 8, 4, 2, 1, 30, 29,
-                          34, 40, 54, 55, 59, 63, 68, 72, 80, 82, 84, 87]
+                          34, 40, 54, 53, 44, 45, 39]
         
         var buildingOrder = [String]()
         var levelOrder = [String]()
+        var nodeOrder = [Int]()
         var sectionOrder = [Int]()
         var order = [[Float]]()
         
         buildingOrder.append(building)
         levelOrder.append(level)
+        nodeOrder.append(-1)
         order.append(start)
         for id in ids {
             guard let matchedNode = nodeData[id] else { continue }
@@ -61,12 +72,16 @@ class NavigationManager {
             if coords.count != 2 { continue }
             buildingOrder.append(building)
             levelOrder.append(level)
+            nodeOrder.append(id)
             order.append(coords)
         }
         buildingOrder.append(building)
         levelOrder.append(level)
+        nodeOrder.append(-1)
         order.append(end)
-        generateNavigationRoute(bOrder: buildingOrder, lOrder: levelOrder,order: order)
+        
+        generateNavigationRoute(bOrder: buildingOrder, lOrder: levelOrder, nodeOrder: nodeOrder, coordOrder: order)
+        generateNavigationRoute(bOrder: buildingOrder, lOrder: levelOrder, order: order)
     }
     
     func generateNavigationRoute(bOrder: [String], lOrder: [String], order: [[Float]]) {
@@ -182,6 +197,19 @@ class NavigationManager {
         return self.routes
     }
     
+    func generateNavigationRoute(bOrder: [String], lOrder: [String], nodeOrder: [Int], coordOrder: [[Float]]) {
+        if bOrder.count != lOrder.count || lOrder.count != nodeOrder.count || nodeOrder.count != coordOrder.count { return }
+        
+        for i in 0..<bOrder.count {
+            let route = (bOrder[i], lOrder[i], nodeOrder[i], coordOrder[i][0], coordOrder[i][1])
+            self.routesForDisplay.append(route)
+        }
+    }
+    
+    func getNaviRoutesForDisplay() -> [(String, String, Int, Float, Float)] {
+        return self.routesForDisplay
+    }
+    
     func setStartPointInNaviRoute(fltResult: FineLocationTrackingOutput) {
         let resultX = fltResult.x
         let resultY = fltResult.y
@@ -220,6 +248,32 @@ class NavigationManager {
         self.curRoute = self.routes[matchedIndex]
 //        JupiterLogger.i(tag: "NavigationManager", message: "(setStartPointInNaviRoute) : sections= \(routes.map{$0.section})")
         JupiterLogger.i(tag: "NavigationManager", message: "(setStartPointInNaviRoute) : started at \(matchedIndex) in routes // route= \(routes[matchedIndex])")
+    }
+    
+    func setNavigationWaypoints() {
+//        let waypoints: [[Double]] = [
+//            [861, 2014],
+//            [806, 2081],
+//            [642, 1999],
+//            [560, 2029],
+//            [560, 2243],
+//            [765, 2335]
+//        ]
+        
+        let waypoints: [[Double]] = [
+            [1257, 689],
+            [1333, 529],
+            [1003, 447],
+            [925, 810],
+            [644, 1396],
+            [315, 1233]
+        ]
+        self.waypointsForDisplay = waypoints
+        delegate?.isWaypointsChanged()
+    }
+    
+    func getNavigationWaypoints() -> [[Double]] {
+        return self.waypointsForDisplay
     }
     
     func calcNaviRouteResult(uvd: UserVelocity, curResult: FineLocationTrackingOutput) -> NavigationRoute? {
