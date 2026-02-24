@@ -4,7 +4,7 @@ import simd
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
     
-    public static let sdkVersion: String = "0.3.5"
+    public static let sdkVersion: String = "0.3.7"
     var isSimulationMode: Bool = false
     var isDeadReckoningMode: Bool = false
     var bleFileName: String = ""
@@ -2859,7 +2859,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 stackUserUniqueMask(data: data)
                 stackUserMaskForDisplay(data: data)
                 
-                if !trajMisMatchOccured && !isMatchingInProgress && !isOnPointInProgress && resultIndex - self.trajMisMatchIndex > 30 && runInUvdTimer {
+                let isExceptional = self.deviceModel.contains("Mini")
+                
+                if !isExceptional && !trajMisMatchOccured && !isMatchingInProgress && !isOnPointInProgress && resultIndex - self.trajMisMatchIndex > 30 && runInUvdTimer {
                     // Thread-safe 플래그 설정
                     guard !isMatchingInProgress else {
 //                        print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : isMatchingInProgress 1")
