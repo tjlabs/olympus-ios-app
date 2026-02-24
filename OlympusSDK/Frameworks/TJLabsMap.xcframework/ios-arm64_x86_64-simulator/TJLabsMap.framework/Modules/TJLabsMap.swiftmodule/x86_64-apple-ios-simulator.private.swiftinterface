@@ -30,29 +30,11 @@ public protocol TJLabsNaviViewDelegate : AnyObject {
   @objc deinit
 }
 @objc @_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @_Concurrency.MainActor @preconcurrency public class TJLabsMapView : UIKit.UIView, UIKit.UICollectionViewDelegate, UIKit.UICollectionViewDataSource, UIKit.UICollectionViewDelegateFlowLayout, UIKit.UIScrollViewDelegate {
-  @objc deinit
   @_Concurrency.MainActor @preconcurrency public func initialize(region: Swift.String, sectorId: Swift.Int)
   @_Concurrency.MainActor @preconcurrency public func configureFrame(to matchView: UIKit.UIView)
   @_Concurrency.MainActor @preconcurrency public func setDebugOption(flag: Swift.Bool)
-  @_Concurrency.MainActor @preconcurrency public func setPointOffset(offset: CoreFoundation.CGFloat)
-  @_Concurrency.MainActor @preconcurrency public func setZoomAndMarkerScale(zoom: CoreFoundation.CGFloat, marker: CoreFoundation.CGFloat = 3.0)
-  @_Concurrency.MainActor @preconcurrency public func setButtonHidden(isHidden: Swift.Bool)
-  @_Concurrency.MainActor @preconcurrency public func updateResultInMap(result: TJLabsMap.TJLabsUserCoordinate)
-  @_Concurrency.MainActor @preconcurrency public func stopTimer()
-  public enum RoadType : Swift.String {
-    case FRAME
-    case MAIN
-    case SUB
-    #if compiler(>=5.3) && $NonescapableTypes
-    public init?(rawValue: Swift.String)
-    #endif
-    public typealias RawValue = Swift.String
-    public var rawValue: Swift.String {
-      get
-    }
-  }
-  @_Concurrency.MainActor @preconcurrency public func plotRoutelAll()
-  @_Concurrency.MainActor @preconcurrency public func plotRoute(type: TJLabsMap.TJLabsMapView.RoadType)
+  @_Concurrency.MainActor @preconcurrency public func setZoomScale(zoom: CoreFoundation.CGFloat)
+  @objc deinit
 }
 extension TJLabsMap.TJLabsMapView {
   @_Concurrency.MainActor @preconcurrency @objc dynamic public func collectionView(_ collectionView: UIKit.UICollectionView, numberOfItemsInSection section: Swift.Int) -> Swift.Int
@@ -62,6 +44,7 @@ extension TJLabsMap.TJLabsMapView {
   #if compiler(>=5.3) && $NonescapableTypes
   @_Concurrency.MainActor @preconcurrency @objc dynamic public func viewForZooming(in scrollView: UIKit.UIScrollView) -> UIKit.UIView?
   #endif
+  @_Concurrency.MainActor @preconcurrency @objc dynamic public func scrollViewDidZoom(_ scrollView: UIKit.UIScrollView)
 }
 public struct MapNavigationNode {
 }
@@ -107,9 +90,6 @@ extension TJLabsMap.TJLabsNaviView {
   @_Concurrency.MainActor @preconcurrency @objc dynamic public func viewForZooming(in scrollView: UIKit.UIScrollView) -> UIKit.UIView?
   #endif
 }
-extension TJLabsMap.TJLabsMapView.RoadType : Swift.Equatable {}
-extension TJLabsMap.TJLabsMapView.RoadType : Swift.Hashable {}
-extension TJLabsMap.TJLabsMapView.RoadType : Swift.RawRepresentable {}
 extension TJLabsMap.TJLabsNaviView.RoadType : Swift.Equatable {}
 extension TJLabsMap.TJLabsNaviView.RoadType : Swift.Hashable {}
 extension TJLabsMap.TJLabsNaviView.RoadType : Swift.RawRepresentable {}
