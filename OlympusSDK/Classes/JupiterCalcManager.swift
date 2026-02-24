@@ -77,9 +77,11 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     // MARK: - Navigation
     private var naviMode: Bool = false
+    private var naviScenario: Int?
     private var hasNaviRoute: Bool = false
     private var feedbackIndex: Int = 0
     private var feedbackCount: Int = 0
+    private var curNaviCase: NaviCase = .NONE
     
     // MARK: - Etc..
     private var pathMatchingCondition = PathMatchingCondition()
@@ -138,9 +140,12 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         })
     }
     
-    func navigationMode(flag: Bool) {
+    func navigationMode(flag: Bool, scenario: Int? = nil) {
         self.naviMode = flag
+        self.naviScenario = scenario
+        
         JupiterLogger.i(tag: "JupiterCalcManager", message: "(navigationMode) : \(flag)")
+        JupiterLogger.i(tag: "JupiterCalcManager", message: "(navigationMode) : scenario= \(scenario)")
     }
     
     // MARK: - Set REC length
@@ -516,7 +521,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             let naviRouteResultBuffer = indexAndNaviRouteResultBuffer.map { $0.1 }
             let curPmResultBuffer = stackManager.getCurPmResultBuffer(size: 10)
             
-            guard let followingResult = isFollowingNavigationRoute(naviRouteResultBuffer: naviRouteResultBuffer, curPmResultBuffer: curPmResultBuffer) else { return }
+            guard let followingResult = isFollowingNavigationRoute(curNaviCase: curNaviCase, naviRouteResultBuffer: naviRouteResultBuffer, curPmResultBuffer: curPmResultBuffer) else { return }
+            curNaviCase = followingResult.0
             if followingResult.0 == .CASE_3 && !guidanceOutReported {
                 guidanceOutReported = true
                 delegate?.isUserGuidanceOut()
@@ -581,7 +587,10 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         }
     }
     
-    private func isFollowingNavigationRoute(naviRouteResultBuffer: [NavigationRoute], curPmResultBuffer: [FineLocationTrackingOutput]) -> (naviCase: NaviCase, d: Float, dh: Float)? {
+    private func isFollowingNavigationRoute(curNaviCase: NaviCase, naviRouteResultBuffer: [NavigationRoute], curPmResultBuffer: [FineLocationTrackingOutput]) -> (naviCase: NaviCase, d: Float, dh: Float)? {
+        if curNaviCase == .CASE_3 {
+            return (.CASE_3, 100, 100)
+        }
         if naviRouteResultBuffer.count != curPmResultBuffer.count { return nil }
         if naviRouteResultBuffer.count < 10 { return (NaviCase.INIT, 0, 0) }
 
@@ -634,6 +643,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                 //경로를 따라가지 않은 케이스로 jupiter result 를 보여줌
                 naviCase = .CASE_3
             } else {
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFolllowingNavigationRoute: isAllSamePmResult= \(isAllSamePmResult) // isAllSameNaviResult= \(isAllSameNaviResult)")
                 if (isAllSamePmResult && !isAllSameNaviResult) {
                     // 위치 오차만 발생
                     // jupiter 결과가 먼저 도달한 상태로 navi result 를 보여줌
@@ -649,6 +659,12 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                         .CASE_1
                     }
                 } else {
+                    // 옆길을 어느정도 범위의 오차까지 볼 것인가
+//                    if dSumAvg > DLOSS_THRESHOLD_45 {
+//                        naviCase = .CASE_3
+//                    } else {
+//                        naviCase = .CASE_2
+//                    }
                     naviCase = .CASE_2
                 }
             }
@@ -670,10 +686,27 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             
             if naviMode, let start = entManager.getEntInnermostWardCoord(key: entKey) {
 //                let end: [Float] = [240, 13]
-                let end: [Float] = [40, 246]
-                navigationManager?.requestNavigationRoute(start: start, end: end)
+//                let end: [Float] = [40, 246]
+                
+                // Ent4 Follwing Well
+//                let end: [Float] = [40, 246]
+                
+                // Ent4 Not Following
+                var end: [Float] = [240, 13]
+                if let scenario = self.naviScenario {
+                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(startEntranceTracking) : scenario= \(scenario)")
+                    if scenario == 1 {
+                        end = [268, 378]
+                    } else if scenario == 3 {
+                        end = [56, 246]
+                    } else if scenario == 4 {
+                        end = [135, 69]
+                    }
+                }
+                
+                navigationManager?.requestNavigationRoute(start: start, end: end, scenario: self.naviScenario)
             } else {
-                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) naviMode:\(naviMode) is false or entKey is nil:\(entKey)")
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(startEntranceTracking) naviMode:\(naviMode) is false or entKey is nil:\(entKey)")
             }
         }
         

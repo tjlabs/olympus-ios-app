@@ -38,13 +38,13 @@ class NavigationManager {
     
     deinit { }
     
-    func requestNavigationRoute(start: [Float], end: [Float]) {
-        setNavigationRoute(start: start, end: end)
+    func requestNavigationRoute(start: [Float], end: [Float], scenario: Int? = nil) {
+        setNavigationRoute(start: start, end: end, scenario: scenario)
         setNavigationWaypoints()
         JupiterLogger.i(tag: "NavigationManager", message: "(requestNavigationRoute) start:\(start) -> end:\(end)")
     }
     
-    func setNavigationRoute(start: [Float], end: [Float]) {
+    func setNavigationRoute(start: [Float], end: [Float], scenario: Int?) {
         let building = "COEX"
         let level = "B2"
         
@@ -53,8 +53,25 @@ class NavigationManager {
 //        let ids: [Int] = [24, 23, 22, 6, 7, 23, 21, 301, 8, 4, 2, 1, 30, 29,
 //                          34, 40, 54, 55, 59, 63, 68, 72, 80, 82, 84, 87]
         
-        let ids: [Int] = [24, 23, 22, 6, 7, 23, 21, 301, 8, 4, 2, 1, 30, 29,
-                          34, 40, 54, 53, 44, 45, 39]
+//        let ids: [Int] = [24, 23, 22, 6, 7, 23, 21, 301, 8, 4, 2, 1, 30, 29,
+//                          34, 40, 54, 53, 44, 45, 39]
+        
+        // Ent4 Following Well
+//        let ids: [Int] = [4, 2, 1, 30, 29, 34, 40, 54, 53, 44, 45, 39]
+        
+        // Ent4 NotFollowing
+        var ids: [Int] = [4, 2, 1, 30, 29, 34, 40, 54, 55, 59, 63, 68, 72, 80, 82, 84, 87]
+        
+        if let scenario = scenario {
+            JupiterLogger.i(tag: "NavigationManager", message: "(setNavigationRoute) : scenario= \(scenario)")
+            if scenario == 1 {
+                ids = [69, 68,46,47,2,3]
+            } else if scenario == 3 {
+                ids = [24, 21,2 ,1,30, 29, 54, 53, 44,45,39]
+            } else if scenario == 4 {
+                ids = [4, 2, 1, 30, 29, 71, 72, 80]
+            }
+        }
         
         var buildingOrder = [String]()
         var levelOrder = [String]()
