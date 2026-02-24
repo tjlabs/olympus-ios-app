@@ -6,17 +6,18 @@ import DropDown
 
 class RoutingViewController: UIViewController {
     
-    private let routingTitleLabel: UILabel = {
+    //MARK: - 출발지 설정
+    private let fromTitleLabel: UILabel = {
         let label = UILabel()
         label.backgroundColor = .clear
         label.font = UIFont.systemFont(ofSize: 20, weight: .bold)
         label.textColor = .black
         label.textAlignment = .left
-        label.text = "목적지 설정"
+        label.text = "출발지 설정"
         return label
     }()
     
-    private var routingMenuView: UIView = {
+    private var fromMenuView: UIView = {
         let view = UIView()
         view.backgroundColor = UIColor.white
         view.isUserInteractionEnabled = true
@@ -26,14 +27,52 @@ class RoutingViewController: UIViewController {
         return view
     }()
 
-    private let routingMenuChevronImageView: UIImageView = {
+    private let fromMenuChevronImageView: UIImageView = {
         let iv = UIImageView(image: UIImage(systemName: "chevron.down"))
         iv.tintColor = .systemGray3
         iv.contentMode = .scaleAspectFit
         return iv
     }()
     
-    private var routingMenuLabel: UILabel = {
+    private var fromMenuLabel: UILabel = {
+        let label = UILabel()
+        label.backgroundColor = .clear
+        label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+        label.textColor = .systemGray4
+        label.textAlignment = .left
+        label.text = "선택 안함"
+        return label
+    }()
+    
+    //MARK: - 목적지 설정
+    private let destTitleLabel: UILabel = {
+        let label = UILabel()
+        label.backgroundColor = .clear
+        label.font = UIFont.systemFont(ofSize: 20, weight: .bold)
+        label.textColor = .black
+        label.textAlignment = .left
+        label.text = "목적지 설정"
+        return label
+    }()
+    
+    private var destMenuView: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor.white
+        view.isUserInteractionEnabled = true
+        view.addShadow(offset: CGSize(width: 0.5, height: 0.5), opacity: 0.5)
+        view.cornerRadius = 10
+        view.isHidden = false
+        return view
+    }()
+
+    private let destMenuChevronImageView: UIImageView = {
+        let iv = UIImageView(image: UIImage(systemName: "chevron.down"))
+        iv.tintColor = .systemGray3
+        iv.contentMode = .scaleAspectFit
+        return iv
+    }()
+    
+    private var destMenuLabel: UILabel = {
         let label = UILabel()
         label.backgroundColor = .clear
         label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
@@ -103,9 +142,13 @@ class RoutingViewController: UIViewController {
         return label
     }()
     
-    let dropDown = DropDown()
+    let fromDropDown = DropDown()
+    let destDropDown = DropDown()
     var region: String = ""
     var userId: String = ""
+
+    // Currently selected 'from' item (fromDropDown)
+    private var selectedFromItem: String?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -113,8 +156,12 @@ class RoutingViewController: UIViewController {
         bindActions()
 
         // Initial state
-        routingMenuLabel.text = "COEX 아쿠아리움"
-        routingMenuLabel.textColor = .black
+        fromMenuLabel.text = "1번 진출입로"
+        fromMenuLabel.textColor = .black
+        selectedFromItem = fromMenuLabel.text
+        
+        destMenuLabel.text = "COEX 아쿠아리움"
+        destMenuLabel.textColor = .black
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -125,10 +172,15 @@ class RoutingViewController: UIViewController {
     func setupLayout() {
         view.backgroundColor = UIColor(hex: "#F3F5F7")
 
-        view.addSubview(routingTitleLabel)
-        view.addSubview(routingMenuView)
-        routingMenuView.addSubview(routingMenuLabel)
-        routingMenuView.addSubview(routingMenuChevronImageView)
+        view.addSubview(fromTitleLabel)
+        view.addSubview(fromMenuView)
+        fromMenuView.addSubview(fromMenuLabel)
+        fromMenuView.addSubview(fromMenuChevronImageView)
+        
+        view.addSubview(destTitleLabel)
+        view.addSubview(destMenuView)
+        destMenuView.addSubview(destMenuLabel)
+        destMenuView.addSubview(destMenuChevronImageView)
         
         view.addSubview(mapButton)
         mapButton.addSubview(mapButtonTitleLabel)
@@ -138,27 +190,52 @@ class RoutingViewController: UIViewController {
 
         view.addSubview(safeDrivingButton)
         safeDrivingButton.addSubview(safeDrivingButtonTitleLabel)
-
-        routingTitleLabel.snp.makeConstraints { make in
+        
+        fromTitleLabel.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(24)
             make.left.equalToSuperview().offset(24)
             make.right.lessThanOrEqualToSuperview().offset(-24)
         }
 
-        routingMenuView.snp.makeConstraints { make in
-            make.top.equalTo(routingTitleLabel.snp.bottom).offset(12)
+        fromMenuView.snp.makeConstraints { make in
+            make.top.equalTo(fromTitleLabel.snp.bottom).offset(12)
             make.left.equalToSuperview().offset(24)
             make.right.equalToSuperview().offset(-24)
             make.height.equalTo(48)
         }
 
-        routingMenuLabel.snp.makeConstraints { make in
+        fromMenuLabel.snp.makeConstraints { make in
             make.centerY.equalToSuperview()
             make.left.equalToSuperview().offset(16)
-            make.right.lessThanOrEqualTo(routingMenuChevronImageView.snp.left).offset(-12)
+            make.right.lessThanOrEqualTo(fromMenuChevronImageView.snp.left).offset(-12)
         }
 
-        routingMenuChevronImageView.snp.makeConstraints { make in
+        fromMenuChevronImageView.snp.makeConstraints { make in
+            make.centerY.equalToSuperview()
+            make.right.equalToSuperview().offset(-16)
+            make.width.height.equalTo(24)
+        }
+        
+        destTitleLabel.snp.makeConstraints { make in
+            make.top.equalTo(fromMenuView.snp.bottom).offset(24)
+            make.left.equalToSuperview().offset(24)
+            make.right.lessThanOrEqualToSuperview().offset(-24)
+        }
+
+        destMenuView.snp.makeConstraints { make in
+            make.top.equalTo(destTitleLabel.snp.bottom).offset(12)
+            make.left.equalToSuperview().offset(24)
+            make.right.equalToSuperview().offset(-24)
+            make.height.equalTo(48)
+        }
+
+        destMenuLabel.snp.makeConstraints { make in
+            make.centerY.equalToSuperview()
+            make.left.equalToSuperview().offset(16)
+            make.right.lessThanOrEqualTo(destMenuChevronImageView.snp.left).offset(-12)
+        }
+
+        destMenuChevronImageView.snp.makeConstraints { make in
             make.centerY.equalToSuperview()
             make.right.equalToSuperview().offset(-16)
             make.width.height.equalTo(24)
@@ -195,14 +272,51 @@ class RoutingViewController: UIViewController {
     }
     
     func setupDropDown() {
-        dropDown.anchorView = routingMenuView
-        dropDown.direction = .bottom
-        dropDown.dismissMode = .automatic
-        dropDown.backgroundColor = .white
-        dropDown.shadowRadius = 6
-        dropDown.cellHeight = 44
+        // MARK: - From
+        fromDropDown.anchorView = fromMenuView
+        fromDropDown.direction = .bottom
+        fromDropDown.dismissMode = .automatic
+        fromDropDown.backgroundColor = .white
+        fromDropDown.shadowRadius = 6
+        fromDropDown.cellHeight = 44
 
-        dropDown.dataSource = [
+        fromDropDown.dataSource = [
+            "1번 진출입로",
+            "3번 진출입로",
+            "4번 진출입로",
+        ]
+
+        // Full width under the menu view
+        fromDropDown.width = fromMenuView.frame.width
+        fromDropDown.bottomOffset = CGPoint(x: 0, y: 49)
+        
+        fromDropDown.customCellConfiguration = { [weak self] (index: Index, item: String, cell: DropDownCell) in
+            cell.optionLabel.font = UIFont.systemFont(ofSize: 16, weight: .regular)
+            cell.optionLabel.textColor = .black
+            _ = self
+        }
+
+        fromDropDown.selectionAction = { [weak self] (index: Int, item: String) in
+            guard let self = self else { return }
+            self.selectedFromItem = item
+            self.fromMenuLabel.text = item
+            self.fromMenuLabel.textColor = .black
+            self.fromMenuChevronImageView.image = UIImage(systemName: "chevron.down")
+        }
+
+        fromDropDown.cancelAction = { [weak self] in
+            self?.fromMenuChevronImageView.image = UIImage(systemName: "chevron.down")
+        }
+        
+        // MARK: - Dest
+        destDropDown.anchorView = destMenuView
+        destDropDown.direction = .bottom
+        destDropDown.dismissMode = .automatic
+        destDropDown.backgroundColor = .white
+        destDropDown.shadowRadius = 6
+        destDropDown.cellHeight = 44
+
+        destDropDown.dataSource = [
             "COEX 별마당 도서관",
             "COEX 메가박스",
             "COEX 아쿠아리움",
@@ -210,31 +324,33 @@ class RoutingViewController: UIViewController {
         ]
 
         // Full width under the menu view
-        dropDown.width = routingMenuView.frame.width
-        dropDown.bottomOffset = CGPoint(x: 0, y: 49)
-//        dropDown.bottomOffset = CGPoint(x: 0, y:(dropDown.anchorView?.plainView.bounds.height)!)
+        destDropDown.width = destMenuView.frame.width
+        destDropDown.bottomOffset = CGPoint(x: 0, y: 49)
         
-        dropDown.customCellConfiguration = { [weak self] (index: Index, item: String, cell: DropDownCell) in
+        destDropDown.customCellConfiguration = { [weak self] (index: Index, item: String, cell: DropDownCell) in
             cell.optionLabel.font = UIFont.systemFont(ofSize: 16, weight: .regular)
             cell.optionLabel.textColor = .black
             _ = self
         }
 
-        dropDown.selectionAction = { [weak self] (index: Int, item: String) in
+        destDropDown.selectionAction = { [weak self] (index: Int, item: String) in
             guard let self = self else { return }
-            self.routingMenuLabel.text = item
-            self.routingMenuLabel.textColor = .black
-            self.routingMenuChevronImageView.image = UIImage(systemName: "chevron.down")
+            self.destMenuLabel.text = item
+            self.destMenuLabel.textColor = .black
+            self.destMenuChevronImageView.image = UIImage(systemName: "chevron.down")
         }
 
-        dropDown.cancelAction = { [weak self] in
-            self?.routingMenuChevronImageView.image = UIImage(systemName: "chevron.down")
+        destDropDown.cancelAction = { [weak self] in
+            self?.destMenuChevronImageView.image = UIImage(systemName: "chevron.down")
         }
     }
     
     func bindActions() {
-        let menuTap = UITapGestureRecognizer(target: self, action: #selector(didTapMenu))
-        routingMenuView.addGestureRecognizer(menuTap)
+        let fromMenuTap = UITapGestureRecognizer(target: self, action: #selector(didTapFromMenu))
+        fromMenuView.addGestureRecognizer(fromMenuTap)
+        
+        let destMenuTap = UITapGestureRecognizer(target: self, action: #selector(didTapDestMenu))
+        destMenuView.addGestureRecognizer(destMenuTap)
         
         let mapTap = UITapGestureRecognizer(target: self, action: #selector(didTapIndoorMap))
         mapButton.addGestureRecognizer(mapTap)
@@ -246,16 +362,27 @@ class RoutingViewController: UIViewController {
         safeDrivingButton.addGestureRecognizer(safeTap)
     }
 
-    @objc private func didTapMenu() {
-        // Ensure width is correct after layout
-        dropDown.width = routingMenuView.bounds.width
+    @objc private func didTapFromMenu() {
+        fromDropDown.width = fromMenuView.bounds.width
 
-        if dropDown.isHidden {
-            routingMenuChevronImageView.image = UIImage(systemName: "chevron.up")
-            dropDown.show()
+        if fromDropDown.isHidden {
+            fromMenuChevronImageView.image = UIImage(systemName: "chevron.up")
+            fromDropDown.show()
         } else {
-            routingMenuChevronImageView.image = UIImage(systemName: "chevron.down")
-            dropDown.hide()
+            fromMenuChevronImageView.image = UIImage(systemName: "chevron.down")
+            fromDropDown.hide()
+        }
+    }
+    
+    @objc private func didTapDestMenu() {
+        destDropDown.width = destMenuView.bounds.width
+
+        if destDropDown.isHidden {
+            destMenuChevronImageView.image = UIImage(systemName: "chevron.up")
+            destDropDown.show()
+        } else {
+            destMenuChevronImageView.image = UIImage(systemName: "chevron.down")
+            destDropDown.hide()
         }
     }
     
@@ -269,7 +396,8 @@ class RoutingViewController: UIViewController {
     }
 
     @objc private func didTapSafeDrivingStart() {
-        goToCardViewController(region: region, userId: userId)
+//        goToCardViewController(region: region, userId: userId)
+        goToNaviViewController(userId: userId, isSafeDriving: true)
     }
     
     func goToCardViewController(region: String, userId: String) {
@@ -286,9 +414,11 @@ class RoutingViewController: UIViewController {
         self.navigationController?.pushViewController(mapVC, animated: true)
     }
     
-    func goToNaviViewController(userId: String) {
+    func goToNaviViewController(userId: String, isSafeDriving: Bool = false) {
         guard let naviVC = self.storyboard?.instantiateViewController(withIdentifier: "NaviViewController") as? NaviViewController else { return }
         naviVC.userId = userId
+        naviVC.fromSelectedName = selectedFromItem ?? fromMenuLabel.text
+        naviVC.isSafeDriving = isSafeDriving
         self.navigationController?.pushViewController(naviVC, animated: true)
     }
 }

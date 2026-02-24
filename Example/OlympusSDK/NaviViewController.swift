@@ -10,7 +10,7 @@ import TJLabsMap
 
 class NaviViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviViewDelegate {
     func onNavigationRoute(_ view: TJLabsMap.TJLabsNaviView, routes: [(String, String, Int, Float, Float)]) {
-        print("(MapVC) onNavigationRoute : route len= \(routes.count)")
+        print("(NaviVC) onNavigationRoute : route len= \(routes.count)")
         self.isNaviRouteLoaded = true
     }
     
@@ -54,7 +54,7 @@ class NaviViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviVi
         
         if result.level_name != "B0" && isNaviRouteLoaded && !isNaviRouteRendered {
             DispatchQueue.main.async { [self] in
-                print("(MapVC) navigation route rendered")
+                print("(NaviVC) navigation route rendered")
                 UIView.animate(withDuration: 0.2, animations: {
                     self.naviView.plotRoutelAll()
 //                    self.naviView.plotPins()
@@ -68,12 +68,12 @@ class NaviViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviVi
     }
     
     func isUserGuidanceOut() {
-        print("(MapVC) isUserGuidanceOut : guidance out!!")
+        print("(NaviVC) isUserGuidanceOut : guidance out!!")
     }
     
     func isNavigationRouteChanged(_ routes: [(String, String, Int, Float, Float)]) {
-        print("(MapVC) isNavigationRouteChanged : route len= \(routes.count)")
-        print("(MapVC) isNavigationRouteChanged : routes= \(routes)")
+        print("(NaviVC) isNavigationRouteChanged : route len= \(routes.count)")
+        print("(NaviVC) isNavigationRouteChanged : routes= \(routes)")
         naviView.setNaviRoutes(routes: routes)
     }
     
@@ -82,14 +82,16 @@ class NaviViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviVi
     }
     
     func isWaypointChanged(_ waypoints: [[Double]]) {
-        print("(MapVC) isWaypointChanged : waypoints count= \(waypoints.count)")
-        print("(MapVC) isWaypointChanged : waypoints= \(waypoints)")
+        print("(NaviVC) isWaypointChanged : waypoints count= \(waypoints.count)")
+        print("(NaviVC) isWaypointChanged : waypoints= \(waypoints)")
         naviView.setNaviWaypoints(waypoints: waypoints)
     }
     
     var region: String = JupiterRegion.KOREA.rawValue
     var sectorId: Int = 6
     var userId: String = ""
+    
+    var fromSelectedName: String?
     
     var serviceManager: JupiterManager?
     var jupiterResult: JupiterResult?
@@ -109,6 +111,7 @@ class NaviViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviVi
     var isParkingGuideRendered: Bool = false
     var isNaviRouteLoaded: Bool = false
     var isNaviRouteRendered: Bool = false
+    var isSafeDriving: Bool = false
     
     private var saveButton: UIView = {
         let view = UIView()
@@ -132,6 +135,8 @@ class NaviViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviVi
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        print("(NaviVC) fromSelectedName :", fromSelectedName ?? "nil")
+        
         setupLayout()
         bindActions()
         startService()
@@ -154,13 +159,20 @@ class NaviViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviVi
         serviceManager?.delegate = self
         naviView.delegate = self
         
-        serviceManager?.navigationMode(flag: false)
-        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_01_0119.csv", sensorFileName: "sensor_coex_03_01_0119.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_03_1007.csv", sensorFileName: "sensor_coex_01_03_1007.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_05_1007.csv", sensorFileName: "sensor_coex_02_05_1007.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_05_1007.csv", sensorFileName: "sensor_coex_03_05_1007.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_test4_0129.csv", sensorFileName: "sensor_coex_test4_0129.csv")
+        var scenario: Int?
+        if let fromSelectedName = fromSelectedName, !isSafeDriving {
+            if fromSelectedName.contains("1번") {
+                scenario = 1
+            } else if fromSelectedName.contains("3번") {
+                scenario = 3
+            } else if fromSelectedName.contains("4번") {
+                scenario = 4
+            }
+        }
+        print("(NaviVC) navigationMode : scenario= \(scenario)")
+        serviceManager?.navigationMode(flag: true, scenario: scenario)
+//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_01_0119.csv", sensorFileName: "sensor_coex_03_01_0119.csv")
+//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_04_01_0119.csv", sensorFileName: "sensor_coex_04_01_0119.csv")
         serviceManager?.startJupiter(sectorId: sectorId, mode: .MODE_AUTO, debugOption: true)
     }
     

@@ -106,7 +106,6 @@ class MapViewController: UIViewController {
         }
         
         setupMapView()
-        mapView.setPointOffset(offset: CGFloat(40))
         mapView.setDebugOption(flag: false)
     }
     
@@ -134,8 +133,7 @@ class MapViewController: UIViewController {
     func setupMapView() {
         mapView.initialize(region: self.region, sectorId: self.sectorId)
         mapView.configureFrame(to: mainView)
-        mapView.setPointOffset(offset: 200)
-        mapView.setZoomAndMarkerScale(zoom: 2.0)
+        mapView.setZoomScale(zoom: 2.0)
         mainView.addSubview(mapView)
     }
     
