@@ -391,19 +391,21 @@ class RoutingViewController: UIViewController {
     }
 
     @objc private func didTapRoutingStart() {
-        goToNaviViewController(userId: userId)
-//        goToCardViewController(region: region, userId: userId)
+//        goToNaviViewController(userId: userId)
+        goToCardViewController(region: region, userId: userId)
     }
 
     @objc private func didTapSafeDrivingStart() {
-//        goToCardViewController(region: region, userId: userId)
+//        goToCardViewController(region: region, userId: userId, isSafeDriving: true)
         goToNaviViewController(userId: userId, isSafeDriving: true)
     }
     
-    func goToCardViewController(region: String, userId: String) {
+    func goToCardViewController(region: String, userId: String, isSafeDriving: Bool = false) {
         guard let cardVC = self.storyboard?.instantiateViewController(withIdentifier: "CardViewController") as? CardViewController else { return }
         cardVC.region = region
         cardVC.userId = userId
+        cardVC.fromSelectedName = selectedFromItem ?? fromMenuLabel.text
+        cardVC.isSafeDriving = isSafeDriving
         
         self.navigationController?.pushViewController(cardVC, animated: true)
     }

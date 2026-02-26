@@ -171,6 +171,7 @@ class NaviViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviVi
         }
         print("(NaviVC) navigationMode : scenario= \(scenario)")
         serviceManager?.navigationMode(flag: true, scenario: scenario)
+        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_0224.csv", sensorFileName: "sensor_coex_01_0224.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_01_0119.csv", sensorFileName: "sensor_coex_03_01_0119.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_04_01_0119.csv", sensorFileName: "sensor_coex_04_01_0119.csv")
         serviceManager?.startJupiter(sectorId: sectorId, mode: .MODE_AUTO, debugOption: true)

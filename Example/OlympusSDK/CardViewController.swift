@@ -136,6 +136,8 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
     var phoenixTime: TimeInterval = 0
     var preServiceTime: Int = 0
     
+    var fromSelectedName: String?
+    var isSafeDriving: Bool = false
     
     var serviceState: Bool = false
     override func viewDidLoad() {
@@ -186,8 +188,23 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         
         serviceManager = JupiterManager(id: uniqueId)
         serviceManager?.delegate = self
-        serviceManager?.navigationMode(flag: true)
-        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_01_0119.csv", sensorFileName: "sensor_coex_03_01_0119.csv")
+        
+        var scenario: Int?
+        if let fromSelectedName = fromSelectedName, !isSafeDriving {
+            if fromSelectedName.contains("1번") {
+                scenario = 1
+            } else if fromSelectedName.contains("3번") {
+                scenario = 3
+            } else if fromSelectedName.contains("4번") {
+                scenario = 4
+            }
+        }
+        
+        let naviMode = !isSafeDriving
+        print("(CardVC) navigationMode : scenario= \(scenario)")
+        serviceManager?.navigationMode(flag: naviMode, scenario: scenario)
+        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_0224.csv", sensorFileName: "sensor_coex_02_0224.csv")
+//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_01_0119.csv", sensorFileName: "sensor_coex_03_01_0119.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_test1_0129.csv", sensorFileName: "sensor_coex_test1_0129.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_test1_0203.csv", sensorFileName: "sensor_coex_test1_0203.csv")
         
