@@ -14,7 +14,7 @@
 		</data>
 		<key>ios-arm64/TJLabsMap.framework/Info.plist</key>
 		<data>
-		t6w3p27meisLACIxgPIAsFyCpuc=
+		z3rNwppRSS+Vj5pzJ19YsUPPwjo=
 		</data>
 		<key>ios-arm64/TJLabsMap.framework/Modules/TJLabsMap.swiftmodule/arm64-apple-ios.abi.json</key>
 		<data>
@@ -38,11 +38,11 @@
 		</data>
 		<key>ios-arm64/TJLabsMap.framework/TJLabsMap</key>
 		<data>
-		YIgIeFG/4XFo6MhYmZxWt7wEUmk=
+		KGzSJUNojkhNX3BHU/iiLZavit0=
 		</data>
 		<key>ios-arm64/TJLabsMap.framework/_CodeSignature/CodeResources</key>
 		<data>
-		fFCA+ogG13CBPDzqGlACDMDNYVg=
+		OJDLEkTdMM4p+8y+UtW9CLXIE/Q=
 		</data>
 		<key>ios-arm64/dSYMs/TJLabsMap.framework.dSYM/Contents/Info.plist</key>
 		<data>
@@ -70,7 +70,7 @@
 		</data>
 		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Info.plist</key>
 		<data>
-		W9Hm8ZTTRUYx/M+aYrn/1F0DRug=
+		LEGs2NMQ/I+ikwWaYKbNo/c12SY=
 		</data>
 		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Modules/TJLabsMap.swiftmodule/arm64-apple-ios-simulator.abi.json</key>
 		<data>
@@ -110,11 +110,11 @@
 		</data>
 		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/TJLabsMap</key>
 		<data>
-		ptI8TzRQhSCX3MuD0ukjGgFWSwQ=
+		4hBee5y3I28tJyAXavRp9Gc+kNo=
 		</data>
 		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/_CodeSignature/CodeResources</key>
 		<data>
-		UnoYJr+6l0xXo16IvJTVFJnGo+I=
+		9oxjns104yx/MJUgNTUOIIaPruk=
 		</data>
 		<key>ios-arm64_x86_64-simulator/dSYMs/TJLabsMap.framework.dSYM/Contents/Info.plist</key>
 		<data>
@@ -161,7 +161,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			xZMEblizINi5wdzhrgQT5yytw2E3ppPaEpqcZ4PeQQU=
+			/b3myB2qtgQ4sTxipHDb6i9zIIm5/6hJudgWKFSJkNY=
 			</data>
 		</dict>
 		<key>ios-arm64/TJLabsMap.framework/Modules/TJLabsMap.swiftmodule/arm64-apple-ios.abi.json</key>
@@ -203,14 +203,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			R+oESqfUp7GK4RvhT76Z/2gzfFbb/oWnrTuGhqmSOBw=
+			aQJMGNavgVQcPE4itl+vYmqjy0KnYnNP3JpQN7Im7vo=
 			</data>
 		</dict>
 		<key>ios-arm64/TJLabsMap.framework/_CodeSignature/CodeResources</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			tHcystmKz1xZGlna636ijj5pRab6IaYHcrTPtmDbtT4=
+			SwBMuzDO7JteMbVOcPmdAbBflvxrU0iRmqiwhElypnU=
 			</data>
 		</dict>
 		<key>ios-arm64/dSYMs/TJLabsMap.framework.dSYM/Contents/Info.plist</key>
@@ -259,7 +259,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			Jw8BCtAz/0NRpnspyMH3SlWRHz2Fu1dPrSQehg3RoKg=
+			fDxCMQivR+3CedQWqNU1OKBmAQ1OdoE2Lfv70okId1w=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Modules/TJLabsMap.swiftmodule/arm64-apple-ios-simulator.abi.json</key>
@@ -329,14 +329,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			SFhT24PmSWS3ioiJ+zcdps5RbHdD6puwq7cW9Oa9vmg=
+			ZltPR2UNCnlsNxUU9sHf6JxwJKAHT/xANXQb8/Hc6Gg=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/_CodeSignature/CodeResources</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			Cc70erngDZLd3FmYMWSR/qkwl29I8G+XxTQwgZci/dw=
+			u0Ni/2Tz7zLuKx1o2hUtaesu5VT/I7d32RFAR6xPz3c=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/dSYMs/TJLabsMap.framework.dSYM/Contents/Info.plist</key>
