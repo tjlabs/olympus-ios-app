@@ -522,16 +522,51 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             let curPmResultBuffer = stackManager.getCurPmResultBuffer(size: 10)
             
             guard let followingResult = isFollowingNavigationRoute(curNaviCase: curNaviCase, naviRouteResultBuffer: naviRouteResultBuffer, curPmResultBuffer: curPmResultBuffer) else { return }
-            curNaviCase = followingResult.0
-            if followingResult.0 == .CASE_3 && !guidanceOutReported {
+            
+            let estimatedNaviCase = followingResult.naviCase
+//            if estimatedNaviCase == .CASE_3, let curPmResult = self.curPathMatchingResult {
+//                // 한번 더 검사하기~
+//                var naviResult = curPmResult
+//                naviResult.x = naviRouteResult.x
+//                naviResult.y = naviRouteResult.y
+//                naviResult.absolute_heading = naviRouteResult.heading
+//                if let naviResultLinks = PathMatcher.shared.getLinkInfosWithResult(sectorId: sectorId, result: naviResult, checkAll: true) {
+//                    if let curResultLinks = PathMatcher.shared.getLinkInfosWithResult(sectorId: sectorId, result: curPmResult, checkAll: true) {
+//                        let naviGroupIds = naviResultLinks.map { $0.group_id }
+//                        let jupiterGroupIds = curResultLinks.map { $0.group_id }
+//                        let inSameLinkGroup = !Set(naviGroupIds).isDisjoint(with: jupiterGroupIds)
+//                        JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFolllowingNavigationRoute: jupiterGroupIds= \(jupiterGroupIds), naviGroupIds= \(naviGroupIds) // inSameLinkGroup= \(inSameLinkGroup)")
+//                        if inSameLinkGroup {
+//                            // 잘 따라가고 있음
+//                            curNaviCase = .CASE_1
+//                            feedbackCount = 10
+//                            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFolllowingNavigationRoute: CASE_3 but link group is same -> can feedback")
+//                        } else {
+//                            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFolllowingNavigationRoute: \(followingResult.0) link group is not same")
+//                            curNaviCase = followingResult.0
+//                        }
+//                    } else {
+//                        JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFolllowingNavigationRoute: cannot find matched link in curPmResult [\(curPmResult.x),\(curPmResult.y),\(curPmResult.absolute_heading)]")
+//                        curNaviCase = .CASE_3
+//                    }
+//                } else {
+//                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFolllowingNavigationRoute: cannot find matched link in naviResult [\(naviResult.x),\(naviResult.y),\(naviResult.absolute_heading)]")
+//                    curNaviCase = .CASE_3
+//                }
+//            } else {
+//                curNaviCase = followingResult.0
+//            }
+            
+            curNaviCase = estimatedNaviCase
+            if curNaviCase == .CASE_3 && !guidanceOutReported {
                 guidanceOutReported = true
                 delegate?.isUserGuidanceOut()
             }
             
-            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFolllowingNavigationRoute: followingResult= \(followingResult)")
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFolllowingNavigationRoute: followingResult= \(followingResult) // curNaviCase= \(curNaviCase)")
             
-            self.jupiterResultMode = determineJupiterResultMode(jupiterResultMode: jupiterResultMode, naviCase: followingResult.naviCase)
-            let canFeedback = feedbackWhenFollowing(naviCase: followingResult.naviCase, naviRouteResultBuffer: naviRouteResultBuffer)
+            self.jupiterResultMode = determineJupiterResultMode(jupiterResultMode: jupiterResultMode, naviCase: curNaviCase)
+            let canFeedback = feedbackWhenFollowing(naviCase: curNaviCase, naviRouteResultBuffer: naviRouteResultBuffer)
             JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) feedbackWhenFollowing: canFeedback= \(canFeedback)")
             if canFeedback {
                 feedbackCount += 1
@@ -545,12 +580,16 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                     stackManager.editCurResultBuffer(sectorId: sectorId, mode: mode, from: indexForEdit, indexAndNaviRouteResultBuffer: indexAndNaviRouteResultBuffer, paddings: paddings)
                     _ = stackManager.editCurPmResultBuffer(sectorId: sectorId, mode: mode, from: indexForEdit, indexAndNaviRouteResultBuffer: indexAndNaviRouteResultBuffer, paddings: paddings)
                     kalmanFilter?.editTuResultBuffer(sectorId: sectorId, mode: mode, from: indexForEdit, indexAndNaviRouteResultBuffer: indexAndNaviRouteResultBuffer, curResult: curResult, paddings: paddings)
-                    
+                    kalmanFilter?.updateTuPosition(coord: [naviRouteResult.x, naviRouteResult.y])
                     feedbackIndex = userVelocity.index
                 }
             } else {
                 feedbackCount = 0
             }
+        }
+        
+        if let tuResult = kalmanFilter?.getTuResult() {
+            self.debug_tu_xyh = [tuResult.x, tuResult.y, tuResult.absolute_heading]
         }
     }
     
@@ -642,12 +681,14 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                 //거리, 헤딩 오차가 모두 발생
                 //경로를 따라가지 않은 케이스로 jupiter result 를 보여줌
                 naviCase = .CASE_3
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(isFolllowingNavigationRoute) : CASE_3 // pos & heading error")
             } else {
-                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFolllowingNavigationRoute: isAllSamePmResult= \(isAllSamePmResult) // isAllSameNaviResult= \(isAllSameNaviResult)")
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(isFolllowingNavigationRoute) : isAllSamePmResult= \(isAllSamePmResult) // isAllSameNaviResult= \(isAllSameNaviResult)")
                 if (isAllSamePmResult && !isAllSameNaviResult) {
                     // 위치 오차만 발생
                     // jupiter 결과가 먼저 도달한 상태로 navi result 를 보여줌
                     naviCase = .CASE_2
+                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(isFolllowingNavigationRoute) : CASE_2 // only pos error jupiter is advanced")
                 } else if (isAllSameNaviResult) {
                     // 위치 오차만 발생
                     // navi 결과가 먼저 도달한 상태로 상황에 따라 결과가 달라짐
@@ -656,16 +697,18 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                     naviCase = if (dSumAvg > DLOSS_THRESHOLD_45) {
                         .CASE_3
                     } else {
-                        .CASE_1
+                        .CASE_2
                     }
+                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(isFolllowingNavigationRoute) : CASE_1 or 3 // dSumAvg= \(dSumAvg)")
                 } else {
                     // 옆길을 어느정도 범위의 오차까지 볼 것인가
-//                    if dSumAvg > DLOSS_THRESHOLD_45 {
-//                        naviCase = .CASE_3
-//                    } else {
-//                        naviCase = .CASE_2
-//                    }
-                    naviCase = .CASE_2
+                    naviCase = if (dSumAvg > DLOSS_THRESHOLD_45) {
+                        .CASE_3
+                    } else {
+                        .CASE_2
+                    }
+//                    naviCase = .CASE_2
+                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(isFolllowingNavigationRoute) : CASE_3 or 2 // dSumAvg= \(dSumAvg)")
                 }
             }
         } else {
@@ -1052,9 +1095,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             PathMatcher.shared.updateAnchorNode(sectorId: sectorId, fltResult: curResult, mode: mode, sectionNumber: sectionController.getSectionNumber())
         }
         kalmanFilter?.updateTuInformation(uvd: uvd, olderPeakIndex: olderPeakIndex)
-        if let tuResult = kalmanFilter?.getTuResult() {
-            self.debug_tu_xyh = [tuResult.x, tuResult.y, tuResult.absolute_heading]
-        }
         
         let indoorResult = makeCurrentResult(input: tuResult, mustInSameLink: mustInSameLink, pathMatchingType: .NARROW, phase: .TRACKING, jumpInfo: jumpInfo, mode: mode)
         self.curResult = indoorResult
