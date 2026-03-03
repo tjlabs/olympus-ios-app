@@ -23,16 +23,14 @@ public enum ResourceRegion : Swift.String {
   }
 }
 public struct PathPixelData {
-  public var roadType: [Swift.Int]
-  public var nodeNumber: [Swift.Int]
   public var road: [[Swift.Float]]
   public var roadMinMax: [Swift.Float]
   public var roadScale: [Swift.Float]
   public var roadHeading: [Swift.String]
-  public init(roadType: [Swift.Int], nodeNumber: [Swift.Int], road: [[Swift.Float]], roadMinMax: [Swift.Float], roadScale: [Swift.Float], roadHeading: [Swift.String])
+  public init(road: [[Swift.Float]], roadMinMax: [Swift.Float], roadScale: [Swift.Float], roadHeading: [Swift.String])
 }
 public struct NodeData {
-  public let id: Swift.Int
+  public let number: Swift.Int
   public let coords: [Swift.Float]
   public let directions: [TJLabsResource.NodeDirection]
   public let connected_nodes: [Swift.Int]
@@ -45,15 +43,15 @@ public struct NodeDirection : Swift.Codable {
   public init(from decoder: any Swift.Decoder) throws
 }
 public struct LinkData {
-  public let id: Swift.Int
+  public let number: Swift.Int
   public let start_node: Swift.Int
   public let end_node: Swift.Int
   public let distance: Swift.Float
   public let included_heading: [Swift.Float]
-  public let group_id: Swift.Int
+  public let group_number: Swift.Int
 }
 public enum NodeLinkType : Swift.Codable {
-  case NODE, LINK, FILE
+  case NODE, LINK, LINK_GROUP, FILE
   public static func == (a: TJLabsResource.NodeLinkType, b: TJLabsResource.NodeLinkType) -> Swift.Bool
   public func encode(to encoder: any Swift.Encoder) throws
   public func hash(into hasher: inout Swift.Hasher)
@@ -218,6 +216,62 @@ public struct LevelWard : Swift.Codable {
   public func encode(to encoder: any Swift.Encoder) throws
   public init(from decoder: any Swift.Decoder) throws
 }
+public struct LevelGraphNodesOutput : Swift.Codable {
+  public let nodes: [TJLabsResource.GraphNode]
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct GraphNode : Swift.Codable {
+  public let id: Swift.Int
+  public let number: Swift.Int
+  public let x: Swift.Int
+  public let y: Swift.Int
+  public let available_in_headings: [Swift.Int]
+  public let available_out_headings: [Swift.Int]
+  public let connected_links: [TJLabsResource.GraphLinkMini]
+  public let connected_nodes: [TJLabsResource.GraphNodeMini]
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct LevelGraphLinksOutput : Swift.Codable {
+  public let links: [TJLabsResource.GraphLink]
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct GraphLink : Swift.Codable {
+  public let id: Swift.Int
+  public let number: Swift.Int
+  public let node_a: TJLabsResource.GraphNodeMini
+  public let node_b: TJLabsResource.GraphNodeMini
+  public let available_headings: [Swift.Int]
+  public let distance: Swift.Int
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct LevelGraphLinkGroupsOutput : Swift.Codable {
+  public let link_groups: [TJLabsResource.GraphLinkGroup]
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct GraphLinkGroup : Swift.Codable {
+  public let id: Swift.Int
+  public let number: Swift.Int
+  public let links: [TJLabsResource.GraphLinkMini]
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct GraphNodeMini : Swift.Codable {
+  public let id: Swift.Int
+  public let number: Swift.Int
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct GraphLinkMini : Swift.Codable {
+  public let id: Swift.Int
+  public let number: Swift.Int
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
 public enum SpotType : Swift.Codable {
   case BUILDING_LEVEL_TAG, NONE
   public static func == (a: TJLabsResource.SpotType, b: TJLabsResource.SpotType) -> Swift.Bool
@@ -371,14 +425,22 @@ public class TJLabsResourceManager {
   public static func getUserPathPixelURL() -> Swift.String
   public static func getUserLevelUnitsVersion() -> Swift.String
   public static func getUserLevelUnitsURL() -> Swift.String
-  public static func getUserUnitVersion() -> Swift.String
-  public static func getUserUnitURL() -> Swift.String
   public static func getUserGeoVersion() -> Swift.String
   public static func getUserGeoURL() -> Swift.String
   public static func getUserEntrancesVersion() -> Swift.String
   public static func getUserEntrancesURL() -> Swift.String
   public static func getUserLevelWardsVersion() -> Swift.String
   public static func getUserLevelWardsURL() -> Swift.String
+  public static func getUserGraphNodesVersion() -> Swift.String
+  public static func getUserGraphNodesURL() -> Swift.String
+  public static func getUserGraphLinksVersion() -> Swift.String
+  public static func getUserGraphLinksURL() -> Swift.String
+  public static func getUserGraphLinkFeaturesVersion() -> Swift.String
+  public static func getUserGraphLinkFeaturesURL() -> Swift.String
+  public static func getUserGraphLinkGroupsVersion() -> Swift.String
+  public static func getUserGraphLinkGroupsURL() -> Swift.String
+  public static func getUserGraphPathsVersion() -> Swift.String
+  public static func getUserGraphPathsURL() -> Swift.String
   public static func getUserAffineVersion() -> Swift.String
   public static func getUserAffineURL() -> Swift.String
   @objc deinit

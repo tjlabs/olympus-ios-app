@@ -38,7 +38,7 @@
 		</data>
 		<key>ios-arm64/TJLabsMap.framework/TJLabsMap</key>
 		<data>
-		KGzSJUNojkhNX3BHU/iiLZavit0=
+		znS/wF6tEv11CFF0M6cN9fWZfGU=
 		</data>
 		<key>ios-arm64/TJLabsMap.framework/_CodeSignature/CodeResources</key>
 		<data>
@@ -58,7 +58,7 @@
 		</data>
 		<key>ios-arm64/dSYMs/TJLabsMap.framework.dSYM/Contents/Resources/Swift/aarch64/TJLabsResource.swiftinterface</key>
 		<data>
-		Dv+hJvYgE9zn6p8W8eAnpOvKDLI=
+		NDBF6sVjO/Q9sNdUHaS/UBwBvV4=
 		</data>
 		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Assets.car</key>
 		<data>
@@ -134,11 +134,11 @@
 		</data>
 		<key>ios-arm64_x86_64-simulator/dSYMs/TJLabsMap.framework.dSYM/Contents/Resources/Swift/aarch64/TJLabsResource.swiftinterface</key>
 		<data>
-		BYYRFNJ13zdhS3LZYbsGKLQj0fc=
+		0H70Eq2RfGIJD7jDtGzOyAtcchQ=
 		</data>
 		<key>ios-arm64_x86_64-simulator/dSYMs/TJLabsMap.framework.dSYM/Contents/Resources/Swift/x86_64/TJLabsResource.swiftinterface</key>
 		<data>
-		9ILe1YpapQwsiCAeFfMFr4iYFtY=
+		vZRAMDIM1VjDDNy4B//rZx/wOS4=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -203,7 +203,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			aQJMGNavgVQcPE4itl+vYmqjy0KnYnNP3JpQN7Im7vo=
+			0k6uvWUE90EyP2bGrNamdPuOnnBy3lEmiFgMnlpZI4k=
 			</data>
 		</dict>
 		<key>ios-arm64/TJLabsMap.framework/_CodeSignature/CodeResources</key>
@@ -238,7 +238,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			1N6hQZvOUVKxS5Zvdtk0d6UZvS7LV0FrZPssFT4RK8g=
+			7oqa6UdosBGI5Dm34oxe0iioNsOvpgCTpgji1JoFmyI=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/Assets.car</key>
@@ -371,14 +371,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			Ds0Ev7Ilq8c1oNtGyVWA0m8L51QDchRmRJkwH+VmqSc=
+			KV8AcWrjmo5qCV6GHKqjv5BQbguh1jNFeoIaB4GHGLE=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/dSYMs/TJLabsMap.framework.dSYM/Contents/Resources/Swift/x86_64/TJLabsResource.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			6pnYVIt1a/aB9UC/7eDfIgGovgU03QB5VAwr1n/RVy0=
+			7PQWzDoCtpJIfuJ0Xl/HZI0r9rso1NmfYJbaqqRZK5A=
 			</data>
 		</dict>
 	</dict>
