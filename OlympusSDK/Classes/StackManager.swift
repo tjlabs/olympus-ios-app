@@ -181,10 +181,10 @@ class StackManager {
                 }
                 preResult = newResult
                 
-                JupiterLogger.i(
-                    tag: "StackManager",
-                    message: "(editCurResultBuffer) index:\(result.index) edited // [\(result.x),\(result.y),\(result.absolute_heading)] -> [\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]"
-                )
+//                JupiterLogger.i(
+//                    tag: "StackManager",
+//                    message: "(editCurResultBuffer) index:\(result.index) edited // [\(result.x),\(result.y),\(result.absolute_heading)] -> [\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]"
+//                )
 
                 return newResult
             }
@@ -201,12 +201,12 @@ class StackManager {
                 newResult.y = route.y
                 newResult.absolute_heading = route.heading
 
-                JupiterLogger.i(
-                    tag: "StackManager",
-                    message: "(editCurResultBuffer-navi) index:\(result.index) edited // " +
-                             "[\(result.x),\(result.y),\(result.absolute_heading)] -> " +
-                             "[\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]"
-                )
+//                JupiterLogger.i(
+//                    tag: "StackManager",
+//                    message: "(editCurResultBuffer-navi) index:\(result.index) edited // " +
+//                             "[\(result.x),\(result.y),\(result.absolute_heading)] -> " +
+//                             "[\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]"
+//                )
 
                 return newResult
             }
@@ -292,17 +292,17 @@ class StackManager {
                     newResult.x = pm.x
                     newResult.y = pm.y
                     newResult.absolute_heading = pm.heading
-                    JupiterLogger.i(
-                        tag: "StackManager",
-                        message: "(editCurPmResultBuffer) index:\(result.index) do pm // [\(newX),\(newY),\(traj.heading)] -> pm [\(pm.x),\(pm.y),\(pm.heading)]"
-                    )
+//                    JupiterLogger.i(
+//                        tag: "StackManager",
+//                        message: "(editCurPmResultBuffer) index:\(result.index) do pm // [\(newX),\(newY),\(traj.heading)] -> pm [\(pm.x),\(pm.y),\(pm.heading)]"
+//                    )
                 }
                 preResult = newResult
                 
-                JupiterLogger.i(
-                    tag: "StackManager",
-                    message: "(editCurPmResultBuffer) index:\(result.index) edited // [\(result.x),\(result.y),\(result.absolute_heading)] -> [\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]"
-                )
+//                JupiterLogger.i(
+//                    tag: "StackManager",
+//                    message: "(editCurPmResultBuffer) index:\(result.index) edited // [\(result.x),\(result.y),\(result.absolute_heading)] -> [\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]"
+//                )
 
                 return newResult
             }
@@ -319,12 +319,12 @@ class StackManager {
                 newResult.y = route.y
                 newResult.absolute_heading = route.heading
 
-                JupiterLogger.i(
-                    tag: "StackManager",
-                    message: "(editCurPmResultBuffer-navi) index:\(result.index) edited // " +
-                             "[\(result.x),\(result.y),\(result.absolute_heading)] -> " +
-                             "[\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]"
-                )
+//                JupiterLogger.i(
+//                    tag: "StackManager",
+//                    message: "(editCurPmResultBuffer-navi) index:\(result.index) edited // " +
+//                             "[\(result.x),\(result.y),\(result.absolute_heading)] -> " +
+//                             "[\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]"
+//                )
 
                 return newResult
             }
@@ -372,6 +372,15 @@ class StackManager {
     
     func getIndexAndNaviRouteResultBuffer(index: Int) -> [(Int, NavigationRoute)] {
         return self.indexAndNaviRouteResultBuffer.filter { $0.0 >= index }
+    }
+    
+    func stackNaviRouteDirection(sectorId: Int, curPmResult: FineLocationTrackingOutput, naviRouteResult: NavigationRoute) {
+        var naviResult = curPmResult
+        naviResult.x = naviRouteResult.x
+        naviResult.y = naviRouteResult.y
+        naviResult.absolute_heading = naviRouteResult.heading
+        
+        guard let matchedLinks = PathMatcher.shared.getLinkInfosWithResult(sectorId: sectorId, result: naviResult) else { return }
     }
     
     func makeHeadingSet(resultBuffer: [FineLocationTrackingOutput]) -> [Float] {

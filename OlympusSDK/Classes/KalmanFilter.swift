@@ -155,10 +155,10 @@ class KalmanFilter {
                 }
                 preResult = newResult
                 
-                JupiterLogger.i(
-                    tag: "KalmanFilter",
-                    message: "(editTuResultBuffer) index:\(result.index) edited // [\(result.x),\(result.y),\(result.heading)] -> [\(newResult.x),\(newResult.y),\(newResult.heading)]"
-                )
+//                JupiterLogger.i(
+//                    tag: "KalmanFilter",
+//                    message: "(editTuResultBuffer) index:\(result.index) edited // [\(result.x),\(result.y),\(result.heading)] -> [\(newResult.x),\(newResult.y),\(newResult.heading)]"
+//                )
 
                 return newResult
             }
@@ -175,12 +175,12 @@ class KalmanFilter {
                 newResult.y = route.y
                 newResult.heading = route.heading
 
-                JupiterLogger.i(
-                    tag: "StackManager",
-                    message: "(editTuResultBuffer-navi) index:\(result.index) edited // " +
-                             "[\(result.x),\(result.y),\(result.heading)] -> " +
-                             "[\(newResult.x),\(newResult.y),\(newResult.heading)]"
-                )
+//                JupiterLogger.i(
+//                    tag: "StackManager",
+//                    message: "(editTuResultBuffer-navi) index:\(result.index) edited // " +
+//                             "[\(result.x),\(result.y),\(result.heading)] -> " +
+//                             "[\(newResult.x),\(newResult.y),\(newResult.heading)]"
+//                )
 
                 return newResult
             }

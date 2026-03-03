@@ -788,12 +788,13 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         let jupiterGroupIds = curLinks.map { $0.group_id }
         let inSameLinkGroup = !Set(naviGroupIds).isDisjoint(with: jupiterGroupIds)
 
-        JupiterLogger.i(tag: "JupiterCalcManager", message: "isFolllowingNavigationRoute: inSameLinkGroup= \(inSameLinkGroup)")
+        JupiterLogger.i(tag: "JupiterCalcManager", message: "isFolllowingNavigationRoute: naviGroupIds= \(naviGroupIds), jupiterGroupIds= \(jupiterGroupIds), inSameLinkGroup= \(inSameLinkGroup)")
 
         if inSameLinkGroup {
             // 같은 링크 그룹이면 adaptive_th = max(adaptive_th, travelingLinkDist*0.7)
-            adaptiveTh = max(adaptiveTh, travelingLinkDist * 0.7)
+            adaptiveTh = max(adaptiveTh, travelingLinkDist * 0.5)
             if shouldCheckEndOfMap {
+                // Navi 결과가 고정된 좌표 값을 제공하는 상황
                 let rad = Float(TJLabsUtilFunctions.shared.degree2radian(degree: Double(naviResult.absolute_heading)))
                 let coordX = naviResult.x + cos(rad)
                 let coordY = naviResult.y + sin(rad)
