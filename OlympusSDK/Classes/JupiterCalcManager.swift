@@ -495,7 +495,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                 kalmanFilter?.updateTuPosition(coord: [pmResult.x, pmResult.y])
                                 self.curResult? = curPathMatchingResult!
                                 if let matchedLink = PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId, result: curPathMatchingResult!, checkAll: true) {
-                                    let jumpInfo = JumpInfo(link_id: matchedLink.id, jumped_nodes: [])
+                                    let jumpInfo = JumpInfo(link_number: matchedLink.number, jumped_nodes: [])
                                     PathMatcher.shared.updateNodeAndLinkInfo(sectorId: sectorId, uvdIndex: curIndex, curResult: bestResult, mode: mode, jumpInfo: jumpInfo)
                                 }
                             } else {
@@ -784,11 +784,11 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             return nil
         }
 
-        let naviGroupIds = naviLinks.map { $0.group_id }
-        let jupiterGroupIds = curLinks.map { $0.group_id }
-        let inSameLinkGroup = !Set(naviGroupIds).isDisjoint(with: jupiterGroupIds)
+        let naviGroupNums = naviLinks.map { $0.group_number }
+        let jupiterGroupNums = curLinks.map { $0.group_number }
+        let inSameLinkGroup = !Set(naviGroupNums).isDisjoint(with: jupiterGroupNums)
 
-        JupiterLogger.i(tag: "JupiterCalcManager", message: "isFolllowingNavigationRoute: naviGroupIds= \(naviGroupIds), jupiterGroupIds= \(jupiterGroupIds), inSameLinkGroup= \(inSameLinkGroup)")
+        JupiterLogger.i(tag: "JupiterCalcManager", message: "isFolllowingNavigationRoute: naviGroupNums= \(naviGroupNums), jupiterGroupNums= \(jupiterGroupNums), inSameLinkGroup= \(inSameLinkGroup)")
 
         if inSameLinkGroup {
             // 같은 링크 그룹이면 adaptive_th = max(adaptive_th, travelingLinkDist*0.7)
@@ -1319,9 +1319,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                                                            acceptDist: 15)
                     
                     let passingLinkBuffer = PathMatcher.shared.getPassingLinkBuffer()
-                    let passingLinkGroupIdSet = Set(passingLinkBuffer.map { $0.link_group_Id })
-//                    let linkConnection = !isDrStraight.0 && passingLinkGroupIdSet.count == 1 && !PathMatcher.shared.isInNode ? true : false
-                    let linkConnection = isTurn && passingLinkGroupIdSet.count == 1 && !PathMatcher.shared.isInNode ? true : false
+                    let passingLinkGroupNumSet = Set(passingLinkBuffer.map { $0.link_group_number })
+                    let linkConnection = isTurn && passingLinkGroupNumSet.count == 1 && !PathMatcher.shared.isInNode ? true : false
 
                     let trackingResultList = recoveryManager.trackWith2Peaks(trackingTrajList: trackingTrajList,
                                                                              userPeakAndLinksBuffer: userPeakAndLinksBuffer,
@@ -1346,9 +1345,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                 let key = "\(sectorId)_\(curResult.building_name)_\(curResult.level_name)"
                                 if let linkData = PathMatcher.shared.linkData[key] {
                                     let bestCand = trackingResult.bestRecentCand
-                                    let linkIds = bestCand.matched_links
-                                    if linkIds.count == 1 {
-                                        if let matchedLink = linkData[linkIds[0]] {
+                                    let linkNums = bestCand.matched_links
+                                    if linkNums.count == 1 {
+                                        if let matchedLink = linkData[linkNums[0]] {
                                             let limitType = PathMatcher.shared.getLimitationTypeWithLink(link: matchedLink)
                                             paddings = PathMatcher.shared.getLimitationRangeWithType(limitType: limitType)
                                         }
@@ -1419,7 +1418,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                let matchedLink = PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId,
                                                                                           result: curPmResult2,
                                                                                           checkAll: true) {
-                                let jumpInfo = JumpInfo(link_id: matchedLink.id, jumped_nodes: [])
+                                let jumpInfo = JumpInfo(link_number: matchedLink.number, jumped_nodes: [])
                                 PathMatcher.shared.updateNodeAndLinkInfo(sectorId: sectorId,
                                                                          uvdIndex: userVelocity.index,
                                                                          curResult: curPmResult2,
@@ -1542,7 +1541,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     private func calcJumpedNodes(from: FineLocationTrackingOutput?,
                                  to: FineLocationTrackingOutput,
                                  curLinkInfo: PassedLinkInfo,
-                                 jumpedLinkId: Int,
+                                 jumpedLinkNum: Int,
                                  mode: UserMode) -> JumpInfo? {
         var jumpInfo: JumpInfo?
         
@@ -1551,10 +1550,10 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         let key = "\(sectorId)_\(building)_\(level)"
         
         guard let linkData = PathMatcher.shared.linkData[key] else { return nil }
-        guard let jumpedLinkInfo = linkData[jumpedLinkId] else { return nil }
+        guard let jumpedLinkInfo = linkData[jumpedLinkNum] else { return nil }
         guard let from = from else { return nil }
         
-        if jumpedLinkInfo.group_id == curLinkInfo.group_id {
+        if jumpedLinkInfo.group_number == curLinkInfo.group_number {
             var isJumped: Bool = false
             var intermediatePoints: [[Float]] = []
             
@@ -1597,11 +1596,11 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             for point in intermediatePoints {
                 let pathType = mode == .MODE_PEDESTRIAN ? 0 : 1
                 if let matchedNodeResult = PathMatcher.shared.getMatchedNodeWithCoord(sectorId: sectorId, fltResult: to, originCoord: point, coordToCheck: point, pathType: pathType, paddingValues: [1, 1, 1, 1]) {
-                    let nodeInfo = PassedNodeInfo(id: matchedNodeResult.0, coord: point, headings: matchedNodeResult.1, matched_index: to.index, user_heading: to.absolute_heading)
+                    let nodeInfo = PassedNodeInfo(number: matchedNodeResult.0, coord: point, headings: matchedNodeResult.1, matched_index: to.index, user_heading: to.absolute_heading)
                     jumpedNodes.append(nodeInfo)
                 }
             }
-            jumpInfo = JumpInfo(link_id: jumpedLinkId, jumped_nodes: jumpedNodes)
+            jumpInfo = JumpInfo(link_number: jumpedLinkNum, jumped_nodes: jumpedNodes)
         } else {
             let userX = round(to.x)
             let userY = round(to.y)
@@ -1627,11 +1626,11 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                 let point: [Float] = [x, y]
                 let pathType = mode == .MODE_PEDESTRIAN ? 0 : 1
                 if let matchedNodeResult = PathMatcher.shared.getMatchedNodeWithCoord(sectorId: sectorId, fltResult: to, originCoord: point, coordToCheck: point, pathType: pathType, paddingValues: [1, 1, 1, 1]) {
-                    let nodeId = matchedNodeResult.0
-                    let nodeInfo = PassedNodeInfo(id: nodeId, coord: point, headings: matchedNodeResult.1, matched_index: to.index, user_heading: to.absolute_heading)
+                    let nodeNum = matchedNodeResult.0
+                    let nodeInfo = PassedNodeInfo(number: nodeNum, coord: point, headings: matchedNodeResult.1, matched_index: to.index, user_heading: to.absolute_heading)
                     jumpedNodes.append(nodeInfo)
-                    if nodeId == jumpedLinkInfo.start_node || nodeId == jumpedLinkInfo.end_node {
-                        jumpInfo = JumpInfo(link_id: jumpedLinkId, jumped_nodes: jumpedNodes)
+                    if nodeNum == jumpedLinkInfo.start_node || nodeNum == jumpedLinkInfo.end_node {
+                        jumpInfo = JumpInfo(link_number: jumpedLinkNum, jumped_nodes: jumpedNodes)
                         return jumpInfo
                     }
                 }
