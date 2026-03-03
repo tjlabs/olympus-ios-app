@@ -7,16 +7,16 @@ class PathMatcher {
     init() { }
     
     func initialize() {
-        self.anchorNode = PassedNodeInfo(id: -1, coord: [], headings: [], matched_index: -1, user_heading: 0)
+        self.anchorNode = PassedNodeInfo(number: -1, coord: [], headings: [], matched_index: -1, user_heading: 0)
         self.anchorSection = -1
         
         self.isInNode = false
-        self.curPassedNodeInfo = PassedNodeInfo(id: -1, coord: [], headings: [], matched_index: -1, user_heading: 0)
+        self.curPassedNodeInfo = PassedNodeInfo(number: -1, coord: [], headings: [], matched_index: -1, user_heading: 0)
         self.curPassedLinkInfo = nil
         self.passingLinkBuffer = [PassingLink]()
         self.passedNodeInfoBuffer = [PassedNodeInfo]()
-        self.preLinkId = -1
-        self.preGroupId = -1
+        self.preLinkNum = -1
+        self.preGroupNum = -1
         self.groupLen = 0
         
         self.isNeedClearBuffer = false
@@ -48,14 +48,14 @@ class PathMatcher {
         var groupSums: [Int: Float] = [:]
 
         for (_, link) in linkData {
-            let gid = link.group_id
-            groupSums[gid, default: 0] += link.distance
+            let gnum = link.group_number
+            groupSums[gnum, default: 0] += link.distance
         }
         self.linkGroupLenData[key] = groupSums
     }
 
-    func getLinkGroupLength(key: String, groupId: Int) -> Float? {
-        return self.linkGroupLenData[key]?[groupId]
+    func getLinkGroupLength(key: String, groupNum: Int) -> Float? {
+        return self.linkGroupLenData[key]?[groupNum]
     }
     
     func setEntranceMatchingArea(key: String, data: [[Float]]) {
@@ -84,7 +84,7 @@ class PathMatcher {
         let key = "\(sectorId)_\(building)_\(levelName)"
         
         guard let pathPixelData = checkIsAvailablePathPixelData(key: key) else { return nil }
-        let mainType = pathPixelData.roadType
+
         let mainRoad = pathPixelData.road
         let mainMagScale = pathPixelData.roadScale
         let mainHeading = pathPixelData.roadHeading
@@ -112,9 +112,7 @@ class PathMatcher {
             for i in 0..<roadX.count {
                 let xPath = roadX[i]
                 let yPath = roadY[i]
-                let pathTypeLoaded = mainType[i]
-
-                if mode == .MODE_VEHICLE && pathTypeLoaded != 1 { continue }
+                
                 if xPath >= xMin && xPath <= xMax, yPath >= yMin && yPath <= yMax {
                     let distance = sqrt(pow(x - xPath, 2) + pow(y - yPath, 2))
                     let magScale = mainMagScale[i]
@@ -175,7 +173,7 @@ class PathMatcher {
         let key = "\(sectorId)_\(building)_\(levelName)"
 
         guard let pathPixelData = checkIsAvailablePathPixelData(key: key) else { return nil }
-        let mainType = pathPixelData.roadType
+
         let mainRoad = pathPixelData.road
         let mainMagScale = pathPixelData.roadScale
         let mainHeading = pathPixelData.roadHeading
@@ -203,9 +201,7 @@ class PathMatcher {
             for i in 0..<roadX.count {
                 let xPath = roadX[i]
                 let yPath = roadY[i]
-                let pathTypeLoaded = mainType[i]
 
-                if mode == .MODE_VEHICLE && pathTypeLoaded != 1 { continue }
                 if xPath >= xMin && xPath <= xMax, yPath >= yMin && yPath <= yMax {
                     let distance = sqrt(pow(x - xPath, 2) + pow(y - yPath, 2))
                     let magScale = mainMagScale[i]
@@ -257,7 +253,7 @@ class PathMatcher {
         if (!(building.isEmpty) && !(level.isEmpty)) {
             let key: String = "\(sectorId)_\(building)_\(levelCopy)"
             guard let pathPixelData = self.checkIsAvailablePathPixelData(key: key) else { return headings }
-            let mainType = pathPixelData.roadType
+
             let mainRoad = pathPixelData.road
             let mainHeading = pathPixelData.roadHeading
             
@@ -273,13 +269,6 @@ class PathMatcher {
                 for i in 0..<roadX.count {
                     let xPath = roadX[i]
                     let yPath = roadY[i]
-                    
-                    let pathTypeLoaded = mainType[i]
-                    if (mode == .MODE_VEHICLE) {
-                        if (pathTypeLoaded != 1) {
-                            continue
-                        }
-                    }
                     
                     if (xPath >= xMin && xPath <= xMax) {
                         if (yPath >= yMin && yPath <= yMax) {
@@ -341,8 +330,8 @@ class PathMatcher {
     func checkIsAvailablePathPixelData(key: String) -> PathPixelData? {
         guard let pathPixelData = self.pathPixelData[key] else { return nil }
         
-        let mainType = pathPixelData.roadType
-        if mainType.isEmpty { return nil }
+//        let mainType = pathPixelData.roadType
+//        if mainType.isEmpty { return nil }
         
         let mainRoad = pathPixelData.road
         if mainRoad.isEmpty { return nil }
@@ -387,9 +376,9 @@ class PathMatcher {
         let key = "\(sectorId)_\(tuResult.building_name)_\(tuResult.level_name)"
         if !isInNode { return false }
         let curNode = self.curPassedNodeInfo
-        if curNode.id == -1 { return false }
+        if curNode.number == -1 { return false }
         guard let nodeData = nodeData[key] else { return false }
-        guard let matchedNode = nodeData[curNode.id] else { return false }
+        guard let matchedNode = nodeData[curNode.number] else { return false }
         
         let curHeading = tuResult.absolute_heading
         let nodeHeadings = matchedNode.directions.map({$0.heading})
@@ -544,22 +533,22 @@ class PathMatcher {
     }
     
     // MARK: - Node & Link
-    var anchorNode = PassedNodeInfo(id: -1, coord: [], headings: [], matched_index: -1, user_heading: 0)
+    var anchorNode = PassedNodeInfo(number: -1, coord: [], headings: [], matched_index: -1, user_heading: 0)
     var anchorSection = -1
     
     var isInNode = false
-    var curPassedNodeInfo = PassedNodeInfo(id: -1, coord: [], headings: [], matched_index: -1, user_heading: 0)
+    var curPassedNodeInfo = PassedNodeInfo(number: -1, coord: [], headings: [], matched_index: -1, user_heading: 0)
     var curPassedLinkInfo: PassedLinkInfo?
     var passingLinkBuffer = [PassingLink]()
     var passedNodeInfoBuffer = [PassedNodeInfo]()
-    var preLinkId: Int = -1
-    var preGroupId: Int = -1
+    var preLinkNum: Int = -1
+    var preGroupNum: Int = -1
     var groupLen: Float = 0
     
     var isNeedClearBuffer = false
     
     func initPassedNodeInfo() {
-        self.curPassedNodeInfo = PassedNodeInfo(id: -1, coord: [], headings: [], matched_index: -1, user_heading: 0)
+        self.curPassedNodeInfo = PassedNodeInfo(number: -1, coord: [], headings: [], matched_index: -1, user_heading: 0)
     }
     
     func initPassedLinkInfo() {
@@ -569,8 +558,8 @@ class PathMatcher {
     func updateAnchorNode(sectorId: Int, fltResult: FineLocationTrackingOutput, mode: UserMode, sectionNumber: Int) {
         let pathType = mode == .MODE_PEDESTRIAN ? 0 : 1
         let anchorNode = findAnchorNode(sectorId: sectorId, fltResult: fltResult, pathType: pathType)
-        if anchorNode.id != -1 {
-            if anchorNode.id == self.anchorNode.id {
+        if anchorNode.number != -1 {
+            if anchorNode.number == self.anchorNode.number {
                 anchorSection = sectionNumber
             } else {
                 self.anchorNode = anchorNode
@@ -585,7 +574,7 @@ class PathMatcher {
         let startNodeHeading = self.curPassedNodeInfo.headings
         let nodeInfoBuffer = passedNodeInfoBuffer
         
-        var resultPassedNodeInfo = PassedNodeInfo(id: -1, coord: [], headings: [], matched_index: -1, user_heading: 0)
+        var resultPassedNodeInfo = PassedNodeInfo(number: -1, coord: [], headings: [], matched_index: -1, user_heading: 0)
         var curLink: PassedLinkInfo?
         if let passedLink = getCurPassedLinkInfo() {
             curLink = passedLink
@@ -594,7 +583,7 @@ class PathMatcher {
             let close = closestHeading(to: fltResult.absolute_heading, candidates: matchedLink.included_heading)
             let op = oppositeOf(close.0)
             let opClose = closestHeading(to: op, candidates: matchedLink.included_heading)
-            curLink = PassedLinkInfo(id: matchedLink.id, start_node: matchedLink.start_node, end_node: matchedLink.end_node, distance: matchedLink.distance, included_heading: matchedLink.included_heading, group_id: matchedLink.group_id, user_coord: [fltResult.x, fltResult.y], user_heading: fltResult.absolute_heading, matched_heading: close.0, oppsite_heading: opClose.0)
+            curLink = PassedLinkInfo(number: matchedLink.number, start_node: matchedLink.start_node, end_node: matchedLink.end_node, distance: matchedLink.distance, included_heading: matchedLink.included_heading, group_number: matchedLink.group_number, user_coord: [fltResult.x, fltResult.y], user_heading: fltResult.absolute_heading, matched_heading: close.0, oppsite_heading: opClose.0)
         }
         guard let curLink = curLink else { return resultPassedNodeInfo }
         let startCoord = curLink.user_coord
@@ -656,7 +645,7 @@ class PathMatcher {
             }
             for nodeNumber in candidateNodeNumbers.reversed() {
                 for item in nodeInfoBuffer {
-                    if item.id == nodeNumber {
+                    if item.number == nodeNumber {
                         resultPassedNodeInfo = item
                         return resultPassedNodeInfo
                     }
@@ -678,7 +667,7 @@ class PathMatcher {
             }
         }
         
-        if resultPassedNodeInfo.id == -1 {
+        if resultPassedNodeInfo.number == -1 {
             if nodeInfoBuffer.isEmpty {
                 return resultPassedNodeInfo
             }
@@ -694,8 +683,8 @@ class PathMatcher {
     
     private func controlPassedNodeInfo(passedNodeInfo: PassedNodeInfo) {
         if (self.passedNodeInfoBuffer.count > 1) {
-            let currentNode = passedNodeInfo.id
-            let pastNode = passedNodeInfoBuffer[passedNodeInfoBuffer.count-1].id
+            let currentNode = passedNodeInfo.number
+            let pastNode = passedNodeInfoBuffer[passedNodeInfoBuffer.count-1].number
             
             if (currentNode == pastNode) {
                 self.passedNodeInfoBuffer.remove(at: passedNodeInfoBuffer.count-1)
@@ -713,7 +702,7 @@ class PathMatcher {
             var startIndex: Int = 0
             var isFind: Bool = false
             for i in 0..<pastBuffer.count {
-                if pastBuffer[i].id == self.anchorNode.id {
+                if pastBuffer[i].number == self.anchorNode.number {
                     startIndex = i
                     isFind = true
                     break
@@ -827,36 +816,36 @@ class PathMatcher {
                 JupiterLogger.i(tag: "PathMatcher", message: "(updateNodeAndLinkInfo) [NODE] not found -> jumped node nil (do init)")
             } else {
                 for node in jumpInfo.jumped_nodes {
-                    JupiterLogger.i(tag: "PathMatcher", message: "(updateNodeAndLinkInfo) [NODE] jumped_nodes : \(jumpInfo.jumped_nodes.map{$0.id})")
-                    registerPassedNode(node: node.id, coord: node.coord, headings: node.headings, matchedIndex: node.matched_index, heading: node.user_heading)
+                    JupiterLogger.i(tag: "PathMatcher", message: "(updateNodeAndLinkInfo) [NODE] jumped_nodes : \(jumpInfo.jumped_nodes.map{$0.number})")
+                    registerPassedNode(node: node.number, coord: node.coord, headings: node.headings, matchedIndex: node.matched_index, heading: node.user_heading)
                 }
             }
-            JupiterLogger.i(tag: "PathMatcher", message: "(updateNodeAndLinkInfo) [NODE] not found and position jumped to \(jumpInfo.link_id) link")
+            JupiterLogger.i(tag: "PathMatcher", message: "(updateNodeAndLinkInfo) [NODE] not found and position jumped to \(jumpInfo.link_number) link")
         }
 
         // 2. 현재 Node 위에 존재하지 않음
         isInNode = false
-        var curLinkId = -1
+        var curLinkNum = -1
         var curLinkDirs = [Float]()
         var curLinkBestHeading: Float = 0
         var curLinkOppHeading: Float = 0
 
         
-        var candidateLinkIds: [Int]
+        var candidateLinkNums: [Int]
         if checkAll {
-            candidateLinkIds = Array(linkData.keys)
-        } else if curPassedNodeInfo.id != -1, let curNd = nodeData[curPassedNodeInfo.id] {
-            candidateLinkIds = curNd.connected_links
+            candidateLinkNums = Array(linkData.keys)
+        } else if curPassedNodeInfo.number != -1, let curNd = nodeData[curPassedNodeInfo.number] {
+            candidateLinkNums = curNd.connected_links
         } else {
-            candidateLinkIds = Array(linkData.keys)
+            candidateLinkNums = Array(linkData.keys)
         }
 
-        var bestLinkId: Int = -1
+        var bestLinkNum: Int = -1
         var bestLinkDist: Float = Float.greatestFiniteMagnitude
         var bestLink: LinkData? = nil
 
-        for lid in candidateLinkIds {
-            guard let ld = linkData[lid] else { continue }
+        for lnum in candidateLinkNums {
+            guard let ld = linkData[lnum] else { continue }
             guard let sNode = nodeData[ld.start_node], sNode.coords.count >= 2 else { continue }
             guard let eNode = nodeData[ld.end_node], eNode.coords.count >= 2 else { continue }
 
@@ -867,12 +856,12 @@ class PathMatcher {
             let (dist, _) = pointToSegmentDistance(px: correctedX, py: correctedY, ax: ax, ay: ay, bx: bx, by: by)
             if dist < bestLinkDist {
                 bestLinkDist = dist
-                bestLinkId = lid
+                bestLinkNum = lnum
                 bestLink = ld
             }
         }
 
-        guard bestLinkId != -1, let ld = bestLink, bestLinkDist <= ACCEPT_DIST else {
+        guard bestLinkNum != -1, let ld = bestLink, bestLinkDist <= ACCEPT_DIST else {
             let coordHeadings = getPathMatchingHeadings(sectorId: sectorId,
                                                        building: curResult.building_name,
                                                        level: curResult.level_name,
@@ -885,7 +874,7 @@ class PathMatcher {
             return
         }
 
-        curLinkId = bestLinkId
+        curLinkNum = bestLinkNum
         curLinkDirs = ld.included_heading
 
         let (bestH, bestIdx) = closestHeading(to: heading, candidates: curLinkDirs)
@@ -895,15 +884,15 @@ class PathMatcher {
         curLinkBestHeading = bestH
         curLinkOppHeading = bestOppH
 
-        self.curPassedLinkInfo = PassedLinkInfo(id: curLinkId, start_node: ld.start_node, end_node: ld.end_node, distance: ld.distance, included_heading: curLinkDirs, group_id: ld.group_id, user_coord: [correctedX, correctedY], user_heading: heading, matched_heading: curLinkBestHeading, oppsite_heading: curLinkOppHeading)
-        JupiterLogger.i(tag: "PathMatcher", message: "(updateNodeAndLinkInfo) [LINK] uvd=\(uvdIndex) key=\(key) link=\(curLinkId) (\(ld.start_node)->\(ld.end_node)) dirs=\(curLinkDirs) xy=(\(correctedX),\(correctedY)) userH=\(heading) bestH=\(bestH)(idx=\(bestIdx)) oppH=\(bestOppH)(idx=\(bestOppIdx)) dist=\(bestLinkDist)")
+        self.curPassedLinkInfo = PassedLinkInfo(number: curLinkNum, start_node: ld.start_node, end_node: ld.end_node, distance: ld.distance, included_heading: curLinkDirs, group_number: ld.group_number, user_coord: [correctedX, correctedY], user_heading: heading, matched_heading: curLinkBestHeading, oppsite_heading: curLinkOppHeading)
+        JupiterLogger.i(tag: "PathMatcher", message: "(updateNodeAndLinkInfo) [LINK] uvd=\(uvdIndex) key=\(key) link=\(curLinkNum) (\(ld.start_node)->\(ld.end_node)) dirs=\(curLinkDirs) xy=(\(correctedX),\(correctedY)) userH=\(heading) bestH=\(bestH)(idx=\(bestIdx)) oppH=\(bestOppH)(idx=\(bestOppIdx)) dist=\(bestLinkDist)")
         
-        let passingLink = PassingLink(uvd_index: uvdIndex, link_id: curLinkId, link_group_Id: ld.group_id)
+        let passingLink = PassingLink(uvd_index: uvdIndex, link_number: curLinkNum, link_group_number: ld.group_number)
         controlPassingLinkBuffer(passingLink: passingLink, cutIndex: pLinkCutIndex)
     }
     
     private func registerPassedNode(node: Int, coord: [Float], headings: [Float], matchedIndex: Int, heading: Float) {
-        curPassedNodeInfo = PassedNodeInfo(id: node, coord: coord, headings: headings, matched_index: matchedIndex, user_heading: heading)
+        curPassedNodeInfo = PassedNodeInfo(number: node, coord: coord, headings: headings, matched_index: matchedIndex, user_heading: heading)
         controlPassedNodeInfo(passedNodeInfo: curPassedNodeInfo)
 //        JupiterLogger.i(tag: "PathMatcher", message: "(registerPassedNode) - registerPassedNode : passedNode = \(curPassedNodeInfo.id) // passedNodeMatchedIndex = \(curPassedNodeInfo.matched_index) // passedNodeCoord = \(curPassedNodeInfo.coord) // passedNodeHeadings = \(curPassedNodeInfo.headings)")
     }
@@ -947,7 +936,7 @@ class PathMatcher {
             if pLink.uvd_index >= from {
                 if let matchedResult = pmByIndex[pLink.uvd_index],
                    let matchedLink = getLinkInfoWithResult(sectorId: sectorId, result: matchedResult, checkAll: true) {
-                    let newLink = PassingLink(uvd_index: from, link_id: matchedLink.id, link_group_Id: matchedLink.group_id)
+                    let newLink = PassingLink(uvd_index: from, link_number: matchedLink.number, link_group_number: matchedLink.group_number)
                     newBuffer.append(newLink)
                 } else {
                     newBuffer.append(pLink)
@@ -964,7 +953,7 @@ class PathMatcher {
         return self.passingLinkBuffer
     }
     
-    private func updatePassedNodeInJump(sectorId: Int, curResult: FineLocationTrackingOutput, linkId: Int) {
+    private func updatePassedNodeInJump(sectorId: Int, curResult: FineLocationTrackingOutput, linkNum: Int) {
         let building = curResult.building_name
         let level = curResult.level_name
         guard !building.isEmpty, !level.isEmpty else { return }
@@ -974,7 +963,7 @@ class PathMatcher {
         
         guard let nodeData = self.nodeData[key] else { return }
         guard let linkData = self.linkData[key] else { return }
-        guard let jumpedLink = linkData[linkId] else { return }
+        guard let jumpedLink = linkData[linkNum] else { return }
         
 //        jumpedLink.
         
@@ -1049,20 +1038,20 @@ class PathMatcher {
         let correctedX = round(result.x)
         let correctedY = round(result.y)
         
-        var candidateLinkIds: [Int]
+        var candidateLinkNums: [Int]
         if checkAll {
-            candidateLinkIds = Array(linkData.keys)
-        } else if curPassedNodeInfo.id != -1, let curNd = nodeData[curPassedNodeInfo.id] {
-            candidateLinkIds = curNd.connected_links
+            candidateLinkNums = Array(linkData.keys)
+        } else if curPassedNodeInfo.number != -1, let curNd = nodeData[curPassedNodeInfo.number] {
+            candidateLinkNums = curNd.connected_links
         } else {
-            candidateLinkIds = Array(linkData.keys)
+            candidateLinkNums = Array(linkData.keys)
         }
 
-        var bestLinkId: Int = -1
+        var bestLinkNum: Int = -1
         var bestLinkDist: Float = Float.greatestFiniteMagnitude
 
-        for lid in candidateLinkIds {
-            guard let ld = linkData[lid] else { continue }
+        for lnum in candidateLinkNums {
+            guard let ld = linkData[lnum] else { continue }
             guard let sNode = nodeData[ld.start_node], sNode.coords.count >= 2 else { continue }
             guard let eNode = nodeData[ld.end_node], eNode.coords.count >= 2 else { continue }
 
@@ -1074,13 +1063,13 @@ class PathMatcher {
             let (d, _) = pointToSegmentDistance(px: correctedX, py: correctedY, ax: ax, ay: ay, bx: bx, by: by)
             if d < bestLinkDist {
                 bestLinkDist = d
-                bestLinkId = lid
+                bestLinkNum = lnum
             }
         }
 
-        guard bestLinkId != -1, bestLinkDist <= acceptDist else { return nil }
+        guard bestLinkNum != -1, bestLinkDist <= acceptDist else { return nil }
 
-        return linkData[bestLinkId]
+        return linkData[bestLinkNum]
     }
 
     func getLinkInfosWithResult(sectorId: Int,
@@ -1185,7 +1174,7 @@ class PathMatcher {
     
     func isInUturnLink() -> Bool {
         if let curLink = PathMatcher.shared.getCurPassedLinkInfo() {
-            if curLink.id == 131 || curLink.id == 29 {
+            if curLink.number == 131 || curLink.number == 29 {
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) Link Checker : you are in U-Turn link")
                 return true
             }
@@ -1197,17 +1186,17 @@ class PathMatcher {
     func getCurPassedLinksDist() -> Float {
         if isInNode { return groupLen }
         if let linkInfo = getCurPassedLinkInfo() {
-            let curLinkId = linkInfo.id
-            let curGroupId = linkInfo.group_id
-            if curGroupId == preGroupId {
-                if curLinkId != preLinkId {
+            let curLinkNum = linkInfo.number
+            let curGroupNum = linkInfo.group_number
+            if curGroupNum == preGroupNum {
+                if curLinkNum != preLinkNum {
                     groupLen += linkInfo.distance
                 }
             } else {
                 groupLen = linkInfo.distance
             }
-            preLinkId = curLinkId
-            preGroupId = curGroupId
+            preLinkNum = curLinkNum
+            preGroupNum = curGroupNum
         } else {
             return 1
         }
