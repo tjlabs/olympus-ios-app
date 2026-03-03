@@ -37,7 +37,7 @@ struct PathMatchingResult {
 }
 
 struct PassedNodeInfo {
-    var id: Int
+    var number: Int
     var coord: [Float]
     var headings: [Float]
     var matched_index: Int
@@ -45,12 +45,12 @@ struct PassedNodeInfo {
 }
 
 struct PassedLinkInfo {
-    var id: Int
+    var number: Int
     var start_node: Int
     var end_node: Int
     var distance: Float
     var included_heading: [Float]
-    var group_id: Int
+    var group_number: Int
     var user_coord: [Float]
     var user_heading: Float
     var matched_heading: Float
@@ -59,8 +59,8 @@ struct PassedLinkInfo {
 
 struct PassingLink {
     var uvd_index: Int
-    var link_id: Int
-    var link_group_Id: Int
+    var link_number: Int
+    var link_group_number: Int
 }
 
 public struct RecoveryTrajectory: Codable {
@@ -86,7 +86,7 @@ struct BuildingLevelTagResult {
 }
 
 struct JumpInfo {
-    var link_id: Int
+    var link_number: Int
     var jumped_nodes: [PassedNodeInfo]
 }
 
