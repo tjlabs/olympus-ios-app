@@ -11,7 +11,7 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
     }
     
     func isUserGuidanceOut() {
-        // TODO
+        print("(CardVC) isUserGuidanceOut")
     }
     
     func isNavigationRouteFailed() {
@@ -203,13 +203,9 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         let naviMode = !isSafeDriving
         print("(CardVC) navigationMode : scenario= \(scenario)")
         serviceManager?.navigationMode(flag: naviMode, scenario: scenario)
-        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_0224.csv", sensorFileName: "sensor_coex_02_0224.csv")
+        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_0303.csv", sensorFileName: "sensor_coex_02_0303.csv")
+//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_0224.csv", sensorFileName: "sensor_coex_02_0224.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_01_0119.csv", sensorFileName: "sensor_coex_03_01_0119.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_test1_0129.csv", sensorFileName: "sensor_coex_test1_0129.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_test1_0203.csv", sensorFileName: "sensor_coex_test1_0203.csv")
-        
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_02_1007.csv", sensorFileName: "sensor_coex_01_02_1007.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
         serviceManager?.startJupiter(sectorId: sector_id, mode: .MODE_AUTO, debugOption: true)
         
         // service
