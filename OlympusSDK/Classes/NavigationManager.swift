@@ -334,7 +334,7 @@ class NavigationManager {
                 matchedIndex = index
             }
         }
-        JupiterLogger.i(tag: "NavigationManager", message: "(calcNaviRouteResult) : index= \(curResult.index), section= \(matchedRoute?.section),matchedRoute= [\(matchedRoute?.x),\(matchedRoute?.y),\(matchedRoute?.heading)]")
+        JupiterLogger.i(tag: "NavigationManager", message: "(calcNaviRouteResult) : index= \(curResult.index), section= \(matchedRoute?.section), matchedRoute= [\(matchedRoute?.x),\(matchedRoute?.y),\(matchedRoute?.heading)]")
         if let matchedRoute = matchedRoute {
             self.curRoute = matchedRoute
             if !matchedRoute.turnPoint {
@@ -347,7 +347,7 @@ class NavigationManager {
                 }
             }
         } else {
-            self.curRoute?.heading = newH
+//            self.curRoute?.heading = newH
         }
         JupiterLogger.i(tag: "NavigationManager", message: "(calcNaviRouteResult) : index= \(curResult.index), section= \(self.curRoute?.section), route= [\(self.curRoute?.x),\(self.curRoute?.y),\(self.curRoute?.heading)]")
         return self.curRoute
