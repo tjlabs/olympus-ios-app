@@ -396,6 +396,35 @@ class NavigationManager {
         return self.waypointsForDisplay
     }
     
+    func updateCurRoutePos(curSection: Int, curResult: FineLocationTrackingOutput) {
+        guard let _ = curRoute else { return }
+        guard let _ = routeIndex else { return }
+        
+        var minDist: Float = .greatestFiniteMagnitude
+        var closestRoute: NavigationRoute?
+        
+        for route in routes {
+            if route.section != curSection {
+                continue
+            }
+            
+            let diffX = route.x - curResult.x
+            let diffY = route.y - curResult.y
+            
+            let dist = sqrt(diffX * diffX + diffY * diffY)
+            
+            if dist < minDist {
+                minDist = dist
+                closestRoute = route
+            }
+        }
+        
+        if let closestRoute = closestRoute {
+            self.curRoute = closestRoute
+            JupiterLogger.i(tag: "NavigationManager", message: "(updateCurRoutePos) : curRoute is updated [x:\(closestRoute.x), y:\(closestRoute.y)] in section \(curSection)")
+        }
+    }
+    
     func calcNaviRouteResult(uvd: UserVelocity, curResult: FineLocationTrackingOutput) -> NavigationRoute? {
         guard let curRoute = curRoute else { return nil }
         
