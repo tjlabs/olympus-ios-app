@@ -927,7 +927,7 @@ class RecoveryManager {
 
             all.sort { $0.loss < $1.loss }
             let topN = Array(all)
-            JupiterLogger.i(tag: "RecoveryManager", message: "(recoverWithMultipleTrajAsyncWide) candidates=\(all.count), top1=\(topN.first?.loss), top2=\(topN.count > 1 ? topN[1].loss : nil)")
+            JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) candidates=\(all.count), top1=\(topN.first?.loss), top2=\(topN.count > 1 ? topN[1].loss : nil)")
             return topN
         }
         
