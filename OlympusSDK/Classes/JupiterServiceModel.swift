@@ -102,6 +102,7 @@ public struct NavigationRoute: Codable {
     public var x: Float
     public var y: Float
     public var heading: Float
+    public var passable: Bool = true
 }
 
 enum NaviCase {
