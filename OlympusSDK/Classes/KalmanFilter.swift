@@ -599,6 +599,7 @@ class KalmanFilter {
             }
         }
         nextTuResult = updateLimitationResult(nextTuResult: nextTuResult, uturnLink: uturnLink)
+        JupiterLogger.i(tag: "KalmanFilter", message: "(timeUpdate) - nextTuResult :[\(nextTuResult.x),\(nextTuResult.y),\(nextTuResult.absolute_heading)]")
         updateTuResult(result: nextTuResult)
         kalmanP += kalmanQ
         headingKalmanP += headingKalmanQ
