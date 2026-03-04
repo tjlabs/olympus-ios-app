@@ -82,6 +82,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     private var feedbackIndex: Int = 0
     private var feedbackCount: Int = 0
     private var curNaviCase: NaviCase = .NONE
+    private var sectionCorrectionIndex: Int = 0
     
     // MARK: - Etc..
     private var pathMatchingCondition = PathMatchingCondition()
@@ -530,34 +531,22 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                 guidanceOutReported = true
                 delegate?.isUserGuidanceOut()
             } else if curNaviCase == .CASE_2 {
-                // 같은 Navigation Route에 있는지 확인하기let curPmResult = curPmResultBuffer.last!
-//                let curPmResult = curPmResultBuffer[curPmResultBuffer.count-1]
-//                let naviResult = makeNaviResult(curPmResult: curPmResult, naviLast: naviRouteResultBuffer[naviRouteResultBuffer.count-1])
-//                
-//                guard let curLinks = PathMatcher.shared.getLinkInfosWithResult(sectorId: sectorId, result: curPmResult, checkAll: true) else { return }
-//                guard let naviLinks = PathMatcher.shared.getLinkInfosWithResult(sectorId: sectorId, result: naviResult, checkAll: true) else { return }
-//                
-//                if curLinks.count == 1 && naviLinks.count == 1 {
-//                    let jrGroupNum = curLinks[0].group_number
-//                    let nrGroupNum = naviLinks[0].group_number
-//                    if jrGroupNum == nrGroupNum {
-//                        // 같은 Link 그룹에 존재
-//                        let nrLinkNum = naviLinks[0].number
-//                        JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFollowingNavigationRoute: jupiter result in \(jrGroupNum) link group & navi result in \(nrGroupNum) link group when CASE_2")
-//                        JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFollowingNavigationRoute: navi result in \(nrLinkNum) link when CASE_2")
-//                    }
-//                }
-                
+                let diffIndex = userVelocity.index - sectionCorrectionIndex
+                if diffIndex < 10 {
+                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFollowingNavigationRoute: section correction is applied at \(sectionCorrectionIndex) index (curIndex = \(userVelocity.index))")
+                    return
+                }
                 let curNaviSection = naviRouteResult.section
                 let curPmResult = curPmResultBuffer[curPmResultBuffer.count-1]
                 guard let curPmSection = navigationManager?.findSectionContaining(x: curPmResult.x, y: curPmResult.y) else { return }
                 if curNaviSection == curPmSection {
                     JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFollowingNavigationRoute: findSectionContaining // jupiter and navi result are in same section \(curPmSection)")
+                    navigationManager?.updateCurRoutePos(curSection: curPmSection, curResult: curPmResult)
+                    sectionCorrectionIndex = userVelocity.index
                 }
             }
-            
+    
             JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFollowingNavigationRoute: followingResult= \(followingResult) // curNaviCase= \(curNaviCase)")
-            
             self.jupiterResultMode = determineJupiterResultMode(jupiterResultMode: jupiterResultMode, naviCase: curNaviCase)
             let canFeedback = feedbackWhenFollowing(naviCase: curNaviCase, naviRouteResultBuffer: naviRouteResultBuffer)
             JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) feedbackWhenFollowing: canFeedback= \(canFeedback)")
