@@ -5,7 +5,7 @@ import TJLabsResource
 class StackManager {
     init() { }
     
-    private let SAME_COORD_THRESHOLD: Int = 10
+    private let SAME_COORD_THRESHOLD: Int = 20
     
     private let DR_BUFFER_SIZE: Int = 200
     private let PEAK_BUILDING_LEVEL_BUFFER_SIZE: Int = 5
