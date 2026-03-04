@@ -524,46 +524,39 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             guard let followingResult = isFollowingNavigationRoute(curNaviCase: curNaviCase, travelingLinkDist: travelingLinkDist, naviRouteResultBuffer: naviRouteResultBuffer, curPmResultBuffer: curPmResultBuffer) else { return }
             
             let estimatedNaviCase = followingResult.naviCase
-//            if estimatedNaviCase == .CASE_3, let curPmResult = self.curPathMatchingResult {
-//                // 한번 더 검사하기~
-//                var naviResult = curPmResult
-//                naviResult.x = naviRouteResult.x
-//                naviResult.y = naviRouteResult.y
-//                naviResult.absolute_heading = naviRouteResult.heading
-//                if let naviResultLinks = PathMatcher.shared.getLinkInfosWithResult(sectorId: sectorId, result: naviResult, checkAll: true) {
-//                    if let curResultLinks = PathMatcher.shared.getLinkInfosWithResult(sectorId: sectorId, result: curPmResult, checkAll: true) {
-//                        let naviGroupIds = naviResultLinks.map { $0.group_id }
-//                        let jupiterGroupIds = curResultLinks.map { $0.group_id }
-//                        let inSameLinkGroup = !Set(naviGroupIds).isDisjoint(with: jupiterGroupIds)
-//                        JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFolllowingNavigationRoute: jupiterGroupIds= \(jupiterGroupIds), naviGroupIds= \(naviGroupIds) // inSameLinkGroup= \(inSameLinkGroup)")
-//                        if inSameLinkGroup {
-//                            // 잘 따라가고 있음
-//                            curNaviCase = .CASE_1
-//                            feedbackCount = 10
-//                            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFolllowingNavigationRoute: CASE_3 but link group is same -> can feedback")
-//                        } else {
-//                            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFolllowingNavigationRoute: \(followingResult.0) link group is not same")
-//                            curNaviCase = followingResult.0
-//                        }
-//                    } else {
-//                        JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFolllowingNavigationRoute: cannot find matched link in curPmResult [\(curPmResult.x),\(curPmResult.y),\(curPmResult.absolute_heading)]")
-//                        curNaviCase = .CASE_3
-//                    }
-//                } else {
-//                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFolllowingNavigationRoute: cannot find matched link in naviResult [\(naviResult.x),\(naviResult.y),\(naviResult.absolute_heading)]")
-//                    curNaviCase = .CASE_3
-//                }
-//            } else {
-//                curNaviCase = followingResult.0
-//            }
-            
+   
             curNaviCase = estimatedNaviCase
             if curNaviCase == .CASE_3 && !guidanceOutReported {
                 guidanceOutReported = true
                 delegate?.isUserGuidanceOut()
+            } else if curNaviCase == .CASE_2 {
+                // 같은 Navigation Route에 있는지 확인하기let curPmResult = curPmResultBuffer.last!
+//                let curPmResult = curPmResultBuffer[curPmResultBuffer.count-1]
+//                let naviResult = makeNaviResult(curPmResult: curPmResult, naviLast: naviRouteResultBuffer[naviRouteResultBuffer.count-1])
+//                
+//                guard let curLinks = PathMatcher.shared.getLinkInfosWithResult(sectorId: sectorId, result: curPmResult, checkAll: true) else { return }
+//                guard let naviLinks = PathMatcher.shared.getLinkInfosWithResult(sectorId: sectorId, result: naviResult, checkAll: true) else { return }
+//                
+//                if curLinks.count == 1 && naviLinks.count == 1 {
+//                    let jrGroupNum = curLinks[0].group_number
+//                    let nrGroupNum = naviLinks[0].group_number
+//                    if jrGroupNum == nrGroupNum {
+//                        // 같은 Link 그룹에 존재
+//                        let nrLinkNum = naviLinks[0].number
+//                        JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFollowingNavigationRoute: jupiter result in \(jrGroupNum) link group & navi result in \(nrGroupNum) link group when CASE_2")
+//                        JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFollowingNavigationRoute: navi result in \(nrLinkNum) link when CASE_2")
+//                    }
+//                }
+                
+                let curNaviSection = naviRouteResult.section
+                let curPmResult = curPmResultBuffer[curPmResultBuffer.count-1]
+                guard let curPmSection = navigationManager?.findSectionContaining(x: curPmResult.x, y: curPmResult.y) else { return }
+                if curNaviSection == curPmSection {
+                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFollowingNavigationRoute: findSectionContaining // jupiter and navi result are in same section \(curPmSection)")
+                }
             }
             
-            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFolllowingNavigationRoute: followingResult= \(followingResult) // curNaviCase= \(curNaviCase)")
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFollowingNavigationRoute: followingResult= \(followingResult) // curNaviCase= \(curNaviCase)")
             
             self.jupiterResultMode = determineJupiterResultMode(jupiterResultMode: jupiterResultMode, naviCase: curNaviCase)
             let canFeedback = feedbackWhenFollowing(naviCase: curNaviCase, naviRouteResultBuffer: naviRouteResultBuffer)
@@ -650,27 +643,30 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         }
 
         if dhAvg > DHLOSS_THRESHOLD_45 {
-            JupiterLogger.i(tag: "JupiterCalcManager", message: "(isFolllowingNavigationRoute) : CASE_3 // pos & heading error")
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(isFollowingNavigationRoute) : CASE_3 // pos & heading error")
             return (.CASE_3, dAvg, dhAvg)
         }
 
+        let naviResultLast = naviRouteResultBuffer[naviRouteResultBuffer.count-1]
+        
         // 3) 동일성 체크
         let isAllSamePmResult = isAllSamePmResult(curPmResultBuffer)
         let isAllSameNaviResult = isAllSameNaviResult(naviRouteResultBuffer)
 
         JupiterLogger.i(
             tag: "JupiterCalcManager",
-            message: "(isFolllowingNavigationRoute) : isAllSamePmResult= \(isAllSamePmResult) // isAllSameNaviResult= \(isAllSameNaviResult)"
+            message: "(isFollowingNavigationRoute) : isAllSamePmResult= \(isAllSamePmResult) // isAllSameNaviResult= \(isAllSameNaviResult)"
         )
 
         // 4) "jupiter가 고정인데 navi는 변함" => CASE_2 (기존 로직 유지)
         if isAllSamePmResult && !isAllSameNaviResult {
-            JupiterLogger.i(tag: "JupiterCalcManager", message: "(isFolllowingNavigationRoute) : CASE_2 // only pos error jupiter is advanced")
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(isFollowingNavigationRoute) : CASE_2 // only pos error jupiter is advanced")
             return (.CASE_2, dAvg, dhAvg)
         }
 
         // 5) CASE_2 or CASE_3 판단
-        let shouldCheckEndOfMap = isAllSameNaviResult
+//        let shouldCheckEndOfMap = isAllSameNaviResult
+        let shouldCheckEndOfMap = !naviResultLast.passable
         let (case23, adaptiveTh, dhOverride) = decideCase2or3(
             dAvg: dAvg,
             baseThreshold: DLOSS_THRESHOLD_45,
@@ -685,7 +681,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             return (case23, adaptiveTh, dhOverride)
         }
 
-        JupiterLogger.i(tag: "JupiterCalcManager", message: "(isFolllowingNavigationRoute) : CASE_2 or 3 // dSumAvg= \(dAvg)")
+        JupiterLogger.i(tag: "JupiterCalcManager", message: "(isFollowingNavigationRoute) : CASE_2 or 3 // dSumAvg= \(dAvg)")
         return (case23, dAvg, dhAvg)
     }
 
@@ -745,17 +741,16 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         var adaptiveTh = baseThreshold
 
         // 링크 매칭 결과로 adaptiveTh / 케이스 조기결정
-        if let early = evaluateLinkRelationAndMaybeReturnEarly(
-            curPmResult: curPmResult,
-            naviResult: naviResult,
-            travelingLinkDist: travelingLinkDist,
-            shouldCheckEndOfMap: shouldCheckEndOfMap,
-            adaptiveTh: &adaptiveTh
-        ) {
-            return (early, adaptiveTh, 0)
-        }
-
-        let naviCase: NaviCase = (dAvg > adaptiveTh) ? .CASE_3 : .CASE_2
+        guard let naviCases = evaluateNaviCases(curPmResult: curPmResult,
+                                                naviResult: naviResult,
+                                                travelingLinkDist: travelingLinkDist,
+                                                shouldCheckEndOfMap: shouldCheckEndOfMap,
+                                                dAvg: dAvg,
+                                                adaptiveTh: &adaptiveTh) else { return (.CASE_3, adaptiveTh, nil) }
+        
+        let lmCase = naviCases.landmarkCase
+        let distCase = naviCases.distanceCase
+        let naviCase: NaviCase = lmCase != .CASE_3 && distCase != .CASE_3 ? .CASE_2 : .CASE_3
         return (naviCase, adaptiveTh, nil)
     }
 
@@ -767,63 +762,99 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         return naviResult
     }
 
-    private func evaluateLinkRelationAndMaybeReturnEarly(
+    private func evaluateNaviCases(
         curPmResult: FineLocationTrackingOutput,
         naviResult: FineLocationTrackingOutput,
         travelingLinkDist: Float,
         shouldCheckEndOfMap: Bool,
+        dAvg: Float,
         adaptiveTh: inout Float
-    ) -> NaviCase? {
-
-        guard let naviLinks = PathMatcher.shared.getLinkInfosWithResult(sectorId: sectorId, result: naviResult, checkAll: true) else {
-            JupiterLogger.i(tag: "JupiterCalcManager", message: "isFolllowingNavigationRoute: cannot find matched link in naviResult [\(naviResult.x),\(naviResult.y),\(naviResult.absolute_heading)]")
-            return nil
-        }
-        guard let curLinks = PathMatcher.shared.getLinkInfosWithResult(sectorId: sectorId, result: curPmResult, checkAll: true) else {
-            JupiterLogger.i(tag: "JupiterCalcManager", message: "isFolllowingNavigationRoute: cannot find matched link in curPmResult [\(curPmResult.x),\(curPmResult.y),\(curPmResult.absolute_heading)]")
-            return nil
-        }
-
-        let naviGroupNums = naviLinks.map { $0.group_number }
-        let jupiterGroupNums = curLinks.map { $0.group_number }
-        let inSameLinkGroup = !Set(naviGroupNums).isDisjoint(with: jupiterGroupNums)
-
-        JupiterLogger.i(tag: "JupiterCalcManager", message: "isFolllowingNavigationRoute: naviGroupNums= \(naviGroupNums), jupiterGroupNums= \(jupiterGroupNums), inSameLinkGroup= \(inSameLinkGroup)")
-
-        if inSameLinkGroup {
-            // 같은 링크 그룹이면 adaptive_th = max(adaptive_th, travelingLinkDist*0.7)
-            adaptiveTh = max(adaptiveTh, travelingLinkDist * 0.5)
-            if shouldCheckEndOfMap {
-                // Navi 결과가 고정된 좌표 값을 제공하는 상황
-                let rad = Float(TJLabsUtilFunctions.shared.degree2radian(degree: Double(naviResult.absolute_heading)))
-                let coordX = naviResult.x + cos(rad)
-                let coordY = naviResult.y + sin(rad)
-                if !PathMatcher.shared.checkPathPixelHasCoords(sectorId: sectorId, fltResult: naviResult, coordToCheck: [coordX, coordY]) {
-                    JupiterLogger.i(tag: "JupiterCalcManager", message: "isFolllowingNavigationRoute: naviResult is in map end")
-                    adaptiveTh = max(adaptiveTh, travelingLinkDist * 0.7)
-                }
-            }
-
-            JupiterLogger.i(tag: "JupiterCalcManager", message: "isFolllowingNavigationRoute: adaptive_th= \(adaptiveTh)")
-            return nil
-        }
-
-        // 다른 링크 그룹이면 landmark 거리 비율로 CASE_2/3 조기결정
-        if let distCur = calDistWithRecentPeakLandamrks(fltResult: curPmResult),
-           let distNavi = calDistWithRecentPeakLandamrks(fltResult: naviResult) {
-
+    ) -> (landmarkCase: NaviCase, distanceCase: NaviCase)? {
+//        guard let naviLinks = PathMatcher.shared.getLinkInfosWithResult(sectorId: sectorId, result: naviResult, checkAll: true) else {
+//            JupiterLogger.i(tag: "JupiterCalcManager", message: "isFollowingNavigationRoute: cannot find matched link in naviResult [\(naviResult.x),\(naviResult.y),\(naviResult.absolute_heading)]")
+//            return nil
+//        }
+//        guard let curLinks = PathMatcher.shared.getLinkInfosWithResult(sectorId: sectorId, result: curPmResult, checkAll: true) else {
+//            JupiterLogger.i(tag: "JupiterCalcManager", message: "isFollowingNavigationRoute: cannot find matched link in curPmResult [\(curPmResult.x),\(curPmResult.y),\(curPmResult.absolute_heading)]")
+//            return nil
+//        }
+        
+        var updatedAdaptiveTh = adaptiveTh
+        var landmarkCase: NaviCase = .CASE_2
+        var distanceCase: NaviCase = .CASE_2
+        
+        if let distCur = calDistWithRecentPeakLandmarks(fltResult: curPmResult),
+           let distNavi = calDistWithRecentPeakLandmarks(fltResult: naviResult) {
             let ratio = distNavi / distCur
-            JupiterLogger.i(tag: "JupiterCalcManager", message: "isFolllowingNavigationRoute: distWithCurPmResult= \(distCur), distWithNaviResult= \(distNavi) // ratio= \(ratio)")
-
-            let naviCase: NaviCase = (ratio < 1.5) ? .CASE_2 : .CASE_3
-            return naviCase
+            JupiterLogger.i(tag: "JupiterCalcManager",
+                            message: "isFollowingNavigationRoute: distWithCurPmResult= \(distCur), distWithNaviResult= \(distNavi) // ratio= \(ratio)")
+//            naviCase =  ratio < 1.5 ? NaviCase.CASE_2 : NaviCase.CASE_3
+            if ratio > 1.5 {
+                landmarkCase = .CASE_3
+            } else {
+                landmarkCase = .CASE_2
+            }
+        } else {
+            return nil
         }
 
-        JupiterLogger.i(tag: "JupiterCalcManager", message: "isFolllowingNavigationRoute: adaptive_th= \(adaptiveTh)")
-        return nil
+        JupiterLogger.i(tag: "JupiterCalcManager", message: "isFollowingNavigationRoute: shouldCheckEndOfMap= \(shouldCheckEndOfMap)")
+        if (shouldCheckEndOfMap) {
+            updatedAdaptiveTh = max(updatedAdaptiveTh, travelingLinkDist * 0.7)
+        } else {
+            updatedAdaptiveTh = max(updatedAdaptiveTh, travelingLinkDist * 0.5)
+        }
+        JupiterLogger.i(tag: "JupiterCalcManager", message: "isFollowingNavigationRoute: adaptive_th= \(updatedAdaptiveTh)")
+        
+        if dAvg > updatedAdaptiveTh {
+            distanceCase = .CASE_3
+        } else {
+            distanceCase = .CASE_2
+        }
+        
+        JupiterLogger.i(tag: "JupiterCalcManager", message:"isFollowingNavigationRoute: travelingLinkDist : \(travelingLinkDist) // adaptive_th= \(updatedAdaptiveTh)")
+        return (landmarkCase, distanceCase)
+        
+//        let naviGroupNums = naviLinks.map { $0.group_number }
+//        let jupiterGroupNums = curLinks.map { $0.group_number }
+//        let inSameLinkGroup = !Set(naviGroupNums).isDisjoint(with: jupiterGroupNums)
+//
+//        JupiterLogger.i(tag: "JupiterCalcManager", message: "isFollowingNavigationRoute: naviGroupNums= \(naviGroupNums), jupiterGroupNums= \(jupiterGroupNums), inSameLinkGroup= \(inSameLinkGroup)")
+//
+//        if inSameLinkGroup {
+//            // 같은 링크 그룹이면 adaptive_th = max(adaptive_th, travelingLinkDist*0.7)
+//            adaptiveTh = max(adaptiveTh, travelingLinkDist * 0.5)
+//            if shouldCheckEndOfMap {
+//                // Navi 결과가 고정된 좌표 값을 제공하는 상황
+//                let rad = Float(TJLabsUtilFunctions.shared.degree2radian(degree: Double(naviResult.absolute_heading)))
+//                let coordX = naviResult.x + cos(rad)
+//                let coordY = naviResult.y + sin(rad)
+//                if !PathMatcher.shared.checkPathPixelHasCoords(sectorId: sectorId, fltResult: naviResult, coordToCheck: [coordX, coordY]) {
+//                    JupiterLogger.i(tag: "JupiterCalcManager", message: "isFollowingNavigationRoute: naviResult is in map end")
+//                    adaptiveTh = max(adaptiveTh, travelingLinkDist * 0.7)
+//                }
+//            }
+//
+//            JupiterLogger.i(tag: "JupiterCalcManager", message: "isFollowingNavigationRoute: adaptive_th= \(adaptiveTh)")
+//            return nil
+//        }
+//
+//        // 다른 링크 그룹이면 landmark 거리 비율로 CASE_2/3 조기결정
+//        if let distCur = calDistWithRecentPeakLandamrks(fltResult: curPmResult),
+//           let distNavi = calDistWithRecentPeakLandamrks(fltResult: naviResult) {
+//
+//            let ratio = distNavi / distCur
+//            JupiterLogger.i(tag: "JupiterCalcManager", message: "isFollowingNavigationRoute: distWithCurPmResult= \(distCur), distWithNaviResult= \(distNavi) // ratio= \(ratio)")
+//
+//            let naviCase: NaviCase = (ratio < 1.5) ? .CASE_2 : .CASE_3
+//            return naviCase
+//        }
+//
+//        JupiterLogger.i(tag: "JupiterCalcManager", message: "isFollowingNavigationRoute: adaptive_th= \(adaptiveTh)")
+//        return nil
     }
 
-    private func calDistWithRecentPeakLandamrks(fltResult: FineLocationTrackingOutput) -> Float? {
+    private func calDistWithRecentPeakLandmarks(fltResult: FineLocationTrackingOutput) -> Float? {
         guard let recentLandmarkPeaks = recentLandmarkPeaks else { return nil }
         
         var distSum: Float = 0
@@ -1203,6 +1234,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             // 길끝에 위치하는지 확인
             mustInSameLink = false
             let isInMapEnd = PathMatcher.shared.checkIsInMapEnd(sectorId: sectorId, tuResult: tuResult)
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorResult) : index= \(uvd.index) // isInNode= \(PathMatcher.shared.isInNode) // isInMapEnd= \(isInMapEnd)")
             if isInMapEnd {
                 tuResult.x = curResult.x
                 tuResult.y = curResult.y
