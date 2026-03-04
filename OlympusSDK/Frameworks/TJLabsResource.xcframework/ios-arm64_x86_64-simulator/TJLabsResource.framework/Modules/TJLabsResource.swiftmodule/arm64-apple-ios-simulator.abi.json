@@ -15251,42 +15251,42 @@
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/Manager\/TJLabsNodeLinkManager.swift",
       "kind": "StringLiteral",
-      "offset": 17700,
+      "offset": 17826,
       "length": 82,
       "value": "\"(TJLabsResource) [decodeNodeDict] ❌ Failed to convert node json string to Data\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/Manager\/TJLabsNodeLinkManager.swift",
       "kind": "StringLiteral",
-      "offset": 18300,
+      "offset": 18426,
       "length": 70,
       "value": "\"(TJLabsResource) [decodeNodeDict] ❌ Node decoding failed: \""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/Manager\/TJLabsNodeLinkManager.swift",
       "kind": "StringLiteral",
-      "offset": 18369,
+      "offset": 18495,
       "length": 2,
       "value": "\"\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/Manager\/TJLabsNodeLinkManager.swift",
       "kind": "StringLiteral",
-      "offset": 18566,
+      "offset": 18692,
       "length": 82,
       "value": "\"(TJLabsResource) [decodeLinkDict] ❌ Failed to convert link json string to Data\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/Manager\/TJLabsNodeLinkManager.swift",
       "kind": "StringLiteral",
-      "offset": 19166,
+      "offset": 19292,
       "length": 70,
       "value": "\"(TJLabsResource) [decodeLinkDict] ❌ Link decoding failed: \""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/Manager\/TJLabsNodeLinkManager.swift",
       "kind": "StringLiteral",
-      "offset": 19235,
+      "offset": 19361,
       "length": 2,
       "value": "\"\""
     },
