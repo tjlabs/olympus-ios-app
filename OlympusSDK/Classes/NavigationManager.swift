@@ -21,6 +21,8 @@ class NavigationManager {
     private var sectorId: Int = 0
 
     private var routes = [NavigationRoute]()
+    private var routeNodeData = [Int: NodeData]()
+    private var routeSectionData = [Int: SectionRange]()
     private var routeIndex: Int?
     private var curRoute: NavigationRoute?
     private var isRequesting: Bool = false
@@ -50,46 +52,36 @@ class NavigationManager {
         
         let key = "\(sectorId)_\(building)_\(level)"
         guard let nodeData = PathMatcher.shared.nodeData[key] else { return }
-//        let ids: [Int] = [24, 23, 22, 6, 7, 23, 21, 301, 8, 4, 2, 1, 30, 29,
-//                          34, 40, 54, 55, 59, 63, 68, 72, 80, 82, 84, 87]
-        
-//        let ids: [Int] = [24, 23, 22, 6, 7, 23, 21, 301, 8, 4, 2, 1, 30, 29,
-//                          34, 40, 54, 53, 44, 45, 39]
-        
-        // Ent4 Following Well
-//        let ids: [Int] = [4, 2, 1, 30, 29, 34, 40, 54, 53, 44, 45, 39]
-        
-        // Ent4 NotFollowing
-        var ids: [Int] = [4, 2, 1, 30, 29, 34, 40, 54, 55, 59, 63, 68, 72, 80, 82, 84, 87]
+        self.routeNodeData = nodeData
+        var nums = [Int]()
         
         if let scenario = scenario {
             JupiterLogger.i(tag: "NavigationManager", message: "(setNavigationRoute) : scenario= \(scenario)")
             if scenario == 1 {
-                ids = [69, 68,46,47,2,3]
+                nums = [68, 67, 45, 46, 2, 3]
             } else if scenario == 3 {
-                ids = [24, 21,2 ,1,30, 29, 54, 53, 44,45,39]
+                nums = [23, 20, 2, 1, 29, 28, 53, 52, 43, 44, 38]
             } else if scenario == 4 {
-                ids = [4, 2, 1, 30, 29, 71, 72, 80]
+                nums = [4, 2, 1, 29, 28, 70, 71, 77]
             }
         }
         
         var buildingOrder = [String]()
         var levelOrder = [String]()
         var nodeOrder = [Int]()
-        var sectionOrder = [Int]()
         var order = [[Float]]()
         
         buildingOrder.append(building)
         levelOrder.append(level)
         nodeOrder.append(-1)
         order.append(start)
-        for id in ids {
-            guard let matchedNode = nodeData[id] else { continue }
+        for n in nums {
+            guard let matchedNode = nodeData[n] else { continue }
             let coords = matchedNode.coords
             if coords.count != 2 { continue }
             buildingOrder.append(building)
             levelOrder.append(level)
-            nodeOrder.append(id)
+            nodeOrder.append(n)
             order.append(coords)
         }
         buildingOrder.append(building)
@@ -97,11 +89,13 @@ class NavigationManager {
         nodeOrder.append(-1)
         order.append(end)
         
-        generateNavigationRoute(bOrder: buildingOrder, lOrder: levelOrder, nodeOrder: nodeOrder, coordOrder: order)
-        generateNavigationRoute(bOrder: buildingOrder, lOrder: levelOrder, order: order)
+        generateNavigationRoute(bOrder: buildingOrder, lOrder: levelOrder, nodeOrder: nodeOrder, coordOrder: order) // display
+        generateNavigationRoute(bOrder: buildingOrder, lOrder: levelOrder, nodeOrder: nodeOrder, order: order)
+        let sectionMap = makeSectionMap(routes: self.routes)
+        self.routeSectionData = sectionMap
     }
     
-    func generateNavigationRoute(bOrder: [String], lOrder: [String], order: [[Float]]) {
+    func generateNavigationRoute(bOrder: [String], lOrder: [String], nodeOrder: [Int], order: [[Float]]) {
         // order: [[x,y], [x,y], ...]
         // Build a dense polyline by walking each segment with step=1.0 (same unit as x/y).
         // Output routes as [[x, y, headingDeg]] where headingDeg is 0~360 from +X axis (atan2(dy, dx)).
@@ -118,6 +112,8 @@ class NavigationManager {
         let rad2deg: Float = 180.0 / .pi
         
         let turnHeadingThreshold: Float = 1.0 // degrees
+        let headingMatchThreshold: Float = 5.0 // degrees
+        var curSectionRouteStart = 0
         
         for i in 0..<(order.count - 1) {
             let building = bOrder[i]
@@ -160,6 +156,19 @@ class NavigationManager {
                     var last = denseNaviRoute[denseNaviRoute.count - 1]
                     last.turnPoint = true
                     denseNaviRoute[denseNaviRoute.count - 1] = last
+                    
+                    let curSectionNodeNum: Int = nodeOrder[i]
+                    let sectionPassable = isSectionPassable(sectionHeading: prevHeading,
+                                                            nodeNum: curSectionNodeNum,
+                                                            headingThreshold: headingMatchThreshold)
+                    JupiterLogger.i(tag: "NavigationManager", message: "(isSectionPassable) : [prevHeading:\(prevHeading), curSectionNodeNum:\(curSectionNodeNum), headingThreshold:\(headingMatchThreshold)] -> sectionPassable= \(sectionPassable)")
+                    for idx in curSectionRouteStart..<denseNaviRoute.count {
+                        var data = denseNaviRoute[idx]
+                        data.passable = sectionPassable
+                        denseNaviRoute[idx] = data
+                    }
+                    curSectionRouteStart = denseNaviRoute.count
+
                     sectionCount += 1
                 }
             }
@@ -196,18 +205,113 @@ class NavigationManager {
                     denseNaviRoute[denseNaviRoute.count - 1] = last
                 }
             }
+            
+            
         }
-
-        var lastNaviRoute = denseNaviRoute[denseNaviRoute.count-1]
-        lastNaviRoute.turnPoint = true
-        denseNaviRoute[denseNaviRoute.count-1] = lastNaviRoute
+        
+        if !denseNaviRoute.isEmpty {
+            let lastHeading = denseNaviRoute[denseNaviRoute.count-1].heading
+            let curSectionNodeNum = nodeOrder[nodeOrder.count-1]
+            let sectionPassable = isSectionPassable(sectionHeading: lastHeading, nodeNum: curSectionNodeNum, headingThreshold: headingMatchThreshold)
+            for idx in curSectionRouteStart..<denseNaviRoute.count {
+                var data = denseNaviRoute[idx]
+                data.passable = sectionPassable
+                denseNaviRoute[idx] = data
+            }
+            
+            var lastNaviRoute = denseNaviRoute[denseNaviRoute.count-1]
+            lastNaviRoute.turnPoint = true
+            denseNaviRoute[denseNaviRoute.count-1] = lastNaviRoute
+        }
         
         self.routes = denseNaviRoute
         delegate?.isNavigationRouteChanged()
         
         for route in self.routes {
-            JupiterLogger.i(tag: "NavigationManager", message: "(generateNavigationRoute) : [section:\(route.section), turPoint:\(route.turnPoint), x:\(route.x), y:\(route.y), h:\(route.heading)]")
+            JupiterLogger.i(tag: "NavigationManager", message: "(generateNavigationRoute) : [section:\(route.section), turPoint:\(route.turnPoint), x:\(route.x), y:\(route.y), h:\(route.heading), passable:\(route.passable)]")
         }
+    }
+    
+    typealias XY = (x: Float, y: Float)
+    typealias SectionRange = (start: XY, end: XY)
+    func makeSectionMap(routes: [NavigationRoute]) -> [Int: SectionRange] {
+        var map: [Int: SectionRange] = [:]
+        guard let first = routes.first else { return map }
+
+        var curSection = first.section
+        var start: XY = (first.x, first.y)
+        var end: XY = (first.x, first.y)
+
+        for r in routes.dropFirst() {
+            if r.section != curSection {
+                // 섹션 종료 확정
+                map[curSection] = (start: start, end: end)
+
+                curSection = r.section
+                start = (r.x, r.y)
+                end = (r.x, r.y)
+            } else {
+                end = (r.x, r.y)
+            }
+        }
+
+        map[curSection] = (start: start, end: end)
+        return map
+    }
+    
+    func findSectionContaining(x: Float, y: Float, threshold: Float = 1.0) -> Int? {
+        func pointToSegmentDistance(
+            p: (x: Float, y: Float),
+            a: (x: Float, y: Float),
+            b: (x: Float, y: Float)
+        ) -> Float {
+
+            let abx = b.x - a.x
+            let aby = b.y - a.y
+            let apx = p.x - a.x
+            let apy = p.y - a.y
+
+            let ab2 = abx*abx + aby*aby
+            if ab2 == 0 {
+                let dx = p.x - a.x
+                let dy = p.y - a.y
+                return sqrt(dx*dx + dy*dy)
+            }
+
+            var t = (apx*abx + apy*aby) / ab2
+            t = max(0, min(1, t))
+
+            let cx = a.x + t * abx
+            let cy = a.y + t * aby
+
+            let dx = p.x - cx
+            let dy = p.y - cy
+
+            return sqrt(dx*dx + dy*dy)
+        }
+        
+        let p = (x: x, y: y)
+        for (section, range) in routeSectionData {
+            let a = range.start
+            let b = range.end
+            
+            let dist = pointToSegmentDistance(p: p, a: a, b: b)
+            if dist <= threshold {
+                return section
+            }
+        }
+
+        return nil
+    }
+    
+    private func isSectionPassable(sectionHeading: Float, nodeNum: Int, headingThreshold: Float) -> Bool {
+        guard let node = routeNodeData[nodeNum] else { return true }
+        for dir in node.directions {
+            if (dir.is_end && headingDelta(sectionHeading, dir.heading) <= headingThreshold) {
+                return false
+            }
+        }
+        return true
     }
     
     func getNaviRoutes() -> [NavigationRoute] {
@@ -263,7 +367,6 @@ class NavigationManager {
         
         self.routeIndex = matchedIndex
         self.curRoute = self.routes[matchedIndex]
-//        JupiterLogger.i(tag: "NavigationManager", message: "(setStartPointInNaviRoute) : sections= \(routes.map{$0.section})")
         JupiterLogger.i(tag: "NavigationManager", message: "(setStartPointInNaviRoute) : started at \(matchedIndex) in routes // route= \(routes[matchedIndex])")
     }
     
