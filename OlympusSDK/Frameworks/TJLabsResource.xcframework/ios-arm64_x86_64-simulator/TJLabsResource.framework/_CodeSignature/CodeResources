@@ -6,51 +6,19 @@
 	<dict>
 		<key>6_COEX_B0_landmark.json</key>
 		<data>
-		4s8IHa+vXp8qhi6lA7SWEeLOtY0=
-		</data>
-		<key>6_COEX_B0_link.json</key>
-		<data>
-		gjITkKjqLxHjQZyoo4KOojOX1A8=
-		</data>
-		<key>6_COEX_B0_node.json</key>
-		<data>
-		us/ttpuM0ZehsCZ4dKcoNQ3cMlg=
+		UTAI5HYWSlmaKeZxH+blEVaH9xY=
 		</data>
 		<key>6_COEX_B2_landmark.json</key>
 		<data>
-		4s8IHa+vXp8qhi6lA7SWEeLOtY0=
-		</data>
-		<key>6_COEX_B2_link.json</key>
-		<data>
-		gjITkKjqLxHjQZyoo4KOojOX1A8=
-		</data>
-		<key>6_COEX_B2_node.json</key>
-		<data>
-		XTAwtc0d1wUW2oZale/olG2wOOQ=
+		UTAI5HYWSlmaKeZxH+blEVaH9xY=
 		</data>
 		<key>6_COEX_B3_landmark.json</key>
 		<data>
-		4s8IHa+vXp8qhi6lA7SWEeLOtY0=
-		</data>
-		<key>6_COEX_B3_link.json</key>
-		<data>
-		gjITkKjqLxHjQZyoo4KOojOX1A8=
-		</data>
-		<key>6_COEX_B3_node.json</key>
-		<data>
-		us/ttpuM0ZehsCZ4dKcoNQ3cMlg=
+		UTAI5HYWSlmaKeZxH+blEVaH9xY=
 		</data>
 		<key>6_COEX_B4_landmark.json</key>
 		<data>
-		4s8IHa+vXp8qhi6lA7SWEeLOtY0=
-		</data>
-		<key>6_COEX_B4_link.json</key>
-		<data>
-		gjITkKjqLxHjQZyoo4KOojOX1A8=
-		</data>
-		<key>6_COEX_B4_node.json</key>
-		<data>
-		us/ttpuM0ZehsCZ4dKcoNQ3cMlg=
+		UTAI5HYWSlmaKeZxH+blEVaH9xY=
 		</data>
 		<key>6_bl_tag.json</key>
 		<data>
@@ -115,84 +83,28 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			FHtgGxprM/PTmi6zVm8it/cIYskAUmRHQcqyLfIfNGk=
-			</data>
-		</dict>
-		<key>6_COEX_B0_link.json</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			5Qyj8mhEjtcwkcaowoFpodLzF5+eSJnfOAwkcLvMdcw=
-			</data>
-		</dict>
-		<key>6_COEX_B0_node.json</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			QExLfcbhkGBc7qIcxH5vLXxRHffvltS/5mXA0nWcAzw=
+			ryoiwS25p+3WXBImeMn9G/gmN2iZaoMNzXDpX4GaM/U=
 			</data>
 		</dict>
 		<key>6_COEX_B2_landmark.json</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			FHtgGxprM/PTmi6zVm8it/cIYskAUmRHQcqyLfIfNGk=
-			</data>
-		</dict>
-		<key>6_COEX_B2_link.json</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			5Qyj8mhEjtcwkcaowoFpodLzF5+eSJnfOAwkcLvMdcw=
-			</data>
-		</dict>
-		<key>6_COEX_B2_node.json</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			yDsZdlzo08kDiJIJAycsMABUAQdmGy/Io3pFGPrqFdc=
+			ryoiwS25p+3WXBImeMn9G/gmN2iZaoMNzXDpX4GaM/U=
 			</data>
 		</dict>
 		<key>6_COEX_B3_landmark.json</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			FHtgGxprM/PTmi6zVm8it/cIYskAUmRHQcqyLfIfNGk=
-			</data>
-		</dict>
-		<key>6_COEX_B3_link.json</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			5Qyj8mhEjtcwkcaowoFpodLzF5+eSJnfOAwkcLvMdcw=
-			</data>
-		</dict>
-		<key>6_COEX_B3_node.json</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			QExLfcbhkGBc7qIcxH5vLXxRHffvltS/5mXA0nWcAzw=
+			ryoiwS25p+3WXBImeMn9G/gmN2iZaoMNzXDpX4GaM/U=
 			</data>
 		</dict>
 		<key>6_COEX_B4_landmark.json</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			FHtgGxprM/PTmi6zVm8it/cIYskAUmRHQcqyLfIfNGk=
-			</data>
-		</dict>
-		<key>6_COEX_B4_link.json</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			5Qyj8mhEjtcwkcaowoFpodLzF5+eSJnfOAwkcLvMdcw=
-			</data>
-		</dict>
-		<key>6_COEX_B4_node.json</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			QExLfcbhkGBc7qIcxH5vLXxRHffvltS/5mXA0nWcAzw=
+			ryoiwS25p+3WXBImeMn9G/gmN2iZaoMNzXDpX4GaM/U=
 			</data>
 		</dict>
 		<key>6_bl_tag.json</key>
