@@ -246,7 +246,7 @@ class PathMatcher {
         return PathMatchingResult(xyhs: ixyhs, matchedHeadings: matched.isEmpty ? [finalHeading] : matched)
     }
     
-    func getPathMatchingHeadings(sectorId: Int, building: String, level: String, x: Float, y: Float, paddingValue: Float, mode: UserMode) -> [Float] {
+    func getPathMatchingHeadings(sectorId: Int, building: String, level: String, x: Float, y: Float, paddingValue: Float) -> [Float] {
         var headings: [Float] = []
         let levelCopy: String = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: level)
         
@@ -292,7 +292,7 @@ class PathMatcher {
         return headings
     }
     
-    func getMatchedNodeWithCoord(sectorId: Int, fltResult: FineLocationTrackingOutput, originCoord: [Float], coordToCheck: [Float], pathType: Int, paddingValues: [Float]) -> (Int, [Float])? {
+    func getMatchedNodeWithCoord(sectorId: Int, fltResult: FineLocationTrackingOutput, originCoord: [Float], coordToCheck: [Float], paddingValues: [Float]) -> (Int, [Float])? {
         let building = fltResult.building_name
         let level = fltResult.level_name
         let levelName = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: fltResult.level_name)
@@ -382,7 +382,10 @@ class PathMatcher {
         
         let curHeading = tuResult.absolute_heading
         let nodeHeadings = matchedNode.directions.map({$0.heading})
-        let (bestHeading, bestIndex) = closestHeading(to: curHeading, candidates: nodeHeadings)
+        let (_, bestIndex) = closestHeading(to: curHeading, candidates: nodeHeadings)
+        JupiterLogger.i(tag: "PathMatcher", message: "(checkIsInMapEnd) - curHeading: \(curHeading)")
+        JupiterLogger.i(tag: "PathMatcher", message: "(checkIsInMapEnd) - nodeHeadings: \(nodeHeadings)")
+        JupiterLogger.i(tag: "PathMatcher", message: "(checkIsInMapEnd) - matchedNode : num= \(matchedNode.number), directions= \(matchedNode.directions)")
         let bestIsMapEnd = matchedNode.directions[bestIndex].is_end
         
         return bestIsMapEnd
@@ -480,7 +483,7 @@ class PathMatcher {
         if (level == "B0" || self.isInNode) {
             return (limitType, limitValues)
         }
-        JupiterLogger.i(tag: "KalmanFilter", message: "(getTimeUpdateLimitation) - curPassedLinkInfo: \(curPassedLinkInfo)")
+        JupiterLogger.i(tag: "PathMatcher", message: "(getTimeUpdateLimitation) - curPassedLinkInfo: \(curPassedLinkInfo)")
         guard let curLink = self.curPassedLinkInfo else { return (limitType, limitValues) }
         let coordX = curLink.user_coord[0]
         let coordY = curLink.user_coord[1]
@@ -504,7 +507,7 @@ class PathMatcher {
     func getLimitationTypeWithLink(link: LinkData) -> LimitationType {
         var limitType: LimitationType = .NO_LIMIT
 
-        JupiterLogger.i(tag: "KalmanFilter", message: "(getTimeUpdateLimitation) - link: \(link)")
+        JupiterLogger.i(tag: "PathMatcher", message: "(getTimeUpdateLimitation) - link: \(link)")
         let curLink = link
         let directions = curLink.included_heading
         if (directions.contains(0) && directions.contains(180)) {
@@ -640,7 +643,7 @@ class PathMatcher {
             for _ in 0..<PIXELS_TO_CHECK {
                 x += cos(directionRad)
                 y += sin(directionRad)
-                guard let matchedNodeResult = getMatchedNodeWithCoord(sectorId: sectorId, fltResult: fltResult, originCoord: startCoord, coordToCheck: [x, y], pathType: pathType, paddingValues: paddingValues) else { break }
+                guard let matchedNodeResult = getMatchedNodeWithCoord(sectorId: sectorId, fltResult: fltResult, originCoord: startCoord, coordToCheck: [x, y], paddingValues: paddingValues) else { break }
                 candidateNodeNumbers.append(matchedNodeResult.0)
             }
             for nodeNumber in candidateNodeNumbers.reversed() {
@@ -761,7 +764,7 @@ class PathMatcher {
         return paddingValues
     }
     
-    func updateNodeAndLinkInfo(sectorId: Int, uvdIndex: Int, curResult: FineLocationTrackingOutput, mode: UserMode, jumpInfo: JumpInfo?, isInLevelChangeArea: Bool = false, pLinkCutIndex: Int? = nil) {
+    func updateNodeAndLinkInfo(sectorId: Int, uvdIndex: Int, curResult: FineLocationTrackingOutput, jumpInfo: JumpInfo?, isInLevelChangeArea: Bool = false, pLinkCutIndex: Int? = nil) {
         let checkAll = jumpInfo != nil || isInLevelChangeArea ? true : false
         let x = curResult.x
         let y = curResult.y
@@ -867,8 +870,7 @@ class PathMatcher {
                                                        level: curResult.level_name,
                                                        x: correctedX,
                                                        y: correctedY,
-                                                       paddingValue: 0,
-                                                       mode: mode)
+                                                       paddingValue: 0)
             curLinkDirs = coordHeadings
             JupiterLogger.i(tag: "PathMatcher", message: "(updateNodeAndLinkInfo) [LINK] uvd=\(uvdIndex) key=\(key) xy=(\(correctedX),\(correctedY)) userH=\(heading) -> link not detected (bestDist=\(bestLinkDist)), headingsFallback=\(coordHeadings)")
             return
