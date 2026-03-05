@@ -522,32 +522,32 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             let naviRouteResultBuffer = indexAndNaviRouteResultBuffer.map { $0.1 }
             let curPmResultBuffer = stackManager.getCurPmResultBuffer(size: 10)
             
+            
             guard let followingResult = isFollowingNavigationRoute(curNaviCase: curNaviCase, travelingLinkDist: travelingLinkDist, naviRouteResultBuffer: naviRouteResultBuffer, curPmResultBuffer: curPmResultBuffer) else { return }
             
             let estimatedNaviCase = followingResult.naviCase
-   
             curNaviCase = estimatedNaviCase
             if curNaviCase == .CASE_3 && !guidanceOutReported {
                 guidanceOutReported = true
                 delegate?.isUserGuidanceOut()
             } else if curNaviCase == .CASE_2 {
-//                let diffIndex = userVelocity.index - sectionCorrectionIndex
-//                if diffIndex < 10 {
-//                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFollowingNavigationRoute: section correction is applied at \(sectionCorrectionIndex) index (curIndex = \(userVelocity.index))")
-//                    updateDebugTuResult()
-//                    return
-//                }
-//                let curNaviSection = naviRouteResult.section
-//                let curPmResult = curPmResultBuffer[curPmResultBuffer.count-1]
-//                guard let curPmSection = navigationManager?.findSectionContaining(x: curPmResult.x, y: curPmResult.y) else {
-//                    updateDebugTuResult()
-//                    return
-//                }
-//                if curNaviSection == curPmSection {
-//                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFollowingNavigationRoute: findSectionContaining // jupiter and navi result are in same section \(curPmSection)")
-//                    navigationManager?.updateCurRoutePos(curSection: curPmSection, curResult: curPmResult)
-//                    sectionCorrectionIndex = userVelocity.index
-//                }
+                let diffSectionCorrIndex = userVelocity.index - sectionCorrectionIndex
+                if diffSectionCorrIndex < 10 {
+                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFollowingNavigationRoute: section correction is applied at \(sectionCorrectionIndex) index (curIndex = \(userVelocity.index))")
+                    updateDebugTuResult()
+                    return
+                }
+                let curNaviSection = naviRouteResult.section
+                let curPmResult = curPmResultBuffer[curPmResultBuffer.count-1]
+                guard let curPmSection = navigationManager?.findSectionContaining(x: curPmResult.x, y: curPmResult.y) else {
+                    updateDebugTuResult()
+                    return
+                }
+                if curNaviSection == curPmSection {
+                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFollowingNavigationRoute: findSectionContaining // jupiter and navi result are in same section \(curPmSection)")
+                    navigationManager?.updateCurRoutePos(curSection: curPmSection, curResult: curPmResult)
+                    sectionCorrectionIndex = userVelocity.index
+                }
             }
     
             JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFollowingNavigationRoute: followingResult= \(followingResult) // curNaviCase= \(curNaviCase)")
@@ -662,7 +662,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         }
 
         // 5) CASE_2 or CASE_3 판단
-//        let shouldCheckEndOfMap = isAllSameNaviResult
         let shouldCheckEndOfMap = !naviResultLast.passable
         let (case23, adaptiveTh, dhOverride) = decideCase2or3(
             dAvg: dAvg,
@@ -767,15 +766,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         dAvg: Float,
         adaptiveTh: inout Float
     ) -> (landmarkCase: NaviCase, distanceCase: NaviCase)? {
-//        guard let naviLinks = PathMatcher.shared.getLinkInfosWithResult(sectorId: sectorId, result: naviResult, checkAll: true) else {
-//            JupiterLogger.i(tag: "JupiterCalcManager", message: "isFollowingNavigationRoute: cannot find matched link in naviResult [\(naviResult.x),\(naviResult.y),\(naviResult.absolute_heading)]")
-//            return nil
-//        }
-//        guard let curLinks = PathMatcher.shared.getLinkInfosWithResult(sectorId: sectorId, result: curPmResult, checkAll: true) else {
-//            JupiterLogger.i(tag: "JupiterCalcManager", message: "isFollowingNavigationRoute: cannot find matched link in curPmResult [\(curPmResult.x),\(curPmResult.y),\(curPmResult.absolute_heading)]")
-//            return nil
-//        }
-        
         var updatedAdaptiveTh = adaptiveTh
         var landmarkCase: NaviCase = .CASE_2
         var distanceCase: NaviCase = .CASE_2
@@ -785,8 +775,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             let ratio = distNavi / distCur
             JupiterLogger.i(tag: "JupiterCalcManager",
                             message: "isFollowingNavigationRoute: distWithCurPmResult= \(distCur), distWithNaviResult= \(distNavi) // ratio= \(ratio)")
-//            naviCase =  ratio < 1.5 ? NaviCase.CASE_2 : NaviCase.CASE_3
-            if ratio > 1.5 {
+            let ratioTh: Float =  2.5
+            if ratio > ratioTh {
                 landmarkCase = .CASE_3
             } else {
                 landmarkCase = .CASE_2
@@ -853,9 +843,10 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
 
     private func calDistWithRecentPeakLandmarks(fltResult: FineLocationTrackingOutput) -> Float? {
         guard let recentLandmarkPeaks = recentLandmarkPeaks else { return nil }
-        
+        JupiterLogger.i(tag: "JupiterCalcManager", message: "recentLandmarkPeaks counts = \(recentLandmarkPeaks.count)")
         var distSum: Float = 0
         for lm in recentLandmarkPeaks {
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "recentLandmarkPeaks: [\(lm.x), \(lm.y)]")
             let diffX = fltResult.x - Float(lm.x)
             let diffY = fltResult.y - Float(lm.y)
             
@@ -1460,6 +1451,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                 PathMatcher.shared.initPassedLinkInfo()
                             }
                         }
+                        feedbackCount = 10
                     }
                 }
                 
