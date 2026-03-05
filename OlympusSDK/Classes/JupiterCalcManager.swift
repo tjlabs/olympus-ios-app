@@ -461,7 +461,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                                                           building: curPmResult.building_name,
                                                                           level: curPmResult.level_name,
                                                                           x: curPmResult.x, y: curPmResult.y,
-                                                                          paddingValue: headingSearchRange, mode: mode)
+                                                                          paddingValue: headingSearchRange)
             if let tuResult = kalmanFilter?.getTuResult() {
                 let curResultBuffer = stackManager.getCurResultBuffer()
                 if let matchedWithOlderPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: olderUserPeak, curResult: curResult, curResultBuffer: curResultBuffer),
@@ -497,7 +497,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                 self.curResult? = curPathMatchingResult!
                                 if let matchedLink = PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId, result: curPathMatchingResult!, checkAll: true) {
                                     let jumpInfo = JumpInfo(link_number: matchedLink.number, jumped_nodes: [])
-                                    PathMatcher.shared.updateNodeAndLinkInfo(sectorId: sectorId, uvdIndex: curIndex, curResult: bestResult, mode: mode, jumpInfo: jumpInfo)
+                                    PathMatcher.shared.updateNodeAndLinkInfo(sectorId: sectorId, uvdIndex: curIndex, curResult: bestResult, jumpInfo: jumpInfo)
                                 }
                             } else {
                                 kalmanFilter?.updateTuPosition(coord: recoveryCoord)
@@ -568,6 +568,23 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                     kalmanFilter?.editTuResultBuffer(sectorId: sectorId, mode: mode, from: indexForEdit, indexAndNaviRouteResultBuffer: indexAndNaviRouteResultBuffer, curResult: curResult, paddings: paddings)
                     kalmanFilter?.updateTuPosition(coord: [naviRouteResult.x, naviRouteResult.y])
                     feedbackIndex = userVelocity.index
+                    
+                    let dist = sqrt((naviRouteResult.x - curResult.x)*(naviRouteResult.x - curResult.x) + (naviRouteResult.y - curResult.y)*(naviRouteResult.y - curResult.y))
+                    if dist > 2 {
+                        var naviResult = curResult
+                        naviResult.x = naviRouteResult.x
+                        naviResult.y = naviRouteResult.y
+                        naviResult.absolute_heading = naviRouteResult.heading
+                        if let naviResultLink = PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId, result: naviResult, checkAll: true),
+                           let curLinkInfo = PathMatcher.shared.getCurPassedLinkInfo(),
+                           let jumped = calcJumpedNodes(from: curResult, to: naviResult, curLinkInfo: curLinkInfo, jumpedLinkNum: naviResultLink.number) {
+                            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) jumped: link= \(jumped.link_number), nodes= \(jumped.jumped_nodes)")
+                            let jumpInfo: JumpInfo = JumpInfo(link_number: jumped.link_number, jumped_nodes: jumped.jumped_nodes)
+                            PathMatcher.shared.updateNodeAndLinkInfo(sectorId: sectorId, uvdIndex: userVelocity.index, curResult: naviResult, jumpInfo: jumpInfo)
+                        } else {
+                            PathMatcher.shared.initPassedNodeInfo()
+                        }
+                    }
                 }
             } else {
                 feedbackCount = 0
@@ -787,7 +804,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
 
         JupiterLogger.i(tag: "JupiterCalcManager", message: "isFollowingNavigationRoute: shouldCheckEndOfMap= \(shouldCheckEndOfMap)")
         if (shouldCheckEndOfMap) {
-            updatedAdaptiveTh = max(updatedAdaptiveTh, travelingLinkDist * 0.7)
+            updatedAdaptiveTh = max(updatedAdaptiveTh, travelingLinkDist * 0.8)
         } else {
             updatedAdaptiveTh = max(updatedAdaptiveTh, travelingLinkDist * 0.5)
         }
@@ -801,52 +818,12 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         
         JupiterLogger.i(tag: "JupiterCalcManager", message:"isFollowingNavigationRoute: travelingLinkDist : \(travelingLinkDist) // adaptive_th= \(updatedAdaptiveTh)")
         return (landmarkCase, distanceCase)
-        
-//        let naviGroupNums = naviLinks.map { $0.group_number }
-//        let jupiterGroupNums = curLinks.map { $0.group_number }
-//        let inSameLinkGroup = !Set(naviGroupNums).isDisjoint(with: jupiterGroupNums)
-//
-//        JupiterLogger.i(tag: "JupiterCalcManager", message: "isFollowingNavigationRoute: naviGroupNums= \(naviGroupNums), jupiterGroupNums= \(jupiterGroupNums), inSameLinkGroup= \(inSameLinkGroup)")
-//
-//        if inSameLinkGroup {
-//            // 같은 링크 그룹이면 adaptive_th = max(adaptive_th, travelingLinkDist*0.7)
-//            adaptiveTh = max(adaptiveTh, travelingLinkDist * 0.5)
-//            if shouldCheckEndOfMap {
-//                // Navi 결과가 고정된 좌표 값을 제공하는 상황
-//                let rad = Float(TJLabsUtilFunctions.shared.degree2radian(degree: Double(naviResult.absolute_heading)))
-//                let coordX = naviResult.x + cos(rad)
-//                let coordY = naviResult.y + sin(rad)
-//                if !PathMatcher.shared.checkPathPixelHasCoords(sectorId: sectorId, fltResult: naviResult, coordToCheck: [coordX, coordY]) {
-//                    JupiterLogger.i(tag: "JupiterCalcManager", message: "isFollowingNavigationRoute: naviResult is in map end")
-//                    adaptiveTh = max(adaptiveTh, travelingLinkDist * 0.7)
-//                }
-//            }
-//
-//            JupiterLogger.i(tag: "JupiterCalcManager", message: "isFollowingNavigationRoute: adaptive_th= \(adaptiveTh)")
-//            return nil
-//        }
-//
-//        // 다른 링크 그룹이면 landmark 거리 비율로 CASE_2/3 조기결정
-//        if let distCur = calDistWithRecentPeakLandamrks(fltResult: curPmResult),
-//           let distNavi = calDistWithRecentPeakLandamrks(fltResult: naviResult) {
-//
-//            let ratio = distNavi / distCur
-//            JupiterLogger.i(tag: "JupiterCalcManager", message: "isFollowingNavigationRoute: distWithCurPmResult= \(distCur), distWithNaviResult= \(distNavi) // ratio= \(ratio)")
-//
-//            let naviCase: NaviCase = (ratio < 1.5) ? .CASE_2 : .CASE_3
-//            return naviCase
-//        }
-//
-//        JupiterLogger.i(tag: "JupiterCalcManager", message: "isFollowingNavigationRoute: adaptive_th= \(adaptiveTh)")
-//        return nil
     }
 
     private func calDistWithRecentPeakLandmarks(fltResult: FineLocationTrackingOutput) -> Float? {
         guard let recentLandmarkPeaks = recentLandmarkPeaks else { return nil }
-        JupiterLogger.i(tag: "JupiterCalcManager", message: "recentLandmarkPeaks counts = \(recentLandmarkPeaks.count)")
         var distSum: Float = 0
         for lm in recentLandmarkPeaks {
-            JupiterLogger.i(tag: "JupiterCalcManager", message: "recentLandmarkPeaks: [\(lm.x), \(lm.y)]")
             let diffX = fltResult.x - Float(lm.x)
             let diffY = fltResult.y - Float(lm.y)
             
@@ -1444,14 +1421,12 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                 PathMatcher.shared.updateNodeAndLinkInfo(sectorId: sectorId,
                                                                          uvdIndex: userVelocity.index,
                                                                          curResult: curPmResult2,
-                                                                         mode: mode,
                                                                          jumpInfo: jumpInfo,
                                                                          pLinkCutIndex: recentUserPeak.peak_index)
                             } else {
                                 PathMatcher.shared.initPassedLinkInfo()
                             }
                         }
-                        feedbackCount = 10
                     }
                 }
                 
@@ -1555,7 +1530,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         
         if KalmanState.isKalmanFilterRunning {
             let isInLevelChangeArea = buildingLevelChanger!.checkInLevelChangeArea(sectorId: sectorId, building: buildingName, level: levelName, x: result.x, y: result.y, mode: mode)
-            PathMatcher.shared.updateNodeAndLinkInfo(sectorId: sectorId, uvdIndex: curIndex, curResult: result, mode: mode, jumpInfo: jumpInfo, isInLevelChangeArea: isInLevelChangeArea)
+            PathMatcher.shared.updateNodeAndLinkInfo(sectorId: sectorId, uvdIndex: curIndex, curResult: result, jumpInfo: jumpInfo, isInLevelChangeArea: isInLevelChangeArea)
         }
         
         return result
@@ -1564,8 +1539,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     private func calcJumpedNodes(from: FineLocationTrackingOutput?,
                                  to: FineLocationTrackingOutput,
                                  curLinkInfo: PassedLinkInfo,
-                                 jumpedLinkNum: Int,
-                                 mode: UserMode) -> JumpInfo? {
+                                 jumpedLinkNum: Int) -> JumpInfo? {
         var jumpInfo: JumpInfo?
         
         let building = to.building_name
@@ -1617,8 +1591,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) jump // calcJumpedNodes in same link")
             var jumpedNodes = [PassedNodeInfo]()
             for point in intermediatePoints {
-                let pathType = mode == .MODE_PEDESTRIAN ? 0 : 1
-                if let matchedNodeResult = PathMatcher.shared.getMatchedNodeWithCoord(sectorId: sectorId, fltResult: to, originCoord: point, coordToCheck: point, pathType: pathType, paddingValues: [1, 1, 1, 1]) {
+                if let matchedNodeResult = PathMatcher.shared.getMatchedNodeWithCoord(sectorId: sectorId, fltResult: to, originCoord: point, coordToCheck: point, paddingValues: [1, 1, 1, 1]) {
                     let nodeInfo = PassedNodeInfo(number: matchedNodeResult.0, coord: point, headings: matchedNodeResult.1, matched_index: to.index, user_heading: to.absolute_heading)
                     jumpedNodes.append(nodeInfo)
                 }
@@ -1647,8 +1620,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                 let x = userX + step * unitVector.x
                 let y = userY + step * unitVector.y
                 let point: [Float] = [x, y]
-                let pathType = mode == .MODE_PEDESTRIAN ? 0 : 1
-                if let matchedNodeResult = PathMatcher.shared.getMatchedNodeWithCoord(sectorId: sectorId, fltResult: to, originCoord: point, coordToCheck: point, pathType: pathType, paddingValues: [1, 1, 1, 1]) {
+                if let matchedNodeResult = PathMatcher.shared.getMatchedNodeWithCoord(sectorId: sectorId, fltResult: to, originCoord: point, coordToCheck: point, paddingValues: [1, 1, 1, 1]) {
                     let nodeNum = matchedNodeResult.0
                     let nodeInfo = PassedNodeInfo(number: nodeNum, coord: point, headings: matchedNodeResult.1, matched_index: to.index, user_heading: to.absolute_heading)
                     jumpedNodes.append(nodeInfo)
