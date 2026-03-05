@@ -414,13 +414,13 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         set1.scatterShapeSize = 21
         
         let valuesCalc = (0..<1).map { (i) -> ChartDataEntry in
-            return ChartDataEntry(x: tuXYH[0], y: tuXYH[1])
+            return ChartDataEntry(x: calcXYH[0], y: calcXYH[1])
         }
         
         let setCalc = ScatterChartDataSet(entries: valuesCalc, label: "CALC")
         setCalc.drawValuesEnabled = false
         setCalc.setScatterShape(.circle)
-        setCalc.setColor(.systemPink)
+        setCalc.setColor(.systemMint)
         setCalc.scatterShapeSize = 18
         
         let valuesTu = (0..<1).map { (i) -> ChartDataEntry in
