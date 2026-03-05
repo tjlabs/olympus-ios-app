@@ -949,8 +949,18 @@ class PathMatcher {
         self.passingLinkBuffer = newBuffer
     }
     
-    func getPassingLinkBuffer() -> [PassingLink] {
-        return self.passingLinkBuffer
+    func getPassingLinkBuffer(index: Int? = nil) -> [PassingLink] {
+        if let index = index {
+            var buffer = [PassingLink]()
+            for pLink in self.passingLinkBuffer.reversed() {
+                if pLink.uvd_index >= index {
+                    buffer.append(pLink)
+                }
+            }
+            return buffer
+        } else {
+            return self.passingLinkBuffer
+        }
     }
     
     private func updatePassedNodeInJump(sectorId: Int, curResult: FineLocationTrackingOutput, linkNum: Int) {

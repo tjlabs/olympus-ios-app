@@ -531,19 +531,23 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                 guidanceOutReported = true
                 delegate?.isUserGuidanceOut()
             } else if curNaviCase == .CASE_2 {
-                let diffIndex = userVelocity.index - sectionCorrectionIndex
-                if diffIndex < 10 {
-                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFollowingNavigationRoute: section correction is applied at \(sectionCorrectionIndex) index (curIndex = \(userVelocity.index))")
-                    return
-                }
-                let curNaviSection = naviRouteResult.section
-                let curPmResult = curPmResultBuffer[curPmResultBuffer.count-1]
-                guard let curPmSection = navigationManager?.findSectionContaining(x: curPmResult.x, y: curPmResult.y) else { return }
-                if curNaviSection == curPmSection {
-                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFollowingNavigationRoute: findSectionContaining // jupiter and navi result are in same section \(curPmSection)")
-                    navigationManager?.updateCurRoutePos(curSection: curPmSection, curResult: curPmResult)
-                    sectionCorrectionIndex = userVelocity.index
-                }
+//                let diffIndex = userVelocity.index - sectionCorrectionIndex
+//                if diffIndex < 10 {
+//                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFollowingNavigationRoute: section correction is applied at \(sectionCorrectionIndex) index (curIndex = \(userVelocity.index))")
+//                    updateDebugTuResult()
+//                    return
+//                }
+//                let curNaviSection = naviRouteResult.section
+//                let curPmResult = curPmResultBuffer[curPmResultBuffer.count-1]
+//                guard let curPmSection = navigationManager?.findSectionContaining(x: curPmResult.x, y: curPmResult.y) else {
+//                    updateDebugTuResult()
+//                    return
+//                }
+//                if curNaviSection == curPmSection {
+//                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFollowingNavigationRoute: findSectionContaining // jupiter and navi result are in same section \(curPmSection)")
+//                    navigationManager?.updateCurRoutePos(curSection: curPmSection, curResult: curPmResult)
+//                    sectionCorrectionIndex = userVelocity.index
+//                }
             }
     
             JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFollowingNavigationRoute: followingResult= \(followingResult) // curNaviCase= \(curNaviCase)")
@@ -570,6 +574,10 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             }
         }
         
+        updateDebugTuResult()
+    }
+    
+    private func updateDebugTuResult() {
         if let tuResult = kalmanFilter?.getTuResult() {
             self.debug_tu_xyh = [tuResult.x, tuResult.y, tuResult.absolute_heading]
         }
@@ -1339,10 +1347,12 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                                                            checkAll: true,
                                                                            acceptDist: 15)
                     
-                    let passingLinkBuffer = PathMatcher.shared.getPassingLinkBuffer()
+                    let passingLinkBuffer = PathMatcher.shared.getPassingLinkBuffer(index: olderUserPeak.peak_index)
+//                    let passingLinkBuffer = PathMatcher.shared.getPassingLinkBuffer()
+                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(applyCorrectionWithPeaks) passingLinkBuffer= \(passingLinkBuffer)")
                     let passingLinkGroupNumSet = Set(passingLinkBuffer.map { $0.link_group_number })
                     let linkConnection = isTurn && passingLinkGroupNumSet.count == 1 && !PathMatcher.shared.isInNode ? true : false
-
+                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(applyCorrectionWithPeaks) linkConnection : isTurn= \(isTurn), passingLinkGroupNumSet= \(passingLinkGroupNumSet) , isInNode= \(PathMatcher.shared.isInNode) -> linkConnection= \(linkConnection)")
                     let trackingResultList = recoveryManager.trackWith2Peaks(trackingTrajList: trackingTrajList,
                                                                              userPeakAndLinksBuffer: userPeakAndLinksBuffer,
                                                                              landmarks: (matchedWithOlderPeak.0, matchedWithRecentPeak.0),
@@ -1452,7 +1462,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                         }
                     }
                 }
-
+                
                 recentUserPeakIndex = recentUserPeak.peak_index
                 recentLandmarkPeaks = matchedWithRecentPeak.landmark.peaks
             }

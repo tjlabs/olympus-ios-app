@@ -609,6 +609,7 @@ class RecoveryManager {
                             guard let matchedLinkWithCand = linkData[cNum] else { continue }
                             candLinkGroupNums.insert(matchedLinkWithCand.group_number)
                         }
+                        JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) candLinkGroupNums= \(candLinkGroupNums)")
                         
                         var candResult = curPmResult
                         candResult.x = Float(cand.x)
@@ -617,11 +618,11 @@ class RecoveryManager {
                                                                                      result: candResult,
                                                                                      checkAll: true,
                                                                                      acceptDist: 15) else { continue }
-                        JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) candLink : number= \(candLink.number) , group_number= \(candLink.group_number)")
+                        JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) candLink : number= \(candLink.number) , group_number= \(candLink.group_number) , xy= [\(cand.x),\(cand.y)]")
                         
                         for recentUserLink in recentUserLinks {
                             let d = self.dist2(Float(cand.x), Float(cand.y), Float(tuResultWhenRecentPeak.x), Float(tuResultWhenRecentPeak.y))
-
+                            JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) recentUserLink : [n:\(recentUserLink.number), gn:\(recentUserLink.group_number)]")
                             var isInSameLinkGroup = false
                             if let matchedNode = matchedNode {
                                 var groupNumSet: Set<Int> = []
@@ -636,6 +637,7 @@ class RecoveryManager {
                             } else if candLinkGroupNums.contains(recentUserLink.group_number) {
                                 isInSameLinkGroup = true
                             }
+                            
                             if isInSameLinkGroup {
                                 if let best = inLinkBest {
                                     if d < best.dist {
@@ -652,12 +654,13 @@ class RecoveryManager {
 
                                 if selectedCandKeySet.insert(candKey).inserted {
                                     selectedCands.append((cand, candLink.group_number, candLink.number, true, 1.0))
+                                    JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) cand is inserted isInSameLinkGroup // cand [x:\(cand.x), y:\(cand.y), ln:\(candLink.number), lgn:\(candLink.group_number)]")
                                     continue
                                 }
                             }
 
                             if distBestOnly {
-                                let reachableWithin3Groups = self.isLinkReachableWithGroupSwitchLimit(
+                                let reachableWithinGroup = self.isLinkReachableWithGroupSwitchLimit(
                                     nodeData: nodeData,
                                     linkData: linkData,
                                     from: recentUserLink,
@@ -665,8 +668,8 @@ class RecoveryManager {
                                     maxGroupSwitches: 2
                                 )
                                 
-                                JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) {distBestOnly true} reachableWithin3Groups: from \(recentUserLink.number) to \(candLink.number) is \(reachableWithin3Groups)")
-                                guard reachableWithin3Groups else { continue }
+                                JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) {distBestOnly true} reachableWithinGroup: from \(recentUserLink.number) to \(candLink.number) is \(reachableWithinGroup)")
+                                guard reachableWithinGroup else { continue }
                                 
                                 if let best = connectableBest {
                                     if d < best.dist {
@@ -693,6 +696,8 @@ class RecoveryManager {
                             }
                         }
                     }
+                    JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) inLinkBest: \(inLinkBest)")
+                    JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) connectableBest: \(connectableBest)")
                     JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) dbestLinkPool: \(dbestGroupPool.map{$0.linkNum})")
                     JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) dbestGroupPool: \(dbestGroupPool.map{$0.groupNum})")
 
@@ -924,7 +929,7 @@ class RecoveryManager {
             for await list in group {
                 all.append(contentsOf: list)
             }
-
+            
             all.sort { $0.loss < $1.loss }
             let topN = Array(all)
             JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) candidates=\(all.count), top1=\(topN.first?.loss), top2=\(topN.count > 1 ? topN[1].loss : nil)")
