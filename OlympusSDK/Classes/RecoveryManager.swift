@@ -932,7 +932,7 @@ class RecoveryManager {
             
             all.sort { $0.loss < $1.loss }
             let topN = Array(all)
-            JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) candidates=\(all.count), top1=\(topN.first?.loss), top2=\(topN.count > 1 ? topN[1].loss : nil)")
+            JupiterLogger.i(tag: "RecoveryManager", message: "(trackWith2PeaksAsync) candidates=\(all.count), top1=\(topN.first?.loss) & \(topN.first?.head), top2=\(topN.count > 1 ? topN[1].loss : nil) & \(topN.count > 1 ? topN[1].head : nil)")
             return topN
         }
         
@@ -987,7 +987,7 @@ class RecoveryManager {
                                                                           maxGroupSwitches: 2)
                         if ok {
                             JupiterLogger.i(tag: "RecoveryManager",
-                                            message: "(selectRecoveryResult) linkConnection=true -> pick first connectable within 3 group_num // curLink=\(curLinkNum), candLink=\(candLink.number), curGroup=\(curLink.group_number), candGroup=\(candLink.group_number), loss=\(r.loss)")
+                                            message: "(selectRecoveryResult) linkConnection=true -> pick first connectable within 1 group_num // curLink=\(curLinkNum), candLink=\(candLink.number), curGroup=\(curLink.group_number), candGroup=\(candLink.group_number), loss=\(r.loss)")
                             return (r, 0.0)
                         }
                     }
@@ -998,21 +998,24 @@ class RecoveryManager {
         let first = list[0]
         let firstCoord = [first.bestRecentCand.x, first.bestRecentCand.y]
         
-        var second: RecoveryResult?
-        for r in list {
-            let rCoord = [r.bestRecentCand.x, r.bestRecentCand.y]
-            if firstCoord.count >= 2 && rCoord.count >= 2 {
-                let fx = Float(firstCoord[0])
-                let fy = Float(firstCoord[1])
-                let sx = Float(rCoord[0])
-                let sy = Float(rCoord[1])
-                let coordDist = self.dist2(fx, fy, sx, sy)
-                if coordDist > COORD_DIST_TH {
-                    second = r
-                    break
-                }
-            }
-        }
+        let second: RecoveryResult? = list.count > 1 ? list[1] : nil
+//        if list.count > 1 {
+//            second = list[1]
+//        }
+//        for r in list {
+//            let rCoord = [r.bestRecentCand.x, r.bestRecentCand.y]
+//            if firstCoord.count >= 2 && rCoord.count >= 2 {
+//                let fx = Float(firstCoord[0])
+//                let fy = Float(firstCoord[1])
+//                let sx = Float(rCoord[0])
+//                let sy = Float(rCoord[1])
+//                let coordDist = self.dist2(fx, fy, sx, sy)
+//                if coordDist > COORD_DIST_TH {
+//                    second = r
+//                    break
+//                }
+//            }
+//        }
         
         if alwaysFirst {
             JupiterLogger.i(tag: "RecoveryManager", message: "(selectRecoveryResult) alwaysFirst // first: \(first.loss)")
@@ -1645,17 +1648,17 @@ class RecoveryManager {
                                                                  level: curPmResult.level_name,
                                                                  x: point.x, y: point.y, heading: point.heading,
                                                                  isUseHeading: false, mode: mode,
-                                                                 paddingValues: JupiterMode.PADDING_VALUES_LARGE) else { continue }
+                                                                 paddingValues: JupiterMode.PADDING_VALUES_LARGE) else { return nil }
             var newResult = curPmResult
             newResult.x = pm.xyhs.x
             newResult.y = pm.xyhs.y
-            guard let matchedLink = PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId, result: newResult, checkAll: true) else { continue }
+            guard let matchedLink = PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId, result: newResult, checkAll: true) else { return nil }
             if let pre = preLink, let preIxyhs = preIxyhs {
                 if pre.group_number != matchedLink.group_number {
                     let isReachable = isLinkReachableWithGroupSwitchLimit(nodeData: nodeData, linkData: linkData, from: pre, to: matchedLink, maxGroupSwitches: 2)
                     if !isReachable {
                         JupiterLogger.i(tag: "RecoveryManager", message: "(computeIntermediateLossByIndex) [\(preIxyhs.x),\(preIxyhs.y)] to [\(pm.xyhs.x),\(pm.xyhs.y)] is not reachable")
-                        JupiterLogger.i(tag: "RecoveryManager", message: "(computeIntermediateLossByIndex) \(pre.number) to \(matchedLink.number) is not reachable")
+                        JupiterLogger.i(tag: "RecoveryManager", message: "(computeIntermediateLossByIndex) \(pre.number) link to \(matchedLink.number) link is not reachable")
                         return nil
                     }
                 }
