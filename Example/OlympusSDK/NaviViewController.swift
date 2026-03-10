@@ -56,7 +56,7 @@ class NaviViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviVi
             DispatchQueue.main.async { [self] in
                 print("(NaviVC) navigation route rendered")
                 UIView.animate(withDuration: 0.2, animations: {
-                    self.naviView.plotRoutelAll()
+                    self.naviView.plotRouteAll()
 //                    self.naviView.plotPins()
                 })
             }
@@ -66,19 +66,27 @@ class NaviViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviVi
         naviView.updateResultInMap(result: userCoord)
 //        print("(MapVC) : userCoord = \(userCoord)")
         
-        let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-        let diffTime = currentTime - gOutReportedTime
-        if isGuidanceOutReported && diffTime > 5000 {
-            DispatchQueue.main.async {
-                self.showToastWithIcon(message: "길안내 경로를 벗어났습니다.\n경로를 재탐색 합니다.")
-            }
-            gOutReportedTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-        }
+//        let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
+//        let diffTime = currentTime - gOutReportedTime
+//        if isGuidanceOutReported && diffTime > 5000 {
+//            DispatchQueue.main.async {
+//                self.showToastWithIcon(message: "길안내 경로를 벗어났습니다.\n경로를 재탐색 합니다.")
+//            }
+//            gOutReportedTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
+//        }
     }
     
     func isUserGuidanceOut() {
         print("(NaviVC) isUserGuidanceOut : guidance out!!")
         isGuidanceOutReported = true
+        DispatchQueue.main.async { [self] in
+            print("(NaviVC) navigation route removed")
+            UIView.animate(withDuration: 0.2, animations: {
+                self.naviView.removeRouteAll()
+            })
+            self.showToastWithIcon(message: "길안내 경로를 벗어났습니다.\n경로를 재탐색 합니다.", duration: 6)
+        }
+        
     }
     
     func isNavigationRouteChanged(_ routes: [(String, String, Int, Float, Float)]) {
@@ -184,7 +192,8 @@ class NaviViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviVi
         }
         print("(NaviVC) navigationMode : scenario= \(scenario)")
         serviceManager?.navigationMode(flag: true, scenario: scenario)
-        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_0303.csv", sensorFileName: "sensor_coex_02_0303.csv")
+        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_0310.csv", sensorFileName: "sensor_coex_01_0310.csv")
+//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_0303.csv", sensorFileName: "sensor_coex_02_0303.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_0224.csv", sensorFileName: "sensor_coex_03_0224.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_01_0119.csv", sensorFileName: "sensor_coex_03_01_0119.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_04_01_0119.csv", sensorFileName: "sensor_coex_04_01_0119.csv")
