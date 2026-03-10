@@ -104,10 +104,10 @@ class LandmarkTagger {
         }
 
         if let bestPeak = bestPeak, let bestPeakLinkNum = bestPeakLinkNum {
-            JupiterLogger.i(tag: "LandmarkTagger", message: "(applyCorrection) selected peak=(\(bestPeak.x),\(bestPeak.y)) ward=\(landmark.ward_id) link=\(bestPeakLinkNum) group=\(peakLinkGroupNum) dist=\(bestPeakDist)")
+            JupiterLogger.i(tag: "LandmarkTagger", message: "(applyCorrection) selected peak=(\(bestPeak.x),\(bestPeak.y)) ward=\(landmark.ward_name) link=\(bestPeakLinkNum) group=\(peakLinkGroupNum) dist=\(bestPeakDist)")
             return (bestPeak, bestPeakLinkNum)
         } else {
-            JupiterLogger.i(tag: "LandmarkTagger", message: "(applyCorrection) no peak matched: ward=\(landmark.ward_id) curGroup=\(peakLinkGroupNum) peaks=\(landmark.peaks.count)")
+            JupiterLogger.i(tag: "LandmarkTagger", message: "(applyCorrection) no peak matched: ward=\(landmark.ward_name) curGroup=\(peakLinkGroupNum) peaks=\(landmark.peaks.count)")
             return nil
         }
     }
