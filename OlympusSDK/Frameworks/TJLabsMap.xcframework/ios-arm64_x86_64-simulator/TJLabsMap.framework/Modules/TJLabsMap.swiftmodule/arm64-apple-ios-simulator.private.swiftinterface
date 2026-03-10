@@ -77,7 +77,8 @@ public struct MapNavigationNode {
       get
     }
   }
-  @_Concurrency.MainActor @preconcurrency public func plotRoutelAll()
+  @_Concurrency.MainActor @preconcurrency public func removeRouteAll()
+  @_Concurrency.MainActor @preconcurrency public func plotRouteAll()
   @_Concurrency.MainActor @preconcurrency public func plotRoute(type: TJLabsMap.TJLabsNaviView.RoadType)
   @_Concurrency.MainActor @preconcurrency public func plotPins()
 }

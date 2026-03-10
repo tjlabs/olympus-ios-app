@@ -2321,8 +2321,8 @@
           },
           {
             "kind": "Function",
-            "name": "plotRoutelAll",
-            "printedName": "plotRoutelAll()",
+            "name": "removeRouteAll",
+            "printedName": "removeRouteAll()",
             "children": [
               {
                 "kind": "TypeNominal",
@@ -2331,8 +2331,30 @@
               }
             ],
             "declKind": "Func",
-            "usr": "s:9TJLabsMap0A8NaviViewC13plotRoutelAllyyF",
-            "mangledName": "$s9TJLabsMap0A8NaviViewC13plotRoutelAllyyF",
+            "usr": "s:9TJLabsMap0A8NaviViewC14removeRouteAllyyF",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC14removeRouteAllyyF",
+            "moduleName": "TJLabsMap",
+            "declAttributes": [
+              "Preconcurrency",
+              "Custom",
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "plotRouteAll",
+            "printedName": "plotRouteAll()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:9TJLabsMap0A8NaviViewC12plotRouteAllyyF",
+            "mangledName": "$s9TJLabsMap0A8NaviViewC12plotRouteAllyyF",
             "moduleName": "TJLabsMap",
             "declAttributes": [
               "Preconcurrency",

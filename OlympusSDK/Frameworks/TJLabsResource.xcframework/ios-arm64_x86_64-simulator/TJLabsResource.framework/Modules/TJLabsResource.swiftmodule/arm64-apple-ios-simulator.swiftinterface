@@ -127,6 +127,14 @@ public struct LevelIdOsInput : Swift.Codable {
   public func encode(to encoder: any Swift.Encoder) throws
   public init(from decoder: any Swift.Decoder) throws
 }
+public struct LevelIdOsModeInput : Swift.Codable {
+  public var level_id: Swift.Int
+  public var operating_system: Swift.String
+  public var dead_reckoning: Swift.String
+  public init(level_id: Swift.Int, operating_system: Swift.String = "iOS", dead_reckoning: Swift.String = "DR")
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
 public struct SectorOutput : Swift.Codable {
   public let id: Swift.Int
   public let name: Swift.String
@@ -272,6 +280,29 @@ public struct GraphLinkMini : Swift.Codable {
   public func encode(to encoder: any Swift.Encoder) throws
   public init(from decoder: any Swift.Decoder) throws
 }
+public struct LevelMapsLandmarkOutput : Swift.Codable {
+  public let dead_reckoning: Swift.String
+  public let operating_system: Swift.String
+  public let wards: [TJLabsResource.WardRFLandmark]
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct WardRFLandmark : Swift.Codable {
+  public let id: Swift.Int
+  public let name: Swift.String
+  public let rf_landmarks: [TJLabsResource.RFLandmark]
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct RFLandmark : Swift.Codable {
+  public let id: Swift.Int
+  public let x: Swift.Int
+  public let y: Swift.Int
+  public let rssi: Swift.Float
+  public let links: [TJLabsResource.GraphLinkMini]
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
 public enum SpotType : Swift.Codable {
   case BUILDING_LEVEL_TAG, NONE
   public static func == (a: TJLabsResource.SpotType, b: TJLabsResource.SpotType) -> Swift.Bool
@@ -302,7 +333,8 @@ public struct BuildingLevelTag : Swift.Codable {
   public init(from decoder: any Swift.Decoder) throws
 }
 public struct LandmarkData : Swift.Codable {
-  public let ward_id: Swift.String
+  public let ward_name: Swift.String
+  public let dead_reckoning: Swift.String
   public let peaks: [TJLabsResource.PeakData]
   public func encode(to encoder: any Swift.Encoder) throws
   public init(from decoder: any Swift.Decoder) throws
@@ -411,6 +443,7 @@ public class TJLabsResourceManager {
   public func updateEntracne(key: Swift.String, completion: @escaping (Swift.Bool) -> Swift.Void)
   public func updateImage(key: Swift.String, completion: @escaping (Swift.Bool) -> Swift.Void)
   public func updateLevelWards(key: Swift.String, completion: @escaping (Swift.Bool) -> Swift.Void)
+  public func updateLevelLandmarksData(key: Swift.String, completion: @escaping (Swift.Bool) -> Swift.Void)
   public func updateAffineParam(sectorId: Swift.Int, completion: @escaping (Swift.Bool) -> Swift.Void)
   @objc deinit
 }
@@ -441,6 +474,8 @@ public class TJLabsResourceManager {
   public static func getUserGraphLinkGroupsURL() -> Swift.String
   public static func getUserGraphPathsVersion() -> Swift.String
   public static func getUserGraphPathsURL() -> Swift.String
+  public static func getUserMapsLandmarkVersion() -> Swift.String
+  public static func getUserMapsLandmarkURL() -> Swift.String
   public static func getUserAffineVersion() -> Swift.String
   public static func getUserAffineURL() -> Swift.String
   @objc deinit
