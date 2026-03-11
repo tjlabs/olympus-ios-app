@@ -911,11 +911,11 @@ class RecoveryManager {
 
                         localCandidates.append(
                             _RecoveryCandidate(loss: loss,
-                                                   shiftedTraj: shiftedTraj,
-                                                   recentCand: cand,
-                                                   olderCand: localOlderCand,
-                                                   tail: bt,
-                                                   head: bh)
+                                               shiftedTraj: shiftedTraj,
+                                               recentCand: cand,
+                                               olderCand: localOlderCand,
+                                               tail: bt,
+                                               head: bh)
                         )
                         _ = tailLinkGroupNum
                     }
@@ -939,8 +939,16 @@ class RecoveryManager {
         let candidates = allCandidates
         guard !candidates.isEmpty else { return [] }
         var results: [RecoveryResult] = []
+        var seenHeadKeys = Set<RecoveryHeadKey>()
 
         for cand in candidates {
+            if let head = cand.head {
+                let headKey = RecoveryHeadKey(x: head.x, y: head.y)
+                if !seenHeadKeys.insert(headKey).inserted {
+                    continue
+                }
+            }
+
             var resultTraj = [[Double]]()
             resultTraj.reserveCapacity(cand.shiftedTraj.count)
             for value in cand.shiftedTraj {
@@ -1687,6 +1695,15 @@ class RecoveryManager {
         return lossPointResults.isEmpty ? nil : lossPointResults
     }
     
+    struct RecoveryHeadKey: Hashable {
+        let x: Int
+        let y: Int
+
+        init(x: Float, y: Float, scale: Float = 10) {
+            self.x = Int((x * scale).rounded())
+            self.y = Int((y * scale).rounded())
+        }
+    }
     struct PeakXYKey: Hashable {
         let x: Int
         let y: Int

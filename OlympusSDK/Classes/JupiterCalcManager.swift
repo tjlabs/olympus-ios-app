@@ -135,7 +135,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     // MARK: - Functions
     func start(completion: @escaping (Bool, String) -> Void) {
-        tjlabsResourceManager.loadJupiterResource(region: region, sectorId: sectorId, landmarkTh: -92, completion: { isSuccess in
+        tjlabsResourceManager.loadJupiterResource(region: region, sectorId: sectorId, landmarkTh: -88, completion: { isSuccess in
             let msg: String = isSuccess ? "JupiterCalcManager start success" : "JupiterCalcManager start failed"
             completion(isSuccess, msg)
         })
@@ -1315,8 +1315,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                                                            checkAll: true,
                                                                            acceptDist: 15)
                     
-                    let passingLinkBuffer = PathMatcher.shared.getPassingLinkBuffer(index: olderUserPeak.peak_index)
-//                    let passingLinkBuffer = PathMatcher.shared.getPassingLinkBuffer()
+//                    let passingLinkBuffer = PathMatcher.shared.getPassingLinkBuffer(index: olderUserPeak.peak_index)
+                    let passingLinkBuffer = PathMatcher.shared.getPassingLinkBuffer()
                     JupiterLogger.i(tag: "JupiterCalcManager", message: "(applyCorrectionWithPeaks) passingLinkBuffer= \(passingLinkBuffer)")
                     let passingLinkGroupNumSet = Set(passingLinkBuffer.map { $0.link_group_number })
                     let linkConnection = isTurn && passingLinkGroupNumSet.count == 1 && !PathMatcher.shared.isInNode ? true : false

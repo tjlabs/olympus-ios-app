@@ -77,6 +77,7 @@ class NaviViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviVi
     }
     
     func isUserGuidanceOut() {
+        if isSafeDriving { return }
         print("(NaviVC) isUserGuidanceOut : guidance out!!")
         isGuidanceOutReported = true
         DispatchQueue.main.async { [self] in
@@ -100,6 +101,7 @@ class NaviViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviVi
     }
     
     func isWaypointChanged(_ waypoints: [[Double]]) {
+        if isSafeDriving { return }
         print("(NaviVC) isWaypointChanged : waypoints count= \(waypoints.count)")
         print("(NaviVC) isWaypointChanged : waypoints= \(waypoints)")
         naviView.setNaviWaypoints(waypoints: waypoints)
@@ -190,9 +192,11 @@ class NaviViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviVi
                 scenario = 4
             }
         }
+        
         print("(NaviVC) navigationMode : scenario= \(scenario)")
-        serviceManager?.navigationMode(flag: true, scenario: scenario)
-        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_0310.csv", sensorFileName: "sensor_coex_01_0310.csv")
+        let naviMode = !isSafeDriving
+        serviceManager?.navigationMode(flag: naviMode, scenario: scenario)
+        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_0310.csv", sensorFileName: "sensor_coex_03_0310.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_0303.csv", sensorFileName: "sensor_coex_02_0303.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_0224.csv", sensorFileName: "sensor_coex_03_0224.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_01_0119.csv", sensorFileName: "sensor_coex_03_01_0119.csv")
