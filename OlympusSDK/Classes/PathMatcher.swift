@@ -1209,8 +1209,6 @@ class PathMatcher {
             }
             preLinkNum = curLinkNum
             preGroupNum = curGroupNum
-        } else {
-            return 1
         }
         
         return groupLen
