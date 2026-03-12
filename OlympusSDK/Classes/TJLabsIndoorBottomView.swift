@@ -2,40 +2,16 @@
 import UIKit
 import TJLabsResource
 
-class TJLabsParkingStateView: UIView {
+class TJLabsIndoorBottomView: UIView {
     var buildingInfo: BuildingOutput?
     
     private let containerView: UIView = {
         let view = UIView()
-        view.backgroundColor = UIColor(hex: "#C0D6FF")
+        view.backgroundColor = .clear
         view.layer.cornerRadius = 12
         view.addShadow(offset: CGSize(width: 0, height: 1), color: .black, opacity: 0.2, radius: 4)
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
-    }()
-    
-    private let titleLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 14, weight: .bold)
-        label.textColor = .white
-        label.text = "주차가능대수"
-        label.textAlignment = .left
-        label.adjustsFontSizeToFitWidth = true
-        label.minimumScaleFactor = 0.5
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
-    private let descLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 10, weight: .medium)
-        label.textColor = .white
-        label.text = "층별현황"
-        label.textAlignment = .left
-        label.adjustsFontSizeToFitWidth = true
-        label.minimumScaleFactor = 0.5
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
     }()
     
     init(buildingInfo: BuildingOutput) {

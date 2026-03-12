@@ -6,6 +6,10 @@ import UIKit
 public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
     public func onSectorData(_ manager: TJLabsResource.TJLabsResourceManager, data: TJLabsResource.SectorOutput) {
         self.sectorInfo = data
+        let buildings = data.buildings
+        if !buildings.isEmpty {
+            selectedBuilding = buildings[0]
+        }
     }
     
     public func onSectorError(_ manager: TJLabsResource.TJLabsResourceManager, error: TJLabsResource.ResourceError) {
@@ -85,25 +89,28 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
     var region: String?
     var sectorId: Int?
     
-    var sectorInfo: SectorOutput? {
+    var sectorInfo: SectorOutput?
+    var selectedBuilding: BuildingOutput? {
         didSet {
-            guard let sectorInfo = sectorInfo else { return }
+            guard let selectedBuilding = selectedBuilding else { return }
             DispatchQueue.main.async { [weak self] in
-                self?.setupTopView(title: sectorInfo.name)
-                self?.setupBodyView(sectorInfo: sectorInfo)
+                self?.setupTopView(buildingInfo: selectedBuilding)
+                self?.setupMidView(buildingInfo: selectedBuilding)
             }
         }
     }
     
+    
     // MARK: - View
     var topView: TJLabsIndoorTopView?
     var midView: TJLabsIndoorMidView?
+    var bottomView: TJLabsIndoorBottomView?
     
     public func initialize(region: String, sectorId: Int) {
         self.region = region
         self.sectorId = sectorId
         TJLabsResourceManager.shared.delegate = self
-        TJLabsResourceManager.shared.loadJupiterResource(region: region, sectorId: sectorId, completion: { isSuccess in
+        TJLabsResourceManager.shared.loadMapResource(region: region, sectorId: sectorId, completion: { isSuccess in
             let msg = isSuccess ? "success" : "fail"
             JupiterLogger.i(tag: "TJLabsIndoorView", message: "initialize " + msg)
         })
@@ -119,8 +126,8 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         
     }
     
-    private func setupTopView(title: String) {
-        self.topView = TJLabsIndoorTopView(title: title)
+    private func setupTopView(buildingInfo: BuildingOutput) {
+        self.topView = TJLabsIndoorTopView(buildingInfo: buildingInfo)
         guard let topView = topView else { return }
         
         topView.onTapBack = { [weak self] in
@@ -141,8 +148,8 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         ])
     }
     
-    private func setupBodyView(sectorInfo: SectorOutput) {
-        self.midView = TJLabsIndoorMidView(sectorInfo: sectorInfo)
+    private func setupMidView(buildingInfo: BuildingOutput) {
+        self.midView = TJLabsIndoorMidView(buildingInfo: buildingInfo)
         guard let midView = midView, let topView = topView else { return }
  
         let ratio: CGFloat = 2.2

@@ -13,7 +13,7 @@ class TJLabsParkingInfoView: UIView {
         return view
     }()
     
-    init(sectorInfo: SectorOutput) {
+    init(buildingInfo: BuildingOutput) {
         super.init(frame: .zero)
         commonInit()
     }

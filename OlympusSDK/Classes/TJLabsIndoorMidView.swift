@@ -4,7 +4,7 @@ import TJLabsResource
 class TJLabsIndoorMidView: UIView {
     var onTapShowMap: (() -> Void)?
     
-    var sectorInfo: SectorOutput?
+    var buildingInfo: BuildingOutput?
     var parkingStateView: TJLabsParkingStateView?
     var parkingInfoView: TJLabsParkingInfoView?
     var showMapView: TJLabsShowMapView?
@@ -51,9 +51,9 @@ class TJLabsIndoorMidView: UIView {
         return view
     }()
     
-    init(sectorInfo: SectorOutput) {
+    init(buildingInfo: BuildingOutput) {
         super.init(frame: .zero)
-        self.sectorInfo = sectorInfo
+        self.buildingInfo = buildingInfo
         commonInit()
     }
     
@@ -67,7 +67,7 @@ class TJLabsIndoorMidView: UIView {
     }
     
     private func setupLayout() {
-        guard let sectorInfo = sectorInfo else { return }
+        guard let buildingInfo = buildingInfo else { return }
         
         addSubview(containerView)
         containerView.addSubview(contentsStackView)
@@ -88,7 +88,7 @@ class TJLabsIndoorMidView: UIView {
             leftView.widthAnchor.constraint(equalTo: contentsStackView.widthAnchor, multiplier: 1.2/3.0)
         ])
         
-        self.parkingStateView = TJLabsParkingStateView(sectorInfo: sectorInfo)
+        self.parkingStateView = TJLabsParkingStateView(buildingInfo: buildingInfo)
         guard let parkingStateView = self.parkingStateView else { return }
         parkingStateView.translatesAutoresizingMaskIntoConstraints = false
         leftView.addSubview(parkingStateView)
@@ -107,7 +107,7 @@ class TJLabsIndoorMidView: UIView {
             rightStackView.trailingAnchor.constraint(equalTo: rightView.trailingAnchor, constant: -10)
         ])
         
-        self.parkingInfoView = TJLabsParkingInfoView(sectorInfo: sectorInfo)
+        self.parkingInfoView = TJLabsParkingInfoView(buildingInfo: buildingInfo)
         self.showMapView = TJLabsShowMapView()
         guard let parkingInfoView = self.parkingInfoView, let showMapView = self.showMapView else { return }
         parkingInfoView.translatesAutoresizingMaskIntoConstraints = false

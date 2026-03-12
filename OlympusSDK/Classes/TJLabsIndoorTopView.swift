@@ -1,6 +1,8 @@
 import UIKit
+import TJLabsResource
 
 class TJLabsIndoorTopView: UIView {
+    var buildingInfo: BuildingOutput?
     
     var onTapBack: (() -> Void)?
     var onTapRefresh: (() -> Void)?
@@ -60,9 +62,12 @@ class TJLabsIndoorTopView: UIView {
         return view
     }()
     
-    init(title: String) {
+    init(buildingInfo: BuildingOutput) {
         super.init(frame: .zero)
+        self.buildingInfo = buildingInfo
         commonInit()
+
+        let title = buildingInfo.name
         setTitle(title)
     }
     
