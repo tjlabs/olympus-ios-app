@@ -396,8 +396,9 @@ class RoutingViewController: UIViewController {
     }
 
     @objc private func didTapSafeDrivingStart() {
-        goToCardViewController(region: region, userId: userId, isSafeDriving: true)
+//        goToCardViewController(region: region, userId: userId, isSafeDriving: true)
 //        goToNaviViewController(userId: userId, isSafeDriving: true)
+        goToIndoorViewController(userId: userId)
     }
     
     func goToCardViewController(region: String, userId: String, isSafeDriving: Bool = false) {
@@ -422,5 +423,11 @@ class RoutingViewController: UIViewController {
         naviVC.fromSelectedName = selectedFromItem ?? fromMenuLabel.text
         naviVC.isSafeDriving = isSafeDriving
         self.navigationController?.pushViewController(naviVC, animated: true)
+    }
+    
+    func goToIndoorViewController(userId: String, isSafeDriving: Bool = false) {
+        guard let indoorVC = self.storyboard?.instantiateViewController(withIdentifier: "IndoorViewController") as? IndoorViewController else { return }
+        indoorVC.userId = userId
+        self.navigationController?.pushViewController(indoorVC, animated: true)
     }
 }

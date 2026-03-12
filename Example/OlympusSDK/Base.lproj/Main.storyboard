@@ -395,6 +395,21 @@
             </objects>
             <point key="canvasLocation" x="1592" y="-92"/>
         </scene>
+        <!--Indoor View Controller-->
+        <scene sceneID="Tcz-xC-NIG">
+            <objects>
+                <viewController storyboardIdentifier="IndoorViewController" id="Bea-qv-cbo" customClass="IndoorViewController" customModule="OlympusSDK_Example" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="aTi-id-uEZ">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <viewLayoutGuide key="safeArea" id="k59-Tu-qYD"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="rXd-Gt-GVQ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3221" y="-92"/>
+        </scene>
     </scenes>
     <resources>
         <image name="checked_box" width="24.666666030883789" height="25.333333969116211"/>

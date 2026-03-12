@@ -46,6 +46,7 @@
 		B3A7A5632BBBE2AE00561897 /* JSONConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A7A5622BBBE2AE00561897 /* JSONConverter.swift */; };
 		B3BA95E82BFB2B3A002625FA /* DS_3F.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3BA95E72BFB2B3A002625FA /* DS_3F.csv */; };
 		B3C622942C4107E000371531 /* PG_1F.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3C622932C4107E000371531 /* PG_1F.csv */; };
+		B3D4DD1E2F614ED00019F5CD /* IndoorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D4DD1D2F614ED00019F5CD /* IndoorViewController.swift */; };
 		B3DF54DB2E5302670000CBD6 /* Convensia_B0.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3DF54D92E5302670000CBD6 /* Convensia_B0.csv */; };
 		B3DF54DC2E5302670000CBD6 /* Convensia_B1.csv in Resources */ = {isa = PBXBuildFile; fileRef = B3DF54DA2E5302670000CBD6 /* Convensia_B1.csv */; };
 		B3EC7E552E9DE916004E57E2 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B3EC7E542E9DE916004E57E2 /* GoogleService-Info.plist */; };
@@ -112,6 +113,7 @@
 		B3A7A5622BBBE2AE00561897 /* JSONConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONConverter.swift; sourceTree = "<group>"; };
 		B3BA95E72BFB2B3A002625FA /* DS_3F.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = DS_3F.csv; sourceTree = "<group>"; };
 		B3C622932C4107E000371531 /* PG_1F.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = PG_1F.csv; sourceTree = "<group>"; };
+		B3D4DD1D2F614ED00019F5CD /* IndoorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndoorViewController.swift; sourceTree = "<group>"; };
 		B3DF54D92E5302670000CBD6 /* Convensia_B0.csv */ = {isa = PBXFileReference; lastKnownFileType = text; path = Convensia_B0.csv; sourceTree = "<group>"; };
 		B3DF54DA2E5302670000CBD6 /* Convensia_B1.csv */ = {isa = PBXFileReference; lastKnownFileType = text; path = Convensia_B1.csv; sourceTree = "<group>"; };
 		B3EC7E542E9DE916004E57E2 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
@@ -261,6 +263,7 @@
 				B335370C2CC8919900468A95 /* NaviViewController.swift */,
 				B37D3C042CF80C140079E010 /* MapViewController.swift */,
 				B335393A2F3DBD6E004FC200 /* RoutingViewController.swift */,
+				B3D4DD1D2F614ED00019F5CD /* IndoorViewController.swift */,
 			);
 			name = ViewControllers;
 			sourceTree = "<group>";
@@ -339,6 +342,7 @@
 				607FACCE1AFB9204008FA782 /* Resources */,
 				B3787E572BDA45F800D5EEBC /* ShellScript */,
 				C7A96DBE231F8418A86F748C /* [CP] Embed Pods Frameworks */,
+				F17224A57B509ED534597FE4 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -578,6 +582,24 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-OlympusSDK_Example/Pods-OlympusSDK_Example-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		F17224A57B509ED534597FE4 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-OlympusSDK_Example/Pods-OlympusSDK_Example-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/OlympusSDK/OlympusAssets.bundle",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/OlympusAssets.bundle",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-OlympusSDK_Example/Pods-OlympusSDK_Example-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -586,6 +608,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B33AC5462F15FBAB005982E0 /* TJLabsTopView.swift in Sources */,
+				B3D4DD1E2F614ED00019F5CD /* IndoorViewController.swift in Sources */,
 				B37D3C052CF80C140079E010 /* MapViewController.swift in Sources */,
 				B3A7A5632BBBE2AE00561897 /* JSONConverter.swift in Sources */,
 				B3A7A55F2BBBD11A00561897 /* NetworkConstants.swift in Sources */,

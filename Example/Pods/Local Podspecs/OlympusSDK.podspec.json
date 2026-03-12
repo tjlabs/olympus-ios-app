@@ -21,6 +21,11 @@
   },
   "static_framework": true,
   "source_files": "OlympusSDK/Classes/**/*",
+  "resource_bundles": {
+    "OlympusAssets": [
+      "OlympusSDK/Assets/**/*"
+    ]
+  },
   "vendored_frameworks": "OlympusSDK/Frameworks/*.xcframework",
   "pod_target_xcconfig": {
     "SWIFT_OPTIMIZATION_LEVEL": "-Owholemodule"
