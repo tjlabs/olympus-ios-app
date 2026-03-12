@@ -46,7 +46,7 @@ class TJLabsShowMapView: UIView {
     
     private let pinImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = TJLabsAssets.image(named: "ic_location_pin")
+        imageView.image = TJLabsAssets.image(named: "ic_show_map_pin")
         imageView.contentMode = .scaleAspectFit
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView

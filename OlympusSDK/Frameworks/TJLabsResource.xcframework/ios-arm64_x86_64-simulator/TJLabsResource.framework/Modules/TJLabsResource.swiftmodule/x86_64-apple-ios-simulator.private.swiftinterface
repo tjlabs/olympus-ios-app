@@ -84,12 +84,13 @@ public struct UnitData : Swift.Codable {
   public let is_restricted: Swift.Bool
   public let x: Swift.Double
   public let y: Swift.Double
-  public let parking_space_code: Swift.String
+  public let parking_space_code: Swift.String?
   public func encode(to encoder: any Swift.Encoder) throws
   public init(from decoder: any Swift.Decoder) throws
 }
 public enum Category : Swift.String, Swift.Codable {
   case PARKING_SPACE
+  case ENTRANCE_EXIT
   case UNKNOWN
   public init(from decoder: any Swift.Decoder) throws
   #if compiler(>=5.3) && $NonescapableTypes

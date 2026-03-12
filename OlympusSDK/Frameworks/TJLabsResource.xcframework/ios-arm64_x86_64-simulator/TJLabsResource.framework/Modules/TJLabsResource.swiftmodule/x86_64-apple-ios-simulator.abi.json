@@ -3383,14 +3383,22 @@
             "children": [
               {
                 "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "usr": "s:Sq"
               }
             ],
             "declKind": "Var",
-            "usr": "s:14TJLabsResource8UnitDataV18parking_space_codeSSvp",
-            "mangledName": "$s14TJLabsResource8UnitDataV18parking_space_codeSSvp",
+            "usr": "s:14TJLabsResource8UnitDataV18parking_space_codeSSSgvp",
+            "mangledName": "$s14TJLabsResource8UnitDataV18parking_space_codeSSSgvp",
             "moduleName": "TJLabsResource",
             "declAttributes": [
               "HasStorage",
@@ -3406,14 +3414,22 @@
                 "children": [
                   {
                     "kind": "TypeNominal",
-                    "name": "String",
-                    "printedName": "Swift.String",
-                    "usr": "s:SS"
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:Sq"
                   }
                 ],
                 "declKind": "Accessor",
-                "usr": "s:14TJLabsResource8UnitDataV18parking_space_codeSSvg",
-                "mangledName": "$s14TJLabsResource8UnitDataV18parking_space_codeSSvg",
+                "usr": "s:14TJLabsResource8UnitDataV18parking_space_codeSSSgvg",
+                "mangledName": "$s14TJLabsResource8UnitDataV18parking_space_codeSSSgvg",
                 "moduleName": "TJLabsResource",
                 "implicit": true,
                 "accessorKind": "get"
@@ -3550,6 +3566,43 @@
             "declKind": "EnumElement",
             "usr": "s:14TJLabsResource8CategoryO13PARKING_SPACEyA2CmF",
             "mangledName": "$s14TJLabsResource8CategoryO13PARKING_SPACEyA2CmF",
+            "moduleName": "TJLabsResource"
+          },
+          {
+            "kind": "Var",
+            "name": "ENTRANCE_EXIT",
+            "printedName": "ENTRANCE_EXIT",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(TJLabsResource.Category.Type) -> TJLabsResource.Category",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Category",
+                    "printedName": "TJLabsResource.Category",
+                    "usr": "s:14TJLabsResource8CategoryO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "TJLabsResource.Category.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Category",
+                        "printedName": "TJLabsResource.Category",
+                        "usr": "s:14TJLabsResource8CategoryO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:14TJLabsResource8CategoryO13ENTRANCE_EXITyA2CmF",
+            "mangledName": "$s14TJLabsResource8CategoryO13ENTRANCE_EXITyA2CmF",
             "moduleName": "TJLabsResource"
           },
           {
@@ -16766,91 +16819,98 @@
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/ResourceModel.swift",
       "kind": "StringLiteral",
-      "offset": 2330,
+      "offset": 2331,
       "length": 15,
       "value": "\"PARKING_SPACE\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/ResourceModel.swift",
+      "kind": "StringLiteral",
+      "offset": 2372,
+      "length": 15,
+      "value": "\"ENTRANCE_EXIT\""
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/ResourceModel.swift",
       "kind": "IntegerLiteral",
-      "offset": 2859,
+      "offset": 2901,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/ResourceModel.swift",
       "kind": "IntegerLiteral",
-      "offset": 3017,
+      "offset": 3059,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/ResourceModel.swift",
       "kind": "StringLiteral",
-      "offset": 3061,
+      "offset": 3103,
       "length": 5,
       "value": "\"iOS\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/ResourceModel.swift",
       "kind": "StringLiteral",
-      "offset": 3131,
+      "offset": 3173,
       "length": 5,
       "value": "\"iOS\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/ResourceModel.swift",
       "kind": "IntegerLiteral",
-      "offset": 3304,
+      "offset": 3346,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/ResourceModel.swift",
       "kind": "StringLiteral",
-      "offset": 3348,
+      "offset": 3390,
       "length": 5,
       "value": "\"iOS\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/ResourceModel.swift",
       "kind": "StringLiteral",
-      "offset": 3417,
+      "offset": 3459,
       "length": 5,
       "value": "\"iOS\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/ResourceModel.swift",
       "kind": "IntegerLiteral",
-      "offset": 3592,
+      "offset": 3634,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/ResourceModel.swift",
       "kind": "StringLiteral",
-      "offset": 3636,
+      "offset": 3678,
       "length": 5,
       "value": "\"iOS\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/ResourceModel.swift",
       "kind": "StringLiteral",
-      "offset": 3682,
+      "offset": 3724,
       "length": 4,
       "value": "\"DR\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/ResourceModel.swift",
       "kind": "StringLiteral",
-      "offset": 3750,
+      "offset": 3792,
       "length": 5,
       "value": "\"iOS\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/ResourceModel.swift",
       "kind": "StringLiteral",
-      "offset": 3782,
+      "offset": 3824,
       "length": 4,
       "value": "\"DR\""
     },
