@@ -294,9 +294,26 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
     
     private func handleTapBack() {
         JupiterLogger.i(tag: "TJLabsIndoorView", message: "received back tap")
-        if let _ = self.indoorMapView {
+        if let indoorMapView = self.indoorMapView {
             DispatchQueue.main.async { [weak self] in
-                self?.indoorMapView?.removeFromSuperview()
+                UIView.animate(withDuration: 0.22, delay: 0, options: [.curveEaseInOut], animations: {
+                    indoorMapView.alpha = 0
+                    indoorMapView.transform = CGAffineTransform(translationX: 0, y: 12)
+                }) { _ in
+                    indoorMapView.removeFromSuperview()
+                    indoorMapView.alpha = 1
+                    indoorMapView.transform = .identity
+                    self?.indoorMapView = nil
+                }
+            }
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                UIView.animate(withDuration: 0.22, delay: 0, options: [.curveEaseInOut], animations: {
+                    self?.alpha = 0
+                }) { _ in
+                    self?.alpha = 1
+                    self?.removeFromSuperview()
+                }
             }
         }
     }
@@ -315,9 +332,19 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
     
     private func setupMapView() {
         guard let region = self.region, let sectorId = self.sectorId else { return }
-        self.indoorMapView = TJLabsIndoorMapView(region: region, sectorId: sectorId)
-        guard let indoorMapView = self.indoorMapView, let topView = self.topView else { return }
+        
+        if let indoorMapView = self.indoorMapView {
+            bringSubviewToFront(indoorMapView)
+            return
+        }
+        
+        let indoorMapView = TJLabsIndoorMapView(region: region, sectorId: sectorId)
+        self.indoorMapView = indoorMapView
+        guard let topView = self.topView else { return }
+        
         indoorMapView.translatesAutoresizingMaskIntoConstraints = false
+        indoorMapView.alpha = 0
+        indoorMapView.transform = CGAffineTransform(translationX: 0, y: 12)
         addSubview(indoorMapView)
         NSLayoutConstraint.activate([
             indoorMapView.topAnchor.constraint(equalTo: topView.bottomAnchor),
@@ -325,5 +352,11 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
             indoorMapView.leadingAnchor.constraint(equalTo: leadingAnchor),
             indoorMapView.trailingAnchor.constraint(equalTo: trailingAnchor),
         ])
+        
+        layoutIfNeeded()
+        UIView.animate(withDuration: 0.25, delay: 0, options: [.curveEaseInOut], animations: {
+            indoorMapView.alpha = 1
+            indoorMapView.transform = .identity
+        })
     }
 }
