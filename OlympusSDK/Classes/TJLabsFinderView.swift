@@ -49,7 +49,7 @@ class TJLabsFinderView: UIView {
     private func commonInit() {
         setupLayout()
         bindActions()
-        switchTab(to: .destination)
+        switchTab(to: .DESTINATION)
     }
     
     private func setupLayout() {
@@ -91,9 +91,9 @@ class TJLabsFinderView: UIView {
 
         let targetView: UIView
         switch tab {
-        case .exit:
+        case .EXIT:
             targetView = exitListView
-        case .destination:
+        case .DESTINATION:
             targetView = destinationGridView
         }
 

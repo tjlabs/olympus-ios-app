@@ -1080,6 +1080,7 @@
 		B3D4DECF2F639FAE0019F5CD /* TJLabsFinderMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D4DECE2F639FAE0019F5CD /* TJLabsFinderMenuView.swift */; };
 		B3D4DED12F63A03D0019F5CD /* TJLabsExitListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D4DED02F63A03D0019F5CD /* TJLabsExitListView.swift */; };
 		B3D4DED32F63A0840019F5CD /* TJLabsDestinationGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D4DED22F63A0840019F5CD /* TJLabsDestinationGridView.swift */; };
+		B3D4DED52F63BD360019F5CD /* TJLabsDestinationSelectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D4DED42F63BD360019F5CD /* TJLabsDestinationSelectView.swift */; };
 		B405CB7AA26551A3F4503B729DED4749 /* RectNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0057CA194C6F71394D9A2A19A21562A7 /* RectNode.swift */; };
 		B45A9F7933FF5A6BB77C5EA8ECEB78F5 /* GradientStrokeNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FC7B682ABE5D6FBEA3D5433E1DA3386 /* GradientStrokeNode.swift */; };
 		B4697CF83BA62C10D2E8B102DFECE551 /* dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DC5E74CDA1998C1E04549ECD1233304 /* dummy.m */; };
@@ -3223,6 +3224,7 @@
 		B3D4DECE2F639FAE0019F5CD /* TJLabsFinderMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TJLabsFinderMenuView.swift; path = OlympusSDK/Classes/TJLabsFinderMenuView.swift; sourceTree = "<group>"; };
 		B3D4DED02F63A03D0019F5CD /* TJLabsExitListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TJLabsExitListView.swift; path = OlympusSDK/Classes/TJLabsExitListView.swift; sourceTree = "<group>"; };
 		B3D4DED22F63A0840019F5CD /* TJLabsDestinationGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TJLabsDestinationGridView.swift; path = OlympusSDK/Classes/TJLabsDestinationGridView.swift; sourceTree = "<group>"; };
+		B3D4DED42F63BD360019F5CD /* TJLabsDestinationSelectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TJLabsDestinationSelectView.swift; path = OlympusSDK/Classes/TJLabsDestinationSelectView.swift; sourceTree = "<group>"; };
 		B3E0ED988D35584913DCF2F1B98829ED /* DidEndDisplayingProviding.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DidEndDisplayingProviding.swift; path = Sources/Private/EmbeddedLibraries/EpoxyCore/Model/Providers/DidEndDisplayingProviding.swift; sourceTree = "<group>"; };
 		B3F4F872E3550F011EF2EE44EACCE21C /* FIRCLSCrashedMarkerFile.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = FIRCLSCrashedMarkerFile.c; path = Crashlytics/Crashlytics/Components/FIRCLSCrashedMarkerFile.c; sourceTree = "<group>"; };
 		B40414E6D063E3BACBC6149756C21180 /* CALayer+fillBounds.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "CALayer+fillBounds.swift"; path = "Sources/Private/CoreAnimation/Extensions/CALayer+fillBounds.swift"; sourceTree = "<group>"; };
@@ -6026,6 +6028,7 @@
 				F3E8294429924C9B129964ED44E56A3B /* Support Files */,
 				B3D4DECE2F639FAE0019F5CD /* TJLabsFinderMenuView.swift */,
 				B3D4DED22F63A0840019F5CD /* TJLabsDestinationGridView.swift */,
+				B3D4DED42F63BD360019F5CD /* TJLabsDestinationSelectView.swift */,
 			);
 			name = OlympusSDK;
 			path = ../..;
@@ -8080,6 +8083,7 @@
 				3FFC151AE8BC476DA9113BBD18942050 /* TJLabsParkingInfoView.swift in Sources */,
 				30CD2D532BCE531E24311F5765A4AE8C /* TJLabsParkingStateView.swift in Sources */,
 				E440EA47762E2CDC3644D990636B1731 /* TJLabsShowMapView.swift in Sources */,
+				B3D4DED52F63BD360019F5CD /* TJLabsDestinationSelectView.swift in Sources */,
 				B3D4DED12F63A03D0019F5CD /* TJLabsExitListView.swift in Sources */,
 				63A90D7C2C557ACB50C1DBE5E3DC7C97 /* UIColorExtension.swift in Sources */,
 				125931A19EDBD5776AB2E6BA951F86C7 /* UIViewExtension.swift in Sources */,

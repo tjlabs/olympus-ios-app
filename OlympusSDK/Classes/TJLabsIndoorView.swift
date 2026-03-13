@@ -258,7 +258,22 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         
         bottomView?.onSelectDestination = { [weak self] destination in
             JupiterLogger.i(tag: "TJLabsIndoorView", message: "destination \(destination) selected")
+            DispatchQueue.main.async { [weak self] in
+                self?.showSelectView(destination: destination)
+            }
         }
+    }
+    
+    private func showSelectView(destination: NaviDestination) {
+        let selectView = TJLabsDestinationSelectView(destination: destination)
+        selectView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(selectView)
+        NSLayoutConstraint.activate([
+            selectView.topAnchor.constraint(equalTo: topAnchor),
+            selectView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            selectView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            selectView.trailingAnchor.constraint(equalTo: trailingAnchor),
+        ])
     }
     
     private func handleTapBack() {

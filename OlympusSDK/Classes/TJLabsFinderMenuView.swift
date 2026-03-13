@@ -1,12 +1,12 @@
 import UIKit
 
 enum FinderMenu {
-    case exit
-    case destination
+    case EXIT
+    case DESTINATION
 }
 
 final class TJLabsFinderMenuView: UIView {
-    private var selectedMenu: FinderMenu = .destination
+    private var selectedMenu: FinderMenu = .DESTINATION
     
     var onTapMenu: ((FinderMenu) -> Void)?
     
@@ -110,11 +110,11 @@ final class TJLabsFinderMenuView: UIView {
     }
     
     @objc private func didTapExitButton() {
-        setSelectedMenu(.exit, animated: true, shouldNotify: true)
+        setSelectedMenu(.EXIT, animated: true, shouldNotify: true)
     }
     
     @objc private func didTapDestinationButton() {
-        setSelectedMenu(.destination, animated: true, shouldNotify: true)
+        setSelectedMenu(.DESTINATION, animated: true, shouldNotify: true)
     }
     
     func setSelectedMenu(_ menu: FinderMenu, animated: Bool = true, shouldNotify: Bool = false) {
@@ -132,12 +132,12 @@ final class TJLabsFinderMenuView: UIView {
     private func updateMenuUI(animated: Bool) {
         let updates = {
             switch self.selectedMenu {
-            case .exit:
+            case .EXIT:
                 self.exitButton.setTitleColor(.black, for: .normal)
                 self.destinationButton.setTitleColor(UIColor.systemGray3, for: .normal)
                 self.indicatorLeadingToDestinationConstraint?.isActive = false
                 self.indicatorLeadingToExitConstraint?.isActive = true
-            case .destination:
+            case .DESTINATION:
                 self.exitButton.setTitleColor(UIColor.systemGray3, for: .normal)
                 self.destinationButton.setTitleColor(.black, for: .normal)
                 self.indicatorLeadingToExitConstraint?.isActive = false
