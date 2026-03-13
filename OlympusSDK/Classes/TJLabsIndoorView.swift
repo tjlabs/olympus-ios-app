@@ -255,6 +255,10 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         midView?.onTapShowMap = { [weak self] in
             self?.handleTapShowMap()
         }
+        
+        bottomView?.onSelectDestination = { [weak self] destination in
+            JupiterLogger.i(tag: "TJLabsIndoorView", message: "destination \(destination) selected")
+        }
     }
     
     private func handleTapBack() {

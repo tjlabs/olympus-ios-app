@@ -2,6 +2,7 @@ import UIKit
 import TJLabsResource
 
 class TJLabsIndoorBottomView: UIView {
+    var onSelectDestination: ((NaviDestination) -> Void)?
     var buildingInfo: BuildingOutput?
     
     private let containerView: UIView = {
@@ -111,6 +112,8 @@ class TJLabsIndoorBottomView: UIView {
     }
     
     private func bindActions() {
-
+        self.finderView?.onSelectDestination = { [weak self] destination in
+            self?.onSelectDestination?(destination)
+        }
     }
 }

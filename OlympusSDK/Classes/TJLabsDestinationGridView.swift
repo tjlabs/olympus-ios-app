@@ -3,6 +3,7 @@ import UIKit
 import TJLabsResource
 
 class TJLabsDestinationGridView: UIView, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+    var onSelectDestination: ((NaviDestination) -> Void)?
     var destinations: [NaviDestination] = []
     
     private let containerView: UIView = {
@@ -90,6 +91,11 @@ class TJLabsDestinationGridView: UIView, UICollectionViewDataSource, UICollectio
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         return CGSize(width: collectionView.bounds.width, height: 50)
+    }
+
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard indexPath.item < destinations.count else { return }
+        onSelectDestination?(destinations[indexPath.item])
     }
     private final class DestinationCardCell: UICollectionViewCell {
         static let reuseIdentifier = "DestinationCardCell"
