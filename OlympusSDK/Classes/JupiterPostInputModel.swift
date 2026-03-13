@@ -52,6 +52,8 @@ struct Origin: Codable {
 }
 
 struct DirectionsRequest: Encodable {
+    let tenant_user_name: String
+    let mobile_time: Int
     let origin: Origin
     let destination: Point
     let waypoints: [Point]

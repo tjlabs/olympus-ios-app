@@ -12,8 +12,9 @@ public class JupiterNetworkConstants {
     static let REC_UVD_SERVER_VERSION = "2025-04-02"
     static let REC_MOBILE_RESULT_SERVER_VERSION = "2025-08-11"
     static let REC_MOBILE_REPORT_SERVER_VERSION = "2025-04-02"
-
+    
     static let CALC_OPE_SERVER_VERSION = "1994-07-29" // 있다고 가정
+    static let CALC_DIRECTIONS_SERVER_VERSION = "2026-02-27"
     
     static let OPERATING_SYSTEM: String = "iOS"
     private static let HTTP_PREFIX = "https://"
@@ -115,6 +116,10 @@ public class JupiterNetworkConstants {
     
     public static func getCalcOpeURL() -> String {
         return CALC_URL + "/" + CALC_OPE_SERVER_VERSION + "/ope"
+    }
+    
+    public static func getCalcDirsURL() -> String {
+        return CALC_URL + "/" + CALC_DIRECTIONS_SERVER_VERSION + "/directions"
     }
     
     public static func getClientBlacklistURL() -> String {
