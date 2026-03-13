@@ -33,7 +33,25 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
     }
     
     public func onLevelUnitsData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [TJLabsResource.UnitData]) {
-        // TODO
+        let SBL = key.split(separator: "_")
+        if SBL.count != 3 { return }
+        let building: String = String(SBL[1])
+        let level: String = String(SBL[2])
+        
+        var destinations = [NaviDestination]()
+        for unit in data {
+            if unit.category == .PARKING_SPACE { continue }
+            let dest = NaviDestination(building: building, level: level, category: unit.category, name: unit.name, x: Float(unit.x), y: Float(unit.y))
+            destinations.append(dest)
+        }
+        
+        if destinations.isEmpty { return }
+        if let preValue = self.destinationsMap[building] {
+            let newValue = preValue + destinations
+            self.destinationsMap[building] = newValue
+        } else {
+            self.destinationsMap[building] = destinations
+        }
     }
     
     public func onGeofenceData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: TJLabsResource.GeofenceData) {
@@ -89,6 +107,12 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
     var region: String?
     var sectorId: Int?
     
+    var isResourceLoaded: Bool = false {
+        didSet {
+            JupiterLogger.i(tag: "TJLabsIndoorView", message: "isResourceLoaded")
+        }
+    }
+    
     var sectorInfo: SectorOutput?
     var selectedBuilding: BuildingOutput? {
         didSet {
@@ -96,10 +120,11 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
             DispatchQueue.main.async { [weak self] in
                 self?.setupTopView(buildingInfo: selectedBuilding)
                 self?.setupMidView(buildingInfo: selectedBuilding)
+                self?.setupBottomView(buildingInfo: selectedBuilding)
             }
         }
     }
-    
+    var destinationsMap = [String: [NaviDestination]]()
     
     // MARK: - View
     var topView: TJLabsIndoorTopView?
@@ -113,6 +138,9 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         TJLabsResourceManager.shared.loadMapResource(region: region, sectorId: sectorId, completion: { isSuccess in
             let msg = isSuccess ? "success" : "fail"
             JupiterLogger.i(tag: "TJLabsIndoorView", message: "initialize " + msg)
+            if isSuccess {
+                self.isResourceLoaded = true
+            }
         })
     }
     
@@ -150,7 +178,7 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
     
     private func setupMidView(buildingInfo: BuildingOutput) {
         self.midView = TJLabsIndoorMidView(buildingInfo: buildingInfo)
-        guard let midView = midView, let topView = topView else { return }
+        guard let midView = midView, let topView = self.topView else { return }
  
         let ratio: CGFloat = 2.2
         let midWidth = self.frame.width
@@ -166,6 +194,20 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         midView.onTapShowMap = { [weak self] in
             self?.handleTapShowMap()
         }
+    }
+    
+    private func setupBottomView(buildingInfo: BuildingOutput) {
+        self.bottomView = TJLabsIndoorBottomView(buildingInfo: buildingInfo)
+        guard let bottomView = bottomView, let midView = self.midView else { return }
+        
+        addSubview(bottomView)
+        bottomView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            bottomView.topAnchor.constraint(equalTo: midView.bottomAnchor),
+            bottomView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            bottomView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            bottomView.bottomAnchor.constraint(equalTo: bottomAnchor)
+        ])
     }
     
     func bindActions() {
