@@ -7,6 +7,8 @@ enum RoutingOption {
 }
 
 final class TJLabsDestinationSelectView: UIView, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+    var onTapStart: ((RoutingOption) -> Void)?
+    
     var destination: NaviDestination?
     
     private let containerView: UIView = {
@@ -80,7 +82,7 @@ final class TJLabsDestinationSelectView: UIView, UICollectionViewDataSource, UIC
             option: .NORMAL,
             title: "일반 주행",
             description: "경로 제공 없이 현재 위치만 제공합니다.",
-            isEnabled: false
+            isEnabled: true
         ),
         RoutingOptionItem(
             option: .SHORTEST,
@@ -92,11 +94,13 @@ final class TJLabsDestinationSelectView: UIView, UICollectionViewDataSource, UIC
             option: .PARX,
             title: "주차 우선 안내",
             description: "출구 안내에서는 제공되지 않습니다.",
-            isEnabled: false
+            isEnabled: true
         )
     ]
     
     private var selectedOption: RoutingOption = .SHORTEST
+    private var lastTappedOption: RoutingOption?
+    private var lastTappedAt: CFTimeInterval = 0
     
     init(destination: NaviDestination) {
         super.init(frame: .zero)
@@ -132,7 +136,7 @@ final class TJLabsDestinationSelectView: UIView, UICollectionViewDataSource, UIC
             
             bottomSheetView.leadingAnchor.constraint(equalTo: leadingAnchor),
             bottomSheetView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            bottomSheetView.heightAnchor.constraint(equalToConstant: 240),
+            bottomSheetView.heightAnchor.constraint(equalToConstant: 255),
             bottomSheetBottomConstraint!,
             
             titleLabel.leadingAnchor.constraint(equalTo: bottomSheetView.leadingAnchor, constant: 10),
@@ -144,14 +148,6 @@ final class TJLabsDestinationSelectView: UIView, UICollectionViewDataSource, UIC
             optionCollectionView.trailingAnchor.constraint(equalTo: bottomSheetView.trailingAnchor, constant: -4),
             optionCollectionView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
             optionCollectionView.heightAnchor.constraint(equalToConstant: 140),
-            
-//            startButton.leadingAnchor.constraint(equalTo: bottomSheetView.leadingAnchor, constant: 25),
-//            startButton.trailingAnchor.constraint(equalTo: bottomSheetView.trailingAnchor, constant: -25),
-//            startButton.topAnchor.constraint(equalTo: optionCollectionView.bottomAnchor, constant: 4),
-//            startButton.bottomAnchor.constraint(equalTo: bottomSheetView.bottomAnchor, constant: -20),
-//            
-//            startButtonTitleLabel.centerXAnchor.constraint(equalTo: startButton.centerXAnchor),
-//            startButtonTitleLabel.centerYAnchor.constraint(equalTo: startButton.centerYAnchor)
             
             startButton.leadingAnchor.constraint(equalTo: bottomSheetView.leadingAnchor),
             startButton.trailingAnchor.constraint(equalTo: bottomSheetView.trailingAnchor),
@@ -177,6 +173,12 @@ final class TJLabsDestinationSelectView: UIView, UICollectionViewDataSource, UIC
         optionCollectionView.dataSource = self
         optionCollectionView.delegate = self
         optionCollectionView.register(RoutingOptionCell.self, forCellWithReuseIdentifier: RoutingOptionCell.reuseIdentifier)
+        optionCollectionView.allowsSelection = true
+    }
+
+    private func indexPath(for option: RoutingOption) -> IndexPath? {
+        guard let index = routingOptions.firstIndex(where: { $0.option == option }) else { return nil }
+        return IndexPath(item: index, section: 0)
     }
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -200,11 +202,39 @@ final class TJLabsDestinationSelectView: UIView, UICollectionViewDataSource, UIC
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        defer {
+            collectionView.deselectItem(at: indexPath, animated: false)
+        }
+        
         guard indexPath.item < routingOptions.count else { return }
         let item = routingOptions[indexPath.item]
         guard item.isEnabled else { return }
+
+        let now = CACurrentMediaTime()
+        let wasAlreadySelected = (selectedOption == item.option)
+        let isDoubleTapOnSelectedOption =
+            wasAlreadySelected &&
+            lastTappedOption == item.option &&
+            (now - lastTappedAt) < 0.35
+
+        lastTappedOption = item.option
+        lastTappedAt = now
+
+        if isDoubleTapOnSelectedOption {
+            didTapStart()
+            return
+        }
+
+        guard !wasAlreadySelected else { return }
+
+        let previousOption = selectedOption
         selectedOption = item.option
-        collectionView.reloadData()
+        var indexPathsToReload: [IndexPath] = [indexPath]
+        if let previousIndexPath = self.indexPath(for: previousOption), previousIndexPath != indexPath {
+            indexPathsToReload.append(previousIndexPath)
+        }
+
+        collectionView.reloadItems(at: indexPathsToReload)
     }
     
     @objc func didTapBackground() {
@@ -257,6 +287,7 @@ final class TJLabsDestinationSelectView: UIView, UICollectionViewDataSource, UIC
     }
     
     @objc func didTapStart() {
+        self.onTapStart?(self.selectedOption)
     }
     
     private struct RoutingOptionItem {

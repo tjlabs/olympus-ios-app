@@ -274,6 +274,20 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
             selectView.leadingAnchor.constraint(equalTo: leadingAnchor),
             selectView.trailingAnchor.constraint(equalTo: trailingAnchor),
         ])
+        
+        selectView.onTapStart = { [weak self] routingOption in
+            if routingOption == .SHORTEST {
+                JupiterLogger.i(tag: "TJLabsIndoorView", message: "destination \(destination) with \(routingOption) routing start")
+                DispatchQueue.main.async { [weak self] in
+                    selectView.removeFromSuperview()
+                }
+            } else {
+                JupiterLogger.i(tag: "TJLabsIndoorView", message: "destination \(destination) with \(routingOption) cannot start")
+                DispatchQueue.main.async { [weak self] in
+                    selectView.removeFromSuperview()
+                }
+            }
+        }
     }
     
     private func handleTapBack() {
