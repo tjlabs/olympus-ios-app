@@ -45,14 +45,17 @@ class TJLabsIndoorBottomView: UIView {
     
     var finderView: TJLabsFinderView?
     
-    init(buildingInfo: BuildingOutput) {
+    init() {
         super.init(frame: .zero)
-        self.buildingInfo = buildingInfo
         commonInit()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    func update(buildingInfo: BuildingOutput) {
+        self.buildingInfo = buildingInfo
     }
     
     private func commonInit() {
@@ -61,7 +64,6 @@ class TJLabsIndoorBottomView: UIView {
     }
     
     private func setupLayout() {
-        guard let buildingInfo = self.buildingInfo else { return }
         self.finderView = TJLabsFinderView()
         guard let finderView = self.finderView else { return }
         finderView.translatesAutoresizingMaskIntoConstraints = false

@@ -38,14 +38,17 @@ class TJLabsParkingStateView: UIView {
         return label
     }()
     
-    init(buildingInfo: BuildingOutput) {
+    init() {
         super.init(frame: .zero)
-        self.buildingInfo = buildingInfo
         commonInit()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    func update(buildingInfo: BuildingOutput) {
+        self.buildingInfo = buildingInfo
     }
     
     private func commonInit() {
@@ -54,8 +57,6 @@ class TJLabsParkingStateView: UIView {
     }
     
     private func setupLayout() {
-        guard let buildingInfo = self.buildingInfo else { return }
-        
         addSubview(containerView)
         NSLayoutConstraint.activate([
             containerView.topAnchor.constraint(equalTo: topAnchor),

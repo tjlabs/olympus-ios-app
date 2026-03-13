@@ -62,17 +62,18 @@ class TJLabsIndoorTopView: UIView {
         return view
     }()
     
-    init(buildingInfo: BuildingOutput) {
+    init() {
         super.init(frame: .zero)
-        self.buildingInfo = buildingInfo
         commonInit()
-
-        let title = buildingInfo.name
-        setTitle(title)
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    func update(buildingInfo: BuildingOutput) {
+        self.buildingInfo = buildingInfo
+        setTitle(buildingInfo.name)
     }
     
     private func commonInit() {

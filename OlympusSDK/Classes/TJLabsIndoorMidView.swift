@@ -51,14 +51,19 @@ class TJLabsIndoorMidView: UIView {
         return view
     }()
     
-    init(buildingInfo: BuildingOutput) {
+    init() {
         super.init(frame: .zero)
-        self.buildingInfo = buildingInfo
         commonInit()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    func update(buildingInfo: BuildingOutput) {
+        self.buildingInfo = buildingInfo
+        self.parkingStateView?.update(buildingInfo: buildingInfo)
+        self.parkingInfoView?.update(buildingInfo: buildingInfo)
     }
     
     private func commonInit() {
@@ -67,8 +72,6 @@ class TJLabsIndoorMidView: UIView {
     }
     
     private func setupLayout() {
-        guard let buildingInfo = buildingInfo else { return }
-        
         addSubview(containerView)
         containerView.addSubview(contentsStackView)
         contentsStackView.addArrangedSubview(leftView)
@@ -88,7 +91,7 @@ class TJLabsIndoorMidView: UIView {
             leftView.widthAnchor.constraint(equalTo: contentsStackView.widthAnchor, multiplier: 1.2/3.0)
         ])
         
-        self.parkingStateView = TJLabsParkingStateView(buildingInfo: buildingInfo)
+        self.parkingStateView = TJLabsParkingStateView()
         guard let parkingStateView = self.parkingStateView else { return }
         parkingStateView.translatesAutoresizingMaskIntoConstraints = false
         leftView.addSubview(parkingStateView)
@@ -107,7 +110,7 @@ class TJLabsIndoorMidView: UIView {
             rightStackView.trailingAnchor.constraint(equalTo: rightView.trailingAnchor, constant: -10)
         ])
         
-        self.parkingInfoView = TJLabsParkingInfoView(buildingInfo: buildingInfo)
+        self.parkingInfoView = TJLabsParkingInfoView()
         self.showMapView = TJLabsShowMapView()
         guard let parkingInfoView = self.parkingInfoView, let showMapView = self.showMapView else { return }
         parkingInfoView.translatesAutoresizingMaskIntoConstraints = false

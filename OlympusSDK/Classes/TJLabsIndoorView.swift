@@ -118,15 +118,16 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         didSet {
             guard let selectedBuilding = selectedBuilding else { return }
             DispatchQueue.main.async { [weak self] in
-                self?.setupTopView(buildingInfo: selectedBuilding)
-                self?.setupMidView(buildingInfo: selectedBuilding)
-                self?.setupBottomView(buildingInfo: selectedBuilding)
+                self?.setupViewsIfNeeded()
+                self?.updateBuildingContents(buildingInfo: selectedBuilding)
             }
         }
     }
+    
     var destinationsMap = [String: [NaviDestination]]()
     
     // MARK: - View
+    private var hasSetupViews = false
     var topView: TJLabsIndoorTopView?
     var midView: TJLabsIndoorMidView?
     var bottomView: TJLabsIndoorBottomView?
@@ -150,22 +151,31 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         self.autoresizingMask = [.flexibleWidth, .flexibleHeight]
     }
     
-    func setupLayout() {
-        
+    private func setupViewsIfNeeded() {
+        JupiterLogger.i(tag: "TJLabsIndoorView", message: "setupViewsIfNeededinitialize")
+        guard !hasSetupViews else { return }
+        hasSetupViews = true
+
+        setupTopView()
+        setupMidView()
+        setupBottomView()
+        bindActions()
     }
     
-    private func setupTopView(buildingInfo: BuildingOutput) {
-        self.topView = TJLabsIndoorTopView(buildingInfo: buildingInfo)
-        guard let topView = topView else { return }
+    private func updateBuildingContents(buildingInfo: BuildingOutput) {
+        JupiterLogger.i(tag: "TJLabsIndoorView", message: "updateBuildingContents")
+        updateTopView(buildingInfo: buildingInfo)
+        updateMidView(buildingInfo: buildingInfo)
+        updateBottomView(buildingInfo: buildingInfo)
+    }
+    
+    // MARK: - Top View
+    private func setupTopView() {
+        guard topView == nil else { return }
         
-        topView.onTapBack = { [weak self] in
-            self?.handleTapBack()
-        }
-
-        topView.onTapRefresh = { [weak self] in
-            self?.handleTapRefresh()
-        }
-        
+        let topView = TJLabsIndoorTopView()
+        self.topView = topView
+        JupiterLogger.i(tag: "TJLabsIndoorView", message: "setupTopView")
         addSubview(topView)
         topView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -176,30 +186,40 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         ])
     }
     
-    private func setupMidView(buildingInfo: BuildingOutput) {
-        self.midView = TJLabsIndoorMidView(buildingInfo: buildingInfo)
-        guard let midView = midView, let topView = self.topView else { return }
- 
-        let ratio: CGFloat = 2.2
-        let midWidth = self.frame.width
-        let midHeight = midWidth / ratio
+    private func updateTopView(buildingInfo: BuildingOutput) {
+        topView?.update(buildingInfo: buildingInfo)
+        JupiterLogger.i(tag: "TJLabsIndoorView", message: "updateTopView")
+    }
+    
+    // MARK: - Mid View
+    private func setupMidView() {
+        guard midView == nil, let topView = self.topView else { return }
+
+        let midView = TJLabsIndoorMidView()
+        self.midView = midView
+        JupiterLogger.i(tag: "TJLabsIndoorView", message: "setupMidView")
         addSubview(midView)
         midView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             midView.topAnchor.constraint(equalTo: topView.bottomAnchor),
             midView.leadingAnchor.constraint(equalTo: leadingAnchor),
             midView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            midView.heightAnchor.constraint(equalToConstant: midHeight)
+            midView.heightAnchor.constraint(equalTo: widthAnchor, multiplier: 1.0 / 2.2)
         ])
-        midView.onTapShowMap = { [weak self] in
-            self?.handleTapShowMap()
-        }
     }
     
-    private func setupBottomView(buildingInfo: BuildingOutput) {
-        self.bottomView = TJLabsIndoorBottomView(buildingInfo: buildingInfo)
-        guard let bottomView = bottomView, let midView = self.midView else { return }
+    private func updateMidView(buildingInfo: BuildingOutput) {
+        midView?.update(buildingInfo: buildingInfo)
+        JupiterLogger.i(tag: "TJLabsIndoorView", message: "updateMidView")
+    }
+    
+    // MARK: - Bottom View
+    private func setupBottomView() {
+        guard bottomView == nil, let midView = self.midView else { return }
         
+        let bottomView = TJLabsIndoorBottomView()
+        self.bottomView = bottomView
+        JupiterLogger.i(tag: "TJLabsIndoorView", message: "setupBottomView")
         addSubview(bottomView)
         bottomView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -210,19 +230,34 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         ])
     }
     
+    private func updateBottomView(buildingInfo: BuildingOutput) {
+        bottomView?.update(buildingInfo: buildingInfo)
+        JupiterLogger.i(tag: "TJLabsIndoorView", message: "updateBottomView")
+    }
+    
     func bindActions() {
+        topView?.onTapBack = { [weak self] in
+            self?.handleTapBack()
+        }
         
+        topView?.onTapRefresh = { [weak self] in
+            self?.handleTapRefresh()
+        }
+        
+        midView?.onTapShowMap = { [weak self] in
+            self?.handleTapShowMap()
+        }
     }
     
     private func handleTapBack() {
-        print("IndoorView received back tap")
+        JupiterLogger.i(tag: "TJLabsIndoorView", message: "received back tap")
     }
 
     private func handleTapRefresh() {
-        print("IndoorView received refresh tap")
+        JupiterLogger.i(tag: "TJLabsIndoorView", message: "received refresh tap")
     }
     
     private func handleTapShowMap() {
-        print("IndoorView received show map tap")
+        JupiterLogger.i(tag: "TJLabsIndoorView", message: "received show map tap")
     }
 }

@@ -3,6 +3,7 @@ import UIKit
 import TJLabsResource
 
 class TJLabsParkingInfoView: UIView {
+    var buildingInfo: BuildingOutput?
     
     private let containerView: UIView = {
         let view = UIView()
@@ -13,13 +14,17 @@ class TJLabsParkingInfoView: UIView {
         return view
     }()
     
-    init(buildingInfo: BuildingOutput) {
+    init() {
         super.init(frame: .zero)
         commonInit()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    func update(buildingInfo: BuildingOutput) {
+        self.buildingInfo = buildingInfo
     }
     
     private func commonInit() {
