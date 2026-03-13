@@ -5,7 +5,6 @@ class TJLabsFinderView: UIView {
     var onSelectDestination: ((NaviDestination) -> Void)?
     var destinations: [NaviDestination] = [] {
         didSet {
-            JupiterLogger.i(tag: "TJLabsFinderView", message: "destinations= \(destinations)")
             destinationGridView.configure(destinations: destinations)
         }
     }

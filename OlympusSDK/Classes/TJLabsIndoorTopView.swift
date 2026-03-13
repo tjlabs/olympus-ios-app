@@ -145,7 +145,7 @@ class TJLabsIndoorTopView: UIView {
             self.backView.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
         }) { _ in
             UIView.animate(
-                withDuration: 0.4,
+                withDuration: 0.2,
                 delay: 0,
                 usingSpringWithDamping: 0.55,
                 initialSpringVelocity: 3.0,
@@ -170,7 +170,7 @@ class TJLabsIndoorTopView: UIView {
             self.refreshView.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
         }) { _ in
             UIView.animate(
-                withDuration: 0.4,
+                withDuration: 0.2,
                 delay: 0,
                 usingSpringWithDamping: 0.55,
                 initialSpringVelocity: 3.0,

@@ -1,30 +1,25 @@
 
 import UIKit
 import TJLabsResource
+import TJLabsMap
 
-class TJLabsExitListView: UIView {
+class TJLabsIndoorMapView: UIView {
+    var region: String?
+    var sectorId: Int?
     
     private let containerView: UIView = {
         let view = UIView()
-        view.backgroundColor = .clear
+        view.backgroundColor = .white
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
-    private let titleLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 24, weight: .bold)
-        label.text = "No Exit"
-        label.textColor = .black
-        label.textAlignment = .center
-        label.adjustsFontSizeToFitWidth = true
-        label.numberOfLines = 1
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-
-    init() {
+    let mapView = TJLabsMapView()
+    
+    init(region: String, sectorId: Int) {
         super.init(frame: .zero)
+        self.region = region
+        self.sectorId = sectorId
         commonInit()
     }
     
@@ -39,19 +34,24 @@ class TJLabsExitListView: UIView {
     
     private func setupLayout() {
         addSubview(containerView)
-        containerView.addSubview(titleLabel)
         NSLayoutConstraint.activate([
             containerView.topAnchor.constraint(equalTo: topAnchor),
             containerView.bottomAnchor.constraint(equalTo: bottomAnchor),
             containerView.leadingAnchor.constraint(equalTo: leadingAnchor),
             containerView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            
-            titleLabel.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
-            titleLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor)
         ])
+        self.setupMapView()
     }
     
     private func bindActions() {
 
+    }
+    
+    private func setupMapView() {
+        guard let region = self.region, let sectorId = self.sectorId else { return }
+        mapView.initialize(region: region, sectorId: sectorId)
+        mapView.configureFrame(to: self.containerView)
+        mapView.setZoomScale(zoom: 2.0)
+        addSubview(mapView)
     }
 }

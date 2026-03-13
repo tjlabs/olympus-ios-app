@@ -1,5 +1,6 @@
 
 import Foundation
+import TJLabsMap
 import TJLabsResource
 import UIKit
 
@@ -135,6 +136,7 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
     var topView: TJLabsIndoorTopView?
     var midView: TJLabsIndoorMidView?
     var bottomView: TJLabsIndoorBottomView?
+    var indoorMapView: TJLabsIndoorMapView?
     
     public func initialize(region: String, sectorId: Int) {
         self.region = region
@@ -292,6 +294,11 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
     
     private func handleTapBack() {
         JupiterLogger.i(tag: "TJLabsIndoorView", message: "received back tap")
+        if let _ = self.indoorMapView {
+            DispatchQueue.main.async { [weak self] in
+                self?.indoorMapView?.removeFromSuperview()
+            }
+        }
     }
 
     private func handleTapRefresh() {
@@ -300,5 +307,23 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
     
     private func handleTapShowMap() {
         JupiterLogger.i(tag: "TJLabsIndoorView", message: "received show map tap")
+        DispatchQueue.main.async { [weak self] in
+            self?.setupMapView()
+        }
+        
+    }
+    
+    private func setupMapView() {
+        guard let region = self.region, let sectorId = self.sectorId else { return }
+        self.indoorMapView = TJLabsIndoorMapView(region: region, sectorId: sectorId)
+        guard let indoorMapView = self.indoorMapView, let topView = self.topView else { return }
+        indoorMapView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(indoorMapView)
+        NSLayoutConstraint.activate([
+            indoorMapView.topAnchor.constraint(equalTo: topView.bottomAnchor),
+            indoorMapView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            indoorMapView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            indoorMapView.trailingAnchor.constraint(equalTo: trailingAnchor),
+        ])
     }
 }

@@ -221,7 +221,7 @@ class TJLabsParkingStateView: UIView, UICollectionViewDataSource, UICollectionVi
                 return nil
             }
             
-            guard let levelName = firstString(for: ["name"]), !levelName.contains("_D") else {
+            guard let levelName = firstString(for: ["name"]), !levelName.contains("_D"), !levelName.contains("B0") else {
                 return nil
             }
             let countText = firstIntLikeString(for: ["available_count", "parking_count", "count", "availableParkingCount", "availableCount"]) ?? "100대"
