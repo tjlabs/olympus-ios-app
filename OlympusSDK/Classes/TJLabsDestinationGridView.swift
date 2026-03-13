@@ -5,6 +5,8 @@ import TJLabsResource
 class TJLabsDestinationGridView: UIView, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     var onSelectDestination: ((NaviDestination) -> Void)?
     var destinations: [NaviDestination] = []
+    private var filteredDestinations: [NaviDestination] = []
+    private var searchText: String = ""
     
     private let containerView: UIView = {
         let view = UIView()
@@ -40,6 +42,7 @@ class TJLabsDestinationGridView: UIView, UICollectionViewDataSource, UICollectio
         setupLayout()
         bindActions()
         configureCollectionView()
+        filteredDestinations = destinations
     }
     
     private func setupLayout() {
@@ -69,15 +72,34 @@ class TJLabsDestinationGridView: UIView, UICollectionViewDataSource, UICollectio
     
     func configure(destinations: [NaviDestination]) {
         self.destinations = destinations
-        collectionView.reloadData()
+        applySearchFilter()
+    }
+
+    func configure() {
+        applySearchFilter()
     }
     
-    func configure() {
+    func updateSearchText(_ text: String) {
+        searchText = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        applySearchFilter()
+    }
+    
+    private func applySearchFilter() {
+        guard !searchText.isEmpty else {
+            filteredDestinations = destinations
+            collectionView.reloadData()
+            return
+        }
+        
+        filteredDestinations = destinations.filter { destination in
+            let title = Self.destinationTitle(from: destination)
+            return title.localizedCaseInsensitiveContains(searchText)
+        }
         collectionView.reloadData()
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return destinations.count
+        return filteredDestinations.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -85,7 +107,7 @@ class TJLabsDestinationGridView: UIView, UICollectionViewDataSource, UICollectio
             return UICollectionViewCell()
         }
         
-        cell.configure(with: destinations[indexPath.item])
+        cell.configure(with: filteredDestinations[indexPath.item])
         return cell
     }
     
@@ -94,8 +116,12 @@ class TJLabsDestinationGridView: UIView, UICollectionViewDataSource, UICollectio
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        guard indexPath.item < destinations.count else { return }
-        onSelectDestination?(destinations[indexPath.item])
+        guard indexPath.item < filteredDestinations.count else { return }
+        onSelectDestination?(filteredDestinations[indexPath.item])
+    }
+
+    private static func destinationTitle(from destination: NaviDestination) -> String {
+        return DestinationCardCell.values(from: destination).title
     }
     private final class DestinationCardCell: UICollectionViewCell {
         static let reuseIdentifier = "DestinationCardCell"
@@ -193,7 +219,7 @@ class TJLabsDestinationGridView: UIView, UICollectionViewDataSource, UICollectio
             }
         }
         
-        private static func values(from destination: NaviDestination) -> (title: String, subtitle: String, status: String) {
+        static func values(from destination: NaviDestination) -> (title: String, subtitle: String, status: String) {
             let mirror = Mirror(reflecting: destination)
             var dictionary: [String: Any] = [:]
             for child in mirror.children {

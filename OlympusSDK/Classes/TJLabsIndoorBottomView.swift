@@ -115,5 +115,11 @@ class TJLabsIndoorBottomView: UIView {
         self.finderView?.onSelectDestination = { [weak self] destination in
             self?.onSelectDestination?(destination)
         }
+        
+        searchTextField.addTarget(self, action: #selector(searchTextDidChange(_:)), for: .editingChanged)
+    }
+    
+    @objc private func searchTextDidChange(_ textField: UITextField) {
+        finderView?.updateSearchText(textField.text ?? "")
     }
 }

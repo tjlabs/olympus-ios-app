@@ -45,6 +45,10 @@ class TJLabsFinderView: UIView {
     func updateDestinations(destinations: [NaviDestination]) {
         self.destinations = destinations
     }
+
+    func updateSearchText(_ text: String) {
+        destinationGridView.updateSearchText(text)
+    }
     
     private func commonInit() {
         setupLayout()
