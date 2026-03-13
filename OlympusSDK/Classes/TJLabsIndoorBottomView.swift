@@ -58,6 +58,10 @@ class TJLabsIndoorBottomView: UIView {
         self.buildingInfo = buildingInfo
     }
     
+    func updateDestinations(destinations: [NaviDestination]) {
+        self.finderView?.updateDestinations(destinations: destinations)
+    }
+    
     private func commonInit() {
         setupLayout()
         bindActions()

@@ -107,9 +107,13 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
     var region: String?
     var sectorId: Int?
     
-    var isResourceLoaded: Bool = false {
+    var isResourceLoaded: Bool? {
         didSet {
-            JupiterLogger.i(tag: "TJLabsIndoorView", message: "isResourceLoaded")
+            guard let isResourceLoaded = isResourceLoaded else { return }
+            JupiterLogger.i(tag: "TJLabsIndoorView", message: "isResourceLoaded= \(isResourceLoaded)")
+            if isResourceLoaded {
+                self.updateDestinations()
+            }
         }
     }
     
@@ -139,9 +143,7 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         TJLabsResourceManager.shared.loadMapResource(region: region, sectorId: sectorId, completion: { isSuccess in
             let msg = isSuccess ? "success" : "fail"
             JupiterLogger.i(tag: "TJLabsIndoorView", message: "initialize " + msg)
-            if isSuccess {
-                self.isResourceLoaded = true
-            }
+            self.isResourceLoaded = isSuccess
         })
     }
     
@@ -233,6 +235,12 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
     private func updateBottomView(buildingInfo: BuildingOutput) {
         bottomView?.update(buildingInfo: buildingInfo)
         JupiterLogger.i(tag: "TJLabsIndoorView", message: "updateBottomView")
+    }
+    
+    private func updateDestinations() {
+        guard let selectedBuilding = self.selectedBuilding else { return }
+        guard let matchedDestinations = self.destinationsMap[selectedBuilding.name] else { return }
+        bottomView?.updateDestinations(destinations: matchedDestinations)
     }
     
     func bindActions() {

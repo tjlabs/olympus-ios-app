@@ -2,6 +2,12 @@ import UIKit
 import TJLabsResource
 
 class TJLabsFinderView: UIView {
+    var destinations: [NaviDestination] = [] {
+        didSet {
+            JupiterLogger.i(tag: "TJLabsFinderView", message: "destinations= \(destinations)")
+            destinationGridView.configure(destinations: destinations)
+        }
+    }
     
     private let containerView: UIView = {
         let view = UIView()
@@ -33,6 +39,10 @@ class TJLabsFinderView: UIView {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    func updateDestinations(destinations: [NaviDestination]) {
+        self.destinations = destinations
     }
     
     private func commonInit() {
