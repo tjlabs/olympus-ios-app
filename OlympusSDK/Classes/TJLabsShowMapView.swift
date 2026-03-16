@@ -24,10 +24,10 @@ class TJLabsShowMapView: UIView {
     
     private let contentStackView: UIStackView = {
         let stackView = UIStackView()
-        stackView.axis = .vertical
+        stackView.axis = .horizontal
         stackView.alignment = .center
         stackView.distribution = .fill
-        stackView.spacing = 4
+        stackView.spacing = 6
         stackView.translatesAutoresizingMaskIntoConstraints = false
         return stackView
     }()
@@ -70,15 +70,15 @@ class TJLabsShowMapView: UIView {
         addSubview(containerView)
         containerView.addSubview(showMapView)
         showMapView.addSubview(contentStackView)
-        contentStackView.addArrangedSubview(showMapLabel)
         contentStackView.addArrangedSubview(pinImageView)
+        contentStackView.addArrangedSubview(showMapLabel)
         NSLayoutConstraint.activate([
             containerView.topAnchor.constraint(equalTo: topAnchor),
             containerView.bottomAnchor.constraint(equalTo: bottomAnchor),
             containerView.leadingAnchor.constraint(equalTo: leadingAnchor),
             containerView.trailingAnchor.constraint(equalTo: trailingAnchor),
             
-            showMapView.widthAnchor.constraint(equalTo: containerView.widthAnchor, multiplier: 0.3),
+            showMapView.widthAnchor.constraint(equalTo: containerView.widthAnchor, multiplier: 0.7),
             showMapView.heightAnchor.constraint(equalTo: containerView.heightAnchor, multiplier: 0.7),
             showMapView.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
             showMapView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
@@ -88,8 +88,8 @@ class TJLabsShowMapView: UIView {
             contentStackView.leadingAnchor.constraint(greaterThanOrEqualTo: showMapView.leadingAnchor, constant: 8),
             contentStackView.trailingAnchor.constraint(lessThanOrEqualTo: showMapView.trailingAnchor, constant: -8),
 
-            pinImageView.widthAnchor.constraint(equalTo: showMapView.widthAnchor, multiplier: 0.22),
-            pinImageView.heightAnchor.constraint(equalTo: pinImageView.widthAnchor, multiplier: 1.45)
+            pinImageView.heightAnchor.constraint(equalTo: showMapView.heightAnchor, multiplier: 0.65),
+            pinImageView.widthAnchor.constraint(equalTo: pinImageView.heightAnchor)
         ])
     }
     

@@ -3,7 +3,12 @@ import UIKit
 import TJLabsResource
 import TJLabsMap
 
-class TJLabsIndoorMapView: UIView {
+class TJLabsIndoorMapView: UIView, TJLabsMapViewDelegate {
+    
+    func didSelectUnit(_ view: TJLabsMap.TJLabsMapView, data: TJLabsResource.UnitData) {
+        JupiterLogger.i(tag: "TJLabsIndoorMapView", message: "didSelect Unit: \(data)")
+    }
+
     var region: String?
     var sectorId: Int?
     
@@ -30,6 +35,7 @@ class TJLabsIndoorMapView: UIView {
     private func commonInit() {
         setupLayout()
         bindActions()
+        
     }
     
     private func setupLayout() {
@@ -49,9 +55,10 @@ class TJLabsIndoorMapView: UIView {
     
     private func setupMapView() {
         guard let region = self.region, let sectorId = self.sectorId else { return }
-        mapView.initialize(region: region, sectorId: sectorId)
+        mapView.initialize(region: region, sectorId: sectorId, showUnits: true)
         mapView.configureFrame(to: self.containerView)
         mapView.setZoomScale(zoom: 2.0)
+        mapView.delegate = self
         addSubview(mapView)
     }
 }

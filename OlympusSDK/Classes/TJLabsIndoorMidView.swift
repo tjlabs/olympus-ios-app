@@ -117,7 +117,7 @@ class TJLabsIndoorMidView: UIView {
         rightStackView.addArrangedSubview(parkingInfoView)
         rightStackView.addArrangedSubview(showMapView)
         NSLayoutConstraint.activate([
-            parkingInfoView.heightAnchor.constraint(equalTo: rightStackView.heightAnchor, multiplier: 1.1/2.0)
+            parkingInfoView.heightAnchor.constraint(equalTo: rightStackView.heightAnchor, multiplier: 1.4/2.0)
         ])
         
         showMapView.onTapShowMap = { [weak self] in
