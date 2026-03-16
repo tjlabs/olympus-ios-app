@@ -80,9 +80,6 @@ class TJLabsParkingInfoView: UIView, UICollectionViewDataSource, UICollectionVie
         return label
     }()
     
-    
-    // images : ic_parking, ic_parking_family, ic_parking_electric_car, ic_parking_disabled_person
-    
     init() {
         super.init(frame: .zero)
         commonInit()
@@ -151,7 +148,7 @@ class TJLabsParkingInfoView: UIView, UICollectionViewDataSource, UICollectionVie
             containerView.leadingAnchor.constraint(equalTo: leadingAnchor),
             containerView.trailingAnchor.constraint(equalTo: trailingAnchor),
             
-            titleLabel.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 10),
+            titleLabel.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 12),
             titleLabel.heightAnchor.constraint(equalTo: containerView.heightAnchor, multiplier: 0.12),
             titleLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 15),
             titleLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -15),
@@ -290,7 +287,7 @@ class TJLabsParkingInfoView: UIView, UICollectionViewDataSource, UICollectionVie
         }
         
         private var items: [ContentItem] = []
-        
+        private var itemViews: [ParkingContentItemView] = []
         private let contentStackView: UIStackView = {
             let view = UIStackView()
             view.axis = .horizontal
@@ -337,10 +334,12 @@ class TJLabsParkingInfoView: UIView, UICollectionViewDataSource, UICollectionVie
                 contentStackView.removeArrangedSubview(arranged)
                 arranged.removeFromSuperview()
             }
+            itemViews.removeAll()
             
             for item in items.prefix(4) {
                 let itemView = ParkingContentItemView()
                 itemView.configure(title: item.title, countText: item.countText, imageName: item.imageName)
+                itemViews.append(itemView)
                 contentStackView.addArrangedSubview(itemView)
             }
             
@@ -352,10 +351,36 @@ class TJLabsParkingInfoView: UIView, UICollectionViewDataSource, UICollectionVie
                     contentStackView.addArrangedSubview(spacerView)
                 }
             }
+            
+            setNeedsLayout()
+            layoutIfNeeded()
+            updateCommonFontSizes()
+        }
+
+        override func layoutSubviews() {
+            super.layoutSubviews()
+            updateCommonFontSizes()
+        }
+        
+        private func updateCommonFontSizes() {
+            guard !itemViews.isEmpty else { return }
+            
+            let titleSize = itemViews.map { $0.fittingTitleFontSize() }.min() ?? 16
+            let countSize = itemViews.map { $0.fittingCountFontSize() }.min() ?? 24
+            
+            for itemView in itemViews {
+                itemView.applyFontSizes(titleSize: titleSize, countSize: countSize)
+            }
         }
     }
 
     private final class ParkingContentItemView: UIView {
+        private let baseTitleFontSize: CGFloat = 16
+        private let baseCountFontSize: CGFloat = 24
+        private let minimumTitleFontSize: CGFloat = 6
+        private let minimumCountFontSize: CGFloat = 14
+        private var titleText: String = ""
+        private var countTextValue: String = ""
         private let iconAndTitleStackView: UIStackView = {
             let view = UIStackView()
             view.axis = .horizontal
@@ -391,8 +416,8 @@ class TJLabsParkingInfoView: UIView, UICollectionViewDataSource, UICollectionVie
             label.textColor = .black
             label.textAlignment = .left
             label.numberOfLines = 1
-            label.adjustsFontSizeToFitWidth = true
-            label.minimumScaleFactor = 0.5
+            label.adjustsFontSizeToFitWidth = false
+            label.minimumScaleFactor = 1.0
             label.translatesAutoresizingMaskIntoConstraints = false
             label.setContentHuggingPriority(.defaultLow, for: .horizontal)
             label.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
@@ -404,8 +429,8 @@ class TJLabsParkingInfoView: UIView, UICollectionViewDataSource, UICollectionVie
             label.font = UIFont.systemFont(ofSize: 24, weight: .bold)
             label.textColor = .black
             label.textAlignment = .center
-            label.adjustsFontSizeToFitWidth = true
-            label.minimumScaleFactor = 0.6
+            label.adjustsFontSizeToFitWidth = false
+            label.minimumScaleFactor = 1.0
             label.translatesAutoresizingMaskIntoConstraints = false
             label.setContentHuggingPriority(.required, for: .vertical)
             label.setContentCompressionResistancePriority(.required, for: .vertical)
@@ -422,9 +447,52 @@ class TJLabsParkingInfoView: UIView, UICollectionViewDataSource, UICollectionVie
         }
         
         func configure(title: String, countText: String, imageName: String) {
+            titleText = title
+            countTextValue = countText
             titleLabel.text = title
             countLabel.text = countText
             iconImageView.image = TJLabsAssets.image(named: imageName)
+            applyFontSizes(titleSize: baseTitleFontSize, countSize: baseCountFontSize)
+        }
+
+        func fittingTitleFontSize() -> CGFloat {
+            return fittingFontSize(
+                text: titleText,
+                maxWidth: max(titleLabel.bounds.width, 1),
+                initialSize: baseTitleFontSize,
+                minimumSize: minimumTitleFontSize,
+                weight: .regular
+            )
+        }
+        
+        func fittingCountFontSize() -> CGFloat {
+            return fittingFontSize(
+                text: countTextValue,
+                maxWidth: max(countLabel.bounds.width, 1),
+                initialSize: baseCountFontSize,
+                minimumSize: minimumCountFontSize,
+                weight: .bold
+            )
+        }
+        
+        func applyFontSizes(titleSize: CGFloat, countSize: CGFloat) {
+            titleLabel.font = UIFont.systemFont(ofSize: titleSize, weight: .regular)
+            countLabel.font = UIFont.systemFont(ofSize: countSize, weight: .bold)
+        }
+        
+        private func fittingFontSize(text: String, maxWidth: CGFloat, initialSize: CGFloat, minimumSize: CGFloat, weight: UIFont.Weight) -> CGFloat {
+            guard !text.isEmpty else { return initialSize }
+            
+            var size = initialSize
+            while size > minimumSize {
+                let font = UIFont.systemFont(ofSize: size, weight: weight)
+                let measuredWidth = (text as NSString).size(withAttributes: [.font: font]).width
+                if measuredWidth <= maxWidth {
+                    return size
+                }
+                size -= 0.5
+            }
+            return minimumSize
         }
         
         private func setupLayout() {
@@ -437,15 +505,17 @@ class TJLabsParkingInfoView: UIView, UICollectionViewDataSource, UICollectionVie
             contentItemStackView.addArrangedSubview(countLabel)
             
             NSLayoutConstraint.activate([
-                contentItemStackView.topAnchor.constraint(equalTo: topAnchor, constant: 6),
-                contentItemStackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -6),
+                contentItemStackView.topAnchor.constraint(equalTo: topAnchor, constant: 12),
+                contentItemStackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -12),
                 contentItemStackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 6),
                 contentItemStackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -6),
                 
                 iconImageView.widthAnchor.constraint(equalTo: contentItemStackView.widthAnchor, multiplier: 0.22),
                 iconImageView.heightAnchor.constraint(equalTo: iconImageView.widthAnchor),
                 
+                iconAndTitleStackView.centerXAnchor.constraint(equalTo: centerXAnchor),
                 iconAndTitleStackView.heightAnchor.constraint(greaterThanOrEqualTo: iconImageView.heightAnchor),
+                countLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
                 countLabel.heightAnchor.constraint(greaterThanOrEqualTo: contentItemStackView.heightAnchor, multiplier: 0.34)
             ])
         }
