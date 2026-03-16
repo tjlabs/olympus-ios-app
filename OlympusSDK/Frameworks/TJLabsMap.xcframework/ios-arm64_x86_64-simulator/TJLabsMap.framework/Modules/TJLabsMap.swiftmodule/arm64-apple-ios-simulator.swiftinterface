@@ -24,13 +24,19 @@ public struct TJLabsUserCoordinate {
 public protocol TJLabsNaviViewDelegate : AnyObject {
   func onNavigationRoute(_ view: TJLabsMap.TJLabsNaviView, routes: [(Swift.String, Swift.String, Swift.Int, Swift.Float, Swift.Float)])
 }
+public protocol TJLabsMapViewDelegate : AnyObject {
+  func didSelectUnit(_ view: TJLabsMap.TJLabsMapView, data: TJLabsResource.UnitData)
+}
 @_hasMissingDesignatedInitializers public class MapLogger {
   public static func setDebugOption(set: Swift.Bool)
   public static func setInfoOption(set: Swift.Bool)
   @objc deinit
 }
 @objc @_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @_Concurrency.MainActor @preconcurrency public class TJLabsMapView : UIKit.UIView, UIKit.UICollectionViewDelegate, UIKit.UICollectionViewDataSource, UIKit.UICollectionViewDelegateFlowLayout, UIKit.UIScrollViewDelegate {
-  @_Concurrency.MainActor @preconcurrency public func initialize(region: Swift.String, sectorId: Swift.Int)
+  @_Concurrency.MainActor @preconcurrency public var pinLocations: [CoreFoundation.CGPoint]
+  @_Concurrency.MainActor @preconcurrency public var pinCounts: Swift.Int
+  @_Concurrency.MainActor @preconcurrency weak public var delegate: (any TJLabsMap.TJLabsMapViewDelegate)?
+  @_Concurrency.MainActor @preconcurrency public func initialize(region: Swift.String, sectorId: Swift.Int, showUnits: Swift.Bool = false)
   @_Concurrency.MainActor @preconcurrency public func configureFrame(to matchView: UIKit.UIView)
   @_Concurrency.MainActor @preconcurrency public func setDebugOption(flag: Swift.Bool)
   @_Concurrency.MainActor @preconcurrency public func setZoomScale(zoom: CoreFoundation.CGFloat)
