@@ -40,6 +40,34 @@ class NavigationManager {
     
     deinit { }
     
+    // MARK: - New with Server
+    func requestRouting(start: RoutingPoint, end: RoutingPoint, waypoints: [RoutingPoint] = [], completion: @escaping (RoutingResult?) -> Void) {
+        let from: Origin = Origin(level_id: start.level_id, x: start.x, y: start.y, absolute_heading: start.absolute_heading)
+        let to: Point = Point(level_id: end.level_id, x: end.x, y: end.y)
+        
+        var waypoints = [Point]()
+        for w in waypoints {
+            waypoints.append(Point(level_id: w.level_id, x: w.x, y: w.y))
+        }
+        
+        let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
+        let input = DirectionsRequest(tenant_user_name: self.id, mobile_time: currentTime, origin: from, destination: to, waypoints: waypoints)
+        let successRange = 200..<300
+        JupiterNetworkManager.shared.postCalcDirs(url: JupiterNetworkConstants.getCalcDirsURL(), input: input, completion: { [self] statusCode, returnedString, inputDirs in
+            if successRange.contains(statusCode)  {
+                if let decoded = decodeCalcDirs(from: returnedString) {
+                    completion(RoutingResult(code: statusCode, routes: decoded.routes))
+                } else {
+                    completion(nil)
+                }
+            } else {
+                completion(nil)
+            }
+        })
+    }
+    
+    
+    // MARK: - Previous
     func requestNavigationRoute(start: [Float], end: [Float], scenario: Int? = nil) {
         setNavigationRoute(start: start, end: end, scenario: scenario)
         setNavigationWaypoints()
@@ -489,5 +517,22 @@ class NavigationManager {
         var d = a - b
         d = fmod(d + 540.0, 360.0) - 180.0
         return abs(d)
+    }
+    
+    // MARK: - Decoding
+    private func decodeCalcDirs(from jsonString: String) -> DirectionsResponse? {
+        guard let data = jsonString.data(using: .utf8) else {
+            JupiterLogger.e(tag: "NavigationManager", message: "utf8 → data fail")
+            return nil
+        }
+
+        let decoder = JSONDecoder()
+        do {
+            let result = try decoder.decode(DirectionsResponse.self, from: data)
+            return result
+        } catch {
+            JupiterLogger.e(tag: "NavigationManager", message: "decode DirectionsResponse fail: \(error)")
+            return nil
+        }
     }
 }

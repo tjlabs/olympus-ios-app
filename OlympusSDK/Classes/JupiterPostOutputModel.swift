@@ -24,7 +24,7 @@ public struct FineLocationTrackingOutput: Codable, Equatable {
 //    }
 }
 
-struct Route: Codable {
+public struct Route: Codable {
     let origin: Point
     let destination: Point
     let node_ids: [Int]

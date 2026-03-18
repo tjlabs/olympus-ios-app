@@ -41,11 +41,13 @@ struct MobileReport: Encodable {
 }
 
 struct Point: Codable {
+    let level_id: Int
     let x: Int
     let y: Int
 }
 
 struct Origin: Codable {
+    let level_id: Int
     let x: Int
     let y: Int
     let absolute_heading: Int

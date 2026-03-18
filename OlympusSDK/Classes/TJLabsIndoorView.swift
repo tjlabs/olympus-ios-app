@@ -42,7 +42,7 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         var destinations = [NaviDestination]()
         for unit in data {
             if unit.category == .PARKING_SPACE { continue }
-            let dest = NaviDestination(building: building, level: level, category: unit.category, name: unit.name, x: Float(unit.x), y: Float(unit.y))
+            let dest = NaviDestination(building: building, level: level, level_id: unit.level_id, category: unit.category, name: unit.name, x: Float(unit.x), y: Float(unit.y))
             destinations.append(dest)
         }
         
@@ -107,6 +107,7 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
     // MARK: - variables
     var region: String?
     var sectorId: Int?
+    var userId: String?
     
     var isResourceLoaded: Bool? {
         didSet {
@@ -137,10 +138,14 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
     var midView: TJLabsIndoorMidView?
     var bottomView: TJLabsIndoorBottomView?
     var indoorMapView: TJLabsIndoorMapView?
+    var indoorNaviView: TJLabsIndoorNaviView?
     
-    public func initialize(region: String, sectorId: Int) {
+    var parkingGuideView: TJLabsIndoorParkingGuideView?
+    
+    public func initialize(region: String, sectorId: Int, userId: String) {
         self.region = region
         self.sectorId = sectorId
+        self.userId = userId
         TJLabsResourceManager.shared.delegate = self
         TJLabsResourceManager.shared.loadMapResource(region: region, sectorId: sectorId, completion: { isSuccess in
             let msg = isSuccess ? "success" : "fail"
@@ -282,6 +287,7 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
                 JupiterLogger.i(tag: "TJLabsIndoorView", message: "destination \(destination) with \(routingOption) routing start")
                 DispatchQueue.main.async { [weak self] in
                     selectView.removeFromSuperview()
+                    self?.setupNaviView(destination: destination, routingOption: routingOption)
                 }
             } else {
                 JupiterLogger.i(tag: "TJLabsIndoorView", message: "destination \(destination) with \(routingOption) cannot start")
@@ -304,6 +310,18 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
                     indoorMapView.alpha = 1
                     indoorMapView.transform = .identity
                     self?.indoorMapView = nil
+                }
+            }
+        } else if let indoorNaviView = self.indoorNaviView {
+            DispatchQueue.main.async { [weak self] in
+                UIView.animate(withDuration: 0.22, delay: 0, options: [.curveEaseInOut], animations: {
+                    indoorNaviView.alpha = 0
+                    indoorNaviView.transform = CGAffineTransform(translationX: 0, y: 12)
+                }) { _ in
+                    indoorNaviView.removeFromSuperview()
+                    indoorNaviView.alpha = 1
+                    indoorNaviView.transform = .identity
+                    self?.indoorNaviView = nil
                 }
             }
         } else {
@@ -342,21 +360,69 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         self.indoorMapView = indoorMapView
         guard let topView = self.topView else { return }
         
-        indoorMapView.translatesAutoresizingMaskIntoConstraints = false
-        indoorMapView.alpha = 0
-        indoorMapView.transform = CGAffineTransform(translationX: 0, y: 12)
-        addSubview(indoorMapView)
+        self.indoorMapView?.translatesAutoresizingMaskIntoConstraints = false
+        self.indoorMapView?.alpha = 0
+        self.indoorMapView?.transform = CGAffineTransform(translationX: 0, y: 12)
+        addSubview(self.indoorMapView!)
         NSLayoutConstraint.activate([
-            indoorMapView.topAnchor.constraint(equalTo: topView.bottomAnchor),
-            indoorMapView.bottomAnchor.constraint(equalTo: bottomAnchor),
-            indoorMapView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            indoorMapView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            self.indoorMapView!.topAnchor.constraint(equalTo: topView.bottomAnchor),
+            self.indoorMapView!.bottomAnchor.constraint(equalTo: bottomAnchor),
+            self.indoorMapView!.leadingAnchor.constraint(equalTo: leadingAnchor),
+            self.indoorMapView!.trailingAnchor.constraint(equalTo: trailingAnchor),
         ])
         
         layoutIfNeeded()
         UIView.animate(withDuration: 0.25, delay: 0, options: [.curveEaseInOut], animations: {
-            indoorMapView.alpha = 1
-            indoorMapView.transform = .identity
+            self.indoorMapView!.alpha = 1
+            self.indoorMapView!.transform = .identity
         })
+    }
+    
+    private func setupNaviView(destination: NaviDestination, routingOption: RoutingOption) {
+        guard let region = self.region, let sectorId = self.sectorId, let userId = self.userId else { return }
+        let indoorNaviView = TJLabsIndoorNaviView(region: region, sectorId: sectorId, userId: userId)
+        self.indoorNaviView = indoorNaviView
+        let dest = RoutingPoint(level_id: destination.level_id, x: Int(destination.x), y: Int(destination.y), absolute_heading: 0)
+        self.indoorNaviView?.setNavigationDestination(dest: dest)
+        
+        guard let topView = self.topView else { return }
+        self.indoorNaviView?.translatesAutoresizingMaskIntoConstraints = false
+        self.indoorNaviView?.alpha = 0
+        self.indoorNaviView?.transform = CGAffineTransform(translationX: 0, y: 12)
+        addSubview(self.indoorNaviView!)
+        NSLayoutConstraint.activate([
+            self.indoorNaviView!.topAnchor.constraint(equalTo: topView.bottomAnchor),
+            self.indoorNaviView!.bottomAnchor.constraint(equalTo: bottomAnchor),
+            self.indoorNaviView!.leadingAnchor.constraint(equalTo: leadingAnchor),
+            self.indoorNaviView!.trailingAnchor.constraint(equalTo: trailingAnchor),
+        ])
+        
+        layoutIfNeeded()
+        UIView.animate(withDuration: 0.25, delay: 0, options: [.curveEaseInOut], animations: {
+            self.indoorNaviView?.alpha = 1
+            self.indoorNaviView?.transform = .identity
+        })
+        
+        self.indoorNaviView?.parkingGuideStart = { [weak self] in
+            DispatchQueue.main.async { [self] in
+                UIView.animate(withDuration: 0.2, animations: { [weak self] in
+                    self?.parkingGuideView = TJLabsIndoorParkingGuideView()
+                    self?.parkingGuideView!.translatesAutoresizingMaskIntoConstraints = false
+                    self?.addSubview((self?.parkingGuideView)!)
+                    NSLayoutConstraint.activate([
+                        self!.parkingGuideView!.topAnchor.constraint(equalTo: self!.topAnchor),
+                        self!.parkingGuideView!.bottomAnchor.constraint(equalTo: self!.bottomAnchor),
+                        self!.parkingGuideView!.leadingAnchor.constraint(equalTo: self!.leadingAnchor),
+                        self!.parkingGuideView!.trailingAnchor.constraint(equalTo: self!.trailingAnchor),
+                    ])
+                })
+            }
+        }
+
+        self.indoorNaviView?.parkingGuideFinish = { [weak self] in
+            DispatchQueue.main.async {
+                self?.parkingGuideView?.removeFromSuperview()
+            }
+        }
     }
 }

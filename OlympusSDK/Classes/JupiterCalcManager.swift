@@ -1696,6 +1696,10 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         navigationManager?.requestNavigationRoute(start: start, end: end)
     }
     
+    func requestRouting(start: RoutingPoint, end: RoutingPoint, waypoints: [RoutingPoint] = [], completion: @escaping (RoutingResult?) -> Void) {
+        navigationManager?.requestRouting(start: start, end: end, waypoints: waypoints, completion: completion)
+    }
+    
     // MARK: - TJLabsResourceManagerDelegate Methods
     func onSectorData(_ manager: TJLabsResource.TJLabsResourceManager, data: TJLabsResource.SectorOutput) {
         // TO-DO

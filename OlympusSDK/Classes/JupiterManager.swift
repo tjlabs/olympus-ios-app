@@ -132,6 +132,10 @@ public class JupiterManager: JupiterCalcManagerDelegate {
         self.naviScenario = scenario
         jupiterCalcManager?.navigationMode(flag: self.naviMode, scenario: scenario)
     }
+    
+    public func requestRouting(start: RoutingPoint, end: RoutingPoint, waypoints: [RoutingPoint] = [], completion: @escaping (RoutingResult?) -> Void) {
+        jupiterCalcManager?.requestRouting(start: start, end: end, waypoints: waypoints, completion: completion)
+    }
 
     private func performTasksWithCounter(tasks: [(_ group: DispatchGroup, _ reportError: @escaping (String) -> Void) -> Void],
                                          onComplete: @escaping () -> Void,
