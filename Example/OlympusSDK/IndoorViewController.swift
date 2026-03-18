@@ -42,7 +42,7 @@ class IndoorViewController: UIViewController {
     }
     
     func setupIndoorView() {
-        indoorView.initialize(region: self.region, sectorId: self.sectorId)
+        indoorView.initialize(region: self.region, sectorId: self.sectorId, userId: self.userId)
         indoorView.configureFrame(to: mainView)
         mainView.addSubview(indoorView)
     }

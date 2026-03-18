@@ -87,7 +87,6 @@ class NaviViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviVi
             })
             self.showToastWithIcon(message: "길안내 경로를 벗어났습니다.\n경로를 재탐색 합니다.", duration: 6)
         }
-        
     }
     
     func isNavigationRouteChanged(_ routes: [(String, String, Int, Float, Float)]) {
