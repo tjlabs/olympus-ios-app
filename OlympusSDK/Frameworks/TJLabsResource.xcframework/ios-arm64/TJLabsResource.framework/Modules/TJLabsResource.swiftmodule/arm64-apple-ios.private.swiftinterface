@@ -78,6 +78,18 @@ public struct EntranceRouteData {
   public init(routeLevel: [Swift.String], route: [[Swift.Float]])
 }
 public struct UnitData : Swift.Codable {
+  public let level_id: Swift.Int
+  public let id: Swift.Int
+  public let category: TJLabsResource.Category
+  public let name: Swift.String
+  public let is_restricted: Swift.Bool
+  public let x: Swift.Double
+  public let y: Swift.Double
+  public let parking_space_code: Swift.String?
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct UnitOutput : Swift.Codable {
   public let id: Swift.Int
   public let category: TJLabsResource.Category
   public let name: Swift.String
@@ -208,7 +220,7 @@ public struct ScaleOffsetOutput : Swift.Codable {
 }
 public struct LevelUnitsOutput : Swift.Codable {
   public let id: Swift.Int
-  public let units: [TJLabsResource.UnitData]
+  public let units: [TJLabsResource.UnitOutput]
   public func encode(to encoder: any Swift.Encoder) throws
   public init(from decoder: any Swift.Decoder) throws
 }
