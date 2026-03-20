@@ -93,9 +93,21 @@ class StackManager {
         if (userPeakAndLinksBuffer.count > USER_PEAK_AND_LINK_BUFFER_SIZE) {
             userPeakAndLinksBuffer.remove(at: 0)
         }
+        
+        if userPeakAndLinksBuffer.count > 1 {
+            let recent = userPeakAndLinksBuffer[userPeakAndLinksBuffer.count-1].0
+            let old = userPeakAndLinksBuffer[userPeakAndLinksBuffer.count-2].0
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(stackUserPeakAndLinks) : recent=[\(recent.id) : \(recent.peak_index)], old=[\(old.id) : \(old.peak_index)]")
+        }
+        
     }
     
     func getUserPeakAndLinksBuffer() -> [(UserPeak, [LinkData])] {
+        if userPeakAndLinksBuffer.count > 1 {
+            let recent = userPeakAndLinksBuffer[userPeakAndLinksBuffer.count-1].0
+            let old = userPeakAndLinksBuffer[userPeakAndLinksBuffer.count-2].0
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(getUserPeakAndLinksBuffer) : recent=[\(recent.id) : \(recent.peak_index)], old=[\(old.id) : \(old.peak_index)]")
+        }
         return self.userPeakAndLinksBuffer
     }
     

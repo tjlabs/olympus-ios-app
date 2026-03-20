@@ -77,6 +77,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     // MARK: - Navigation
     private var naviMode: Bool = false
+    private var naviDestination: RoutingPoint?
     private var naviScenario: Int?
     private var hasNaviRoute: Bool = false
     private var feedbackIndex: Int = 0
@@ -135,7 +136,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     // MARK: - Functions
     func start(completion: @escaping (Bool, String) -> Void) {
-        tjlabsResourceManager.loadJupiterResource(region: region, sectorId: sectorId, landmarkTh: -88, completion: { isSuccess in
+        tjlabsResourceManager.loadJupiterResource(region: region, sectorId: sectorId, landmarkTh: -92, completion: { isSuccess in
             let msg: String = isSuccess ? "JupiterCalcManager start success" : "JupiterCalcManager start failed"
             completion(isSuccess, msg)
         })
@@ -147,6 +148,10 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         
         JupiterLogger.i(tag: "JupiterCalcManager", message: "(navigationMode) : \(flag)")
         JupiterLogger.i(tag: "JupiterCalcManager", message: "(navigationMode) : scenario= \(scenario)")
+    }
+    
+    func setNaviDestination(dest: RoutingPoint) {
+        self.naviDestination = dest
     }
     
     // MARK: - Set REC length
@@ -453,8 +458,17 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             let userPeakAndLinksBuffer = stackManager.getUserPeakAndLinksBuffer()
             if userPeakAndLinksBuffer.count < 2 { return }
             JupiterResultState.isInRecoveryProcess = true
-            let olderUserPeak = userPeakAndLinksBuffer[userPeakAndLinksBuffer.count-2].0
             let recentUserPeak = userPeakAndLinksBuffer[userPeakAndLinksBuffer.count-1].0
+            var oldP: UserPeak?
+            for pAndL in userPeakAndLinksBuffer.reversed() {
+                let diffPeakIndex = recentUserPeak.peak_index - pAndL.0.peak_index
+                if diffPeakIndex > 10 {
+                    oldP = pAndL.0
+                    break
+                }
+            }
+            guard let olderUserPeak = oldP else { return }
+//            let olderUserPeak = userPeakAndLinksBuffer[userPeakAndLinksBuffer.count-2].0
             let uvdBufferForRecovery = recoveryManager.getUvdBufferForRecovery(startIndex: olderUserPeak.peak_index, endIndex: userVelocity.index, uvdBuffer: uvdBuffer)
             let headingSearchRange = recoveryManager.getRecoveryRange(olderPeakIndex: olderUserPeak.peak_index, curIndex: curIndex)
             let pathHeadings = PathMatcher.shared.getPathMatchingHeadings(sectorId: sectorId,
@@ -492,16 +506,20 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                 curPathMatchingResult?.x = pmResult.x
                                 curPathMatchingResult?.y = pmResult.y
                                 curPathMatchingResult?.absolute_heading = pmResult.heading
-                                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: recoveryCoord= \(recoveryCoord)")
+                                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: recoveryCoord= \(recoveryCoord), loss= \(recoveryResult.loss)")
                                 kalmanFilter?.updateTuPosition(coord: [pmResult.x, pmResult.y])
                                 self.curResult? = curPathMatchingResult!
                                 if let matchedLink = PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId, result: curPathMatchingResult!, checkAll: true) {
                                     let jumpInfo = JumpInfo(link_number: matchedLink.number, jumped_nodes: [])
-                                    PathMatcher.shared.updateNodeAndLinkInfo(sectorId: sectorId, uvdIndex: curIndex, curResult: bestResult, jumpInfo: jumpInfo)
+                                    PathMatcher.shared.updateNodeAndLinkInfo(sectorId: sectorId, uvdIndex: curIndex, curResult: curPathMatchingResult!, jumpInfo: jumpInfo)
                                 }
                             } else {
                                 kalmanFilter?.updateTuPosition(coord: recoveryCoord)
-                                self.curResult? = bestResult
+                                var copiedResult = bestResult
+                                copiedResult.x = recoveryCoord[0]
+                                copiedResult.y = recoveryCoord[1]
+                                copiedResult.absolute_heading = recoveryCoord[2]
+                                self.curResult? = copiedResult
                                 PathMatcher.shared.initPassedLinkInfo()
                             }
                         }
@@ -860,9 +878,25 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                     } else if scenario == 4 {
                         end = [135, 69]
                     }
+                    
+                    navigationManager?.requestNavigationRoute(start: start, end: end, scenario: self.naviScenario)
+                } else {
+                    if let blChanger = buildingLevelChanger,
+                       let fromLevel = entManager.getEntTrackEndLevel(),
+                       let levelId = blChanger.getLevelIdWithName(levelName: fromLevel),
+                       let origin = entManager.getEntRoutingOrigin(level_id: levelId),
+                       let to = self.naviDestination {
+                        let from: RoutingPoint = RoutingPoint(level_id: origin.level_id, x: origin.x, y: origin.y, absolute_heading: origin.absolute_heading)
+                        navigationManager?.requestRouting(start: from, end: to, completion: { routingResult in
+                            if let result = routingResult {
+                                
+                            } else {
+                                self.naviMode = false
+                                JupiterLogger.i(tag: "JupiterCalcManager", message: "(requestRouting) routingResult is nil")
+                            }
+                        })
+                    }
                 }
-                
-                navigationManager?.requestNavigationRoute(start: start, end: end, scenario: self.naviScenario)
             } else {
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(startEntranceTracking) naviMode:\(naviMode) is false or entKey is nil:\(entKey)")
             }
@@ -1279,8 +1313,17 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                 break peakHandling
             }
 
-            let olderUserPeak = userPeakAndLinksBuffer[userPeakAndLinksBuffer.count - 2].0
             let recentUserPeak = userPeakAndLinksBuffer[userPeakAndLinksBuffer.count - 1].0
+            var oldP: UserPeak?
+            for pAndL in userPeakAndLinksBuffer.reversed() {
+                let diffPeakIndex = recentUserPeak.peak_index - pAndL.0.peak_index
+                if diffPeakIndex > 10 {
+                    oldP = pAndL.0
+                    break
+                }
+            }
+//            let olderUserPeak = userPeakAndLinksBuffer[userPeakAndLinksBuffer.count - 2].0
+            guard let olderUserPeak = oldP else { break peakHandling }
             JupiterLogger.i(tag: "JupiterCalcManager", message: "(applyCorrectionWithPeaks) 2 Peaks : older= \(olderUserPeak.id), recent= \(recentUserPeak.id)")
 
             let uvdBufferForTracking = recoveryManager.getUvdBufferForRecovery(startIndex: olderUserPeak.peak_index,
@@ -1700,6 +1743,10 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         navigationManager?.requestRouting(start: start, end: end, waypoints: waypoints, completion: completion)
     }
     
+    func requestRouting(end: RoutingPoint, waypoints: [RoutingPoint] = [], completion: @escaping (RoutingResult?) -> Void) {
+//        navigationManager?.requestRouting(end: end, waypoints: waypoints, completion: completion)
+    }
+    
     // MARK: - TJLabsResourceManagerDelegate Methods
     func onSectorData(_ manager: TJLabsResource.TJLabsResourceManager, data: TJLabsResource.SectorOutput) {
         // TO-DO
@@ -1712,6 +1759,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     func onBuildingsData(_ manager: TJLabsResource.TJLabsResourceManager, data: [TJLabsResource.BuildingOutput]) {
         guard let blChanger = self.buildingLevelChanger else { return }
         blChanger.setBuildingsData(buildingsData: data)
+        blChanger.makeLevelIdMap(buildingsData: data)
     }
     
     func onScaleOffsetData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [Float]) {
