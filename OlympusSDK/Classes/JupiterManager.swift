@@ -32,6 +32,7 @@ public class JupiterManager: JupiterCalcManagerDelegate {
     var jupiterCalcManager: JupiterCalcManager?
     private var naviMode: Bool = false
     private var naviScenario: Int?
+    private var naviDestination: RoutingPoint?
     public weak var delegate: JupiterManagerDelegate?
     
     private var isStartService = false
@@ -133,8 +134,17 @@ public class JupiterManager: JupiterCalcManagerDelegate {
         jupiterCalcManager?.navigationMode(flag: self.naviMode, scenario: scenario)
     }
     
+    public func setNaviDestination(dest: RoutingPoint) {
+        self.naviDestination = dest
+        jupiterCalcManager?.setNaviDestination(dest: dest)
+    }
+    
     public func requestRouting(start: RoutingPoint, end: RoutingPoint, waypoints: [RoutingPoint] = [], completion: @escaping (RoutingResult?) -> Void) {
         jupiterCalcManager?.requestRouting(start: start, end: end, waypoints: waypoints, completion: completion)
+    }
+    
+    public func requestRouting(end: RoutingPoint, waypoints: [RoutingPoint] = [], completion: @escaping (RoutingResult?) -> Void) {
+        jupiterCalcManager?.requestRouting(end: end, waypoints: waypoints, completion: completion)
     }
 
     private func performTasksWithCounter(tasks: [(_ group: DispatchGroup, _ reportError: @escaping (String) -> Void) -> Void],

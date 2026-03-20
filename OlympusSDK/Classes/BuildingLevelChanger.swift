@@ -26,6 +26,7 @@ class BuildingLevelChanger {
     var sectorId: Int
     var blChangerTagMap = [Int: [BuildingLevelTag]]()
     var buildingsAndLevelsMap = [String: [String]]()
+    var levelIdMap = [String: Int]()
     var levelChangeAreaMap = [String: [[Float]]]()
     var levelWardsMap = [String: [LevelWard]]()
 
@@ -49,6 +50,20 @@ class BuildingLevelChanger {
     func setBuildingsData(buildingsData: [BuildingOutput]) {
         let buildingLevelData = makeBuildingLevelInfo(buildingsData: buildingsData)
         buildingsAndLevelsMap = buildingLevelData
+    }
+    
+    func makeLevelIdMap(buildingsData: [BuildingOutput]) {
+        let buildings = buildingsData
+        for b in buildings {
+            let levels = b.levels
+            for l in levels {
+                levelIdMap[l.name] = l.id
+            }
+        }
+    }
+    
+    func getLevelIdWithName(levelName: String) -> Int? {
+        return self.levelIdMap[levelName]
     }
     
     func setLevelChangeArea(key: String, data: [[Float]]) {

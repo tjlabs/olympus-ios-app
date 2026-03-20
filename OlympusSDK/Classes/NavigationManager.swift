@@ -66,6 +66,9 @@ class NavigationManager {
         })
     }
     
+    func setRoutes(routes: [Route]) {
+        
+    }
     
     // MARK: - Previous
     func requestNavigationRoute(start: [Float], end: [Float], scenario: Int? = nil) {

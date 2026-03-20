@@ -22,11 +22,7 @@ class EntranceManager {
     private var entDataMap = [String: EntranceData]()
     private var entOuterWardIdMap = [String: String]()
     private var entInnerWardIdMap = [String: String]()
-    
-//    private var entVelocityScalesMap = [String: Float]()
-//    private var entInnerWardIdMap = [String: String]()
-//    private var entInnerWardCoordMap = [String: ixyhs]()
-//    private var entInnerWardIds = [String]()
+    private var entRoutingOrigin = [String: [Int]]()
     
     var sectorId: Int
     private var curEntKey: String?
@@ -61,12 +57,25 @@ class EntranceManager {
         if let innermostWard = data.innermostWard {
             self.entInnerWardIdMap[key] = innermostWard.name
         }
-        
-//        self.entVelocityScalesMap[key] = data.velocityScale
-//        self.entOuterWardIdMap[key] = data.outerWardId
-//        self.entInnerWardIdMap[key] = data.innerWardId
-//        self.entInnerWardRssiMap[key] = data.innerWardRssi
-//        self.entInnerWardCoordMap[key] = ixyhs(x: data.innerWardCoord[0], y: data.innerWardCoord[1], heading: data.innerWardCoord[2])
+    }
+    
+    func getEntRoutingOrigin(level_id: Int) -> Origin? {
+        guard let key = self.curEntKey else { return nil }
+        var origin: Origin?
+        if key.contains("6_COEX") {
+            if key.contains("_1") {
+                origin = Origin(level_id: level_id, x: 252, y: 33, absolute_heading: 90)
+            } else if key.contains("_2") {
+                origin = Origin(level_id: level_id, x: 250, y: 210, absolute_heading: 180)
+            } else if key.contains("_3") {
+                origin = Origin(level_id: level_id, x: 291, y: 316, absolute_heading: 180)
+            } else if key.contains("_4") {
+                origin = Origin(level_id: level_id, x: 220, y: 442, absolute_heading: 90)
+            } else if key.contains("_5") {
+                origin = Origin(level_id: level_id, x: 59, y: 329, absolute_heading: 270)
+            }
+        }
+        return origin
     }
     
     func checkStartEntTrack(wardId: String, sec: Int) -> String? {
@@ -168,8 +177,8 @@ class EntranceManager {
         }
     }
     
-    private func getEntTrackEndLevel() -> String {
-        guard let curEntKey = self.curEntKey else { return "" }
+    func getEntTrackEndLevel() -> String? {
+        guard let curEntKey = self.curEntKey else { return nil }
 
         if let entRouteData = entRouteMap[curEntKey] {
             let entRouteLevel = entRouteData.routeLevel
@@ -178,7 +187,7 @@ class EntranceManager {
                 return levelName
             }
         }
-        return ""
+        return nil
     }
     
     func setEntTrackFinishedTimestamp(time: Int) {
