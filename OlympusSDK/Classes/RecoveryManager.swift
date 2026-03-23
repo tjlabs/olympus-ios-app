@@ -25,7 +25,6 @@ class RecoveryManager {
     
     func makeMultipleRecoveryTrajectory(uvdBuffer: [UserVelocity], majorSection: [Float], pathHeadings: [Float], endHeading: Float? = nil) -> [[RecoveryTrajectory]] {
         var trajList = [[RecoveryTrajectory]]()
-//        JupiterLogger.i(tag: "RecoveryManager", message: "(makeMultipleRecoveryTrajectory) BadCase: pathHeadings= \(pathHeadings)")
         if !majorSection.isEmpty {
             let headingForCompensation = majorSection.average - uvdBuffer[0].heading
             
@@ -1800,5 +1799,17 @@ class RecoveryManager {
     struct PeakXYKey: Hashable {
         let x: Int
         let y: Int
+    }
+    
+    func calculateLossParam(trackingTrajList: [[RecoveryTrajectory]],
+                            userPeakAndLinksBuffer: [(UserPeak, [LinkData])],
+                            landmarks: (older: LandmarkData, recent: LandmarkData),
+                            tuResultWhenRecentPeak: ixyhs,
+                            curPmResult: FineLocationTrackingOutput,
+                            mode: UserMode,
+                            matchedNode: NodeData?) -> [RecoveryResult] {
+        
+        
+        return []
     }
 }
