@@ -122,6 +122,11 @@ class TJLabsIndoorNaviView: UIView, JupiterManagerDelegate, TJLabsNaviViewDelega
         commonInit()
     }
     
+    deinit {
+        self.stopSerivce()
+        serviceManager = nil
+    }
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -162,7 +167,10 @@ class TJLabsIndoorNaviView: UIView, JupiterManagerDelegate, TJLabsNaviViewDelega
         self.naviDestination = dest
         JupiterLogger.i(tag: "TJLabsIndoorNaviView", message: "setNavigationDestination : naviDestination= \(dest)")
         
-        serviceManager?.navigationMode(flag: naviMode, scenario: 4)
+        let scenario = 4
+        JupiterLogger.i(tag: "TJLabsIndoorNaviView", message: "navigationMode : scenario= \(scenario)")
+        serviceManager?.navigationMode(flag: naviMode, scenario: scenario)
+//        serviceManager?.setNaviDestination(dest: dest)
     }
     
     func startService() {
@@ -171,12 +179,7 @@ class TJLabsIndoorNaviView: UIView, JupiterManagerDelegate, TJLabsNaviViewDelega
         serviceManager = JupiterManager(id: userId)
         serviceManager?.delegate = self
         naviView.delegate = self
-        
-        let scenario: Int = 4 // 1,3,4
-        let naviMode = self.naviMode
-        
-        JupiterLogger.i(tag: "TJLabsIndoorNaviView", message: "navigationMode : scenario= \(scenario)")
-        serviceManager?.navigationMode(flag: naviMode, scenario: scenario)
+       
         serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_0317.csv", sensorFileName: "sensor_coex_01_0317.csv")
         serviceManager?.startJupiter(sectorId: sectorId, mode: .MODE_AUTO, debugOption: true)
     }

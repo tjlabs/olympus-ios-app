@@ -204,6 +204,7 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         print("(CardVC) navigationMode : scenario= \(scenario)")
         serviceManager?.navigationMode(flag: naviMode, scenario: scenario)
         serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_0317.csv", sensorFileName: "sensor_coex_03_0317.csv")
+//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_0310.csv", sensorFileName: "sensor_coex_02_0310.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_0303.csv", sensorFileName: "sensor_coex_03_0303.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_0224.csv", sensorFileName: "sensor_coex_02_0224.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_01_0119.csv", sensorFileName: "sensor_coex_03_01_0119.csv")
