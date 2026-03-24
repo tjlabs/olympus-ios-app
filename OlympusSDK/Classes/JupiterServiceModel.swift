@@ -1,5 +1,5 @@
 
-struct ixyhs {
+public struct ixyhs {
     var index: Int = -1
     var x: Float = 0
     var y: Float = 0
@@ -70,7 +70,14 @@ public struct RecoveryTrajectory: Codable {
     var heading: Float
 }
 
-struct LossPointResult: Codable {
+public struct CandidateTrajectory: Codable {
+    public var index: Int
+    public var x: Float
+    public var y: Float
+    public var heading: Float
+}
+
+public struct LossPointResult: Codable {
     let index: Int
     let traj: [Float]
     let pm: [Float]
