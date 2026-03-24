@@ -1041,6 +1041,7 @@
 		B312BE10377893D4B242F45D86E501E6 /* FirebaseCrashlytics-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 3363EC7D7F39DB74C0F086176654FA1B /* FirebaseCrashlytics-dummy.m */; };
 		B34E117917C61A39427BE5EF4AB6203D /* BubbleChartRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1DF89FCBDF8E3D5287BADE0BFA3A08 /* BubbleChartRenderer.swift */; };
 		B3BEB14EF1B580CC8FD62050869A8A10 /* FIRCLSUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = E1A4342E5D3100FA0BBEAC78AE0FB420 /* FIRCLSUtility.m */; };
+		B3C18F5B2F722A68008A4092 /* SolutionEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C18F5A2F722A68008A4092 /* SolutionEstimator.swift */; };
 		B3F4914ECA36E9D7DE880FCA965C3452 /* FirebaseInstallations_Privacy.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 47C581450CDB4A6111CB97EEE0711A8C /* FirebaseInstallations_Privacy.bundle */; };
 		B405CB7AA26551A3F4503B729DED4749 /* RectNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0057CA194C6F71394D9A2A19A21562A7 /* RectNode.swift */; };
 		B45A9F7933FF5A6BB77C5EA8ECEB78F5 /* GradientStrokeNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FC7B682ABE5D6FBEA3D5433E1DA3386 /* GradientStrokeNode.swift */; };
@@ -1369,7 +1370,6 @@
 		E6D9B5C3C6FDA9C3E0F5F73A8EA973CE /* Sequence+KeyPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E70BF8E0FF30934D48F68E77772DB8F /* Sequence+KeyPath.swift */; };
 		E6DD92B316CB82D55CA26B0ECB1A1F16 /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC75F33C3BD0CC25DF7E81C998DBD4C /* Error.swift */; };
 		E6DF04B807BBA62083A7A0FF41DF14A8 /* _RXDelegateProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 517E8C05438623ED0B166C06CE6D6F05 /* _RXDelegateProxy.m */; };
-		E6F874FA824C353AAF1411F107F2F1B2 /* RecoveryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4B3CBC469329BEC562C317949D27842 /* RecoveryManager.swift */; };
 		E725FDC143FF6C5886133332F389A721 /* LockOwnerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1C9CBA51FC6B69862A1D4F89AC14A0 /* LockOwnerType.swift */; };
 		E771D2BEF7A1FBBDD6331F10C565463B /* JupiterModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CA01DB935F449E723E0EA0CD3C9917 /* JupiterModel.swift */; };
 		E77946DBBB9B774EE1F30E4D200F23C8 /* Single.swift in Sources */ = {isa = PBXBuildFile; fileRef = 556D5CDD1C7DB06E9E84317F9C3A31BB /* Single.swift */; };
@@ -3230,6 +3230,7 @@
 		B32A38AF1C57BCB7BFB99D0CC9277291 /* VirtualTimeScheduler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = VirtualTimeScheduler.swift; path = RxSwift/Schedulers/VirtualTimeScheduler.swift; sourceTree = "<group>"; };
 		B3A4E8BFC66588A7C6A7CDEF0810D05B /* FIRLibrary.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRLibrary.h; path = FirebaseCore/Extension/FIRLibrary.h; sourceTree = "<group>"; };
 		B3B892E2371C08CD214E7D5EE4CD61A8 /* SnapKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = SnapKit.release.xcconfig; sourceTree = "<group>"; };
+		B3C18F5A2F722A68008A4092 /* SolutionEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SolutionEstimator.swift; path = OlympusSDK/Classes/SolutionEstimator.swift; sourceTree = "<group>"; };
 		B3E0ED988D35584913DCF2F1B98829ED /* DidEndDisplayingProviding.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DidEndDisplayingProviding.swift; path = Sources/Private/EmbeddedLibraries/EpoxyCore/Model/Providers/DidEndDisplayingProviding.swift; sourceTree = "<group>"; };
 		B3F4F872E3550F011EF2EE44EACCE21C /* FIRCLSCrashedMarkerFile.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = FIRCLSCrashedMarkerFile.c; path = Crashlytics/Crashlytics/Components/FIRCLSCrashedMarkerFile.c; sourceTree = "<group>"; };
 		B40414E6D063E3BACBC6149756C21180 /* CALayer+fillBounds.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "CALayer+fillBounds.swift"; path = "Sources/Private/CoreAnimation/Extensions/CALayer+fillBounds.swift"; sourceTree = "<group>"; };
@@ -3353,7 +3354,6 @@
 		C486090A331C27282514372298C2CA96 /* DistinctUntilChanged.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DistinctUntilChanged.swift; path = RxSwift/Observables/DistinctUntilChanged.swift; sourceTree = "<group>"; };
 		C4A571CF03B5932F5BCA0AC5E7978C1F /* LayerEffectNode.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LayerEffectNode.swift; path = Sources/Private/MainThread/NodeRenderSystem/Nodes/LayerEffectNodes/LayerEffectNode.swift; sourceTree = "<group>"; };
 		C4A6120D466DB7A4C6E5E33FE063C399 /* MaskCompositionLayer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MaskCompositionLayer.swift; path = Sources/Private/CoreAnimation/Layers/MaskCompositionLayer.swift; sourceTree = "<group>"; };
-		C4B3CBC469329BEC562C317949D27842 /* RecoveryManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RecoveryManager.swift; path = OlympusSDK/Classes/RecoveryManager.swift; sourceTree = "<group>"; };
 		C50D4FF4744DF73739B3C44513893425 /* OperationQueueScheduler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OperationQueueScheduler.swift; path = RxSwift/Schedulers/OperationQueueScheduler.swift; sourceTree = "<group>"; };
 		C5138705801BEE3B597BE067E50FF673 /* CircleShapeRenderer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CircleShapeRenderer.swift; path = Source/Charts/Renderers/Scatter/CircleShapeRenderer.swift; sourceTree = "<group>"; };
 		C53EA61019DF1746A4C58EDA934B6AC4 /* BehaviorSubject.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BehaviorSubject.swift; path = RxSwift/Subjects/BehaviorSubject.swift; sourceTree = "<group>"; };
@@ -6256,7 +6256,6 @@
 				558CC64D93AD8E8C3F57F5D96E384912 /* PathMatcher.swift */,
 				3E159D05DCA1EA12875D4239D5E3E200 /* PathMatchingModel.swift */,
 				20ED49EC5A5086C44480DFAA43EF4900 /* PeakDetector.swift */,
-				C4B3CBC469329BEC562C317949D27842 /* RecoveryManager.swift */,
 				3751C5EA2049296BCBA64CCD81BBC4B1 /* RflowCorrelator.swift */,
 				A19D5CFA486ECDD37C9F981726809294 /* SectionController.swift */,
 				57726CBD1D9F13656916CBDA95751AB0 /* StackManager.swift */,
@@ -6283,6 +6282,7 @@
 				DE02C2B23C73B4DC844B31662B8BE2A1 /* Frameworks */,
 				26FDE54C00997645682C8093866776C2 /* Pod */,
 				AB4655EB01AC001867E8339FFCA2CB84 /* Support Files */,
+				B3C18F5A2F722A68008A4092 /* SolutionEstimator.swift */,
 			);
 			name = OlympusSDK;
 			path = ../..;
@@ -9279,7 +9279,6 @@
 				3E753FA58687F8393F6B188AF127631F /* PathMatcher.swift in Sources */,
 				6D5C185DF874177F54FFFFDEF306307C /* PathMatchingModel.swift in Sources */,
 				B6DE215ABEE31F3B757F14DD1662B785 /* PeakDetector.swift in Sources */,
-				E6F874FA824C353AAF1411F107F2F1B2 /* RecoveryManager.swift in Sources */,
 				8689826975908B8235A7AAACC2B40C8F /* RflowCorrelator.swift in Sources */,
 				A40478CBB49B4A8197B43D97F0495300 /* SectionController.swift in Sources */,
 				2D73438867265BDDEFBEAFAD459E19B2 /* StackManager.swift in Sources */,
@@ -9300,6 +9299,7 @@
 				7214DBE20436039DACE45A023B741C1B /* TJLabsParkingInfoView.swift in Sources */,
 				73B9E97B9581ACBA623366C2DC5A68EA /* TJLabsParkingStateView.swift in Sources */,
 				2FB4BF592EF69580A9778CB1DEABDE75 /* TJLabsShowMapView.swift in Sources */,
+				B3C18F5B2F722A68008A4092 /* SolutionEstimator.swift in Sources */,
 				02435ADC811766CBA3E436AFB484900A /* UIColorExtension.swift in Sources */,
 				D89D6C26720783663D42392B48A880D2 /* UIViewExtension.swift in Sources */,
 				33ECA9701524FE2C3D58E9F2910271BF /* WardAveragingManager.swift in Sources */,
