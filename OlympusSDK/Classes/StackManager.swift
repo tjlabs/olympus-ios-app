@@ -141,7 +141,7 @@ class StackManager {
         sectorId: Int,
         mode: UserMode,
         from: Int,
-        shifteTraj: [RecoveryTrajectory]? = nil,
+        shifteTraj: [CandidateTrajectory]? = nil,
         indexAndNaviRouteResultBuffer: [(Int, NavigationRoute)]? = nil,
         paddings: [Float]
     ) {
@@ -192,11 +192,6 @@ class StackManager {
                     newResult.absolute_heading = pm.heading
                 }
                 preResult = newResult
-                
-//                JupiterLogger.i(
-//                    tag: "StackManager",
-//                    message: "(editCurResultBuffer) index:\(result.index) edited // [\(result.x),\(result.y),\(result.absolute_heading)] -> [\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]"
-//                )
 
                 return newResult
             }
@@ -212,13 +207,6 @@ class StackManager {
                 newResult.x = route.x
                 newResult.y = route.y
                 newResult.absolute_heading = route.heading
-
-//                JupiterLogger.i(
-//                    tag: "StackManager",
-//                    message: "(editCurResultBuffer-navi) index:\(result.index) edited // " +
-//                             "[\(result.x),\(result.y),\(result.absolute_heading)] -> " +
-//                             "[\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]"
-//                )
 
                 return newResult
             }
@@ -255,7 +243,7 @@ class StackManager {
         sectorId: Int,
         mode: UserMode,
         from: Int,
-        shifteTraj: [RecoveryTrajectory]? = nil,
+        shifteTraj: [CandidateTrajectory]? = nil,
         indexAndNaviRouteResultBuffer: [(Int, NavigationRoute)]? = nil,
         paddings: [Float]
     ) -> FineLocationTrackingOutput {
@@ -304,17 +292,8 @@ class StackManager {
                     newResult.x = pm.x
                     newResult.y = pm.y
                     newResult.absolute_heading = pm.heading
-//                    JupiterLogger.i(
-//                        tag: "StackManager",
-//                        message: "(editCurPmResultBuffer) index:\(result.index) do pm // [\(newX),\(newY),\(traj.heading)] -> pm [\(pm.x),\(pm.y),\(pm.heading)]"
-//                    )
                 }
                 preResult = newResult
-                
-//                JupiterLogger.i(
-//                    tag: "StackManager",
-//                    message: "(editCurPmResultBuffer) index:\(result.index) edited // [\(result.x),\(result.y),\(result.absolute_heading)] -> [\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]"
-//                )
 
                 return newResult
             }
@@ -330,13 +309,6 @@ class StackManager {
                 newResult.x = route.x
                 newResult.y = route.y
                 newResult.absolute_heading = route.heading
-
-//                JupiterLogger.i(
-//                    tag: "StackManager",
-//                    message: "(editCurPmResultBuffer-navi) index:\(result.index) edited // " +
-//                             "[\(result.x),\(result.y),\(result.absolute_heading)] -> " +
-//                             "[\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]"
-//                )
 
                 return newResult
             }
@@ -406,7 +378,7 @@ class StackManager {
     }
     
     func checkIsBadCase(jupiterPhase: JupiterPhase, uvdIndexWhenCorrection: Int, travelingLinkDist: Float) -> Bool {
-        if jupiterPhase == .ENTERING { return false }
+        if jupiterPhase == .ENTERING || jupiterPhase == .SEARCHING { return false }
         
         let adaptive_th = max(Int(travelingLinkDist*0.3), SAME_COORD_THRESHOLD)
         JupiterLogger.i(tag: "StackManager", message: "(checkIsBadCase) travelingLinkDist: \(travelingLinkDist), adaptive_th: \(adaptive_th)")
