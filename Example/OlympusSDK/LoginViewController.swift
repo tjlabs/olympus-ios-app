@@ -135,8 +135,8 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
 //                self.goToMapViewController(userId: self.userId)
 //                self.goToMapScaleViewController(userId: self.userId)
             } else {
-//                print(getLocalTimeString() + " , (InnerLabs) Fail : User Login \(statusCode)")
-//                print(returnedString)
+                print("(LoginVC) Fail : User Login \(statusCode)")
+                print(returnedString)
             }
         })
     }

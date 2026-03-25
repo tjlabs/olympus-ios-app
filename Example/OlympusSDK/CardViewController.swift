@@ -110,11 +110,11 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
 //    var sector_id: Int = 14 // DS
 //    var mode: String = "pdr"
     
-    var sector_id: Int = 6
-    var mode: String = "auto"
-    
-//    var sector_id: Int = 20  // Convensia
+//    var sector_id: Int = 6
 //    var mode: String = "auto"
+    
+    var sector_id: Int = 20  // Convensia
+    var mode: String = "auto"
     
 //    var sector_id: Int = 2
 //    var mode: String = "pdr"
@@ -175,7 +175,7 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250818_test10.csv", sensorFileName: "sensor_songdo_250818_test10.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250822_stop.csv", sensorFileName: "sensor_songdo_250822_stop.csv")
         
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
+//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
         
         // collect
 //        isCollect = true
@@ -203,11 +203,14 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         let naviMode = !isSafeDriving
         print("(CardVC) navigationMode : scenario= \(scenario)")
         serviceManager?.navigationMode(flag: naviMode, scenario: scenario)
-        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_0317.csv", sensorFileName: "sensor_coex_03_0317.csv")
+//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_0317.csv", sensorFileName: "sensor_coex_01_0317.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_0310.csv", sensorFileName: "sensor_coex_02_0310.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_0303.csv", sensorFileName: "sensor_coex_03_0303.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_0224.csv", sensorFileName: "sensor_coex_02_0224.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_01_0119.csv", sensorFileName: "sensor_coex_03_01_0119.csv")
+        
+//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test02_ent2.csv", sensorFileName: "sensor_251013_songdo_test02_ent2.csv")
+//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test02_ent2.csv", sensorFileName: "sensor_251013_songdo_test02_ent2.csv")
+        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test05_ent3.csv", sensorFileName: "sensor_251013_songdo_test05_ent3.csv")
         serviceManager?.startJupiter(sectorId: sector_id, mode: .MODE_AUTO, debugOption: true)
         
         // service
@@ -378,8 +381,8 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
                            best_landmark: PeakData?,
                            recon_raw_traj: [[Double]]?,
                            recon_corr_traj: [FineLocationTrackingOutput]?,
-                           recovery_result: RecoveryResult?,
-                           recovery_result3Peaks: RecoveryResult3Peaks?,
+                           selected_search: SelectedSearch?,
+                           selected_cand: SelectedCandidate?,
                            navi_route: [[Float]],
                            naviXYH: [Double],
                            limits: [Double], isBleOnlyMode: Bool, isPmSuccess: Bool, isIndoor: Bool) {
@@ -545,118 +548,110 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
             chartData.append(setCorrTraj)
         }
         
-        if let recovery_result = recovery_result {
-            let recovery_traj = recovery_result.traj
-            lossLabel.text = String(recovery_result.loss)
+        if let selected_cand = selected_cand {
+            let cand_traj = selected_cand.traj
+            lossLabel.text = String(selected_cand.loss)
             var xAxisValue = [Double]()
             var yAxisValue = [Double]()
-            for traj in recovery_traj {
-                xAxisValue.append(traj[0])
-                yAxisValue.append(traj[1])
+            for traj in cand_traj {
+                xAxisValue.append(Double(traj.x))
+                yAxisValue.append(Double(traj.y))
             }
             
-            let valuesRecoveryTraj = (0..<xAxisValue.count).map { (i) -> ChartDataEntry in
+            let valuesCandTraj = (0..<xAxisValue.count).map { (i) -> ChartDataEntry in
                 return ChartDataEntry(x: xAxisValue[i], y: yAxisValue[i])
             }
             
-            let setRecoveryTraj = ScatterChartDataSet(entries: valuesRecoveryTraj, label: "RecoveryTraj")
-            setRecoveryTraj.drawValuesEnabled = false
-            setRecoveryTraj.setScatterShape(.circle)
-            setRecoveryTraj.setColor(.systemBrown)
-            setRecoveryTraj.scatterShapeSize = 5
-            chartData.append(setRecoveryTraj)
+            let setCandTraj = ScatterChartDataSet(entries: valuesCandTraj, label: "CandTraj")
+            setCandTraj.drawValuesEnabled = false
+            setCandTraj.setScatterShape(.circle)
+            setCandTraj.setColor(.systemBrown)
+            setCandTraj.scatterShapeSize = 5
+            chartData.append(setCandTraj)
             
-            let bestOlder = recovery_result.bestOlder
-            let oldX: [Double] = [Double(bestOlder[0])]
-            let oldY: [Double] = [Double(bestOlder[1])]
-            let valuesOld = (0..<oldX.count).map { (i) -> ChartDataEntry in
-                return ChartDataEntry(x: oldX[i], y: oldY[i])
+            if let bestOlder = selected_cand.older {
+                let oldX: [Double] = [Double(bestOlder.x)]
+                let oldY: [Double] = [Double(bestOlder.y)]
+                let valuesOld = (0..<oldX.count).map { (i) -> ChartDataEntry in
+                    return ChartDataEntry(x: oldX[i], y: oldY[i])
+                }
+                
+                let setOld = ScatterChartDataSet(entries: valuesOld, label: "BestOld")
+                setOld.drawValuesEnabled = false
+                setOld.setScatterShape(.square)
+                setOld.setColor(.systemRed)
+                setOld.scatterShapeSize = 8
+                chartData.append(setOld)
             }
             
-            let setOld = ScatterChartDataSet(entries: valuesOld, label: "BestOld")
-            setOld.drawValuesEnabled = false
-            setOld.setScatterShape(.square)
-            setOld.setColor(.systemRed)
-            setOld.scatterShapeSize = 8
-            chartData.append(setOld)
             
-            let bestRecent = [recovery_result.bestRecentCand.x, recovery_result.bestRecentCand.y]
-            let recentX: [Double] = [Double(bestRecent[0])]
-            let recentY: [Double] = [Double(bestRecent[1])]
-            let valuesRecent = (0..<oldX.count).map { (i) -> ChartDataEntry in
-                return ChartDataEntry(x: recentX[i], y: recentY[i])
+            if let bestRecent = selected_cand.recent {
+                let recentX: [Double] = [Double(bestRecent.x)]
+                let recentY: [Double] = [Double(bestRecent.y)]
+                let valuesRecent = (0..<recentX.count).map { (i) -> ChartDataEntry in
+                    return ChartDataEntry(x: recentX[i], y: recentY[i])
+                }
+                
+                let setRecent = ScatterChartDataSet(entries: valuesRecent, label: "BestRecent")
+                setRecent.drawValuesEnabled = false
+                setRecent.setScatterShape(.square)
+                setRecent.setColor(.systemBlue)
+                setRecent.scatterShapeSize = 6
+                chartData.append(setRecent)
             }
-            
-            let setRecent = ScatterChartDataSet(entries: valuesRecent, label: "BestRecent")
-            setRecent.drawValuesEnabled = false
-            setRecent.setScatterShape(.square)
-            setRecent.setColor(.systemBlue)
-            setRecent.scatterShapeSize = 6
-            chartData.append(setRecent)
         }
         
-        if let recovery_result3Peaks = recovery_result3Peaks {
-            lossLabel.text = String(recovery_result3Peaks.loss) + " // Recovery"
-            let recovery_traj = recovery_result3Peaks.traj
+        if let selected_search = selected_search {
+            let search_traj = selected_search.traj
+            lossLabel.text = String(selected_search.loss)
             var xAxisValue = [Double]()
             var yAxisValue = [Double]()
-            for traj in recovery_traj {
-                xAxisValue.append(traj[0])
-                yAxisValue.append(traj[1])
+            for traj in search_traj {
+                xAxisValue.append(Double(traj.x))
+                yAxisValue.append(Double(traj.y))
             }
             
-            let valuesRecoveryTraj = (0..<xAxisValue.count).map { (i) -> ChartDataEntry in
+            let valuesSearchTraj = (0..<xAxisValue.count).map { (i) -> ChartDataEntry in
                 return ChartDataEntry(x: xAxisValue[i], y: yAxisValue[i])
             }
             
-            let setRecoveryTraj = ScatterChartDataSet(entries: valuesRecoveryTraj, label: "RecoveryTraj")
-            setRecoveryTraj.drawValuesEnabled = false
-            setRecoveryTraj.setScatterShape(.circle)
-            setRecoveryTraj.setColor(.systemGreen)
-            setRecoveryTraj.scatterShapeSize = 5
-            chartData.append(setRecoveryTraj)
+            let setSearchTraj = ScatterChartDataSet(entries: valuesSearchTraj, label: "SearchTraj")
+            setSearchTraj.drawValuesEnabled = false
+            setSearchTraj.setScatterShape(.circle)
+            setSearchTraj.setColor(.systemBrown)
+            setSearchTraj.scatterShapeSize = 5
+            chartData.append(setSearchTraj)
             
-            let bestFirst = recovery_result3Peaks.bestFirst
-            let firstX: [Double] = [Double(bestFirst[0])]
-            let firstY: [Double] = [Double(bestFirst[1])]
-            let valuesFirst = (0..<firstX.count).map { (i) -> ChartDataEntry in
-                return ChartDataEntry(x: firstX[i], y: firstY[i])
+            if let bestOlder = selected_search.older {
+                let oldX: [Double] = [Double(bestOlder.x)]
+                let oldY: [Double] = [Double(bestOlder.y)]
+                let valuesOld = (0..<oldX.count).map { (i) -> ChartDataEntry in
+                    return ChartDataEntry(x: oldX[i], y: oldY[i])
+                }
+                
+                let setOld = ScatterChartDataSet(entries: valuesOld, label: "BestOld")
+                setOld.drawValuesEnabled = false
+                setOld.setScatterShape(.square)
+                setOld.setColor(.systemRed)
+                setOld.scatterShapeSize = 8
+                chartData.append(setOld)
             }
             
-            let setFirst = ScatterChartDataSet(entries: valuesFirst, label: "BestFirst")
-            setFirst.drawValuesEnabled = false
-            setFirst.setScatterShape(.square)
-            setFirst.setColor(.systemBlue)
-            setFirst.scatterShapeSize = 8
-            chartData.append(setFirst)
             
-            let bestSecond = recovery_result3Peaks.bestSecond
-            let secondX: [Double] = [Double(bestSecond[0])]
-            let secondY: [Double] = [Double(bestSecond[1])]
-            let valuesSecond = (0..<secondX.count).map { (i) -> ChartDataEntry in
-                return ChartDataEntry(x: secondX[i], y: secondY[i])
+            if let bestRecent = selected_search.recent {
+                let recentX: [Double] = [Double(bestRecent.x)]
+                let recentY: [Double] = [Double(bestRecent.y)]
+                let valuesRecent = (0..<recentX.count).map { (i) -> ChartDataEntry in
+                    return ChartDataEntry(x: recentX[i], y: recentY[i])
+                }
+                
+                let setRecent = ScatterChartDataSet(entries: valuesRecent, label: "BestRecent")
+                setRecent.drawValuesEnabled = false
+                setRecent.setScatterShape(.square)
+                setRecent.setColor(.systemBlue)
+                setRecent.scatterShapeSize = 6
+                chartData.append(setRecent)
             }
-            
-            let setSecond = ScatterChartDataSet(entries: valuesSecond, label: "BestSecond")
-            setSecond.drawValuesEnabled = false
-            setSecond.setScatterShape(.square)
-            setSecond.setColor(.systemOrange)
-            setSecond.scatterShapeSize = 8
-            chartData.append(setSecond)
-            
-            let bestThird = recovery_result3Peaks.bestThird
-            let thirdX: [Double] = [Double(bestThird[0])]
-            let thirdY: [Double] = [Double(bestThird[1])]
-            let valuesThird = (0..<thirdX.count).map { (i) -> ChartDataEntry in
-                return ChartDataEntry(x: thirdX[i], y: thirdY[i])
-            }
-            
-            let setThird = ScatterChartDataSet(entries: valuesThird, label: "BestThird")
-            setThird.drawValuesEnabled = false
-            setThird.setScatterShape(.square)
-            setThird.setColor(.systemRed)
-            setThird.scatterShapeSize = 8
-            chartData.append(setThird)
         }
         
         // Heading
@@ -837,8 +832,8 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
                               best_landmark: debugResult.best_landmark,
                               recon_raw_traj: debugResult.recon_raw_traj,
                               recon_corr_traj: debugResult.recon_corr_traj,
-                              recovery_result: debugResult.recovery_result,
-                              recovery_result3Peaks: debugResult.recovery_result3Peaks,
+                              selected_search: debugResult.selected_search,
+                              selected_cand: debugResult.selected_cand,
                               navi_route: naviRoute,
                               naviXYH: navi_xyh,
                               limits: [0, 0, 0, 0], isBleOnlyMode: self.isBleOnlyMode, isPmSuccess: true, isIndoor: isIndoor)

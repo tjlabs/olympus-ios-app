@@ -6,7 +6,7 @@ import OlympusSDK
 
 class IndoorViewController: UIViewController {
     var region: String = JupiterRegion.KOREA.rawValue
-    var sectorId: Int = 6
+    var sectorId: Int = 20
     var userId: String = ""
     
     private let mainView = UIView().then {
