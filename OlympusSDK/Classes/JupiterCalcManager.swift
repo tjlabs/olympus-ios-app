@@ -107,8 +107,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     var debug_recon_corr_traj: [FineLocationTrackingOutput]?
     var debug_selected_search: SelectedSearch?
     var debug_selected_cand: SelectedCandidate?
-    var debug_recovery_result: RecoveryResult?
-    var debug_recovery_result3Peaks: RecoveryResult3Peaks?
     var debug_ratio: Float?
     var debug_navi_route: [NavigationRoute]?
     var debug_navi_xyh: [Float] = [0, 0, 0]
@@ -312,10 +310,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             best_landmark: self.debug_best_landmark,
             recon_raw_traj: self.debug_recon_raw_traj,
             recon_corr_traj: self.debug_recon_corr_traj,
-            recovery_result: self.debug_recovery_result,
             selected_cand: self.debug_selected_cand,
             selected_search: self.debug_selected_search,
-            recovery_result3Peaks: self.debug_recovery_result3Peaks,
             ratio: self.debug_ratio,
             navi_route: self.debug_navi_route,
             navi_xyh: self.debug_navi_xyh
@@ -401,7 +397,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         let windowSize = determineWindowSize(jupiterPhase: jupiterPhase)
         if let userPeak = peakDetector.updateEpoch(uvdIndex: curIndex, bleAvg: avgBleData, windowSize: windowSize, jupiterPhase: jupiterPhase) {
             curPeak = userPeak
-            self.debug_recovery_result = nil
+            self.debug_selected_cand = nil
             self.debug_ratio = nil
             peakHandling: do {
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) PEAK detected : id=\(userPeak.id) // peak_idx=\(userPeak.peak_index), peak_rssi=\(userPeak.peak_rssi), detected_idx = \(userPeak.end_index), detected_rssi = \(userPeak.end_rssi)")
@@ -908,14 +904,33 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             if let innermostWard = entManager.stopEntTrack(wardId: peakId) {
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - EntTrack Finished : innermostWard \(innermostWard)")
                 let uvdBuffer = stackManager.getUvdBuffer()
-                if innermostWard.is_turn {
+//                if innermostWard.is_turn {
+                if true {
                     // Turn
                     let uvdBuffer = stackManager.getUvdBuffer(from: uvd.index-50)
                     let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBuffer.map{ Float($0.heading) })
                     
                     if !majorSection.isEmpty {
+                        var wardHeadings = innermostWard.headings
+                        var wardX = innermostWard.x
+                        var wardY = innermostWard.y
+                        
                         let headingForCompensation = majorSection.average - uvdBuffer[0].heading
-                        let pathHeadings = innermostWard.headings
+                        if innermostWard.name.contains("46E") {
+                            wardHeadings = [0]
+                            wardX = 35
+                            wardY = 199
+                        } else if innermostWard.name.contains("114") {
+                            wardHeadings = [90, 158]
+                            wardX = 348
+                            wardY = 158
+                        } else if innermostWard.name.contains("117") {
+                            wardHeadings = [90]
+                            wardX = 348
+                            wardY = 68
+                        }
+                        
+                        let pathHeadings = wardHeadings
                         var resultDict = [Float: [[Float]]]()
                         for pathHeading in pathHeadings {
                             let startHeading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(pathHeading) - Double(headingForCompensation)))
@@ -940,8 +955,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                 heading = Float(updatedHeading)
                                 
                                 if uvdBuffer[i].index == userPeak.peak_index {
-                                    offset[0] = Float(innermostWard.x) - coord[0]
-                                    offset[1] = Float(innermostWard.y) - coord[1]
+                                    offset[0] = Float(wardX) - coord[0]
+                                    offset[1] = Float(wardY) - coord[1]
                                 }
                                 
                                 resultBuffer.append([coord[0], coord[1], heading])
@@ -1387,7 +1402,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                                                                        tuResultWhenRecentPeak: tuResultWhenRecentPeak,
                                                                                        curPmResult: curPmResult,
                                                                                        mode: mode, matchedNode: matchedNode, isDrStraight: isDrStraight.0)
-                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(applyCorrectionWithPeaks) lossParamResult= \(lossParamResult)")
                     let filteredCandResult = solutionEstimator.calculateJupiterResult(lossParamAtEachCand: lossParamResult, isLinkNotChanged: isLinkNotChanged)
                     if let selectedCandResult = solutionEstimator.selectCandidate(filtered: filteredCandResult) {
                         let trackingResult = selectedCandResult.0
