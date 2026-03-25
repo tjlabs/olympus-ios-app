@@ -49,7 +49,6 @@ class EntranceManager {
     
     func setEntData(key: String, data: EntranceData) {
         self.entDataMap[key] = data
-        
         if let outermostWard = data.outermostWard {
             self.entOuterWardIdMap[key] = outermostWard.name
         }
