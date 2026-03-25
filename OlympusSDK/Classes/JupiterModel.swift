@@ -78,10 +78,8 @@ public struct JupiterDebugResult {
     public var best_landmark: PeakData?
     public var recon_raw_traj: [[Double]]?
     public var recon_corr_traj: [FineLocationTrackingOutput]?
-    public var recovery_result: RecoveryResult?
     public var selected_cand: SelectedCandidate?
     public var selected_search: SelectedSearch?
-    public var recovery_result3Peaks: RecoveryResult3Peaks?
     public var ratio: Float?
     public var navi_route: [NavigationRoute]?
     public var navi_xyh: [Float]
@@ -190,39 +188,4 @@ struct _RecoveryCandidate {
     let olderCand: PeakData?
     let tail: FineLocationTrackingOutput?
     let head: FineLocationTrackingOutput?
-}
-
-// Temp
-public struct EntrancePeakData: Codable {
-    public var number: Int = 0
-    public var velocityScale: Float = 1.0
-    public var inner_ward: InnerWardData
-    public var outerWardId: String = ""
-    
-    public init(number: Int, velocityScale: Float, inner_ward: InnerWardData, outerWardId: String) {
-        self.number = number
-        self.velocityScale = velocityScale
-        self.inner_ward = inner_ward
-        self.outerWardId = outerWardId
-    }
-}
-
-public struct InnerWardData: Codable {
-    public var type: Int = -1
-    public var wardId: String = ""
-    public var building: String = ""
-    public var level: String = ""
-    public var x: Float = 0
-    public var y: Float = 0
-    public var direction: [Float] = []
-    
-    public init(type: Int, wardId: String, building: String, level: String, x: Float, y: Float, direction: [Float]) {
-        self.type = type
-        self.wardId = wardId
-        self.building = building
-        self.level = level
-        self.x = x
-        self.y = y
-        self.direction = direction
-    }
 }
