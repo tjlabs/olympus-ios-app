@@ -3181,407 +3181,449 @@
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
+      "kind": "StringLiteral",
+      "offset": 497,
+      "length": 15,
+      "value": "\"TJLabsMapView\""
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
+      "kind": "StringLiteral",
+      "offset": 523,
+      "length": 34,
+      "value": "\"scale & offset set default value\""
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
+      "kind": "Array",
+      "offset": 610,
+      "length": 12,
+      "value": "[1, 1, 0, 0]"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 537,
+      "offset": 739,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 570,
+      "offset": 779,
       "length": 1,
       "value": "1"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 603,
+      "offset": 819,
       "length": 1,
       "value": "2"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 636,
+      "offset": 859,
       "length": 1,
       "value": "3"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 661,
+      "offset": 884,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 670,
+      "offset": 893,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "FloatLiteral",
-      "offset": 809,
+      "offset": 1032,
       "length": 3,
       "value": "1.0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "FloatLiteral",
-      "offset": 817,
+      "offset": 1040,
       "length": 3,
       "value": "1.0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "StringLiteral",
-      "offset": 1588,
+      "offset": 1811,
       "length": 2,
       "value": "\"\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 1623,
+      "offset": 1846,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 2242,
+      "offset": 2465,
       "length": 2,
       "value": "30"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 2254,
+      "offset": 2477,
       "length": 2,
       "value": "30"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "FloatLiteral",
-      "offset": 2297,
+      "offset": 2520,
       "length": 3,
       "value": "0.1"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 2352,
+      "offset": 2575,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "FloatLiteral",
-      "offset": 2856,
+      "offset": 3079,
       "length": 3,
       "value": "2.5"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "BooleanLiteral",
-      "offset": 2976,
+      "offset": 3199,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "IntegerLiteral",
-      "offset": 3256,
+      "offset": 3479,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "BooleanLiteral",
-      "offset": 3454,
+      "offset": 3677,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsMapView.swift",
       "kind": "BooleanLiteral",
-      "offset": 3741,
+      "offset": 3964,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "StringLiteral",
+      "offset": 665,
+      "length": 16,
+      "value": "\"TJLabsNaviView\""
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "StringLiteral",
+      "offset": 692,
+      "length": 34,
+      "value": "\"scale & offset set default value\""
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
+      "kind": "Array",
+      "offset": 779,
+      "length": 12,
+      "value": "[1, 1, 0, 0]"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "IntegerLiteral",
-      "offset": 705,
+      "offset": 908,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "IntegerLiteral",
-      "offset": 738,
+      "offset": 948,
       "length": 1,
       "value": "1"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "IntegerLiteral",
-      "offset": 771,
+      "offset": 988,
       "length": 1,
       "value": "2"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "IntegerLiteral",
-      "offset": 804,
+      "offset": 1028,
       "length": 1,
       "value": "3"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "IntegerLiteral",
-      "offset": 829,
+      "offset": 1053,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "IntegerLiteral",
-      "offset": 838,
+      "offset": 1062,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "FloatLiteral",
-      "offset": 977,
+      "offset": 1201,
       "length": 3,
       "value": "1.0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "FloatLiteral",
-      "offset": 985,
+      "offset": 1209,
       "length": 3,
       "value": "1.0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "StringLiteral",
-      "offset": 1735,
+      "offset": 1959,
       "length": 2,
       "value": "\"\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "IntegerLiteral",
-      "offset": 1770,
+      "offset": 1994,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "IntegerLiteral",
-      "offset": 2368,
+      "offset": 2592,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "IntegerLiteral",
-      "offset": 2407,
+      "offset": 2631,
       "length": 2,
       "value": "30"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "FloatLiteral",
-      "offset": 2497,
+      "offset": 2721,
       "length": 3,
       "value": "1.5"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "IntegerLiteral",
-      "offset": 2798,
+      "offset": 3022,
       "length": 2,
       "value": "30"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "IntegerLiteral",
-      "offset": 2810,
+      "offset": 3034,
       "length": 2,
       "value": "30"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "FloatLiteral",
-      "offset": 2853,
+      "offset": 3077,
       "length": 3,
       "value": "0.1"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "IntegerLiteral",
-      "offset": 2908,
+      "offset": 3132,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "FloatLiteral",
-      "offset": 3412,
+      "offset": 3636,
       "length": 3,
       "value": "2.5"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "FloatLiteral",
-      "offset": 3460,
+      "offset": 3684,
       "length": 3,
       "value": "3.0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "BooleanLiteral",
-      "offset": 3580,
+      "offset": 3804,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "IntegerLiteral",
-      "offset": 3712,
+      "offset": 3936,
       "length": 3,
       "value": "999"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "IntegerLiteral",
-      "offset": 3798,
+      "offset": 4022,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "BooleanLiteral",
-      "offset": 3908,
+      "offset": 4132,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "IntegerLiteral",
-      "offset": 3957,
+      "offset": 4181,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "IntegerLiteral",
-      "offset": 3997,
+      "offset": 4221,
       "length": 2,
       "value": "20"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "IntegerLiteral",
-      "offset": 4000,
+      "offset": 4224,
       "length": 4,
       "value": "1000"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "IntegerLiteral",
-      "offset": 4051,
+      "offset": 4275,
       "length": 3,
       "value": "180"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "FloatLiteral",
-      "offset": 4337,
+      "offset": 4561,
       "length": 4,
       "value": "0.55"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "FloatLiteral",
-      "offset": 4392,
+      "offset": 4616,
       "length": 4,
       "value": "0.55"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "FloatLiteral",
-      "offset": 4973,
+      "offset": 5197,
       "length": 4,
       "value": "0.12"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "FloatLiteral",
-      "offset": 5057,
+      "offset": 5281,
       "length": 5,
       "value": "100.0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "IntegerLiteral",
-      "offset": 5220,
+      "offset": 5444,
       "length": 3,
       "value": "180"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "FloatLiteral",
-      "offset": 6333,
+      "offset": 6557,
       "length": 3,
       "value": "3.0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "FloatLiteral",
-      "offset": 41862,
+      "offset": 42086,
       "length": 4,
       "value": "0.01"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "IntegerLiteral",
-      "offset": 59962,
+      "offset": 60186,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "IntegerLiteral",
-      "offset": 60038,
+      "offset": 60262,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "StringLiteral",
-      "offset": 60647,
+      "offset": 60871,
       "length": 7,
       "value": "\"FRAME\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "StringLiteral",
-      "offset": 60675,
+      "offset": 60899,
       "length": 6,
       "value": "\"MAIN\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsMap-sdk-ios\/TJLabsMap\/View\/TJLabsNaviView.swift",
       "kind": "StringLiteral",
-      "offset": 60701,
+      "offset": 60925,
       "length": 5,
       "value": "\"SUB\""
     },

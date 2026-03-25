@@ -17394,7 +17394,7 @@
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/TJLabsResourceManager.swift",
       "kind": "BooleanLiteral",
-      "offset": 14783,
+      "offset": 14793,
       "length": 5,
       "value": "false"
     },
@@ -17443,119 +17443,105 @@
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/TJLabsResourceNetworkConstants.swift",
       "kind": "StringLiteral",
-      "offset": 485,
-      "length": 12,
-      "value": "\"2025-03-31\""
-    },
-    {
-      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/TJLabsResourceNetworkConstants.swift",
-      "kind": "StringLiteral",
-      "offset": 547,
+      "offset": 484,
       "length": 12,
       "value": "\"2026-01-27\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/TJLabsResourceNetworkConstants.swift",
       "kind": "StringLiteral",
-      "offset": 609,
-      "length": 12,
-      "value": "\"2025-03-31\""
-    },
-    {
-      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/TJLabsResourceNetworkConstants.swift",
-      "kind": "StringLiteral",
-      "offset": 671,
+      "offset": 546,
       "length": 12,
       "value": "\"2025-04-17\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/TJLabsResourceNetworkConstants.swift",
       "kind": "StringLiteral",
-      "offset": 744,
+      "offset": 619,
       "length": 12,
       "value": "\"2026-02-19\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/TJLabsResourceNetworkConstants.swift",
       "kind": "StringLiteral",
-      "offset": 812,
+      "offset": 687,
       "length": 12,
       "value": "\"2026-02-19\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/TJLabsResourceNetworkConstants.swift",
       "kind": "StringLiteral",
-      "offset": 889,
+      "offset": 764,
       "length": 12,
       "value": "\"2026-02-19\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/TJLabsResourceNetworkConstants.swift",
       "kind": "StringLiteral",
-      "offset": 962,
+      "offset": 837,
       "length": 12,
       "value": "\"2026-02-19\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/TJLabsResourceNetworkConstants.swift",
       "kind": "StringLiteral",
-      "offset": 1030,
+      "offset": 905,
       "length": 12,
       "value": "\"2026-02-26\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/TJLabsResourceNetworkConstants.swift",
       "kind": "StringLiteral",
-      "offset": 1100,
+      "offset": 975,
       "length": 12,
       "value": "\"2026-03-06\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/TJLabsResourceNetworkConstants.swift",
       "kind": "StringLiteral",
-      "offset": 1158,
+      "offset": 1033,
       "length": 12,
       "value": "\"2025-08-25\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/TJLabsResourceNetworkConstants.swift",
       "kind": "StringLiteral",
-      "offset": 1244,
+      "offset": 1119,
       "length": 10,
       "value": "\"https:\/\/\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/TJLabsResourceNetworkConstants.swift",
       "kind": "StringLiteral",
-      "offset": 1295,
+      "offset": 1170,
       "length": 21,
       "value": "\".jupiter.tjlabs.dev\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/TJLabsResourceNetworkConstants.swift",
       "kind": "StringLiteral",
-      "offset": 1361,
+      "offset": 1236,
       "length": 17,
       "value": "\"ap-northeast-2.\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/TJLabsResourceNetworkConstants.swift",
       "kind": "StringLiteral",
-      "offset": 1479,
+      "offset": 1354,
       "length": 6,
       "value": "\"user\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/TJLabsResourceNetworkConstants.swift",
       "kind": "StringLiteral",
-      "offset": 1571,
+      "offset": 1446,
       "length": 5,
       "value": "\"csv\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsResource-sdk-ios\/TJLabsResource\/TJLabsResourceNetworkConstants.swift",
       "kind": "StringLiteral",
-      "offset": 1665,
+      "offset": 1540,
       "length": 8,
       "value": "\"client\""
     }
