@@ -73,6 +73,14 @@ class EntranceManager {
             } else if key.contains("_5") {
                 origin = Origin(level_id: level_id, x: 59, y: 329, absolute_heading: 270)
             }
+        } else if key.contains("20_Convensia") {
+            if key.contains("_1") {
+                origin = Origin(level_id: level_id, x: 45, y: 199, absolute_heading: 0)
+            } else if key.contains("_2") {
+                origin = Origin(level_id: level_id, x: 348, y: 158, absolute_heading: 180)
+            } else if key.contains("_3") {
+                origin = Origin(level_id: level_id, x: 348, y: 32, absolute_heading: 180)
+            }
         }
         return origin
     }
