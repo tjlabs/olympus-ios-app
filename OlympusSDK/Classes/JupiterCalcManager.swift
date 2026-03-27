@@ -77,7 +77,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     // MARK: - Navigation
     private var naviMode: Bool = false
-    private var naviDestination: RoutingPoint?
+    private var naviDestination: Point?
     private var naviScenario: Int?
     private var hasNaviRoute: Bool = false
     private var feedbackIndex: Int = 0
@@ -150,8 +150,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         JupiterLogger.i(tag: "JupiterCalcManager", message: "(navigationMode) : scenario= \(scenario)")
     }
     
-    func setNaviDestination(dest: RoutingPoint) {
+    func setNaviDestination(dest: Point?) {
         self.naviDestination = dest
+        JupiterLogger.i(tag: "JupiterCalcManager", message: "(setNaviDestination) : dest= \(dest)")
     }
     
     // MARK: - Set REC length
@@ -545,7 +546,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             curNaviCase = estimatedNaviCase
             if curNaviCase == .CASE_3 && !guidanceOutReported {
                 guidanceOutReported = true
-                delegate?.isUserGuidanceOut()
+                self.isUserGuidanceOut()
             } else if curNaviCase == .CASE_2 {
                 let diffSectionCorrIndex = userVelocity.index - sectionCorrectionIndex
                 if diffSectionCorrIndex < 10 {
@@ -879,20 +880,21 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                     
                     navigationManager?.requestNavigationRoute(start: start, end: end, scenario: self.naviScenario)
                 } else {
-                    if let blChanger = buildingLevelChanger,
-                       let fromLevel = entManager.getEntTrackEndLevel(),
-                       let levelId = blChanger.getLevelIdWithName(levelName: fromLevel),
+                    if let fromLevel = entManager.getEntTrackEndLevel(),
+                       let levelId = navigationManager?.getLevelIdWithName(levelName: fromLevel),
                        let origin = entManager.getEntRoutingOrigin(level_id: levelId),
                        let to = self.naviDestination {
-                        let from: RoutingPoint = RoutingPoint(level_id: origin.level_id, x: origin.x, y: origin.y, absolute_heading: origin.absolute_heading)
-                        navigationManager?.requestRouting(start: from, end: to, completion: { routingResult in
+                        let from: RoutingStart = RoutingStart(level_id: origin.level_id, x: origin.x, y: origin.y, absolute_heading: origin.absolute_heading)
+                        navigationManager?.requestRouting(start: from, end: to, completion: { [self] routingResult in
                             if let result = routingResult {
-                                
+                                JupiterLogger.i(tag: "JupiterCalcManager", message: "(requestRouting) routingResult= \(result)")
+                                navigationManager?.setRoutingRoutes(routes: result.routes)
                             } else {
-                                self.naviMode = false
                                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(requestRouting) routingResult is nil")
                             }
                         })
+                    } else {
+                        JupiterLogger.i(tag: "JupiterCalcManager", message: "(requestRouting) unwrap fail")
                     }
                 }
             } else {
@@ -904,8 +906,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             if let innermostWard = entManager.stopEntTrack(wardId: peakId) {
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - EntTrack Finished : innermostWard \(innermostWard)")
                 let uvdBuffer = stackManager.getUvdBuffer()
-//                if innermostWard.is_turn {
-                if true {
+                if innermostWard.is_turn {
                     // Turn
                     let uvdBuffer = stackManager.getUvdBuffer(from: uvd.index-50)
                     let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBuffer.map{ Float($0.heading) })
@@ -916,19 +917,19 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                         var wardY = innermostWard.y
                         
                         let headingForCompensation = majorSection.average - uvdBuffer[0].heading
-                        if innermostWard.name.contains("46E") {
-                            wardHeadings = [0]
-                            wardX = 35
-                            wardY = 199
-                        } else if innermostWard.name.contains("114") {
-                            wardHeadings = [90, 158]
-                            wardX = 348
-                            wardY = 158
-                        } else if innermostWard.name.contains("117") {
-                            wardHeadings = [90]
-                            wardX = 348
-                            wardY = 68
-                        }
+//                        if innermostWard.name.contains("46E") {
+//                            wardHeadings = [0]
+//                            wardX = 35
+//                            wardY = 199
+//                        } else if innermostWard.name.contains("114") {
+//                            wardHeadings = [90, 158]
+//                            wardX = 348
+//                            wardY = 158
+//                        } else if innermostWard.name.contains("117") {
+//                            wardHeadings = [90]
+//                            wardX = 348
+//                            wardY = 68
+//                        }
                         
                         let pathHeadings = wardHeadings
                         var resultDict = [Float: [[Float]]]()
@@ -1769,11 +1770,11 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         navigationManager?.requestNavigationRoute(start: start, end: end)
     }
     
-    func requestRouting(start: RoutingPoint, end: RoutingPoint, waypoints: [RoutingPoint] = [], completion: @escaping (RoutingResult?) -> Void) {
+    func requestRouting(start: RoutingStart, end: Point, waypoints: [Point] = [], completion: @escaping (RoutingResult?) -> Void) {
         navigationManager?.requestRouting(start: start, end: end, waypoints: waypoints, completion: completion)
     }
     
-    func requestRouting(end: RoutingPoint, waypoints: [RoutingPoint] = [], completion: @escaping (RoutingResult?) -> Void) {
+    func requestRouting(end: Point, waypoints: [Point] = [], completion: @escaping (RoutingResult?) -> Void) {
 //        navigationManager?.requestRouting(end: end, waypoints: waypoints, completion: completion)
     }
     
@@ -1789,7 +1790,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     func onBuildingsData(_ manager: TJLabsResource.TJLabsResourceManager, data: [TJLabsResource.BuildingOutput]) {
         guard let blChanger = self.buildingLevelChanger else { return }
         blChanger.setBuildingsData(buildingsData: data)
-        blChanger.makeLevelIdMap(buildingsData: data)
+        
+        guard let navigationManager = self.navigationManager else { return }
+        navigationManager.setBuildingsData(buildingsData: data)
     }
     
     func onScaleOffsetData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [Float]) {
@@ -1868,11 +1871,26 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     func isUserGuidanceOut() {
         JupiterLogger.i(tag: "JupiterCalcManager", message: "(isUserGuidanceOut) user guidance out")
         delegate?.isUserGuidanceOut()
+        hasNaviRoute = false
+        guard let curPmResult = self.curPathMatchingResult else { return }
+        guard let curLevelId = navigationManager?.getLevelIdWithName(levelName: curPmResult.level_name) else { return }
+        let from = RoutingStart(level_id: curLevelId, x: Int(curPmResult.x), y: Int(curPmResult.y), absolute_heading: Int(curPmResult.absolute_heading))
+        guard let to = self.naviDestination else { return }
+        navigationManager?.requestRouting(start: from, end: to, completion: { [self] routingResult in
+            if let result = routingResult {
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(requestRouting) routingResult= \(result)")
+                navigationManager?.setRoutingRoutes(routes: result.routes)
+            } else {
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(requestRouting) routingResult is nil")
+            }
+        })
     }
     
     func isNavigationRouteChanged() {
         if !hasNaviRoute {
             hasNaviRoute = true
+            curNaviCase = .CASE_1
+            
             let naviRoute = navigationManager?.getNaviRoutes()
             self.debug_navi_route = naviRoute
             

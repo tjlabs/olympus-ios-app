@@ -8,7 +8,9 @@ class TJLabsIndoorMapView: UIView, TJLabsMapViewDelegate {
     func didSelectUnit(_ view: TJLabsMap.TJLabsMapView, data: TJLabsResource.UnitData) {
         JupiterLogger.i(tag: "TJLabsIndoorMapView", message: "didSelect Unit: \(data)")
     }
-
+    
+    private var didSetupLayout = false
+    
     var region: String?
     var sectorId: Int?
     
@@ -33,11 +35,28 @@ class TJLabsIndoorMapView: UIView, TJLabsMapViewDelegate {
     }
     
     private func commonInit() {
+        setupLayoutIfNeeded()
+    }
+
+    private func setupLayoutIfNeeded() {
+        guard !didSetupLayout else { return }
+        didSetupLayout = true
         setupLayout()
         bindActions()
-        
     }
-    
+
+    public func configureFrame(to matchView: UIView) {
+        setupLayoutIfNeeded()
+
+        if self.superview !== matchView {
+            matchView.addSubview(self)
+        }
+
+        self.translatesAutoresizingMaskIntoConstraints = true
+        self.frame = matchView.bounds
+        self.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    }
+
     private func setupLayout() {
         addSubview(containerView)
         NSLayoutConstraint.activate([

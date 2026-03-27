@@ -396,9 +396,9 @@ class RoutingViewController: UIViewController {
     }
 
     @objc private func didTapSafeDrivingStart() {
-        goToCardViewController(region: region, userId: userId, isSafeDriving: true)
+//        goToCardViewController(region: region, userId: userId, isSafeDriving: true)
 //        goToNaviViewController(userId: userId, isSafeDriving: true)
-//        goToIndoorViewController(userId: userId)
+        goToIndoorViewController(userId: userId)
     }
     
     func goToCardViewController(region: String, userId: String, isSafeDriving: Bool = false) {

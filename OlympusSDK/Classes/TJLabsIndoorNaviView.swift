@@ -83,7 +83,7 @@ class TJLabsIndoorNaviView: UIView, JupiterManagerDelegate, TJLabsNaviViewDelega
         JupiterLogger.i(tag: "TJLabsIndoorNaviView", message: "waypoints= \(waypoints)")
         naviView.setNaviWaypoints(waypoints: waypoints)
     }
-    
+    private var didSetupLayout = false
 
     var region: String?
     var sectorId: Int?
@@ -95,7 +95,7 @@ class TJLabsIndoorNaviView: UIView, JupiterManagerDelegate, TJLabsNaviViewDelega
     
     // routing
     var naviMode: Bool = false
-    var naviDestination: RoutingPoint?
+    var naviDestination: Point?
     
     var isParkingGuideRendered: Bool = false
     var isNaviRouteLoaded: Bool = false
@@ -107,36 +107,65 @@ class TJLabsIndoorNaviView: UIView, JupiterManagerDelegate, TJLabsNaviViewDelega
 
     private let containerView: UIView = {
         let view = UIView()
-        view.backgroundColor = .white
+        view.backgroundColor = .clear
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
     let naviView = TJLabsNaviView()
     
-    init(region: String, sectorId: Int, userId: String) {
-        super.init(frame: .zero)
-        self.region = region
-        self.sectorId = sectorId
-        self.userId = userId
-        commonInit()
+    override init(frame: CGRect) {
+        super.init(frame: frame)
     }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+    
+//    init(region: String, sectorId: Int, userId: String) {
+//        super.init(frame: .zero)
+//        self.region = region
+//        self.sectorId = sectorId
+//        self.userId = userId
+//        commonInit()
+//    }
     
     deinit {
         self.stopSerivce()
         serviceManager = nil
     }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
     private func commonInit() {
-        setupLayout()
-        bindActions()
+        setupLayoutIfNeeded()
         startService()
     }
+
+    private func setupLayoutIfNeeded() {
+        guard !didSetupLayout else { return }
+        didSetupLayout = true
+        setupLayout()
+        bindActions()
+    }
     
+    public func initialize(region: String, sectorId: Int, userId: String) {
+        self.region = region
+        self.sectorId = sectorId
+        self.userId = userId
+        self.commonInit()
+    }
+
+    public func configureFrame(to matchView: UIView) {
+        setupLayoutIfNeeded()
+
+        if self.superview !== matchView {
+            matchView.addSubview(self)
+        }
+
+        self.translatesAutoresizingMaskIntoConstraints = true
+        self.frame = matchView.bounds
+        self.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    }
+
     private func setupLayout() {
         addSubview(containerView)
         NSLayoutConstraint.activate([
@@ -151,18 +180,18 @@ class TJLabsIndoorNaviView: UIView, JupiterManagerDelegate, TJLabsNaviViewDelega
     private func bindActions() {
 
     }
-    
+
     func setupNaviView() {
         guard let region = self.region, let sectorId = self.sectorId else { return }
         
         naviView.initialize(region: region, sectorId: sectorId)
-        naviView.configureFrame(to: containerView)
         naviView.setPointOffset(offset: 200)
         naviView.setZoomAndMarkerScale(zoom: 2.0)
         containerView.addSubview(naviView)
+        naviView.configureFrame(to: containerView)
     }
     
-    func setNavigationDestination(dest: RoutingPoint) {
+    func setNavigationDestination(dest: Point) {
         self.naviMode = true
         self.naviDestination = dest
         JupiterLogger.i(tag: "TJLabsIndoorNaviView", message: "setNavigationDestination : naviDestination= \(dest)")

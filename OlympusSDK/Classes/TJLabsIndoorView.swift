@@ -133,6 +133,14 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
     var destinationsMap = [String: [NaviDestination]]()
     
     // MARK: - View
+    private let containerView: UIView = {
+        let view = UIView()
+        view.isHidden = true
+        view.backgroundColor = UIColor.white
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
     private var hasSetupViews = false
     var topView: TJLabsIndoorTopView?
     var midView: TJLabsIndoorMidView?
@@ -310,6 +318,8 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
                     indoorMapView.alpha = 1
                     indoorMapView.transform = .identity
                     self?.indoorMapView = nil
+                    self?.containerView.isHidden = true
+                    self?.containerView.removeFromSuperview()
                 }
             }
         } else if let indoorNaviView = self.indoorNaviView {
@@ -322,6 +332,8 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
                     indoorNaviView.alpha = 1
                     indoorNaviView.transform = .identity
                     self?.indoorNaviView = nil
+                    self?.containerView.isHidden = true
+                    self?.containerView.removeFromSuperview()
                 }
             }
         } else {
@@ -360,16 +372,16 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         self.indoorMapView = indoorMapView
         guard let topView = self.topView else { return }
         
-        self.indoorMapView?.translatesAutoresizingMaskIntoConstraints = false
-        self.indoorMapView?.alpha = 0
-        self.indoorMapView?.transform = CGAffineTransform(translationX: 0, y: 12)
-        addSubview(self.indoorMapView!)
+        containerView.isHidden = false
+        addSubview(self.containerView)
         NSLayoutConstraint.activate([
-            self.indoorMapView!.topAnchor.constraint(equalTo: topView.bottomAnchor),
-            self.indoorMapView!.bottomAnchor.constraint(equalTo: bottomAnchor),
-            self.indoorMapView!.leadingAnchor.constraint(equalTo: leadingAnchor),
-            self.indoorMapView!.trailingAnchor.constraint(equalTo: trailingAnchor),
+            self.containerView.topAnchor.constraint(equalTo: topView.bottomAnchor),
+            self.containerView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            self.containerView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            self.containerView.trailingAnchor.constraint(equalTo: trailingAnchor),
         ])
+        self.indoorMapView?.alpha = 0
+        self.indoorMapView?.configureFrame(to: self.containerView)
         
         layoutIfNeeded()
         UIView.animate(withDuration: 0.25, delay: 0, options: [.curveEaseInOut], animations: {
@@ -380,23 +392,25 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
     
     private func setupNaviView(destination: NaviDestination, routingOption: RoutingOption) {
         guard let region = self.region, let sectorId = self.sectorId, let userId = self.userId else { return }
-        let indoorNaviView = TJLabsIndoorNaviView(region: region, sectorId: sectorId, userId: userId)
-        self.indoorNaviView = indoorNaviView
-        let dest = RoutingPoint(level_id: destination.level_id, x: Int(destination.x), y: Int(destination.y), absolute_heading: 0)
+//        let indoorNaviView = TJLabsIndoorNaviView(region: region, sectorId: sectorId, userId: userId)
+//        self.indoorNaviView = indoorNaviView
+        self.indoorNaviView = TJLabsIndoorNaviView()
+        self.indoorNaviView?.initialize(region: region, sectorId: sectorId, userId: userId)
+        let dest = Point(level_id: destination.level_id, x: Int(destination.x), y: Int(destination.y))
         self.indoorNaviView?.setNavigationDestination(dest: dest)
-        
         guard let topView = self.topView else { return }
-        self.indoorNaviView?.translatesAutoresizingMaskIntoConstraints = false
-        self.indoorNaviView?.alpha = 0
-        self.indoorNaviView?.transform = CGAffineTransform(translationX: 0, y: 12)
-        addSubview(self.indoorNaviView!)
-        NSLayoutConstraint.activate([
-            self.indoorNaviView!.topAnchor.constraint(equalTo: topView.bottomAnchor),
-            self.indoorNaviView!.bottomAnchor.constraint(equalTo: bottomAnchor),
-            self.indoorNaviView!.leadingAnchor.constraint(equalTo: leadingAnchor),
-            self.indoorNaviView!.trailingAnchor.constraint(equalTo: trailingAnchor),
-        ])
         
+        containerView.isHidden = false
+        addSubview(self.containerView)
+        NSLayoutConstraint.activate([
+            self.containerView.topAnchor.constraint(equalTo: topView.bottomAnchor),
+            self.containerView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            self.containerView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            self.containerView.trailingAnchor.constraint(equalTo: trailingAnchor),
+        ])
+        self.indoorNaviView?.alpha = 0
+        self.indoorNaviView?.configureFrame(to: self.containerView)
+
         layoutIfNeeded()
         UIView.animate(withDuration: 0.25, delay: 0, options: [.curveEaseInOut], animations: {
             self.indoorNaviView?.alpha = 1

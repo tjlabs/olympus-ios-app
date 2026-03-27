@@ -190,27 +190,28 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
         serviceManager?.delegate = self
         
         var scenario: Int?
-        if let fromSelectedName = fromSelectedName, !isSafeDriving {
-            if fromSelectedName.contains("1번") {
-                scenario = 1
-            } else if fromSelectedName.contains("3번") {
-                scenario = 3
-            } else if fromSelectedName.contains("4번") {
-                scenario = 4
-            }
-        }
+//        if let fromSelectedName = fromSelectedName, !isSafeDriving {
+//            if fromSelectedName.contains("1번") {
+//                scenario = 1
+//            } else if fromSelectedName.contains("3번") {
+//                scenario = 3
+//            } else if fromSelectedName.contains("4번") {
+//                scenario = 4
+//            }
+//        }
         
         let naviMode = !isSafeDriving
         print("(CardVC) navigationMode : scenario= \(scenario)")
+        serviceManager?.setNaviDestination(dest: Point(level_id: 53, x: 335, y: 0))
         serviceManager?.navigationMode(flag: naviMode, scenario: scenario)
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_0317.csv", sensorFileName: "sensor_coex_01_0317.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_0310.csv", sensorFileName: "sensor_coex_02_0310.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_0303.csv", sensorFileName: "sensor_coex_03_0303.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_0224.csv", sensorFileName: "sensor_coex_02_0224.csv")
         
+        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test02_ent2.csv", sensorFileName: "sensor_251013_songdo_test02_ent2.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test02_ent2.csv", sensorFileName: "sensor_251013_songdo_test02_ent2.csv")
-        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test05_ent3.csv", sensorFileName: "sensor_251013_songdo_test05_ent3.csv")
+//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test05_ent3.csv", sensorFileName: "sensor_251013_songdo_test05_ent3.csv")
         serviceManager?.startJupiter(sectorId: sector_id, mode: .MODE_AUTO, debugOption: true)
         
         // service
