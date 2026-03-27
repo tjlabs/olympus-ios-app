@@ -19,7 +19,14 @@ class NavigationManager {
     
     private var id: String = ""
     private var sectorId: Int = 0
-
+    
+    var buildingsAndLevelsMap = [String: [String]]()
+    var buildingIdMap = [String: Int]()
+    var buildingNameMap = [Int: String]()
+    var levelIdMap = [String: Int]()
+    var levelNameMap = [Int: String]()
+    var levelToBuildingIdMap = [Int: Int]()
+    
     private var routes = [NavigationRoute]()
     private var routeNodeData = [Int: NodeData]()
     private var routeSectionData = [Int: SectionRange]()
@@ -40,15 +47,96 @@ class NavigationManager {
     
     deinit { }
     
+    func setBuildingsData(buildingsData: [BuildingOutput]) {
+        let buildingLevelData = makeBuildingLevelInfo(buildingsData: buildingsData)
+        buildingsAndLevelsMap = buildingLevelData
+        makeBuildingIdMap(buildingsData: buildingsData)
+        makeLevelIdMap(buildingsData: buildingsData)
+    }
+
+    func makeBuildingIdMap(buildingsData: [BuildingOutput]) {
+        buildingIdMap.removeAll()
+        buildingNameMap.removeAll()
+        
+        for b in buildingsData {
+            buildingIdMap[b.name] = b.id
+            buildingNameMap[b.id] = b.name
+        }
+    }
+    
+    func makeLevelIdMap(buildingsData: [BuildingOutput]) {
+        levelIdMap.removeAll()
+        levelNameMap.removeAll()
+        levelToBuildingIdMap.removeAll()
+        
+        let buildings = buildingsData
+        for b in buildings {
+            let levels = b.levels
+            for l in levels {
+                levelIdMap[l.name] = l.id
+                levelNameMap[l.id] = l.name
+                levelToBuildingIdMap[l.id] = b.id
+            }
+        }
+    }
+    
+    func getBuildingIdWithName(buildingName: String) -> Int? {
+        return buildingIdMap[buildingName]
+    }
+    
+    func getBuildingNameWithId(building_id: Int) -> String? {
+        return buildingNameMap[building_id]
+    }
+    
+    func getBuildingIdHasLevelId(level_id: Int) -> Int? {
+        return levelToBuildingIdMap[level_id]
+    }
+    
+    func getLevelIdWithName(levelName: String) -> Int? {
+        return self.levelIdMap[levelName]
+    }
+    
+    func getLevelNameWithId(level_id: Int) -> String? {
+        return levelNameMap[level_id]
+    }
+    
+    private func makeBuildingLevelInfo(buildingsData: [BuildingOutput]) -> [String: [String]] {
+        var infoBuildingLevel = [String: [String]]()
+        for building in buildingsData {
+            let buildingName = building.name
+            for level in building.levels {
+                let levelName = level.name
+                if var levels = infoBuildingLevel[buildingName] {
+                    levels.append(levelName)
+                    infoBuildingLevel[buildingName] = levels.sorted(by: { lhs, rhs in
+                        return compareFloorNames(lhs: lhs, rhs: rhs)
+                    })
+                } else {
+                    let levels = [levelName]
+                    infoBuildingLevel[buildingName] = levels
+                }
+            }
+        }
+        return infoBuildingLevel
+    }
+    
+    private func compareFloorNames(lhs: String, rhs: String) -> Bool {
+        func floorValue(_ floor: String) -> Int {
+            if floor.starts(with: "B"), let number = Int(floor.dropFirst()) {
+                return -number
+            } else if floor.hasSuffix("F"), let number = Int(floor.dropLast()) {
+                return number
+            }
+            return 0
+        }
+            
+        return floorValue(lhs) > floorValue(rhs)
+    }
+    
     // MARK: - New with Server
-    func requestRouting(start: RoutingPoint, end: RoutingPoint, waypoints: [RoutingPoint] = [], completion: @escaping (RoutingResult?) -> Void) {
+    func requestRouting(start: RoutingStart, end: Point, waypoints: [Point] = [], completion: @escaping (RoutingResult?) -> Void) {
         let from: Origin = Origin(level_id: start.level_id, x: start.x, y: start.y, absolute_heading: start.absolute_heading)
         let to: Point = Point(level_id: end.level_id, x: end.x, y: end.y)
-        
-        var waypoints = [Point]()
-        for w in waypoints {
-            waypoints.append(Point(level_id: w.level_id, x: w.x, y: w.y))
-        }
         
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
         let input = DirectionsRequest(tenant_user_name: self.id, mobile_time: currentTime, origin: from, destination: to, waypoints: waypoints)
@@ -58,16 +146,71 @@ class NavigationManager {
                 if let decoded = decodeCalcDirs(from: returnedString) {
                     completion(RoutingResult(code: statusCode, routes: decoded.routes))
                 } else {
+                    JupiterLogger.e(tag: "NavigationManager", message: "(requestRouting) : fail decoding")
                     completion(nil)
                 }
             } else {
+                JupiterLogger.e(tag: "NavigationManager", message: "(requestRouting) : \(statusCode) error")
                 completion(nil)
             }
         })
     }
     
-    func setRoutes(routes: [Route]) {
+    func setRoutingRoutes(routes: [Route]) {
+        if routes.isEmpty { return }
+        let route = routes[0]
         
+        var buildingOrder = [String]()
+        var levelOrder = [String]()
+        var nodeOrder = [Int]()
+        var order = [[Float]]()
+        
+        let start = route.origin
+        guard let start_building_id = getBuildingIdHasLevelId(level_id: start.level_id),
+              let start_building_name = getBuildingNameWithId(building_id: start_building_id),
+              let start_level_name = getLevelNameWithId(level_id: start.level_id) else { return }
+        buildingOrder.append(start_building_name)
+        levelOrder.append(start_level_name)
+        nodeOrder.append(-1)
+        let startCoord: [Float] = [Float(start.x), Float(start.y)]
+        order.append(startCoord)
+        
+        for n in route.nodes {
+            guard let node_building_id = getBuildingIdHasLevelId(level_id: n.level_id),
+                  let node_building_name = getBuildingNameWithId(building_id: node_building_id),
+                  let node_level_name = getLevelNameWithId(level_id: n.level_id) else { return }
+            let key = "\(sectorId)_\(node_building_name)_\(node_level_name)"
+            guard let nodeData = PathMatcher.shared.nodeData[key] else { return }
+            guard let matchedNode = nodeData[n.number] else { return }
+            if self.routeNodeData.isEmpty {
+                self.routeNodeData = nodeData
+            }
+            
+            let coords = matchedNode.coords
+            if coords.count != 2 { continue }
+            
+            buildingOrder.append(node_building_name)
+            levelOrder.append(node_level_name)
+            nodeOrder.append(n.number)
+            order.append(coords)
+        }
+        
+        let end = route.destination
+        guard let end_building_id = getBuildingIdHasLevelId(level_id: end.level_id),
+              let end_building_name = getBuildingNameWithId(building_id: end_building_id),
+              let end_level_name = getLevelNameWithId(level_id: end.level_id) else { return }
+        buildingOrder.append(end_building_name)
+        levelOrder.append(end_level_name)
+        nodeOrder.append(-1)
+        let endCoord: [Float] = [Float(end.x), Float(end.y)]
+        order.append(endCoord)
+        
+        JupiterLogger.e(tag: "NavigationManager", message: "(requestRouting) start:\(start) -> end:\(end)")
+        
+        generateNavigationRoute(bOrder: buildingOrder, lOrder: levelOrder, nodeOrder: nodeOrder, coordOrder: order) // display
+        generateNavigationRoute(bOrder: buildingOrder, lOrder: levelOrder, nodeOrder: nodeOrder, order: order)
+        let sectionMap = makeSectionMap(routes: self.routes)
+        self.routeSectionData = sectionMap
     }
     
     // MARK: - Previous
