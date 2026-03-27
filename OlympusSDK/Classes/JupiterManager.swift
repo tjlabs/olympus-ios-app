@@ -32,7 +32,7 @@ public class JupiterManager: JupiterCalcManagerDelegate {
     var jupiterCalcManager: JupiterCalcManager?
     private var naviMode: Bool = false
     private var naviScenario: Int?
-    private var naviDestination: RoutingPoint?
+    private var naviDestination: Point?
     public weak var delegate: JupiterManagerDelegate?
     
     private var isStartService = false
@@ -105,6 +105,7 @@ public class JupiterManager: JupiterCalcManagerDelegate {
                     }
                     jupiterCalcManager?.delegate = self
                     jupiterCalcManager?.navigationMode(flag: self.naviMode, scenario: self.naviScenario)
+                    jupiterCalcManager?.setNaviDestination(dest: self.naviDestination)
                     jupiterCalcManager?.setSendRfdLength(sendRfdLength)
                     jupiterCalcManager?.setSendUvdLength(sendUvdLength)
                     startGenerator(mode: mode, completion: { [self] isSuccess, msg in
@@ -134,16 +135,15 @@ public class JupiterManager: JupiterCalcManagerDelegate {
         jupiterCalcManager?.navigationMode(flag: self.naviMode, scenario: scenario)
     }
     
-    public func setNaviDestination(dest: RoutingPoint) {
+    public func setNaviDestination(dest: Point) {
         self.naviDestination = dest
-        jupiterCalcManager?.setNaviDestination(dest: dest)
     }
     
-    public func requestRouting(start: RoutingPoint, end: RoutingPoint, waypoints: [RoutingPoint] = [], completion: @escaping (RoutingResult?) -> Void) {
+    public func requestRouting(start: RoutingStart, end: Point, waypoints: [Point] = [], completion: @escaping (RoutingResult?) -> Void) {
         jupiterCalcManager?.requestRouting(start: start, end: end, waypoints: waypoints, completion: completion)
     }
     
-    public func requestRouting(end: RoutingPoint, waypoints: [RoutingPoint] = [], completion: @escaping (RoutingResult?) -> Void) {
+    public func requestRouting(end: Point, waypoints: [Point] = [], completion: @escaping (RoutingResult?) -> Void) {
         jupiterCalcManager?.requestRouting(end: end, waypoints: waypoints, completion: completion)
     }
 
