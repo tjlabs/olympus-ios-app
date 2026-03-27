@@ -40,10 +40,16 @@ struct MobileReport: Encodable {
     let code: Int
 }
 
-struct Point: Codable {
-    let level_id: Int
-    let x: Int
-    let y: Int
+public struct Point: Codable {
+    public let level_id: Int
+    public let x: Int
+    public let y: Int
+    
+    public init(level_id: Int, x: Int, y: Int) {
+        self.level_id = level_id
+        self.x = x
+        self.y = y
+    }
 }
 
 struct Origin: Codable {

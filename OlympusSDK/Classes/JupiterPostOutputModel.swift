@@ -14,7 +14,7 @@ public struct FineLocationTrackingOutput: Codable, Equatable {
 }
 
 public struct Route: Codable {
-    let origin: Point
+    let origin: Origin
     let destination: Point
     let nodes: [RouteNode]
 }
@@ -24,7 +24,7 @@ public struct RouteNode: Codable {
     let x: Int
     let y: Int
     let number: Int
-    let out_heading: Int
+    let out_heading: Int?
 }
 
 struct DirectionsResponse: Codable {
