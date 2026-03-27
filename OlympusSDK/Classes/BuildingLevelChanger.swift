@@ -26,7 +26,11 @@ class BuildingLevelChanger {
     var sectorId: Int
     var blChangerTagMap = [Int: [BuildingLevelTag]]()
     var buildingsAndLevelsMap = [String: [String]]()
+    var buildingIdMap = [String: Int]()
+    var buildingNameMap = [Int: String]()
     var levelIdMap = [String: Int]()
+    var levelNameMap = [Int: String]()
+    var levelToBuildingIdMap = [Int: Int]()
     var levelChangeAreaMap = [String: [[Float]]]()
     var levelWardsMap = [String: [LevelWard]]()
 
@@ -50,20 +54,54 @@ class BuildingLevelChanger {
     func setBuildingsData(buildingsData: [BuildingOutput]) {
         let buildingLevelData = makeBuildingLevelInfo(buildingsData: buildingsData)
         buildingsAndLevelsMap = buildingLevelData
+        makeBuildingIdMap(buildingsData: buildingsData)
+        makeLevelIdMap(buildingsData: buildingsData)
+    }
+
+    func makeBuildingIdMap(buildingsData: [BuildingOutput]) {
+        buildingIdMap.removeAll()
+        buildingNameMap.removeAll()
+        
+        for b in buildingsData {
+            buildingIdMap[b.name] = b.id
+            buildingNameMap[b.id] = b.name
+        }
     }
     
     func makeLevelIdMap(buildingsData: [BuildingOutput]) {
+        levelIdMap.removeAll()
+        levelNameMap.removeAll()
+        levelToBuildingIdMap.removeAll()
+        
         let buildings = buildingsData
         for b in buildings {
             let levels = b.levels
             for l in levels {
                 levelIdMap[l.name] = l.id
+                levelNameMap[l.id] = l.name
+                levelToBuildingIdMap[l.id] = b.id
             }
         }
     }
     
+    func getBuildingIdWithName(buildingName: String) -> Int? {
+        return buildingIdMap[buildingName]
+    }
+    
+    func getBuildingNameWithId(building_id: Int) -> String? {
+        return buildingNameMap[building_id]
+    }
+    
+    func getBuildingIdHasLevelId(level_id: Int) -> Int? {
+        return levelToBuildingIdMap[level_id]
+    }
+    
     func getLevelIdWithName(levelName: String) -> Int? {
         return self.levelIdMap[levelName]
+    }
+    
+    func getLevelNameWithId(level_id: Int) -> String? {
+        return levelNameMap[level_id]
     }
     
     func setLevelChangeArea(key: String, data: [[Float]]) {
@@ -333,7 +371,7 @@ class BuildingLevelChanger {
 //    func calculateLevelByBle(data: (Int, [(String, Float)])) -> String {
 //        var result: String = "UNKNOWN"
 //        var strongestBleData: (String, String, Float)?
-//        
+//
 //        var checker = [(String, String, Float)]()
 //        let bleData = data.1
 //        for (levelName, wardIds) in levelWardsMap {
@@ -343,7 +381,7 @@ class BuildingLevelChanger {
 //                    if normalized_rssi >= -90 {
 //                        checker.append((levelName, id, normalized_rssi))
 //                    }
-//                    
+//
 //                    if let stronggest = strongestBleData {
 //                        if stronggest.2 < normalized_rssi {
 //                            strongestBleData = (levelName, id, normalized_rssi)
@@ -354,13 +392,13 @@ class BuildingLevelChanger {
 //                }
 //            }
 //        }
-//        
+//
 //        if let stronggest = strongestBleData {
 //            if stronggest.2 >= -55 {
 //                return getLevelInKey(key: stronggest.0)
 //            }
 //        }
-//        
+//
 //        if checker.count >= 2 {
 //            let frequentLevel = mostFrequentCheckerValue(from: checker)
 //            result = frequentLevel
@@ -369,7 +407,7 @@ class BuildingLevelChanger {
 //                result = checker[0].0
 //            }
 //        }
-//        
+//
 //        return result != "UNKNOWN" ? getLevelInKey(key: result) : result
 //    }
     
