@@ -1045,6 +1045,8 @@
 		B34E117917C61A39427BE5EF4AB6203D /* BubbleChartRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1DF89FCBDF8E3D5287BADE0BFA3A08 /* BubbleChartRenderer.swift */; };
 		B360178B2F763ADE006450FF /* RoutingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B360178A2F763ADE006450FF /* RoutingManager.swift */; };
 		B36018252F7673C1006450FF /* NavigationStackManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36018242F7673C1006450FF /* NavigationStackManager.swift */; };
+		B39E305D2F7A397C00D74F2C /* NavigationNetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B39E305C2F7A397C00D74F2C /* NavigationNetworkManager.swift */; };
+		B39E30602F7A3A4300D74F2C /* NavigationNetworkConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B39E305F2F7A3A4300D74F2C /* NavigationNetworkConstants.swift */; };
 		B3BEB14EF1B580CC8FD62050869A8A10 /* FIRCLSUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = E1A4342E5D3100FA0BBEAC78AE0FB420 /* FIRCLSUtility.m */; };
 		B3F4914ECA36E9D7DE880FCA965C3452 /* FirebaseInstallations_Privacy.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 47C581450CDB4A6111CB97EEE0711A8C /* FirebaseInstallations_Privacy.bundle */; };
 		B405CB7AA26551A3F4503B729DED4749 /* RectNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0057CA194C6F71394D9A2A19A21562A7 /* RectNode.swift */; };
@@ -3236,6 +3238,8 @@
 		B360178A2F763ADE006450FF /* RoutingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RoutingManager.swift; path = OlympusSDK/Classes/RoutingManager.swift; sourceTree = "<group>"; };
 		B36018242F7673C1006450FF /* NavigationStackManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NavigationStackManager.swift; path = OlympusSDK/Classes/NavigationStackManager.swift; sourceTree = "<group>"; };
 		B36E5AB0CE1A7E4F1D981921D66D57FA /* OlympusSDK-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "OlympusSDK-Info.plist"; sourceTree = "<group>"; };
+		B39E305C2F7A397C00D74F2C /* NavigationNetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NavigationNetworkManager.swift; path = OlympusSDK/Classes/NavigationNetworkManager.swift; sourceTree = "<group>"; };
+		B39E305F2F7A3A4300D74F2C /* NavigationNetworkConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NavigationNetworkConstants.swift; path = OlympusSDK/Classes/NavigationNetworkConstants.swift; sourceTree = "<group>"; };
 		B3A4E8BFC66588A7C6A7CDEF0810D05B /* FIRLibrary.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FIRLibrary.h; path = FirebaseCore/Extension/FIRLibrary.h; sourceTree = "<group>"; };
 		B3B892E2371C08CD214E7D5EE4CD61A8 /* SnapKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = SnapKit.release.xcconfig; sourceTree = "<group>"; };
 		B3E0ED988D35584913DCF2F1B98829ED /* DidEndDisplayingProviding.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DidEndDisplayingProviding.swift; path = Sources/Private/EmbeddedLibraries/EpoxyCore/Model/Providers/DidEndDisplayingProviding.swift; sourceTree = "<group>"; };
@@ -5192,6 +5196,8 @@
 				CD4DC2CC03A2FB5DE6E64C3291931DA6 /* Support Files */,
 				B360178A2F763ADE006450FF /* RoutingManager.swift */,
 				B36018242F7673C1006450FF /* NavigationStackManager.swift */,
+				B39E305C2F7A397C00D74F2C /* NavigationNetworkManager.swift */,
+				B39E305F2F7A3A4300D74F2C /* NavigationNetworkConstants.swift */,
 			);
 			name = OlympusSDK;
 			path = ../..;
@@ -8542,10 +8548,12 @@
 				14C4FC5EB8D294B07750CC7F59E15249 /* JupiterLogger.swift in Sources */,
 				1D8BC95BC2814E23434DE4E2E035B630 /* JupiterManager.swift in Sources */,
 				C3E212EC61BD76752BB5C245B999096D /* JupiterMode.swift in Sources */,
+				B39E305D2F7A397C00D74F2C /* NavigationNetworkManager.swift in Sources */,
 				14C9B8B2CEEFBF517FA09834E37361DC /* JupiterModel.swift in Sources */,
 				B360178B2F763ADE006450FF /* RoutingManager.swift in Sources */,
 				5D41FEE34B0E86A99305141EC81F35DA /* JupiterNetworkConstants.swift in Sources */,
 				25B253DCDB4BE1401302C145D7C65A37 /* JupiterNetworkManager.swift in Sources */,
+				B39E30602F7A3A4300D74F2C /* NavigationNetworkConstants.swift in Sources */,
 				AD05303772B1409CBAEAC506F0FDDFA3 /* JupiterPostInputModel.swift in Sources */,
 				353572E26D49D7526A2EAD70D4ED8C37 /* JupiterPostOutputModel.swift in Sources */,
 				0E621752AC3F794CAE2A8C0689F91279 /* JupiterServiceModel.swift in Sources */,

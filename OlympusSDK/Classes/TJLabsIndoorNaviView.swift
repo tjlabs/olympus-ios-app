@@ -53,9 +53,13 @@ class TJLabsIndoorNaviView: UIView, TJLabsNaviViewDelegate, NavigationManagerDel
         naviView.updateResultInMap(result: userCoord)
     }
     
+    func isJupiterInOutStateChanged(_ state: InOutState) {
+        JupiterLogger.i(tag: "TJLabsIndoorNaviView", message: "(isJupiterInOutStateChanged) : state= \(state)")
+    }
+    
     func isUserGuidanceOut() {
         if isSafeDriving { return }
-        JupiterLogger.i(tag: "TJLabsIndoorNaviView", message: "isUserGuidanceOut : guidance out!!")
+        JupiterLogger.i(tag: "TJLabsIndoorNaviView", message: "(isUserGuidanceOut) : guidance out!!")
         isGuidanceOutReported = true
         
         DispatchQueue.main.async { [self] in
@@ -63,7 +67,7 @@ class TJLabsIndoorNaviView: UIView, TJLabsNaviViewDelegate, NavigationManagerDel
             UIView.animate(withDuration: 0.2, animations: {
                 self.naviView.removeRouteAll()
             })
-            self.showToastWithIcon(image: TJLabsAssets.image(named: "ic_warning"), message: "길안내 경로를 벗어났습니다.\n경로를 재탐색 합니다.", duration: 6)
+            self.showToastWithIcon(image: TJLabsAssets.image(named: "ic_warning"), message: "길안내 경로를 벗어났습니다.\n경로를 재탐색 합니다.", duration: 3)
         }
     }
     

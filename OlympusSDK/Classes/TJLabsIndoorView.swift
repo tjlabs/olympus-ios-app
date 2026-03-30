@@ -406,6 +406,7 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         self.indoorNaviView = TJLabsIndoorNaviView()
         self.indoorNaviView?.setSimulationMode(flag: self.simulationMode, bleFileName: self.bleFileName, sensorFileName: self.sensorFileName)
         let dest = Point(level_id: destination.level_id, x: Int(destination.x), y: Int(destination.y))
+//        let dest = Point(level_id: 53, x: 335, y: 0)
         self.indoorNaviView?.setNavigationDestination(dest: dest)
         self.indoorNaviView?.initialize(region: region, sectorId: sectorId, userId: userId)
         guard let topView = self.topView else { return }
