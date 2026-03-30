@@ -8,14 +8,10 @@ import TJLabsResource
 import TJLabsMap
 
 
-class NaviViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviViewDelegate {
+class NaviViewController: UIViewController, NavigationManagerDelegate, TJLabsNaviViewDelegate {
     func onNavigationRoute(_ view: TJLabsMap.TJLabsNaviView, routes: [(String, String, Int, Float, Float)]) {
         print("(NaviVC) onNavigationRoute : route len= \(routes.count)")
         self.isNaviRouteLoaded = true
-    }
-    
-    func report(flag: Int) {
-        // TODO
     }
     
     func onJupiterReport(_ flag: Int) {
@@ -46,7 +42,7 @@ class NaviViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviVi
             isParkingGuideRendered = true
         }
         
-        if result.level_name == "B2" && isParkingGuideRendered {
+        if result.level_name != "B0" && isParkingGuideRendered {
             DispatchQueue.main.async { [self] in
                 self.guideView?.removeFromSuperview()
             }
@@ -64,16 +60,6 @@ class NaviViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviVi
         }
         
         naviView.updateResultInMap(result: userCoord)
-//        print("(MapVC) : userCoord = \(userCoord)")
-        
-//        let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-//        let diffTime = currentTime - gOutReportedTime
-//        if isGuidanceOutReported && diffTime > 5000 {
-//            DispatchQueue.main.async {
-//                self.showToastWithIcon(message: "길안내 경로를 벗어났습니다.\n경로를 재탐색 합니다.")
-//            }
-//            gOutReportedTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-//        }
     }
     
     func isUserGuidanceOut() {
@@ -90,9 +76,13 @@ class NaviViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviVi
     }
     
     func isNavigationRouteChanged(_ routes: [(String, String, Int, Float, Float)]) {
-        print("(NaviVC) isNavigationRouteChanged : route len= \(routes.count)")
-        print("(NaviVC) isNavigationRouteChanged : routes= \(routes)")
         naviView.setNaviRoutes(routes: routes)
+        if isGuidanceOutReported {
+            isNaviRouteRendered = false
+            isGuidanceOutReported = false
+            print("(NaviVC) isNavigationRouteChanged : route len= \(routes.count)")
+            print("(NaviVC) isNavigationRouteChanged : routes= \(routes)")
+        }
     }
     
     func isNavigationRouteFailed() {
@@ -107,12 +97,12 @@ class NaviViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviVi
     }
     
     var region: String = JupiterRegion.KOREA.rawValue
-    var sectorId: Int = 6
+    var sectorId: Int = 20
     var userId: String = ""
     
     var fromSelectedName: String?
     
-    var serviceManager: JupiterManager?
+    var serviceManager: NavigationManager?
     var jupiterResult: JupiterResult?
     
     private let containerView = UIView().then {
@@ -176,8 +166,7 @@ class NaviViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviVi
     
     func startService() {
         let uniqueId = makeUniqueId(uuid: self.userId)
-        
-        serviceManager = JupiterManager(id: uniqueId)
+        serviceManager = NavigationManager(id: uniqueId, sectorId: sectorId)
         serviceManager?.delegate = self
         naviView.delegate = self
         
@@ -193,18 +182,18 @@ class NaviViewController: UIViewController, JupiterManagerDelegate, TJLabsNaviVi
         }
         
         print("(NaviVC) navigationMode : scenario= \(scenario)")
-        let naviMode = !isSafeDriving
-        serviceManager?.navigationMode(flag: naviMode, scenario: scenario)
+        serviceManager?.setNaviDestination(dest: Point(level_id: 53, x: 335, y: 0))
+        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_0310.csv", sensorFileName: "sensor_coex_03_0310.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_0303.csv", sensorFileName: "sensor_coex_02_0303.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_0224.csv", sensorFileName: "sensor_coex_03_0224.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_01_0119.csv", sensorFileName: "sensor_coex_03_01_0119.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_04_01_0119.csv", sensorFileName: "sensor_coex_04_01_0119.csv")
-        serviceManager?.startJupiter(sectorId: sectorId, mode: .MODE_AUTO, debugOption: true)
+        serviceManager?.startService(sectorId: sectorId, mode: .MODE_AUTO, debugOption: true)
     }
     
     func stopSerivce() {
-        serviceManager?.stopJupiter(completion: { [self] isSuccess, msg in
+        serviceManager?.stopService(completion: { [self] isSuccess, msg in
         })
     }
     

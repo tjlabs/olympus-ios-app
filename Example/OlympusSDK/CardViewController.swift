@@ -5,23 +5,24 @@ import OlympusSDK
 import TJLabsCommon
 import TJLabsResource
 
-class CardViewController: UIViewController, JupiterManagerDelegate {
-    func isWaypointChanged(_ waypoints: [[Double]]) {
-        // TODO
-    }
+class CardViewController: UIViewController, NavigationManagerDelegate {
     
     func isUserGuidanceOut() {
-        print("(CardVC) isUserGuidanceOut")
-    }
-    
-    func isNavigationRouteFailed() {
-        // TODO
+        //TODO
     }
     
     func isNavigationRouteChanged(_ routes: [(String, String, Int, Float, Float)]) {
-        // TODO
+        //TODO
     }
-
+    
+    func isNavigationRouteFailed() {
+        //TODO
+    }
+    
+    func isWaypointChanged(_ waypoints: [[Double]]) {
+        //TODO
+    }
+    
     func onJupiterSuccess(_ isSuccess: Bool) {
         print("(CardVC) onJupiterSuccess : \(isSuccess)")
     }
@@ -92,11 +93,10 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
     
     var progressingView: ProgressingView?
     
-    var serviceManager: JupiterManager?
+    var serviceManager: NavigationManager?
     override func viewDidDisappear(_ animated: Bool) {
-//        serviceManager.stopService(completion: { _,_ in
-//        })
-//        serviceManager.removeObserver(self)
+        serviceManager?.stopService(completion: { _,_ in
+        })
     }
     
     var statusTime: Int = 0
@@ -186,7 +186,7 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
 //        self.setPhoenixData()
         let uniqueId = makeUniqueId(uuid: self.userId)
         
-        serviceManager = JupiterManager(id: uniqueId)
+        serviceManager = NavigationManager(id: uniqueId, sectorId: sector_id)
         serviceManager?.delegate = self
         
         var scenario: Int?
@@ -200,19 +200,16 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
 //            }
 //        }
         
-        let naviMode = !isSafeDriving
-        print("(CardVC) navigationMode : scenario= \(scenario)")
-        serviceManager?.setNaviDestination(dest: Point(level_id: 53, x: 335, y: 0))
-        serviceManager?.navigationMode(flag: naviMode, scenario: scenario)
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_0317.csv", sensorFileName: "sensor_coex_01_0317.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_0310.csv", sensorFileName: "sensor_coex_02_0310.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_0303.csv", sensorFileName: "sensor_coex_03_0303.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_0224.csv", sensorFileName: "sensor_coex_02_0224.csv")
         
+        serviceManager?.setNaviDestination(dest: Point(level_id: 53, x: 335, y: 0))
         serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test02_ent2.csv", sensorFileName: "sensor_251013_songdo_test02_ent2.csv")
 //        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test05_ent3.csv", sensorFileName: "sensor_251013_songdo_test05_ent3.csv")
-        serviceManager?.startJupiter(sectorId: sector_id, mode: .MODE_AUTO, debugOption: true)
+        serviceManager?.startService(sectorId: sector_id, mode: .MODE_AUTO, debugOption: true)
         
         // service
 //        serviceManager.addObserver(self)
@@ -798,13 +795,13 @@ class CardViewController: UIViewController, JupiterManagerDelegate {
             let pathPixel: [[Double]] = PathPixel[key] ?? [[Double]]()
             
             var naviRoute = [[Float]]()
-            if let navi_route = debugResult.navi_route {
-                for route in navi_route {
-                    if route.building  == currentBuilding && route.level == currentLevel {
-                        naviRoute.append([route.x, route.y])
-                    }
-                }
-            }
+//            if let navi_route = debugResult.navi_route {
+//                for route in navi_route {
+//                    if route.building  == currentBuilding && route.level == currentLevel {
+//                        naviRoute.append([route.x, route.y])
+//                    }
+//                }
+//            }
             
             if (PathPixel.contains(where: condition)) {
                 if (pathPixel.isEmpty) {

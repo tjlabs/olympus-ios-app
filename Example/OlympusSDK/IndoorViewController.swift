@@ -42,6 +42,7 @@ class IndoorViewController: UIViewController {
     }
     
     func setupIndoorView() {
+        indoorView.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
         indoorView.initialize(region: self.region, sectorId: self.sectorId, userId: self.userId)
         indoorView.configureFrame(to: mainView)
         mainView.addSubview(indoorView)
