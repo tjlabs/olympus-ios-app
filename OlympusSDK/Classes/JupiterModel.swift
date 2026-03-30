@@ -9,24 +9,44 @@ public enum JupiterRegion: String {
     case CANADA = "CANADA"
 }
 
+protocol JupiterCalcManagerDelegate: AnyObject {
+    func onRfdResult(receivedForce: ReceivedForce)
+    func onEntering(userVelocity: UserVelocity,
+                    peakIndex: Int?,
+                    key: String,
+                    level_id: Int)
+    func provideTrackingCorrection(mode: UserMode,
+                                   userVelocity: UserVelocity,
+                                   peakIndex: Int?,
+                                   recentLandmarkPeaks: [PeakData]?,
+                                   travelingLinkDist: Float,
+                                   indexForEdit: Int,
+                                   curPmResult: FineLocationTrackingOutput?) -> (NaviCorrectionInfo, [StackEditInfo])?
+    func isJupiterPhaseChanged(index: Int, phase: JupiterPhase, xyh: [Float]?)
+}
+
 public protocol JupiterManagerDelegate: AnyObject {
+    func onRfdResult(receivedForce: ReceivedForce)
+    func onEntering(userVelocity: UserVelocity,
+                    peakIndex: Int?,
+                    key: String,
+                    level_id: Int)
+    func provideTrackingCorrection(mode: UserMode,
+                                   userVelocity: UserVelocity,
+                                   peakIndex: Int?,
+                                   recentLandmarkPeaks: [PeakData]?,
+                                   travelingLinkDist: Float,
+                                   indexForEdit: Int,
+                                   curPmResult: FineLocationTrackingOutput?) -> (NaviCorrectionInfo, [StackEditInfo])?
     func onJupiterSuccess(_ isSuccess: Bool)
     func onJupiterError(_ code: Int, _ msg: String)
     func onJupiterResult(_ result: JupiterResult)
     func onJupiterReport(_ flag: Int)
-    
-    func isUserGuidanceOut()
-    func isNavigationRouteChanged(_ routes: [(String, String, Int, Float, Float)])
-    func isNavigationRouteFailed()
-    func isWaypointChanged(_ waypoints: [[Double]])
+    func isJupiterPhaseChanged(index: Int, phase: JupiterPhase, xyh: [Float]?)
 }
 
 public enum JupiterPhase {
     case NONE, ENTERING, SEARCHING, TRACKING
-}
-
-enum JupiterResultMode {
-    case NAVI, CALC, NONE
 }
 
 // MARK: - JupiterResult
@@ -81,7 +101,6 @@ public struct JupiterDebugResult {
     public var selected_cand: SelectedCandidate?
     public var selected_search: SelectedSearch?
     public var ratio: Float?
-    public var navi_route: [NavigationRoute]?
     public var navi_xyh: [Float]
 }
 
