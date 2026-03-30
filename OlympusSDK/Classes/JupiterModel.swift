@@ -42,11 +42,12 @@ public protocol JupiterManagerDelegate: AnyObject {
     func onJupiterError(_ code: Int, _ msg: String)
     func onJupiterResult(_ result: JupiterResult)
     func onJupiterReport(_ flag: Int)
+    func isJupiterInOutStateChanged(_ state: InOutState)
     func isJupiterPhaseChanged(index: Int, phase: JupiterPhase, xyh: [Float]?)
 }
 
 public enum JupiterPhase {
-    case NONE, ENTERING, SEARCHING, TRACKING
+    case NONE, ENTERING, SEARCHING, TRACKING, EXITING
 }
 
 // MARK: - JupiterResult
