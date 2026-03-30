@@ -26,7 +26,7 @@ class StackManager {
     var curResultBuffer = [FineLocationTrackingOutput]()
     var curPmResultBuffer = [FineLocationTrackingOutput]()
     var searchResultBuffer = [FineLocationTrackingOutput]()
-    var indexAndNaviRouteResultBuffer = [(Int, NavigationRoute)]()
+    var indexAndNaviRouteResultBuffer = [(Int, RoutingRoute)]()
     
     var recoveryIndex: Int = 0
     
@@ -142,7 +142,7 @@ class StackManager {
         mode: UserMode,
         from: Int,
         shifteTraj: [CandidateTrajectory]? = nil,
-        indexAndNaviRouteResultBuffer: [(Int, NavigationRoute)]? = nil,
+        stackEditInfoBuffer: [StackEditInfo]? = nil,
         paddings: [Float]
     ) {
         if let shifteTraj = shifteTraj {
@@ -195,18 +195,19 @@ class StackManager {
 
                 return newResult
             }
-        } else if let indexAndNaviRouteResultBuffer = indexAndNaviRouteResultBuffer {
-            let routeByIndex: [Int: NavigationRoute] =
-                Dictionary(uniqueKeysWithValues: indexAndNaviRouteResultBuffer.map { ($0.0, $0.1) })
+        } else if let stackEditInfoBuffer = stackEditInfoBuffer {
+            let bufferByIndex: [Int: StackEditInfo] = Dictionary(
+                uniqueKeysWithValues: stackEditInfoBuffer.map { ($0.index, $0) }
+            )
             curResultBuffer = curResultBuffer.map { result in
-                guard let route = routeByIndex[result.index] else {
+                guard let buf = bufferByIndex[result.index] else {
                     return result
                 }
 
                 var newResult = result
-                newResult.x = route.x
-                newResult.y = route.y
-                newResult.absolute_heading = route.heading
+                newResult.x = buf.x
+                newResult.y = buf.y
+                newResult.absolute_heading = buf.heading
 
                 return newResult
             }
@@ -244,7 +245,7 @@ class StackManager {
         mode: UserMode,
         from: Int,
         shifteTraj: [CandidateTrajectory]? = nil,
-        indexAndNaviRouteResultBuffer: [(Int, NavigationRoute)]? = nil,
+        stackEditInfoBuffer: [StackEditInfo]? = nil,
         paddings: [Float]
     ) -> FineLocationTrackingOutput {
         if let shifteTraj = shifteTraj {
@@ -297,18 +298,19 @@ class StackManager {
 
                 return newResult
             }
-        } else if let indexAndNaviRouteResultBuffer = indexAndNaviRouteResultBuffer {
-            let routeByIndex: [Int: NavigationRoute] =
-                Dictionary(uniqueKeysWithValues: indexAndNaviRouteResultBuffer.map { ($0.0, $0.1) })
+        } else if let stackEditInfoBuffer = stackEditInfoBuffer {
+            let bufferByIndex: [Int: StackEditInfo] = Dictionary(
+                uniqueKeysWithValues: stackEditInfoBuffer.map { ($0.index, $0) }
+            )
             curPmResultBuffer = curPmResultBuffer.map { result in
-                guard let route = routeByIndex[result.index] else {
+                guard let buf = bufferByIndex[result.index] else {
                     return result
                 }
 
                 var newResult = result
-                newResult.x = route.x
-                newResult.y = route.y
-                newResult.absolute_heading = route.heading
+                newResult.x = buf.x
+                newResult.y = buf.y
+                newResult.absolute_heading = buf.heading
 
                 return newResult
             }
@@ -333,7 +335,7 @@ class StackManager {
         }
     }
     
-    func stackIndexAndNaviRouteResult(naviRouteResult: NavigationRoute, userPeak: UserPeak? = nil, uvd: UserVelocity) {
+    func stackIndexAndNaviRouteResult(naviRouteResult: RoutingRoute, userPeak: UserPeak? = nil, uvd: UserVelocity) {
         if let curPeak = userPeak {
             let peakIndex = curPeak.peak_index
             self.indexAndNaviRouteResultBuffer = self.indexAndNaviRouteResultBuffer.filter { $0.0 >= peakIndex }
@@ -345,7 +347,7 @@ class StackManager {
         }
     }
     
-    func getIndexAndNaviRouteResultBuffer(size: Int) -> [(Int, NavigationRoute)] {
+    func getIndexAndNaviRouteResultBuffer(size: Int) -> [(Int, RoutingRoute)] {
         guard size > 0 else { return [] }
         if indexAndNaviRouteResultBuffer.count <= size {
             return indexAndNaviRouteResultBuffer
@@ -354,17 +356,8 @@ class StackManager {
         }
     }
     
-    func getIndexAndNaviRouteResultBuffer(index: Int) -> [(Int, NavigationRoute)] {
+    func getIndexAndNaviRouteResultBuffer(index: Int) -> [(Int, RoutingRoute)] {
         return self.indexAndNaviRouteResultBuffer.filter { $0.0 >= index }
-    }
-    
-    func stackNaviRouteDirection(sectorId: Int, curPmResult: FineLocationTrackingOutput, naviRouteResult: NavigationRoute) {
-        var naviResult = curPmResult
-        naviResult.x = naviRouteResult.x
-        naviResult.y = naviRouteResult.y
-        naviResult.absolute_heading = naviRouteResult.heading
-        
-        guard let matchedLinks = PathMatcher.shared.getLinkInfosWithResult(sectorId: sectorId, result: naviResult) else { return }
     }
     
     func makeHeadingSet(resultBuffer: [FineLocationTrackingOutput]) -> [Float] {
