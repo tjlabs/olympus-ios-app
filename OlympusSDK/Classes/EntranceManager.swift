@@ -58,33 +58,6 @@ class EntranceManager {
         }
     }
     
-    func getEntRoutingOrigin(level_id: Int) -> Origin? {
-        guard let key = self.curEntKey else { return nil }
-        var origin: Origin?
-        if key.contains("6_COEX") {
-            if key.contains("_1") {
-                origin = Origin(level_id: level_id, x: 252, y: 33, absolute_heading: 90)
-            } else if key.contains("_2") {
-                origin = Origin(level_id: level_id, x: 250, y: 210, absolute_heading: 180)
-            } else if key.contains("_3") {
-                origin = Origin(level_id: level_id, x: 291, y: 316, absolute_heading: 180)
-            } else if key.contains("_4") {
-                origin = Origin(level_id: level_id, x: 220, y: 442, absolute_heading: 90)
-            } else if key.contains("_5") {
-                origin = Origin(level_id: level_id, x: 59, y: 329, absolute_heading: 270)
-            }
-        } else if key.contains("20_Convensia") {
-            if key.contains("_1") {
-                origin = Origin(level_id: level_id, x: 45, y: 199, absolute_heading: 0)
-            } else if key.contains("_2") {
-                origin = Origin(level_id: level_id, x: 348, y: 158, absolute_heading: 180)
-            } else if key.contains("_3") {
-                origin = Origin(level_id: level_id, x: 348, y: 32, absolute_heading: 180)
-            }
-        }
-        return origin
-    }
-    
     func checkStartEntTrack(wardId: String, sec: Int) -> String? {
         if entRouteMap.isEmpty {
             curEntKey = nil
