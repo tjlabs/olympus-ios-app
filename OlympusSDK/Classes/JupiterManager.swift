@@ -1,23 +1,23 @@
 import Foundation
 import TJLabsCommon
+import TJLabsResource
 import UIKit
 
 public class JupiterManager: JupiterCalcManagerDelegate {
-    
-    func isUserGuidanceOut() {
-        delegate?.isUserGuidanceOut()
+    func provideTrackingCorrection(mode: TJLabsCommon.UserMode, userVelocity: TJLabsCommon.UserVelocity, peakIndex: Int?, recentLandmarkPeaks: [TJLabsResource.PeakData]?, travelingLinkDist: Float, indexForEdit: Int, curPmResult: FineLocationTrackingOutput?) -> (NaviCorrectionInfo, [StackEditInfo])? {
+        return delegate?.provideTrackingCorrection(mode: mode, userVelocity: userVelocity, peakIndex: peakIndex, recentLandmarkPeaks: recentLandmarkPeaks, travelingLinkDist: travelingLinkDist, indexForEdit: indexForEdit, curPmResult: curPmResult)
     }
     
-    func isNavigationRouteChanged(routes: [(String, String, Int, Float, Float)]) {
-        delegate?.isNavigationRouteChanged(routes)
+    func onRfdResult(receivedForce: TJLabsCommon.ReceivedForce) {
+        delegate?.onRfdResult(receivedForce: receivedForce)
     }
     
-    func isNavigationRouteFailed() {
-        delegate?.isNavigationRouteFailed()
+    func onEntering(userVelocity: UserVelocity, peakIndex: Int?, key: String, level_id: Int) {
+        delegate?.onEntering(userVelocity: userVelocity, peakIndex: peakIndex, key: key, level_id: level_id)
     }
     
-    func isWaypointChanged(waypoints: [[Double]]) {
-        delegate?.isWaypointChanged(waypoints)
+    func isJupiterPhaseChanged(index: Int, phase: JupiterPhase, xyh: [Float]?) {
+        delegate?.isJupiterPhaseChanged(index: index, phase: phase, xyh: xyh)
     }
     
     public static let sdkVersion: String = "0.0.1"
@@ -49,6 +49,10 @@ public class JupiterManager: JupiterCalcManagerDelegate {
         let deviceOs = UIDevice.current.systemVersion
         let arr = deviceOs.components(separatedBy: ".")
         self.deviceOsVersion = Int(arr[0]) ?? 0
+    }
+    
+    deinit {
+        jupiterCalcManager = nil
     }
 
     // MARK: - Start & Stop Jupiter Service
@@ -104,8 +108,6 @@ public class JupiterManager: JupiterCalcManagerDelegate {
                         JupiterFileManager.shared.createFileWithName(region: region, sector_id: sectorId, deviceModel: deviceModel, osVersion: deviceOsVersion, fileName: "_")
                     }
                     jupiterCalcManager?.delegate = self
-                    jupiterCalcManager?.navigationMode(flag: self.naviMode, scenario: self.naviScenario)
-                    jupiterCalcManager?.setNaviDestination(dest: self.naviDestination)
                     jupiterCalcManager?.setSendRfdLength(sendRfdLength)
                     jupiterCalcManager?.setSendUvdLength(sendUvdLength)
                     startGenerator(mode: mode, completion: { [self] isSuccess, msg in
@@ -129,24 +131,6 @@ public class JupiterManager: JupiterCalcManagerDelegate {
         })
     }
     
-    public func navigationMode(flag: Bool, scenario: Int? = nil) {
-        self.naviMode = flag
-        self.naviScenario = scenario
-        jupiterCalcManager?.navigationMode(flag: self.naviMode, scenario: scenario)
-    }
-    
-    public func setNaviDestination(dest: Point) {
-        self.naviDestination = dest
-    }
-    
-    public func requestRouting(start: RoutingStart, end: Point, waypoints: [Point] = [], completion: @escaping (RoutingResult?) -> Void) {
-        jupiterCalcManager?.requestRouting(start: start, end: end, waypoints: waypoints, completion: completion)
-    }
-    
-    public func requestRouting(end: Point, waypoints: [Point] = [], completion: @escaping (RoutingResult?) -> Void) {
-        jupiterCalcManager?.requestRouting(end: end, waypoints: waypoints, completion: completion)
-    }
-
     private func performTasksWithCounter(tasks: [(_ group: DispatchGroup, _ reportError: @escaping (String) -> Void) -> Void],
                                          onComplete: @escaping () -> Void,
                                          onError: @escaping (String) -> Void) {
@@ -201,6 +185,26 @@ public class JupiterManager: JupiterCalcManagerDelegate {
         }
     }
     
+    // MARK: - Bridging
+    public func getBuildingsData() -> [BuildingOutput]? {
+        return jupiterCalcManager?.getBuildingsData()
+    }
+    
+    func getCurPmResultBuffer(from: Int) -> [FineLocationTrackingOutput]? {
+        return jupiterCalcManager?.getCurPmResultBuffer(from: from)
+    }
+    
+    func getCurPmResultBuffer(size: Int) -> [FineLocationTrackingOutput]? {
+        return jupiterCalcManager?.getCurPmResultBuffer(size: size)
+    }
+    
+//    func setNaviCorrectionInfo(naviCorrectionInfo: NaviCorrectionInfo) {
+//        jupiterCalcManager?.setNaviCorrectionInfo(naviCorrectionInfo: naviCorrectionInfo)
+//    }
+//    
+//    func setStackEditInfoBuffer(stackEditInfoBuffer: [StackEditInfo]) {
+//        jupiterCalcManager?.setStackEditInfoBuffer(stackEditInfoBuffer: stackEditInfoBuffer)
+//    }
     
     // MARK: - ID Validation
     private func checkIdIsAvailable(id: String) -> (Bool, String) {

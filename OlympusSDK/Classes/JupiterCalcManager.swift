@@ -4,17 +4,7 @@ import simd
 import TJLabsCommon
 import TJLabsResource
 
-protocol JupiterCalcManagerDelegate: AnyObject {
-    func isUserGuidanceOut()
-
-    func isNavigationRouteChanged(routes: [(String, String, Int, Float, Float)])
-    
-    func isNavigationRouteFailed()
-    
-    func isWaypointChanged(waypoints: [[Double]])
-}
-
-class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsResourceManagerDelegate, BuildingLevelChangerDelegate, NavigationManagerDelegate {
+class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsResourceManagerDelegate, BuildingLevelChangerDelegate {
     
     // MARK: - Classes
     private var tjlabsResourceManager = TJLabsResourceManager()
@@ -28,11 +18,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     private var sectionController = SectionController()
     private var landmarkTagger: LandmarkTagger?
     private var solutionEstimator: SolutionEstimator?
-    private var navigationManager: NavigationManager?
     
     // MARK: - Delegate
     weak var delegate: JupiterCalcManagerDelegate?
-    var guidanceOutReported: Bool = false
     
     // MARK: - User Properties
     var id: String = ""
@@ -61,9 +49,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     private var searcingId: String = ""
     private var searchingIndex: Int = 0
     
-    // MARK: - Searching
-    private var trackingIndex: Int = 0
-    
     // MARK: - Landmark Correction
     private var correctionId: String = ""
     private var correctionIndex: Int = 0
@@ -76,27 +61,19 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     private var recentLandmarkPeaks: [PeakData]?
     
     // MARK: - Navigation
-    private var naviMode: Bool = false
-    private var naviDestination: Point?
-    private var naviScenario: Int?
-    private var hasNaviRoute: Bool = false
     private var feedbackIndex: Int = 0
-    private var feedbackCount: Int = 0
-    private var curNaviCase: NaviCase = .NONE
-    private var sectionCorrectionIndex: Int = 0
     
     // MARK: - Etc..
     private var pathMatchingCondition = PathMatchingCondition()
     private var report = -1
     
     // MARK: - Result
-    var jupiterResultMode: JupiterResultMode = .NONE
     var jupiterPhase: JupiterPhase = .NONE
     var curResult: FineLocationTrackingOutput?
     var preResult: FineLocationTrackingOutput?
     var curPathMatchingResult: FineLocationTrackingOutput?
     var prePathMatchingResult: FineLocationTrackingOutput?
-    var curNaviRouteResult: NavigationRoute?
+    var buildingsData: [BuildingOutput]?
     
     // MARK: - Debuging
     var debug_calc_xyh: [Float] = [0, 0, 0]
@@ -108,7 +85,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     var debug_selected_search: SelectedSearch?
     var debug_selected_cand: SelectedCandidate?
     var debug_ratio: Float?
-    var debug_navi_route: [NavigationRoute]?
     var debug_navi_xyh: [Float] = [0, 0, 0]
     
     // MARK: - init & deinit
@@ -123,13 +99,11 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         self.kalmanFilter = KalmanFilter(stackManager: stackManager)
         self.landmarkTagger = LandmarkTagger(sectorId: sectorId)
         self.solutionEstimator = SolutionEstimator(sectorId: sectorId)
-        self.navigationManager = NavigationManager(id: id, sectorId: sectorId)
         
         peakDetector.setInnerWardIds(ids: self.entManager!.getEntInnermostWardIds())
         
         tjlabsResourceManager.delegate = self
         buildingLevelChanger?.delegate = self
-        navigationManager?.delegate = self
     }
     
     deinit { }
@@ -142,17 +116,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         })
     }
     
-    func navigationMode(flag: Bool, scenario: Int? = nil) {
-        self.naviMode = flag
-        self.naviScenario = scenario
-        
-        JupiterLogger.i(tag: "JupiterCalcManager", message: "(navigationMode) : \(flag)")
-        JupiterLogger.i(tag: "JupiterCalcManager", message: "(navigationMode) : scenario= \(scenario)")
-    }
-    
-    func setNaviDestination(dest: Point?) {
-        self.naviDestination = dest
-        JupiterLogger.i(tag: "JupiterCalcManager", message: "(setNaviDestination) : dest= \(dest)")
+    func getBuildingsData() -> [BuildingOutput]? {
+        return self.buildingsData
     }
     
     // MARK: - Set REC length
@@ -213,23 +178,13 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         guard let curPathMatchingResult = self.curPathMatchingResult else { return nil }
         self.debug_calc_xyh = [curPathMatchingResult.x, curPathMatchingResult.y, curPathMatchingResult.absolute_heading]
         
-        var buildingName = curPathMatchingResult.building_name
-        var levelName = curPathMatchingResult.level_name
+        let buildingName = curPathMatchingResult.building_name
+        let levelName = curPathMatchingResult.level_name
         let scc = curPathMatchingResult.scc
-        var x = curPathMatchingResult.x
-        var y = curPathMatchingResult.y
-        var absoluteHeading = curPathMatchingResult.absolute_heading
-        
-        if jupiterResultMode == .NAVI {
-            if let naviRouteResult = self.curNaviRouteResult {
-                buildingName = naviRouteResult.building
-                levelName = naviRouteResult.level
-                x = naviRouteResult.x
-                y = naviRouteResult.y
-                absoluteHeading = naviRouteResult.heading
-            }
-        }
-        
+        let x = curPathMatchingResult.x
+        let y = curPathMatchingResult.y
+        let absoluteHeading = curPathMatchingResult.absolute_heading
+
         var llh: LLH?
         if let affineParam = AffineConverter.shared.getAffineParam(sectorId: sectorId) {
             let converted = AffineConverter.shared.convertPpToLLH(x: Double(x), y: Double(y), heading: Double(absoluteHeading), param: affineParam)
@@ -264,22 +219,12 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         guard let curPathMatchingResult = self.curPathMatchingResult else { return nil }
         self.debug_calc_xyh = [curPathMatchingResult.x, curPathMatchingResult.y, curPathMatchingResult.absolute_heading]
         
-        var buildingName = curPathMatchingResult.building_name
-        var levelName = curPathMatchingResult.level_name
+        let buildingName = curPathMatchingResult.building_name
+        let levelName = curPathMatchingResult.level_name
         let scc = curPathMatchingResult.scc
-        var x = curPathMatchingResult.x
-        var y = curPathMatchingResult.y
-        var absoluteHeading = curPathMatchingResult.absolute_heading
-        
-        if jupiterResultMode == .NAVI {
-            if let naviRouteResult = self.curNaviRouteResult {
-                buildingName = naviRouteResult.building
-                levelName = naviRouteResult.level
-                x = naviRouteResult.x
-                y = naviRouteResult.y
-                absoluteHeading = naviRouteResult.heading
-            }
-        }
+        let x = curPathMatchingResult.x
+        let y = curPathMatchingResult.y
+        let absoluteHeading = curPathMatchingResult.absolute_heading
         
         var llh: LLH?
         if let affineParam = AffineConverter.shared.getAffineParam(sectorId: sectorId) {
@@ -314,7 +259,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             selected_cand: self.debug_selected_cand,
             selected_search: self.debug_selected_search,
             ratio: self.debug_ratio,
-            navi_route: self.debug_navi_route,
             navi_xyh: self.debug_navi_xyh
         )
         
@@ -324,6 +268,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     // MARK: - RFDGeneratorDelegate Methods
     func onRfdResult(_ generator: TJLabsCommon.RFDGenerator, receivedForce: TJLabsCommon.ReceivedForce) {
         handleRfd(rfd: receivedForce)
+        delegate?.onRfdResult(receivedForce: receivedForce)
     }
     
     func handleRfd(rfd: ReceivedForce) {
@@ -407,7 +352,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                     blByPeak = buildingLevelByPeak
                     stackManager.stackBuildingLevelByPeak(buildingLevel: buildingLevelByPeak)
                     let buildingLevelByPeakBuffer = stackManager.getBuildingLevelByPeakBuffer(size: 3)
-                    startIndoorSearching(blChanger: blChanger, buildingLevelByPeakBuffer: buildingLevelByPeakBuffer)
+                    startIndoorSearching(uvd: userVelocity, blChanger: blChanger, buildingLevelByPeakBuffer: buildingLevelByPeakBuffer)
                 }
                 
                 // Building & Level Changer
@@ -530,82 +475,37 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             JupiterResultState.isInRecoveryProcess = false
         }
         
-        if hasNaviRoute && jupiterPhase == .TRACKING {
-            guard let naviRouteResult = calcNaviRouteResult(uvd: userVelocity, curResult: curResult) else { return }
-            self.debug_navi_xyh = [naviRouteResult.x, naviRouteResult.y, naviRouteResult.heading]
-            self.curNaviRouteResult = naviRouteResult
-            stackManager.stackIndexAndNaviRouteResult(naviRouteResult: naviRouteResult, userPeak: curPeak, uvd: userVelocity)
-            let indexAndNaviRouteResultBuffer = stackManager.getIndexAndNaviRouteResultBuffer(size: 10)
-            let naviRouteResultBuffer = indexAndNaviRouteResultBuffer.map { $0.1 }
-            let curPmResultBuffer = stackManager.getCurPmResultBuffer(size: 10)
+        if jupiterPhase == .TRACKING {
+            let indexForEdit = max(correctionIndex, feedbackIndex)
+            guard let trackingFeedback = delegate?.provideTrackingCorrection(mode: mode, userVelocity: userVelocity, peakIndex: curPeak?.peak_index, recentLandmarkPeaks: recentLandmarkPeaks, travelingLinkDist: travelingLinkDist, indexForEdit: indexForEdit, curPmResult: curPathMatchingResult) else { return }
+            let naviCorrectionInfo = trackingFeedback.0
+            let stackEditInfoBuffer = trackingFeedback.1
+            let paddings = JupiterMode.PADDING_VALUES_MEDIUM
+            stackManager.editCurResultBuffer(sectorId: sectorId, mode: mode, from: indexForEdit, stackEditInfoBuffer: stackEditInfoBuffer, paddings: paddings)
+            _ = stackManager.editCurPmResultBuffer(sectorId: sectorId, mode: mode, from: indexForEdit, stackEditInfoBuffer: stackEditInfoBuffer, paddings: paddings)
+            kalmanFilter?.editTuResultBuffer(sectorId: sectorId, mode: mode, from: indexForEdit, stackEditInfoBuffer: stackEditInfoBuffer, curResult: curResult, paddings: paddings)
             
+            kalmanFilter?.updateTuPosition(coord: [naviCorrectionInfo.x, naviCorrectionInfo.y])
+            feedbackIndex = userVelocity.index
             
-            guard let followingResult = isFollowingNavigationRoute(curNaviCase: curNaviCase, travelingLinkDist: travelingLinkDist, naviRouteResultBuffer: naviRouteResultBuffer, curPmResultBuffer: curPmResultBuffer) else { return }
-            
-            let estimatedNaviCase = followingResult.naviCase
-            curNaviCase = estimatedNaviCase
-            if curNaviCase == .CASE_3 && !guidanceOutReported {
-                guidanceOutReported = true
-                self.isUserGuidanceOut()
-            } else if curNaviCase == .CASE_2 {
-                let diffSectionCorrIndex = userVelocity.index - sectionCorrectionIndex
-                if diffSectionCorrIndex < 10 {
-                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFollowingNavigationRoute: section correction is applied at \(sectionCorrectionIndex) index (curIndex = \(userVelocity.index))")
-                    updateDebugTuResult()
-                    return
-                }
-                let curNaviSection = naviRouteResult.section
-                let curPmResult = curPmResultBuffer[curPmResultBuffer.count-1]
-                guard let curPmSection = navigationManager?.findSectionContaining(x: curPmResult.x, y: curPmResult.y) else {
-                    updateDebugTuResult()
-                    return
-                }
-                if curNaviSection == curPmSection {
-                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFollowingNavigationRoute: findSectionContaining // jupiter and navi result are in same section \(curPmSection)")
-                    navigationManager?.updateCurRoutePos(curSection: curPmSection, curResult: curPmResult)
-                    sectionCorrectionIndex = userVelocity.index
+            let dist = sqrt((naviCorrectionInfo.x - curResult.x)*(naviCorrectionInfo.x - curResult.x) + (naviCorrectionInfo.y - curResult.y)*(naviCorrectionInfo.y - curResult.y))
+            if dist > 2 {
+                var naviResult = curResult
+                naviResult.x = naviCorrectionInfo.x
+                naviResult.y = naviCorrectionInfo.y
+                naviResult.absolute_heading = naviCorrectionInfo.heading
+                if let naviResultLink = PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId, result: naviResult, checkAll: true),
+                   let curLinkInfo = PathMatcher.shared.getCurPassedLinkInfo(),
+                   let jumped = calcJumpedNodes(from: curResult, to: naviResult, curLinkInfo: curLinkInfo, jumpedLinkNum: naviResultLink.number) {
+                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) jumped: link= \(jumped.link_number), nodes= \(jumped.jumped_nodes)")
+                    let jumpInfo: JumpInfo = JumpInfo(link_number: jumped.link_number, jumped_nodes: jumped.jumped_nodes)
+                    PathMatcher.shared.updateNodeAndLinkInfo(sectorId: sectorId, uvdIndex: userVelocity.index, curResult: naviResult, jumpInfo: jumpInfo)
+                } else {
+                    PathMatcher.shared.initPassedNodeInfo()
                 }
             }
-    
-            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) isFollowingNavigationRoute: followingResult= \(followingResult) // curNaviCase= \(curNaviCase)")
-            self.jupiterResultMode = determineJupiterResultMode(jupiterResultMode: jupiterResultMode, naviCase: curNaviCase)
-            let canFeedback = feedbackWhenFollowing(naviCase: curNaviCase, naviRouteResultBuffer: naviRouteResultBuffer)
-            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) feedbackWhenFollowing: canFeedback= \(canFeedback)")
-            if canFeedback {
-                feedbackCount += 1
-                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) feedbackCount: \(feedbackCount)")
-                if feedbackCount >= 10 {
-                    feedbackCount = 0
-                    let paddings = JupiterMode.PADDING_VALUES_MEDIUM
-                    let indexForEdit = max(correctionIndex, feedbackIndex)
-                    let indexAndNaviRouteResultBuffer = stackManager.getIndexAndNaviRouteResultBuffer(index: indexForEdit)
-                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) getIndexAndNaviRouteResultBuffer: indexAndNaviRouteResultBuffer= [indexs:\(indexAndNaviRouteResultBuffer.map{$0.0})] // peakIndex= \(correctionIndex)")
-                    stackManager.editCurResultBuffer(sectorId: sectorId, mode: mode, from: indexForEdit, indexAndNaviRouteResultBuffer: indexAndNaviRouteResultBuffer, paddings: paddings)
-                    _ = stackManager.editCurPmResultBuffer(sectorId: sectorId, mode: mode, from: indexForEdit, indexAndNaviRouteResultBuffer: indexAndNaviRouteResultBuffer, paddings: paddings)
-                    kalmanFilter?.editTuResultBuffer(sectorId: sectorId, mode: mode, from: indexForEdit, indexAndNaviRouteResultBuffer: indexAndNaviRouteResultBuffer, curResult: curResult, paddings: paddings)
-                    kalmanFilter?.updateTuPosition(coord: [naviRouteResult.x, naviRouteResult.y])
-                    feedbackIndex = userVelocity.index
-                    
-                    let dist = sqrt((naviRouteResult.x - curResult.x)*(naviRouteResult.x - curResult.x) + (naviRouteResult.y - curResult.y)*(naviRouteResult.y - curResult.y))
-                    if dist > 2 {
-                        var naviResult = curResult
-                        naviResult.x = naviRouteResult.x
-                        naviResult.y = naviRouteResult.y
-                        naviResult.absolute_heading = naviRouteResult.heading
-                        if let naviResultLink = PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId, result: naviResult, checkAll: true),
-                           let curLinkInfo = PathMatcher.shared.getCurPassedLinkInfo(),
-                           let jumped = calcJumpedNodes(from: curResult, to: naviResult, curLinkInfo: curLinkInfo, jumpedLinkNum: naviResultLink.number) {
-                            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) jumped: link= \(jumped.link_number), nodes= \(jumped.jumped_nodes)")
-                            let jumpInfo: JumpInfo = JumpInfo(link_number: jumped.link_number, jumped_nodes: jumped.jumped_nodes)
-                            PathMatcher.shared.updateNodeAndLinkInfo(sectorId: sectorId, uvdIndex: userVelocity.index, curResult: naviResult, jumpInfo: jumpInfo)
-                        } else {
-                            PathMatcher.shared.initPassedNodeInfo()
-                        }
-                    }
-                }
-            } else {
-                feedbackCount = 0
-            }
+//            self.naviCorrectionInfo = nil
+//            self.stackEditInfoBuffer = nil
         }
         
         updateDebugTuResult()
@@ -617,288 +517,24 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         }
     }
     
-    private func feedbackWhenFollowing(naviCase: NaviCase, naviRouteResultBuffer: [NavigationRoute]) -> Bool {
-        if naviCase != .CASE_1 { return false }
-        if naviRouteResultBuffer.count < 5 { return false }
-
-        var canFeedback: Bool = true
-        var coordSet = Set<String>()
-
-        for nr in naviRouteResultBuffer.suffix(5) {
-            let key = "\(nr.x)_\(nr.y)"
-
-            if coordSet.contains(key) {
-                canFeedback = false
-                break
-            }
-            coordSet.insert(key)
-        }
-
-        return canFeedback
-    }
-    
-    private func determineJupiterResultMode(jupiterResultMode: JupiterResultMode, naviCase: NaviCase) -> JupiterResultMode {
-        switch naviCase {
-        case .CASE_1, .CASE_2:
-            return .NAVI
-        case .CASE_3:
-            return .CALC
-        case .INIT:
-            return .NAVI
-        default:
-            return .CALC
-        }
-    }
-    
-    private func isFollowingNavigationRoute(
-        curNaviCase: NaviCase,
-        travelingLinkDist: Float,
-        naviRouteResultBuffer: [NavigationRoute],
-        curPmResultBuffer: [FineLocationTrackingOutput]
-    ) -> (naviCase: NaviCase, d: Float, dh: Float)? {
-
-        if curNaviCase == .CASE_3 { return (.CASE_3, 100, 100) }
-        guard naviRouteResultBuffer.count == curPmResultBuffer.count else { return nil }
-        if naviRouteResultBuffer.count < 10 { return (.INIT, 0, 0) }
-
-        let DLOSS_THRESHOLD_15: Float = 15
-        let DLOSS_THRESHOLD_45: Float = 45
-        let DHLOSS_THRESHOLD_45: Float = 45
-
-        // 1) 거리/헤딩 평균 손실 계산
-        let (dAvg, dhAvg) = computeLossAverages(navi: naviRouteResultBuffer, pm: curPmResultBuffer)
-
-        // 2) 빠른 케이스 결정
-        if dAvg <= DLOSS_THRESHOLD_15 {
-            return (.CASE_1, dAvg, dhAvg)
-        }
-
-        if dhAvg > DHLOSS_THRESHOLD_45 {
-            JupiterLogger.i(tag: "JupiterCalcManager", message: "(isFollowingNavigationRoute) : CASE_3 // pos & heading error")
-            return (.CASE_3, dAvg, dhAvg)
-        }
-
-        let naviResultLast = naviRouteResultBuffer[naviRouteResultBuffer.count-1]
-        
-        // 3) 동일성 체크
-        let isAllSamePmResult = isAllSamePmResult(curPmResultBuffer)
-        let isAllSameNaviResult = isAllSameNaviResult(naviRouteResultBuffer)
-
-        JupiterLogger.i(
-            tag: "JupiterCalcManager",
-            message: "(isFollowingNavigationRoute) : isAllSamePmResult= \(isAllSamePmResult) // isAllSameNaviResult= \(isAllSameNaviResult)"
-        )
-
-        // 4) "jupiter가 고정인데 navi는 변함" => CASE_2 (기존 로직 유지)
-        if isAllSamePmResult && !isAllSameNaviResult {
-            JupiterLogger.i(tag: "JupiterCalcManager", message: "(isFollowingNavigationRoute) : CASE_2 // only pos error jupiter is advanced")
-            return (.CASE_2, dAvg, dhAvg)
-        }
-
-        // 5) CASE_2 or CASE_3 판단
-        let shouldCheckEndOfMap = !naviResultLast.passable
-        let (case23, adaptiveTh, dhOverride) = decideCase2or3(
-            dAvg: dAvg,
-            baseThreshold: DLOSS_THRESHOLD_45,
-            travelingLinkDist: travelingLinkDist,
-            curPmResultBuffer: curPmResultBuffer,
-            naviRouteResultBuffer: naviRouteResultBuffer,
-            shouldCheckEndOfMap: shouldCheckEndOfMap
-        )
-
-        // dhOverride는 현재 코드에서 0으로 조기리턴하던 형태 유지용 (필요 없으면 제거 가능)
-        if let dhOverride {
-            return (case23, adaptiveTh, dhOverride)
-        }
-
-        JupiterLogger.i(tag: "JupiterCalcManager", message: "(isFollowingNavigationRoute) : CASE_2 or 3 // dSumAvg= \(dAvg)")
-        return (case23, dAvg, dhAvg)
-    }
-
-    // MARK: - Loss
-    private func computeLossAverages(
-        navi: [NavigationRoute],
-        pm: [FineLocationTrackingOutput]
-    ) -> (dAvg: Float, dhAvg: Float) {
-
-        let count = navi.count
-        guard count > 0 else { return (0, 0) }
-
-        var dSum: Float = 0
-        var dhSum: Float = 0
-
-        for i in 0..<count {
-            let dx = navi[i].x - pm[i].x
-            let dy = navi[i].y - pm[i].y
-            dSum += hypotf(dx, dy)
-
-            dhSum += angleDiffDeg(navi[i].heading, pm[i].absolute_heading)
-        }
-
-        return (dSum / Float(count), dhSum / Float(count))
-    }
-
-    private func angleDiffDeg(_ a: Float, _ b: Float) -> Float {
-        var d = abs(a - b)
-        if d > 270 { d = 360 - d }
-        return d
-    }
-
-    // MARK: - Same checks
-    private func isAllSamePmResult(_ buf: [FineLocationTrackingOutput]) -> Bool {
-        guard let first = buf.first else { return true }
-        return buf.allSatisfy { $0.x == first.x && $0.y == first.y }
-    }
-
-    private func isAllSameNaviResult(_ buf: [NavigationRoute]) -> Bool {
-        guard let first = buf.first else { return true }
-        return buf.allSatisfy { $0.x == first.x && $0.y == first.y }
-    }
-
-    // MARK: - Case 2/3 decision
-    private func decideCase2or3(
-        dAvg: Float,
-        baseThreshold: Float,
-        travelingLinkDist: Float,
-        curPmResultBuffer: [FineLocationTrackingOutput],
-        naviRouteResultBuffer: [NavigationRoute],
-        shouldCheckEndOfMap: Bool
-    ) -> (naviCase: NaviCase, adaptiveTh: Float, dhOverride: Float?) {
-
-        let curPmResult = curPmResultBuffer.last!
-        let naviResult = makeNaviResult(curPmResult: curPmResult, naviLast: naviRouteResultBuffer.last!)
-
-        var adaptiveTh = baseThreshold
-
-        // 링크 매칭 결과로 adaptiveTh / 케이스 조기결정
-        guard let naviCases = evaluateNaviCases(curPmResult: curPmResult,
-                                                naviResult: naviResult,
-                                                travelingLinkDist: travelingLinkDist,
-                                                shouldCheckEndOfMap: shouldCheckEndOfMap,
-                                                dAvg: dAvg,
-                                                adaptiveTh: &adaptiveTh) else { return (.CASE_3, adaptiveTh, nil) }
-        
-        let lmCase = naviCases.landmarkCase
-        let distCase = naviCases.distanceCase
-        let naviCase: NaviCase = lmCase != .CASE_3 && distCase != .CASE_3 ? .CASE_2 : .CASE_3
-        return (naviCase, adaptiveTh, nil)
-    }
-
-    private func makeNaviResult(curPmResult: FineLocationTrackingOutput, naviLast: NavigationRoute) -> FineLocationTrackingOutput {
-        var naviResult = curPmResult
-        naviResult.x = naviLast.x
-        naviResult.y = naviLast.y
-        naviResult.absolute_heading = naviLast.heading
-        return naviResult
-    }
-
-    private func evaluateNaviCases(
-        curPmResult: FineLocationTrackingOutput,
-        naviResult: FineLocationTrackingOutput,
-        travelingLinkDist: Float,
-        shouldCheckEndOfMap: Bool,
-        dAvg: Float,
-        adaptiveTh: inout Float
-    ) -> (landmarkCase: NaviCase, distanceCase: NaviCase)? {
-        var updatedAdaptiveTh = adaptiveTh
-        var landmarkCase: NaviCase = .CASE_2
-        var distanceCase: NaviCase = .CASE_2
-        
-        if let distCur = calDistWithRecentPeakLandmarks(fltResult: curPmResult),
-           let distNavi = calDistWithRecentPeakLandmarks(fltResult: naviResult) {
-            let ratio = distNavi / distCur
-            JupiterLogger.i(tag: "JupiterCalcManager",
-                            message: "isFollowingNavigationRoute: distWithCurPmResult= \(distCur), distWithNaviResult= \(distNavi) // ratio= \(ratio)")
-            let ratioTh: Float =  2.5
-            if ratio > ratioTh {
-                landmarkCase = .CASE_3
-            } else {
-                landmarkCase = .CASE_2
-            }
-        } else {
-            return nil
-        }
-
-        JupiterLogger.i(tag: "JupiterCalcManager", message: "isFollowingNavigationRoute: shouldCheckEndOfMap= \(shouldCheckEndOfMap)")
-        if (shouldCheckEndOfMap) {
-            updatedAdaptiveTh = max(updatedAdaptiveTh, travelingLinkDist * 0.8)
-        } else {
-            updatedAdaptiveTh = max(updatedAdaptiveTh, travelingLinkDist * 0.5)
-        }
-        JupiterLogger.i(tag: "JupiterCalcManager", message: "isFollowingNavigationRoute: adaptive_th= \(updatedAdaptiveTh)")
-        
-        if dAvg > updatedAdaptiveTh {
-            distanceCase = .CASE_3
-        } else {
-            distanceCase = .CASE_2
-        }
-        
-        JupiterLogger.i(tag: "JupiterCalcManager", message:"isFollowingNavigationRoute: travelingLinkDist : \(travelingLinkDist) // adaptive_th= \(updatedAdaptiveTh)")
-        return (landmarkCase, distanceCase)
-    }
-
-    private func calDistWithRecentPeakLandmarks(fltResult: FineLocationTrackingOutput) -> Float? {
-        guard let recentLandmarkPeaks = recentLandmarkPeaks else { return nil }
-        var distSum: Float = 0
-        for lm in recentLandmarkPeaks {
-            let diffX = fltResult.x - Float(lm.x)
-            let diffY = fltResult.y - Float(lm.y)
-            
-            distSum += sqrt(diffX*diffX + diffY*diffY)
-        }
-        
-        return distSum
-    }
-    
     private func startEntranceTracking(currentTime: Int, entManager: EntranceManager, uvd: UserVelocity, userPeak: UserPeak, bleData: [String: Float]) {
         let peakId = userPeak.id
         if !JupiterResultState.isIndoor && jupiterPhase != .ENTERING && jupiterPhase != .SEARCHING {
             guard let entKey = entManager.checkStartEntTrack(wardId: peakId, sec: 3) else { return }
             jupiterPhase = .ENTERING
+            delegate?.isJupiterPhaseChanged(index: uvd.index, phase: jupiterPhase, xyh: nil)
             JupiterResultState.isIndoor = true
             let entTrackData = entKey.split(separator: "_")
             JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - entTrackData = \(entTrackData)")
             
-            if naviMode, let start = entManager.getEntInnermostWardCoord(key: entKey) {
-//                let end: [Float] = [240, 13]
-//                let end: [Float] = [40, 246]
-                
-                // Ent4 Follwing Well
-//                let end: [Float] = [40, 246]
-                
-                // Ent4 Not Following
-                var end: [Float] = [240, 13]
-                if let scenario = self.naviScenario {
-                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(startEntranceTracking) : scenario= \(scenario)")
-                    if scenario == 1 {
-                        end = [268, 378]
-                    } else if scenario == 3 {
-                        end = [56, 246]
-                    } else if scenario == 4 {
-                        end = [135, 69]
-                    }
-                    
-                    navigationManager?.requestNavigationRoute(start: start, end: end, scenario: self.naviScenario)
+            if let blChanger = self.buildingLevelChanger,
+               let start = entManager.getEntInnermostWardCoord(key: entKey) {
+                if let fromLevel = entManager.getEntTrackEndLevel(),
+                   let levelId = blChanger.getLevelIdWithName(levelName: fromLevel) {
+                    delegate?.onEntering(userVelocity: uvd, peakIndex: userPeak.peak_index, key: entKey, level_id: levelId)
                 } else {
-                    if let fromLevel = entManager.getEntTrackEndLevel(),
-                       let levelId = navigationManager?.getLevelIdWithName(levelName: fromLevel),
-                       let origin = entManager.getEntRoutingOrigin(level_id: levelId),
-                       let to = self.naviDestination {
-                        let from: RoutingStart = RoutingStart(level_id: origin.level_id, x: origin.x, y: origin.y, absolute_heading: origin.absolute_heading)
-                        navigationManager?.requestRouting(start: from, end: to, completion: { [self] routingResult in
-                            if let result = routingResult {
-                                JupiterLogger.i(tag: "JupiterCalcManager", message: "(requestRouting) routingResult= \(result)")
-                                navigationManager?.setRoutingRoutes(routes: result.routes)
-                            } else {
-                                JupiterLogger.i(tag: "JupiterCalcManager", message: "(requestRouting) routingResult is nil")
-                            }
-                        })
-                    } else {
-                        JupiterLogger.i(tag: "JupiterCalcManager", message: "(requestRouting) unwrap fail")
-                    }
+                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(requestRouting) unwrap fail")
                 }
-            } else {
-                JupiterLogger.i(tag: "JupiterCalcManager", message: "(startEntranceTracking) naviMode:\(naviMode) is false or entKey is nil:\(entKey)")
             }
         }
         
@@ -917,19 +553,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                         var wardY = innermostWard.y
                         
                         let headingForCompensation = majorSection.average - uvdBuffer[0].heading
-//                        if innermostWard.name.contains("46E") {
-//                            wardHeadings = [0]
-//                            wardX = 35
-//                            wardY = 199
-//                        } else if innermostWard.name.contains("114") {
-//                            wardHeadings = [90, 158]
-//                            wardX = 348
-//                            wardY = 158
-//                        } else if innermostWard.name.contains("117") {
-//                            wardHeadings = [90]
-//                            wardX = 348
-//                            wardY = 68
-//                        }
                         
                         let pathHeadings = wardHeadings
                         var resultDict = [Float: [[Float]]]()
@@ -1015,7 +638,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                             }
                             tempResult.building_name = entManager.getEntTrackEndBuilding()
                             tempResult.level_name = innermostWard.level.name
-                            startIndoorTracking(fltResult: tempResult)
+                            startIndoorTracking(uvd: uvd, fltResult: tempResult)
                         }
                     }
                 } else {
@@ -1040,7 +663,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                         tempResult.y = y
                         tempResult.absolute_heading = innermostWard.headings[0]
                         JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - EntTrack Finished : tempResult \(tempResult)")
-                        startIndoorTracking(fltResult: tempResult)
+                        startIndoorTracking(uvd: uvd, fltResult: tempResult)
                     }
                 }
             }
@@ -1048,7 +671,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             if entManager.forcedStopEntTrack(bleAvg: bleData, sec: 30) {
                 // Entrance Tracking Finshid (Force)
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcEntranceResult) index:\(uvd.index) - forcedStopEntTrack")
-                startIndoorTracking(fltResult: nil)
+                startIndoorTracking(uvd: uvd, fltResult: nil)
                 entManager.setEntTrackFinishedTimestamp(time: currentTime)
             }
         }
@@ -1060,10 +683,11 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
 //        JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcEntranceResult) index:\(uvd.index) - entTrackResult // \(entTrackResult.building_name) \(entTrackResult.level_name) , x = \(entTrackResult.x) , y = \(entTrackResult.y) , h = \(entTrackResult.absolute_heading)")
     }
     
-    private func startIndoorSearching(blChanger: BuildingLevelChanger, buildingLevelByPeakBuffer: [(String, String)]) {
+    private func startIndoorSearching(uvd: UserVelocity, blChanger: BuildingLevelChanger, buildingLevelByPeakBuffer: [(String, String)]) {
         if jupiterPhase != .NONE { return }
         if blChanger.isIndoorLevel(buildingLevelByPeakBuffer: buildingLevelByPeakBuffer) {
             jupiterPhase = .SEARCHING
+            delegate?.isJupiterPhaseChanged(index: uvd.index, phase: jupiterPhase, xyh: nil)
             JupiterLogger.i(tag: "JupiterCalcManager", message: "(startIndoorSearching) start")
         }
     }
@@ -1164,7 +788,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                         
                         correctionIndex = userPeak.peak_index
                         correctionId = userPeak.id
-                        startIndoorTracking(fltResult: curResult)
+                        startIndoorTracking(uvd: userVelocity, fltResult: curResult)
                     }
                 }
             }
@@ -1230,15 +854,14 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         return false
     }
     
-    private func startIndoorTracking(fltResult: FineLocationTrackingOutput?) {
+    private func startIndoorTracking(uvd: UserVelocity, fltResult: FineLocationTrackingOutput?) {
         jupiterPhase = .TRACKING
         guard let fltResult = fltResult else { return }
         curResult = fltResult
         kalmanFilter?.activateKalmanFilter(fltResult: fltResult)
         JupiterResultState.isIndoor = true
+        delegate?.isJupiterPhaseChanged(index: uvd.index, phase: jupiterPhase, xyh: [fltResult.x, fltResult.y, fltResult.absolute_heading])
         JupiterLogger.i(tag: "JupiterCalcManager", message: "(startIndoorTracking) : start indoor tracking at uvd:\(fltResult.index)")
-        self.trackingIndex = fltResult.index
-        if naviMode { navigationManager?.setStartPointInNaviRoute(fltResult: fltResult) }
     }
     
     private func calcIndoorResult(mode: UserMode, uvd: UserVelocity, olderPeakIndex: Int?, jumpInfo: JumpInfo?, uturnLink: Bool = false) {
@@ -1510,12 +1133,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         }
     }
     
-    private func calcNaviRouteResult(uvd: UserVelocity, curResult: FineLocationTrackingOutput?) -> NavigationRoute? {
-        guard let curResult = curResult else { return nil }
-        if uvd.index <= trackingIndex { return nil }
-        return navigationManager?.calcNaviRouteResult(uvd: uvd, curResult: curResult)
-    }
-    
     private func makeCurrentResult(input: FineLocationTrackingOutput,
                                    mustInSameLink: Bool,
                                    pathMatchingType: PathMatchingType,
@@ -1766,17 +1383,22 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         //
     }
     
-    func requestNavigationRoute(start: [Float], end: [Float]) {
-        navigationManager?.requestNavigationRoute(start: start, end: end)
+    // MARK: - Bridging
+    func getCurPmResultBuffer(from: Int) -> [FineLocationTrackingOutput] {
+        return stackManager.getCurPmResultBuffer(from: from)
     }
     
-    func requestRouting(start: RoutingStart, end: Point, waypoints: [Point] = [], completion: @escaping (RoutingResult?) -> Void) {
-        navigationManager?.requestRouting(start: start, end: end, waypoints: waypoints, completion: completion)
+    func getCurPmResultBuffer(size: Int) -> [FineLocationTrackingOutput] {
+        return stackManager.getCurPmResultBuffer(size: size)
     }
     
-    func requestRouting(end: Point, waypoints: [Point] = [], completion: @escaping (RoutingResult?) -> Void) {
-//        navigationManager?.requestRouting(end: end, waypoints: waypoints, completion: completion)
-    }
+//    func setNaviCorrectionInfo(naviCorrectionInfo: NaviCorrectionInfo) {
+//        self.naviCorrectionInfo = naviCorrectionInfo
+//    }
+//    
+//    func setStackEditInfoBuffer(stackEditInfoBuffer: [StackEditInfo]) {
+//        self.stackEditInfoBuffer = stackEditInfoBuffer
+//    }
     
     // MARK: - TJLabsResourceManagerDelegate Methods
     func onSectorData(_ manager: TJLabsResource.TJLabsResourceManager, data: TJLabsResource.SectorOutput) {
@@ -1790,9 +1412,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     func onBuildingsData(_ manager: TJLabsResource.TJLabsResourceManager, data: [TJLabsResource.BuildingOutput]) {
         guard let blChanger = self.buildingLevelChanger else { return }
         blChanger.setBuildingsData(buildingsData: data)
-        
-        guard let navigationManager = self.navigationManager else { return }
-        navigationManager.setBuildingsData(buildingsData: data)
+        self.buildingsData = data
     }
     
     func onScaleOffsetData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [Float]) {
@@ -1865,51 +1485,5 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     func isBuildingLevelChanged(isChanged: Bool, newBuilding: String, newLevel: String, newCoord: [Float]) {
         // TODO
-    }
-    
-    //MARK: - Navigation Route
-    func isUserGuidanceOut() {
-        JupiterLogger.i(tag: "JupiterCalcManager", message: "(isUserGuidanceOut) user guidance out")
-        delegate?.isUserGuidanceOut()
-        hasNaviRoute = false
-        guard let curPmResult = self.curPathMatchingResult else { return }
-        guard let curLevelId = navigationManager?.getLevelIdWithName(levelName: curPmResult.level_name) else { return }
-        let from = RoutingStart(level_id: curLevelId, x: Int(curPmResult.x), y: Int(curPmResult.y), absolute_heading: Int(curPmResult.absolute_heading))
-        guard let to = self.naviDestination else { return }
-        navigationManager?.requestRouting(start: from, end: to, completion: { [self] routingResult in
-            if let result = routingResult {
-                JupiterLogger.i(tag: "JupiterCalcManager", message: "(requestRouting) routingResult= \(result)")
-                navigationManager?.setRoutingRoutes(routes: result.routes)
-            } else {
-                JupiterLogger.i(tag: "JupiterCalcManager", message: "(requestRouting) routingResult is nil")
-            }
-        })
-    }
-    
-    func isNavigationRouteChanged() {
-        if !hasNaviRoute {
-            hasNaviRoute = true
-            curNaviCase = .CASE_1
-            
-            let naviRoute = navigationManager?.getNaviRoutes()
-            self.debug_navi_route = naviRoute
-            
-            if let naviRouteForDisplay = navigationManager?.getNaviRoutesForDisplay() {
-                delegate?.isNavigationRouteChanged(routes: naviRouteForDisplay)
-            }
-        }
-        
-        JupiterLogger.i(tag: "JupiterCalcManager", message: "(isNavigationRouteChanged) navigation route changed")
-    }
-    
-    func isNavigationRouteFailed() {
-        JupiterLogger.i(tag: "JupiterCalcManager", message: "(isNavigationRouteFailed) navigation route failed")
-        delegate?.isNavigationRouteFailed()
-    }
-    
-    func isWaypointsChanged() {
-        if let waypoints = navigationManager?.getNavigationWaypoints() {
-            delegate?.isWaypointChanged(waypoints: waypoints)
-        }
     }
 }
