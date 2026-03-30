@@ -379,6 +379,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             calcIndoorResult(mode: mode, uvd: userVelocity, olderPeakIndex: olderPeakIndex, jumpInfo: jumpInfo, uturnLink: uturnLink)
         case .SEARCHING:
             calcIndoorSearching(userPeak: curPeak, buildingLevelByPeak: blByPeak, mode: mode, userVelocity: userVelocity, uvdBuffer: uvdBuffer)
+        case .EXITING:
+            // TODO
+            JupiterLogger.i(tag: "EXITING", message: "TODO")
         case .NONE:
             break
         }
@@ -1362,8 +1365,18 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             return 30
         case .TRACKING:
             return 50
+        case .EXITING:
+            return 30
         case .NONE:
             return 10
+        }
+    }
+    
+    private func determinInOutState(state: InOutState) {
+        let inputState = state
+        
+        if inputState == .OUT_TO_IN {
+            
         }
     }
     
@@ -1391,14 +1404,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     func getCurPmResultBuffer(size: Int) -> [FineLocationTrackingOutput] {
         return stackManager.getCurPmResultBuffer(size: size)
     }
-    
-//    func setNaviCorrectionInfo(naviCorrectionInfo: NaviCorrectionInfo) {
-//        self.naviCorrectionInfo = naviCorrectionInfo
-//    }
-//    
-//    func setStackEditInfoBuffer(stackEditInfoBuffer: [StackEditInfo]) {
-//        self.stackEditInfoBuffer = stackEditInfoBuffer
-//    }
     
     // MARK: - TJLabsResourceManagerDelegate Methods
     func onSectorData(_ manager: TJLabsResource.TJLabsResourceManager, data: TJLabsResource.SectorOutput) {

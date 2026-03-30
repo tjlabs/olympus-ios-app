@@ -18,6 +18,18 @@ public class JupiterManager: JupiterCalcManagerDelegate {
     
     func isJupiterPhaseChanged(index: Int, phase: JupiterPhase, xyh: [Float]?) {
         delegate?.isJupiterPhaseChanged(index: index, phase: phase, xyh: xyh)
+        if phase == .ENTERING {
+            delegate?.isJupiterInOutStateChanged(.OUT_TO_IN)
+        } else if phase == .SEARCHING {
+            delegate?.isJupiterInOutStateChanged(.INDOOR)
+        } else if phase == .TRACKING && jupiterPhase != .SEARCHING {
+            delegate?.isJupiterInOutStateChanged(.INDOOR)
+        } else if phase == .EXITING {
+            delegate?.isJupiterInOutStateChanged(.IN_TO_OUT)
+        } else {
+            delegate?.isJupiterInOutStateChanged(.OUTDOOR)
+        }
+        self.jupiterPhase = phase
     }
     
     public static let sdkVersion: String = "0.0.1"
@@ -30,9 +42,7 @@ public class JupiterManager: JupiterCalcManagerDelegate {
     var deviceOsVersion: Int
     
     var jupiterCalcManager: JupiterCalcManager?
-    private var naviMode: Bool = false
-    private var naviScenario: Int?
-    private var naviDestination: Point?
+    private var jupiterPhase: JupiterPhase = .NONE
     public weak var delegate: JupiterManagerDelegate?
     
     private var isStartService = false
