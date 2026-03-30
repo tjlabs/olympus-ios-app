@@ -12,21 +12,3 @@ public struct FineLocationTrackingOutput: Codable, Equatable {
     public var y: Float
     public var absolute_heading: Float
 }
-
-public struct Route: Codable {
-    let origin: Origin
-    let destination: Point
-    let nodes: [RouteNode]
-}
-
-public struct RouteNode: Codable {
-    let level_id: Int
-    let x: Int
-    let y: Int
-    let number: Int
-    let out_heading: Int?
-}
-
-struct DirectionsResponse: Codable {
-    let routes: [Route]
-}

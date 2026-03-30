@@ -9,6 +9,25 @@ enum IndoorResultMode {
     case NAVI, CALC, NONE
 }
 
+public struct Route: Codable {
+    let origin: Origin
+    let destination: Point
+    let nodes: [RouteNode]
+}
+
+public struct RouteNode: Codable {
+    let level_id: Int
+    let x: Int
+    let y: Int
+    let number: Int
+    let out_heading: Int?
+}
+
+struct DirectionsResponse: Codable {
+    let routes: [Route]
+}
+
+
 public struct Point: Codable {
     public let level_id: Int
     public let x: Int
