@@ -185,7 +185,7 @@ class RoutingManager {
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
         let input = DirectionsRequest(tenant_user_name: self.id, mobile_time: currentTime, origin: from, destination: to, waypoints: waypoints)
         let successRange = 200..<300
-        JupiterNetworkManager.shared.postCalcDirs(url: JupiterNetworkConstants.getCalcDirsURL(), input: input, completion: { [self] statusCode, returnedString, inputDirs in
+        NavigationNetworkManager.shared.postCalcDirs(url: NavigationNetworkConstants.getCalcDirsURL(), input: input, completion: { [self] statusCode, returnedString, inputDirs in
             if successRange.contains(statusCode)  {
                 if let decoded = decodeCalcDirs(from: returnedString) {
                     completion(RoutingResult(code: statusCode, routes: decoded.routes))
