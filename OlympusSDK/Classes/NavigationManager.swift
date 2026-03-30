@@ -2,683 +2,517 @@ import Foundation
 import TJLabsCommon
 import TJLabsResource
 
-protocol NavigationManagerDelegate: AnyObject {
+public protocol NavigationManagerDelegate: AnyObject {
+    func onJupiterSuccess(_ isSuccess: Bool)
+    func onJupiterError(_ code: Int, _ msg: String)
+    func onJupiterResult(_ result: JupiterResult)
+    func onJupiterReport(_ flag: Int)
     
-    // 사용자가 경로를 이탈했다고 판단한 경우
     func isUserGuidanceOut()
-    
-    // 사용자의 navigation route가 변경된 경우
-    func isNavigationRouteChanged()
-    
+    func isNavigationRouteChanged(_ routes: [(String, String, Int, Float, Float)])
     func isNavigationRouteFailed()
-    
-    func isWaypointsChanged()
+    func isWaypointChanged(_ waypoints: [[Double]])
 }
 
-class NavigationManager {
-    
-    private var id: String = ""
-    private var sectorId: Int = 0
-    
-    var buildingsAndLevelsMap = [String: [String]]()
-    var buildingIdMap = [String: Int]()
-    var buildingNameMap = [Int: String]()
-    var levelIdMap = [String: Int]()
-    var levelNameMap = [Int: String]()
-    var levelToBuildingIdMap = [Int: Int]()
-    
-    private var routes = [NavigationRoute]()
-    private var routeNodeData = [Int: NodeData]()
-    private var routeSectionData = [Int: SectionRange]()
-    private var routeIndex: Int?
-    private var curRoute: NavigationRoute?
-    private var isRequesting: Bool = false
-    
-    private var routesForDisplay = [(String, String, Int, Float, Float)]()
-    private var waypointsForDisplay = [[Double]]()
-    
-    weak var delegate: NavigationManagerDelegate?
-    
-    // MARK: - init & deinit
-    init(id: String, sectorId: Int) {
-        self.id = id
-        self.sectorId = sectorId
+public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
+    public func onRfdResult(receivedForce: TJLabsCommon.ReceivedForce) {
+        // TODO
     }
     
-    deinit { }
+    public func onEntering(userVelocity: UserVelocity, peakIndex: Int?, key: String, level_id: Int) {
+        if let origin = routingManager?.getEntRoutingOrigin(key: key, level_id: level_id), let to = self.naviDestination {
+            let from: RoutingStart = RoutingStart(level_id: origin.level_id, x: origin.x, y: origin.y, absolute_heading: origin.absolute_heading)
+            routingManager?.requestRouting(start: from, end: to, completion: { [self] routingResult in
+                if let result = routingResult {
+                    JupiterLogger.i(tag: "NavigationManager", message: "(requestRouting) routingResult= \(result)")
+                    routingManager?.setRoutingRoutes(routes: result.routes)
+                } else {
+                    JupiterLogger.i(tag: "NavigationManager", message: "(requestRouting) routingResult is nil")
+                }
+            })
+        }
+    }
     
-    func setBuildingsData(buildingsData: [BuildingOutput]) {
-        let buildingLevelData = makeBuildingLevelInfo(buildingsData: buildingsData)
-        buildingsAndLevelsMap = buildingLevelData
-        makeBuildingIdMap(buildingsData: buildingsData)
-        makeLevelIdMap(buildingsData: buildingsData)
+    public func provideTrackingCorrection(mode: TJLabsCommon.UserMode,
+                                          userVelocity: TJLabsCommon.UserVelocity,
+                                          peakIndex: Int?,
+                                          recentLandmarkPeaks: [PeakData]?,
+                                          travelingLinkDist: Float,
+                                          indexForEdit: Int,
+                                          curPmResult: FineLocationTrackingOutput?) -> (NaviCorrectionInfo, [StackEditInfo])? {
+        if !hasNaviRoute { return nil }
+        if naviRouteChanged, let curPmResult = curPmResult { routingManager?.setStartPointInNaviRoute(xyh: [curPmResult.x, curPmResult.y, curPmResult.absolute_heading]) }
+        guard let jupiterManager = self.jupiterManager else { return nil }
+        guard let naviRouteResult = calcNaviRouteResult(uvd: userVelocity, jupiterResult: jupiterResult) else { return nil }
+        self.curRoutingRouteResult = naviRouteResult
+        stackManager.stackIndexAndNaviRouteResult(naviRouteResult: naviRouteResult, peakIndex: peakIndex, uvd: userVelocity)
+        let indexAndNaviRouteResultBuffer = stackManager.getIndexAndNaviRouteResultBuffer(size: 10)
+        let naviRouteResultBuffer = indexAndNaviRouteResultBuffer.map { $0.1 }
+        guard let curPmResultBuffer = jupiterManager.getCurPmResultBuffer(size: 10) else { return nil }
+        guard let followingResult = isFollowingNavigationRoute(curNaviCase: curNaviCase, travelingLinkDist: travelingLinkDist, naviRouteResultBuffer: naviRouteResultBuffer, curPmResultBuffer: curPmResultBuffer) else { return nil }
+        
+        let estimatedNaviCase = followingResult.naviCase
+        curNaviCase = estimatedNaviCase
+        if curNaviCase == .CASE_3 && !guidanceOutReported {
+            guidanceOutReported = true
+            self.isUserGuidanceOut()
+        } else if curNaviCase == .CASE_2 {
+            let diffSectionCorrIndex = userVelocity.index - sectionCorrectionIndex
+            if diffSectionCorrIndex < 10 {
+                JupiterLogger.i(tag: "NavigationManager", message: "(onTracking) isFollowingNavigationRoute: section correction is applied at \(sectionCorrectionIndex) index (curIndex = \(userVelocity.index))")
+                return nil
+            }
+            let curNaviSection = naviRouteResult.section
+            let curPmResult = curPmResultBuffer[curPmResultBuffer.count-1]
+            guard let curPmSection = routingManager?.findSectionContaining(x: curPmResult.x, y: curPmResult.y) else {
+                return nil
+            }
+            if curNaviSection == curPmSection {
+                JupiterLogger.i(tag: "NavigationManager", message: "(onTracking) isFollowingNavigationRoute: findSectionContaining // jupiter and navi result are in same section \(curPmSection)")
+                routingManager?.updateCurRoutePos(curSection: curPmSection, curResult: curPmResult)
+                sectionCorrectionIndex = userVelocity.index
+            }
+        }
+
+        JupiterLogger.i(tag: "NavigationManager", message: "(onTracking) isFollowingNavigationRoute: followingResult= \(followingResult) // curNaviCase= \(curNaviCase)")
+        self.resultMode = determineIndoorResultMode(resultMode: resultMode, naviCase: curNaviCase)
+        let canFeedback = feedbackWhenFollowing(naviCase: curNaviCase, naviRouteResultBuffer: naviRouteResultBuffer)
+        JupiterLogger.i(tag: "NavigationManager", message: "(onTracking) feedbackWhenFollowing: canFeedback= \(canFeedback)")
+        if canFeedback {
+            feedbackCount += 1
+            JupiterLogger.i(tag: "NavigationManager", message: "(onTracking) feedbackCount: \(feedbackCount)")
+            if feedbackCount >= 10 {
+                feedbackCount = 0
+                let indexAndNaviRouteResultBuffer = stackManager.getIndexAndNaviRouteResultBuffer(index: indexForEdit)
+                var editInfoBuffer = [StackEditInfo]()
+                for buf in indexAndNaviRouteResultBuffer {
+                    editInfoBuffer.append(StackEditInfo(index: buf.0, building: buf.1.building, level: buf.1.level, x: buf.1.x, y: buf.1.y, heading: buf.1.heading))
+                }
+                // Feedback 하기 윈한 정보 JupiterManager로 전달
+                let naviCorrectionInfo = NaviCorrectionInfo(x: naviRouteResult.x, y: naviRouteResult.y, heading: naviRouteResult.heading)
+                let stackEditInfoBuffer = editInfoBuffer
+                return (naviCorrectionInfo, stackEditInfoBuffer)
+//                jupiterManager.setNaviCorrectionInfo(naviCorrectionInfo: NaviCorrectionInfo(x: naviRouteResult.x, y: naviRouteResult.y, heading: naviRouteResult.heading))
+//                jupiterManager.setStackEditInfoBuffer(stackEditInfoBuffer: editInfoBuffer)
+            }
+        } else {
+            feedbackCount = 0
+        }
+        return nil
     }
 
-    func makeBuildingIdMap(buildingsData: [BuildingOutput]) {
-        buildingIdMap.removeAll()
-        buildingNameMap.removeAll()
-        
-        for b in buildingsData {
-            buildingIdMap[b.name] = b.id
-            buildingNameMap[b.id] = b.name
+    // MARK: - Jupiter
+    public func onJupiterSuccess(_ isSuccess: Bool) {
+        if let blData = jupiterManager?.getBuildingsData() {
+            routingManager?.setBuildingsData(buildingsData: blData)
         }
+        delegate?.onJupiterSuccess(isSuccess)
     }
     
-    func makeLevelIdMap(buildingsData: [BuildingOutput]) {
-        levelIdMap.removeAll()
-        levelNameMap.removeAll()
-        levelToBuildingIdMap.removeAll()
-        
-        let buildings = buildingsData
-        for b in buildings {
-            let levels = b.levels
-            for l in levels {
-                levelIdMap[l.name] = l.id
-                levelNameMap[l.id] = l.name
-                levelToBuildingIdMap[l.id] = b.id
+    public func onJupiterError(_ code: Int, _ msg: String) {
+        delegate?.onJupiterError(code, msg)
+    }
+    
+    public func onJupiterResult(_ result: JupiterResult) {
+        self.jupiterResult = result
+        if resultMode == .NAVI {
+            var copied = result
+            if let routingRoute = self.curRoutingRouteResult {
+                copied.building_name = routingRoute.building
+                copied.level_name = routingRoute.level
+                copied.x = routingRoute.x
+                copied.y = routingRoute.y
+                copied.absolute_heading = routingRoute.heading
             }
+            delegate?.onJupiterResult(copied)
+        } else {
+            delegate?.onJupiterResult(result)
         }
     }
     
-    func getBuildingIdWithName(buildingName: String) -> Int? {
-        return buildingIdMap[buildingName]
+    public func onJupiterReport(_ flag: Int) {
+        delegate?.onJupiterReport(flag)
     }
     
-    func getBuildingNameWithId(building_id: Int) -> String? {
-        return buildingNameMap[building_id]
-    }
-    
-    func getBuildingIdHasLevelId(level_id: Int) -> Int? {
-        return levelToBuildingIdMap[level_id]
-    }
-    
-    func getLevelIdWithName(levelName: String) -> Int? {
-        return self.levelIdMap[levelName]
-    }
-    
-    func getLevelNameWithId(level_id: Int) -> String? {
-        return levelNameMap[level_id]
-    }
-    
-    private func makeBuildingLevelInfo(buildingsData: [BuildingOutput]) -> [String: [String]] {
-        var infoBuildingLevel = [String: [String]]()
-        for building in buildingsData {
-            let buildingName = building.name
-            for level in building.levels {
-                let levelName = level.name
-                if var levels = infoBuildingLevel[buildingName] {
-                    levels.append(levelName)
-                    infoBuildingLevel[buildingName] = levels.sorted(by: { lhs, rhs in
-                        return compareFloorNames(lhs: lhs, rhs: rhs)
-                    })
-                } else {
-                    let levels = [levelName]
-                    infoBuildingLevel[buildingName] = levels
-                }
-            }
+    public func isJupiterPhaseChanged(index: Int, phase: JupiterPhase, xyh: [Float]?) {
+        if phase == .TRACKING, let xyh = xyh {
+            self.jupiterPhase = phase
+            self.trackingIndex = index
+            routingManager?.setStartPointInNaviRoute(xyh: xyh)
         }
-        return infoBuildingLevel
     }
     
-    private func compareFloorNames(lhs: String, rhs: String) -> Bool {
-        func floorValue(_ floor: String) -> Int {
-            if floor.starts(with: "B"), let number = Int(floor.dropFirst()) {
-                return -number
-            } else if floor.hasSuffix("F"), let number = Int(floor.dropLast()) {
-                return number
-            }
-            return 0
-        }
-            
-        return floorValue(lhs) > floorValue(rhs)
-    }
-    
-    // MARK: - New with Server
-    func requestRouting(start: RoutingStart, end: Point, waypoints: [Point] = [], completion: @escaping (RoutingResult?) -> Void) {
-        let from: Origin = Origin(level_id: start.level_id, x: start.x, y: start.y, absolute_heading: start.absolute_heading)
-        let to: Point = Point(level_id: end.level_id, x: end.x, y: end.y)
-        
-        let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-        let input = DirectionsRequest(tenant_user_name: self.id, mobile_time: currentTime, origin: from, destination: to, waypoints: waypoints)
-        let successRange = 200..<300
-        JupiterNetworkManager.shared.postCalcDirs(url: JupiterNetworkConstants.getCalcDirsURL(), input: input, completion: { [self] statusCode, returnedString, inputDirs in
-            if successRange.contains(statusCode)  {
-                if let decoded = decodeCalcDirs(from: returnedString) {
-                    completion(RoutingResult(code: statusCode, routes: decoded.routes))
-                } else {
-                    JupiterLogger.e(tag: "NavigationManager", message: "(requestRouting) : fail decoding")
-                    completion(nil)
-                }
+    // MARK: - Navigation
+    func isUserGuidanceOut() {
+        JupiterLogger.i(tag: "NavigationManager", message: "(isUserGuidanceOut) user guidance out")
+        delegate?.isUserGuidanceOut()
+        hasNaviRoute = false
+        routingManager?.clearRoutes()
+        guard let curResult = self.jupiterResult else { return }
+        guard let curLevelId = routingManager?.getLevelIdWithName(levelName: curResult.level_name) else { return }
+        let from = RoutingStart(level_id: curLevelId, x: Int(curResult.x), y: Int(curResult.y), absolute_heading: Int(curResult.absolute_heading))
+        guard let to = self.naviDestination else { return }
+        routingManager?.requestRouting(start: from, end: to, completion: { [self] routingResult in
+            if let result = routingResult {
+                JupiterLogger.i(tag: "NavigationManager", message: "(requestRouting) routingResult= \(result)")
+                routingManager?.setRoutingRoutes(routes: result.routes)
             } else {
-                JupiterLogger.e(tag: "NavigationManager", message: "(requestRouting) : \(statusCode) error")
-                completion(nil)
+                JupiterLogger.i(tag: "NavigationManager", message: "(requestRouting) routingResult is nil")
             }
         })
     }
     
-    func setRoutingRoutes(routes: [Route]) {
-        if routes.isEmpty { return }
-        let route = routes[0]
-        
-        var buildingOrder = [String]()
-        var levelOrder = [String]()
-        var nodeOrder = [Int]()
-        var order = [[Float]]()
-        
-        let start = route.origin
-        guard let start_building_id = getBuildingIdHasLevelId(level_id: start.level_id),
-              let start_building_name = getBuildingNameWithId(building_id: start_building_id),
-              let start_level_name = getLevelNameWithId(level_id: start.level_id) else { return }
-        buildingOrder.append(start_building_name)
-        levelOrder.append(start_level_name)
-        nodeOrder.append(-1)
-        let startCoord: [Float] = [Float(start.x), Float(start.y)]
-        order.append(startCoord)
-        
-        for n in route.nodes {
-            guard let node_building_id = getBuildingIdHasLevelId(level_id: n.level_id),
-                  let node_building_name = getBuildingNameWithId(building_id: node_building_id),
-                  let node_level_name = getLevelNameWithId(level_id: n.level_id) else { return }
-            let key = "\(sectorId)_\(node_building_name)_\(node_level_name)"
-            guard let nodeData = PathMatcher.shared.nodeData[key] else { return }
-            guard let matchedNode = nodeData[n.number] else { return }
-            if self.routeNodeData.isEmpty {
-                self.routeNodeData = nodeData
-            }
-            
-            let coords = matchedNode.coords
-            if coords.count != 2 { continue }
-            
-            buildingOrder.append(node_building_name)
-            levelOrder.append(node_level_name)
-            nodeOrder.append(n.number)
-            order.append(coords)
-        }
-        
-        let end = route.destination
-        guard let end_building_id = getBuildingIdHasLevelId(level_id: end.level_id),
-              let end_building_name = getBuildingNameWithId(building_id: end_building_id),
-              let end_level_name = getLevelNameWithId(level_id: end.level_id) else { return }
-        buildingOrder.append(end_building_name)
-        levelOrder.append(end_level_name)
-        nodeOrder.append(-1)
-        let endCoord: [Float] = [Float(end.x), Float(end.y)]
-        order.append(endCoord)
-        
-        JupiterLogger.e(tag: "NavigationManager", message: "(requestRouting) start:\(start) -> end:\(end)")
-        
-        generateNavigationRoute(bOrder: buildingOrder, lOrder: levelOrder, nodeOrder: nodeOrder, coordOrder: order) // display
-        generateNavigationRoute(bOrder: buildingOrder, lOrder: levelOrder, nodeOrder: nodeOrder, order: order)
-        let sectionMap = makeSectionMap(routes: self.routes)
-        self.routeSectionData = sectionMap
-    }
-    
-    // MARK: - Previous
-    func requestNavigationRoute(start: [Float], end: [Float], scenario: Int? = nil) {
-        setNavigationRoute(start: start, end: end, scenario: scenario)
-        setNavigationWaypoints()
-        JupiterLogger.i(tag: "NavigationManager", message: "(requestNavigationRoute) start:\(start) -> end:\(end)")
-    }
-    
-    func setNavigationRoute(start: [Float], end: [Float], scenario: Int?) {
-        let building = "COEX"
-        let level = "B2"
-        
-        let key = "\(sectorId)_\(building)_\(level)"
-        guard let nodeData = PathMatcher.shared.nodeData[key] else { return }
-        self.routeNodeData = nodeData
-        var nums = [Int]()
-        
-        if let scenario = scenario {
-            JupiterLogger.i(tag: "NavigationManager", message: "(setNavigationRoute) : scenario= \(scenario)")
-            if scenario == 1 {
-                nums = [68, 67, 45, 46, 2, 3]
-            } else if scenario == 3 {
-                nums = [23, 20, 2, 1, 29, 28, 53, 52, 43, 44, 38]
-            } else if scenario == 4 {
-                nums = [4, 2, 1, 29, 28, 70, 71, 77]
-            }
-        }
-        
-        var buildingOrder = [String]()
-        var levelOrder = [String]()
-        var nodeOrder = [Int]()
-        var order = [[Float]]()
-        
-        buildingOrder.append(building)
-        levelOrder.append(level)
-        nodeOrder.append(-1)
-        order.append(start)
-        for n in nums {
-            guard let matchedNode = nodeData[n] else { continue }
-            let coords = matchedNode.coords
-            if coords.count != 2 { continue }
-            buildingOrder.append(building)
-            levelOrder.append(level)
-            nodeOrder.append(n)
-            order.append(coords)
-        }
-        buildingOrder.append(building)
-        levelOrder.append(level)
-        nodeOrder.append(-1)
-        order.append(end)
-        
-        generateNavigationRoute(bOrder: buildingOrder, lOrder: levelOrder, nodeOrder: nodeOrder, coordOrder: order) // display
-        generateNavigationRoute(bOrder: buildingOrder, lOrder: levelOrder, nodeOrder: nodeOrder, order: order)
-        let sectionMap = makeSectionMap(routes: self.routes)
-        self.routeSectionData = sectionMap
-    }
-    
-    func generateNavigationRoute(bOrder: [String], lOrder: [String], nodeOrder: [Int], order: [[Float]]) {
-        // order: [[x,y], [x,y], ...]
-        // Build a dense polyline by walking each segment with step=1.0 (same unit as x/y).
-        // Output routes as [[x, y, headingDeg]] where headingDeg is 0~360 from +X axis (atan2(dy, dx)).
-        guard order.count >= 2 else {
-            delegate?.isNavigationRouteFailed()
-            return
-        }
-        
-        var sectionCount: Int = 1
-        
-        let step: Float = 1.0
-        var denseNaviRoute = [NavigationRoute]()
-        denseNaviRoute.reserveCapacity(order.count * 10)
-        let rad2deg: Float = 180.0 / .pi
-        
-        let turnHeadingThreshold: Float = 1.0 // degrees
-        let headingMatchThreshold: Float = 5.0 // degrees
-        var curSectionRouteStart = 0
-        
-        for i in 0..<(order.count - 1) {
-            let building = bOrder[i]
-            let level = lOrder[i]
-            
-            let a = order[i]
-            let b = order[i + 1]
-            guard a.count >= 2, b.count >= 2 else { continue }
-            
-            let ax = a[0], ay = a[1]
-            let bx = b[0], by = b[1]
-            let dx = bx - ax
-            let dy = by - ay
-            let dist = sqrt(dx * dx + dy * dy)
-
-            // If the segment is too small, just append the end point with previous heading if possible.
-            if dist <= 1e-6 {
-                let fallbackHeading: Float = denseNaviRoute.last?.heading ?? 0.0
-                if denseNaviRoute.isEmpty {
-                    let naviRoute = NavigationRoute(building: building, level: level, section: sectionCount, turnPoint: false, x: ax, y: ay, heading: fallbackHeading)
-                    denseNaviRoute.append(naviRoute)
-                }
-                if let last = denseNaviRoute.last, last.x != bx || last.y != by {
-                    let naviRoute = NavigationRoute(building: building, level: level, section: sectionCount, turnPoint: false, x: bx, y: by, heading: fallbackHeading)
-                    denseNaviRoute.append(naviRoute)
-                }
-                continue
-            }
-
-            // Heading for this segment (degrees, normalized to 0~360).
-            var headingDeg = atan2(dy, dx) * rad2deg
-            if headingDeg < 0 { headingDeg += 360 }
-            
-            // Detect a turn at the shared waypoint between segments.
-            // The previous segment's end point is already the last element in `denseNaviRoute`.
-            if !denseNaviRoute.isEmpty {
-                let prevHeading = denseNaviRoute[denseNaviRoute.count - 1].heading
-                let dH = headingDelta(prevHeading, headingDeg)
-                if dH > turnHeadingThreshold {
-                    var last = denseNaviRoute[denseNaviRoute.count - 1]
-                    last.turnPoint = true
-                    denseNaviRoute[denseNaviRoute.count - 1] = last
-                    
-                    let curSectionNodeNum: Int = nodeOrder[i]
-                    let sectionPassable = isSectionPassable(sectionHeading: prevHeading,
-                                                            nodeNum: curSectionNodeNum,
-                                                            headingThreshold: headingMatchThreshold)
-                    JupiterLogger.i(tag: "NavigationManager", message: "(isSectionPassable) : [prevHeading:\(prevHeading), curSectionNodeNum:\(curSectionNodeNum), headingThreshold:\(headingMatchThreshold)] -> sectionPassable= \(sectionPassable)")
-                    for idx in curSectionRouteStart..<denseNaviRoute.count {
-                        var data = denseNaviRoute[idx]
-                        data.passable = sectionPassable
-                        denseNaviRoute[idx] = data
-                    }
-                    curSectionRouteStart = denseNaviRoute.count
-
-                    sectionCount += 1
-                }
-            }
-
-            let ux = dx / dist
-            let uy = dy / dist
-
-            // Always include the start point of the first segment.
-            if denseNaviRoute.isEmpty {
-                let naviRoute = NavigationRoute(building: building, level: level, section: sectionCount, turnPoint: false, x: ax, y: ay, heading: headingDeg)
-                denseNaviRoute.append(naviRoute)
-            }
-
-            // Number of full `step` moves we can take.
-            let n = Int(floor(dist / step))
-            if n > 0 {
-                // Start from 1 to avoid duplicating the segment start (already appended).
-                for k in 1...n {
-                    let px = ax + Float(k) * step * ux
-                    let py = ay + Float(k) * step * uy
-                    let naviRoute = NavigationRoute(building: building, level: level, section: sectionCount, turnPoint: false, x: px, y: py, heading: headingDeg)
-                    denseNaviRoute.append(naviRoute)
-                }
-            }
-
-            // Ensure we end exactly at the waypoint.
-            if let last = denseNaviRoute.last, last.x != bx || last.y != by {
-                let naviRoute = NavigationRoute(building: building, level: level, section: sectionCount, turnPoint: false, x: bx, y: by, heading: headingDeg)
-                denseNaviRoute.append(naviRoute)
+    func isNavigationRouteChanged() {
+        if !hasNaviRoute {
+            hasNaviRoute = true
+            if let naviRouteForDisplay = routingManager?.getNaviRoutesForDisplay() {
+                JupiterLogger.i(tag: "NavigationManager", message: "(getNaviRoutesForDisplay) naviRouteForDisplay= \(naviRouteForDisplay)")
+                JupiterLogger.i(tag: "NavigationManager", message: "(isNavigationRouteChanged) navigation route changed")
+                delegate?.isNavigationRouteChanged(naviRouteForDisplay)
+                naviRouteChanged = true
+                curNaviCase = .CASE_1
             } else {
-                // If the last point is already the endpoint, keep its existing turnPoint flag and update heading.
-                if var last = denseNaviRoute.last {
-                    last.heading = headingDeg
-                    denseNaviRoute[denseNaviRoute.count - 1] = last
-                }
+                JupiterLogger.i(tag: "NavigationManager", message: "(getNaviRoutesForDisplay) naviRouteForDisplay is empty")
             }
-            
-            
-        }
-        
-        if !denseNaviRoute.isEmpty {
-            let lastHeading = denseNaviRoute[denseNaviRoute.count-1].heading
-            let curSectionNodeNum = nodeOrder[nodeOrder.count-1]
-            let sectionPassable = isSectionPassable(sectionHeading: lastHeading, nodeNum: curSectionNodeNum, headingThreshold: headingMatchThreshold)
-            for idx in curSectionRouteStart..<denseNaviRoute.count {
-                var data = denseNaviRoute[idx]
-                data.passable = sectionPassable
-                denseNaviRoute[idx] = data
-            }
-            
-            var lastNaviRoute = denseNaviRoute[denseNaviRoute.count-1]
-            lastNaviRoute.turnPoint = true
-            denseNaviRoute[denseNaviRoute.count-1] = lastNaviRoute
-        }
-        
-        self.routes = denseNaviRoute
-        delegate?.isNavigationRouteChanged()
-        
-        for route in self.routes {
-            JupiterLogger.i(tag: "NavigationManager", message: "(generateNavigationRoute) : [section:\(route.section), turPoint:\(route.turnPoint), x:\(route.x), y:\(route.y), h:\(route.heading), passable:\(route.passable)]")
         }
     }
     
-    typealias XY = (x: Float, y: Float)
-    typealias SectionRange = (start: XY, end: XY)
-    func makeSectionMap(routes: [NavigationRoute]) -> [Int: SectionRange] {
-        var map: [Int: SectionRange] = [:]
-        guard let first = routes.first else { return map }
+    func isNavigationRouteFailed() {
+        JupiterLogger.i(tag: "NavigationManager", message: "(isNavigationRouteFailed) navigation route failed")
+        delegate?.isNavigationRouteFailed()
+    }
+    
+    func isWaypointsChanged() {
+        if let waypoints = routingManager?.getNavigationWaypoints() {
+            JupiterLogger.i(tag: "NavigationManager", message: "(isWaypointsChanged) waypoints= \(waypoints)")
+            delegate?.isWaypointChanged(waypoints)
+        }
+    }
+    
+    private var id: String = ""
+    private var sectorId: Int = 0
+    public weak var delegate: NavigationManagerDelegate?
+    
+    // MARK: - Classes
+    var jupiterManager: JupiterManager?
+    var routingManager: RoutingManager?
+    let stackManager = NavigationStackManager()
+    
+    // MARK: - Navigation
+    private var naviMode: Bool = false
+    private var naviDestination: Point?
+    var curRoutingRouteResult: RoutingRoute?
+    var guidanceOutReported: Bool = false
+    
+    // MARK: - Routing
+    private var hasNaviRoute: Bool = false
+    private var naviRouteChanged: Bool = false
+    private var feedbackIndex: Int = 0
+    private var feedbackCount: Int = 0
+    private var curNaviCase: NaviCase = .NONE
+    private var sectionCorrectionIndex: Int = 0
+    
+    // MARK: - Variables
+    private var jupiterResult: JupiterResult?
+    private var trackingIndex: Int = 0
+    var resultMode: IndoorResultMode = .NONE
+    private var jupiterPhase: JupiterPhase = .NONE
+    private var recentLandmarkPeaks: [PeakData]?
+    
+    // MARK: - init & deinit
+    public init(id: String, sectorId: Int) {
+        self.id = id
+        self.sectorId = sectorId
+        
+        self.jupiterManager = JupiterManager(id: id)
+        self.jupiterManager?.delegate = self
+        
+        self.routingManager = RoutingManager(id: id, sectorId: sectorId)
+        self.routingManager?.delegate = self
+    }
+    
+    deinit {
+        self.jupiterManager = nil
+        self.routingManager = nil
+    }
+    
+    public func startService(region: String = JupiterRegion.KOREA.rawValue, sectorId: Int, mode: UserMode, debugOption: Bool = false) {
+        jupiterManager?.startJupiter(region: region, sectorId: sectorId, mode: mode, debugOption: debugOption)
+    }
+    
+    public func stopService(completion: @escaping (Bool, String) -> Void) {
+        jupiterManager?.stopJupiter(completion: completion)
+    }
+    
+    public func setNaviDestination(dest: Point) {
+        self.naviMode = true
+        self.naviDestination = dest
+        routingManager?.setNaviDestination(dest: dest)
+    }
+    
+    public func getJupiterDebugResult() -> JupiterDebugResult? {
+        guard let jupiterDebugResult = jupiterManager?.getJupiterDebugResult() else { return nil }
+        return jupiterDebugResult
+    }
+    
+    func requestRouting(start: RoutingStart, end: Point, waypoints: [Point] = [], completion: @escaping (RoutingResult?) -> Void) {
+        routingManager?.requestRouting(start: start, end: end, waypoints: waypoints, completion: completion)
+    }
+    
+    func requestRouting(end: Point, waypoints: [Point] = [], completion: @escaping (RoutingResult?) -> Void) {
+//        routingManager?.requestRouting(end: end, waypoints: waypoints, completion: completion)
+    }
+    
+    //MARK: - Simulation Mode
+    public func setSimulationMode(flag: Bool, bleFileName: String, sensorFileName: String) {
+        jupiterManager?.setSimulationMode(flag: flag, bleFileName: bleFileName, sensorFileName: sensorFileName)
+    }
+    
+    public func saveFilesForSimulation(completion: @escaping (Bool) -> Void) {
+        jupiterManager?.saveFilesForSimulation(completion: completion)
+    }
+    
+    public func saveDebugFile(completion: @escaping (Bool) -> Void) {
+        jupiterManager?.saveDebugFile(completion: completion)
+    }
+    
+    // MARK: - Private
+    private func calcNaviRouteResult(uvd: UserVelocity, jupiterResult: JupiterResult?) -> RoutingRoute? {
+        guard let jupiterResult = jupiterResult else { return nil }
+        if uvd.index <= trackingIndex { return nil }
+        return routingManager?.calcNaviRouteResult(uvd: uvd, jupiterResult: jupiterResult)
+    }
+    
+    private func determineIndoorResultMode(resultMode: IndoorResultMode, naviCase: NaviCase) -> IndoorResultMode {
+        switch naviCase {
+        case .CASE_1, .CASE_2:
+            return .NAVI
+        case .CASE_3:
+            return .CALC
+        case .INIT:
+            return .NAVI
+        default:
+            return .CALC
+        }
+    }
+    
+    private func feedbackWhenFollowing(naviCase: NaviCase, naviRouteResultBuffer: [RoutingRoute]) -> Bool {
+        if naviCase != .CASE_1 { return false }
+        if naviRouteResultBuffer.count < 5 { return false }
 
-        var curSection = first.section
-        var start: XY = (first.x, first.y)
-        var end: XY = (first.x, first.y)
+        var canFeedback: Bool = true
+        var coordSet = Set<String>()
 
-        for r in routes.dropFirst() {
-            if r.section != curSection {
-                // 섹션 종료 확정
-                map[curSection] = (start: start, end: end)
+        for nr in naviRouteResultBuffer.suffix(5) {
+            let key = "\(nr.x)_\(nr.y)"
 
-                curSection = r.section
-                start = (r.x, r.y)
-                end = (r.x, r.y)
+            if coordSet.contains(key) {
+                canFeedback = false
+                break
+            }
+            coordSet.insert(key)
+        }
+
+        return canFeedback
+    }
+    
+    private func isFollowingNavigationRoute(
+        curNaviCase: NaviCase,
+        travelingLinkDist: Float,
+        naviRouteResultBuffer: [RoutingRoute],
+        curPmResultBuffer: [FineLocationTrackingOutput]
+    ) -> (naviCase: NaviCase, d: Float, dh: Float)? {
+
+        if curNaviCase == .CASE_3 { return (.CASE_3, 100, 100) }
+        guard naviRouteResultBuffer.count == curPmResultBuffer.count else { return nil }
+        if naviRouteResultBuffer.count < 10 { return (.INIT, 0, 0) }
+
+        let DLOSS_THRESHOLD_15: Float = 15
+        let DLOSS_THRESHOLD_45: Float = 45
+        let DHLOSS_THRESHOLD_45: Float = 45
+
+        // 1) 거리/헤딩 평균 손실 계산
+        let (dAvg, dhAvg) = computeLossAverages(navi: naviRouteResultBuffer, pm: curPmResultBuffer)
+
+        // 2) 빠른 케이스 결정
+        if dAvg <= DLOSS_THRESHOLD_15 {
+            return (.CASE_1, dAvg, dhAvg)
+        }
+
+        if dhAvg > DHLOSS_THRESHOLD_45 {
+            JupiterLogger.i(tag: "NavigationManager", message: "(isFollowingNavigationRoute) : CASE_3 // pos & heading error")
+            return (.CASE_3, dAvg, dhAvg)
+        }
+
+        let naviResultLast = naviRouteResultBuffer[naviRouteResultBuffer.count-1]
+        
+        // 3) 동일성 체크
+        let isAllSamePmResult = isAllSamePmResult(curPmResultBuffer)
+        let isAllSameNaviResult = isAllSameNaviResult(naviRouteResultBuffer)
+
+        JupiterLogger.i(
+            tag: "NavigationManager",
+            message: "(isFollowingNavigationRoute) : isAllSamePmResult= \(isAllSamePmResult) // isAllSameNaviResult= \(isAllSameNaviResult)"
+        )
+
+        // 4) "jupiter가 고정인데 navi는 변함" => CASE_2 (기존 로직 유지)
+        if isAllSamePmResult && !isAllSameNaviResult {
+            JupiterLogger.i(tag: "NavigationManager", message: "(isFollowingNavigationRoute) : CASE_2 // only pos error jupiter is advanced")
+            return (.CASE_2, dAvg, dhAvg)
+        }
+
+        // 5) CASE_2 or CASE_3 판단
+        let shouldCheckEndOfMap = !naviResultLast.passable
+        let (case23, adaptiveTh, dhOverride) = decideCase2or3(
+            dAvg: dAvg,
+            baseThreshold: DLOSS_THRESHOLD_45,
+            travelingLinkDist: travelingLinkDist,
+            curPmResultBuffer: curPmResultBuffer,
+            naviRouteResultBuffer: naviRouteResultBuffer,
+            shouldCheckEndOfMap: shouldCheckEndOfMap
+        )
+
+        // dhOverride는 현재 코드에서 0으로 조기리턴하던 형태 유지용 (필요 없으면 제거 가능)
+        if let dhOverride {
+            return (case23, adaptiveTh, dhOverride)
+        }
+
+        JupiterLogger.i(tag: "NavigationManager", message: "(isFollowingNavigationRoute) : CASE_2 or 3 // dSumAvg= \(dAvg)")
+        return (case23, dAvg, dhAvg)
+    }
+
+    // MARK: - Loss
+    private func computeLossAverages(
+        navi: [RoutingRoute],
+        pm: [FineLocationTrackingOutput]
+    ) -> (dAvg: Float, dhAvg: Float) {
+
+        let count = navi.count
+        guard count > 0 else { return (0, 0) }
+
+        var dSum: Float = 0
+        var dhSum: Float = 0
+
+        for i in 0..<count {
+            let dx = navi[i].x - pm[i].x
+            let dy = navi[i].y - pm[i].y
+            dSum += hypotf(dx, dy)
+
+            dhSum += angleDiffDeg(navi[i].heading, pm[i].absolute_heading)
+        }
+
+        return (dSum / Float(count), dhSum / Float(count))
+    }
+
+    private func angleDiffDeg(_ a: Float, _ b: Float) -> Float {
+        var d = abs(a - b)
+        if d > 270 { d = 360 - d }
+        return d
+    }
+    
+    // MARK: - Same checks
+    private func isAllSamePmResult(_ buf: [FineLocationTrackingOutput]) -> Bool {
+        guard let first = buf.first else { return true }
+        return buf.allSatisfy { $0.x == first.x && $0.y == first.y }
+    }
+
+    private func isAllSameNaviResult(_ buf: [RoutingRoute]) -> Bool {
+        guard let first = buf.first else { return true }
+        return buf.allSatisfy { $0.x == first.x && $0.y == first.y }
+    }
+    
+    // MARK: - Case 2/3 decision
+    private func decideCase2or3(
+        dAvg: Float,
+        baseThreshold: Float,
+        travelingLinkDist: Float,
+        curPmResultBuffer: [FineLocationTrackingOutput],
+        naviRouteResultBuffer: [RoutingRoute],
+        shouldCheckEndOfMap: Bool
+    ) -> (naviCase: NaviCase, adaptiveTh: Float, dhOverride: Float?) {
+
+        let curPmResult = curPmResultBuffer.last!
+        let naviResult = makeNaviResult(curPmResult: curPmResult, naviLast: naviRouteResultBuffer.last!)
+
+        var adaptiveTh = baseThreshold
+
+        // 링크 매칭 결과로 adaptiveTh / 케이스 조기결정
+        guard let naviCases = evaluateNaviCases(curPmResult: curPmResult,
+                                                naviResult: naviResult,
+                                                travelingLinkDist: travelingLinkDist,
+                                                shouldCheckEndOfMap: shouldCheckEndOfMap,
+                                                dAvg: dAvg,
+                                                adaptiveTh: &adaptiveTh) else { return (.CASE_3, adaptiveTh, nil) }
+        
+        let lmCase = naviCases.landmarkCase
+        let distCase = naviCases.distanceCase
+        let naviCase: NaviCase = lmCase != .CASE_3 && distCase != .CASE_3 ? .CASE_2 : .CASE_3
+        return (naviCase, adaptiveTh, nil)
+    }
+    
+    private func makeNaviResult(curPmResult: FineLocationTrackingOutput, naviLast: RoutingRoute) -> FineLocationTrackingOutput {
+        var naviResult = curPmResult
+        naviResult.x = naviLast.x
+        naviResult.y = naviLast.y
+        naviResult.absolute_heading = naviLast.heading
+        return naviResult
+    }
+
+    private func evaluateNaviCases(
+        curPmResult: FineLocationTrackingOutput,
+        naviResult: FineLocationTrackingOutput,
+        travelingLinkDist: Float,
+        shouldCheckEndOfMap: Bool,
+        dAvg: Float,
+        adaptiveTh: inout Float
+    ) -> (landmarkCase: NaviCase, distanceCase: NaviCase)? {
+        var updatedAdaptiveTh = adaptiveTh
+        var landmarkCase: NaviCase = .CASE_2
+        var distanceCase: NaviCase = .CASE_2
+        
+        if let distCur = calDistWithRecentPeakLandmarks(fltResult: curPmResult),
+           let distNavi = calDistWithRecentPeakLandmarks(fltResult: naviResult) {
+            let ratio = distNavi / distCur
+            JupiterLogger.i(tag: "NavigationManager",
+                            message: "isFollowingNavigationRoute: distWithCurPmResult= \(distCur), distWithNaviResult= \(distNavi) // ratio= \(ratio)")
+            let ratioTh: Float =  2.5
+            if ratio > ratioTh {
+                landmarkCase = .CASE_3
             } else {
-                end = (r.x, r.y)
-            }
-        }
-
-        map[curSection] = (start: start, end: end)
-        return map
-    }
-    
-    func findSectionContaining(x: Float, y: Float, threshold: Float = 1.0) -> Int? {
-        func pointToSegmentDistance(
-            p: (x: Float, y: Float),
-            a: (x: Float, y: Float),
-            b: (x: Float, y: Float)
-        ) -> Float {
-
-            let abx = b.x - a.x
-            let aby = b.y - a.y
-            let apx = p.x - a.x
-            let apy = p.y - a.y
-
-            let ab2 = abx*abx + aby*aby
-            if ab2 == 0 {
-                let dx = p.x - a.x
-                let dy = p.y - a.y
-                return sqrt(dx*dx + dy*dy)
-            }
-
-            var t = (apx*abx + apy*aby) / ab2
-            t = max(0, min(1, t))
-
-            let cx = a.x + t * abx
-            let cy = a.y + t * aby
-
-            let dx = p.x - cx
-            let dy = p.y - cy
-
-            return sqrt(dx*dx + dy*dy)
-        }
-        
-        let p = (x: x, y: y)
-        for (section, range) in routeSectionData {
-            let a = range.start
-            let b = range.end
-            
-            let dist = pointToSegmentDistance(p: p, a: a, b: b)
-            if dist <= threshold {
-                return section
-            }
-        }
-
-        return nil
-    }
-    
-    private func isSectionPassable(sectionHeading: Float, nodeNum: Int, headingThreshold: Float) -> Bool {
-        guard let node = routeNodeData[nodeNum] else { return true }
-        for dir in node.directions {
-            if (dir.is_end && headingDelta(sectionHeading, dir.heading) <= headingThreshold) {
-                return false
-            }
-        }
-        return true
-    }
-    
-    func getNaviRoutes() -> [NavigationRoute] {
-        return self.routes
-    }
-    
-    func generateNavigationRoute(bOrder: [String], lOrder: [String], nodeOrder: [Int], coordOrder: [[Float]]) {
-        if bOrder.count != lOrder.count || lOrder.count != nodeOrder.count || nodeOrder.count != coordOrder.count { return }
-        
-        for i in 0..<bOrder.count {
-            let route = (bOrder[i], lOrder[i], nodeOrder[i], coordOrder[i][0], coordOrder[i][1])
-            self.routesForDisplay.append(route)
-        }
-    }
-    
-    func getNaviRoutesForDisplay() -> [(String, String, Int, Float, Float)] {
-        return self.routesForDisplay
-    }
-    
-    func setStartPointInNaviRoute(fltResult: FineLocationTrackingOutput) {
-        let resultX = fltResult.x
-        let resultY = fltResult.y
-        let resultH = fltResult.absolute_heading // 0 ~ 360도
-
-        var matchedIndex: Int = -1
-        var bestDist: Float = .greatestFiniteMagnitude
-
-        let maxPosDiff: Float = 2.0
-        let maxHeadingDiff: Float = 46.0
-
-        for (index, route) in routes.enumerated() {
-            let rx = route.x
-            let ry = route.y
-            let rh = route.heading
-
-            let dx = rx - resultX
-            let dy = ry - resultY
-            let dist = sqrt(dx * dx + dy * dy)
-
-            guard dist < maxPosDiff else { continue }
-            let hDiff = headingDelta(resultH, rh)
-            guard hDiff <= maxHeadingDiff else { continue }
-
-            if dist < bestDist {
-                bestDist = dist
-                matchedIndex = index
-            }
-        }
-        guard matchedIndex >= 0 else {
-            delegate?.isUserGuidanceOut()
-            return
-        }
-        
-        self.routeIndex = matchedIndex
-        self.curRoute = self.routes[matchedIndex]
-        JupiterLogger.i(tag: "NavigationManager", message: "(setStartPointInNaviRoute) : started at \(matchedIndex) in routes // route= \(routes[matchedIndex])")
-    }
-    
-    func setNavigationWaypoints() {
-//        let waypoints: [[Double]] = [
-//            [861, 2014],
-//            [806, 2081],
-//            [642, 1999],
-//            [560, 2029],
-//            [560, 2243],
-//            [765, 2335]
-//        ]
-        
-        let waypoints: [[Double]] = [
-            [1257, 689],
-            [1333, 529],
-            [1003, 447],
-            [925, 810],
-            [644, 1396],
-            [315, 1233]
-        ]
-        self.waypointsForDisplay = waypoints
-        delegate?.isWaypointsChanged()
-    }
-    
-    func getNavigationWaypoints() -> [[Double]] {
-        return self.waypointsForDisplay
-    }
-    
-    func updateCurRoutePos(curSection: Int, curResult: FineLocationTrackingOutput) {
-        guard let _ = curRoute else { return }
-        guard let _ = routeIndex else { return }
-        
-        var minDist: Float = .greatestFiniteMagnitude
-        var closestRoute: NavigationRoute?
-        
-        for route in routes {
-            if route.section != curSection {
-                continue
-            }
-            
-            let diffX = route.x - curResult.x
-            let diffY = route.y - curResult.y
-            
-            let dist = sqrt(diffX * diffX + diffY * diffY)
-            
-            if dist < minDist {
-                minDist = dist
-                closestRoute = route
-            }
-        }
-        
-        if let closestRoute = closestRoute {
-            self.curRoute = closestRoute
-            JupiterLogger.i(tag: "NavigationManager", message: "(updateCurRoutePos) : curRoute is updated [x:\(closestRoute.x), y:\(closestRoute.y)] in section \(curSection)")
-        }
-    }
-    
-    func calcNaviRouteResult(uvd: UserVelocity, curResult: FineLocationTrackingOutput) -> NavigationRoute? {
-        guard let curRoute = curRoute else { return nil }
-        
-        let headingInRadian = TJLabsUtilFunctions.shared.degree2radian(degree: Double(curResult.absolute_heading))
-        let dx = Float(uvd.length*cos(headingInRadian))
-        let dy = Float(uvd.length*sin(headingInRadian))
-        
-        let newX = curRoute.x + dx
-        let newY = curRoute.y + dy
-        let newH = curResult.absolute_heading
-        JupiterLogger.i(tag: "NavigationManager", message: "(calcNaviRouteResult) : index= \(curResult.index), section= \(curRoute.section), new= [\(newX),\(newY),\(newH)]")
-        
-        var matchedRoute: NavigationRoute?
-        guard let idx = routeIndex else { return nil }
-
-        var bestDist: Float = .greatestFiniteMagnitude
-        var matchedIndex: Int = -1
-        let maxHeadingDiff: Float = 46.0
-
-        for (index, route) in routes.enumerated() {
-            guard index >= idx else { continue }
-            let diffSection = route.section - curRoute.section
-            if diffSection > 1 || diffSection < 0 {
-                continue
-            }
-            
-            let dxr = route.x - newX
-            let dyr = route.y - newY
-            let dist = sqrt(dxr * dxr + dyr * dyr)
-            
-            let hDiff = headingDelta(newH, route.heading)
-            JupiterLogger.i(tag: "NavigationManager", message: "(calcNaviRouteResult) : compare route= [\(route.x),\(route.y),\(route.heading)] // dist=\(dist) // hDiff=\(hDiff)")
-            
-            guard hDiff <= maxHeadingDiff else { continue }
-
-            if dist < bestDist {
-                bestDist = dist
-                matchedRoute = route
-                matchedIndex = index
-            }
-        }
-        JupiterLogger.i(tag: "NavigationManager", message: "(calcNaviRouteResult) : index= \(curResult.index), section= \(matchedRoute?.section), matchedRoute= [\(matchedRoute?.x),\(matchedRoute?.y),\(matchedRoute?.heading)]")
-        if let matchedRoute = matchedRoute {
-            self.curRoute = matchedRoute
-            if !matchedRoute.turnPoint {
-                if matchedRoute.heading == 90 || matchedRoute.heading == 270 {
-                    // X LIMIT
-                    self.curRoute?.y = newY
-                } else if matchedRoute.heading == 0 || matchedRoute.heading == 180 {
-                    // Y LIMIT
-                    self.curRoute?.x = newX
-                }
+                landmarkCase = .CASE_2
             }
         } else {
-//            self.curRoute?.heading = newH
-        }
-        JupiterLogger.i(tag: "NavigationManager", message: "(calcNaviRouteResult) : index= \(curResult.index), section= \(self.curRoute?.section), route= [\(self.curRoute?.x),\(self.curRoute?.y),\(self.curRoute?.heading)]")
-        return self.curRoute
-    }
-    
-    func headingDelta(_ a: Float, _ b: Float) -> Float {
-        var d = a - b
-        d = fmod(d + 540.0, 360.0) - 180.0
-        return abs(d)
-    }
-    
-    // MARK: - Decoding
-    private func decodeCalcDirs(from jsonString: String) -> DirectionsResponse? {
-        guard let data = jsonString.data(using: .utf8) else {
-            JupiterLogger.e(tag: "NavigationManager", message: "utf8 → data fail")
             return nil
         }
 
-        let decoder = JSONDecoder()
-        do {
-            let result = try decoder.decode(DirectionsResponse.self, from: data)
-            return result
-        } catch {
-            JupiterLogger.e(tag: "NavigationManager", message: "decode DirectionsResponse fail: \(error)")
-            return nil
+        JupiterLogger.i(tag: "NavigationManager", message: "isFollowingNavigationRoute: shouldCheckEndOfMap= \(shouldCheckEndOfMap)")
+        if (shouldCheckEndOfMap) {
+            updatedAdaptiveTh = max(updatedAdaptiveTh, travelingLinkDist * 0.8)
+        } else {
+            updatedAdaptiveTh = max(updatedAdaptiveTh, travelingLinkDist * 0.5)
         }
+        JupiterLogger.i(tag: "NavigationManager", message: "isFollowingNavigationRoute: adaptive_th= \(updatedAdaptiveTh)")
+        
+        if dAvg > updatedAdaptiveTh {
+            distanceCase = .CASE_3
+        } else {
+            distanceCase = .CASE_2
+        }
+        
+        JupiterLogger.i(tag: "NavigationManager", message:"isFollowingNavigationRoute: travelingLinkDist : \(travelingLinkDist) // adaptive_th= \(updatedAdaptiveTh)")
+        return (landmarkCase, distanceCase)
+    }
+    
+    private func calDistWithRecentPeakLandmarks(fltResult: FineLocationTrackingOutput) -> Float? {
+        guard let recentLandmarkPeaks = recentLandmarkPeaks else { return nil }
+        var distSum: Float = 0
+        for lm in recentLandmarkPeaks {
+            let diffX = fltResult.x - Float(lm.x)
+            let diffY = fltResult.y - Float(lm.y)
+            
+            distSum += sqrt(diffX*diffX + diffY*diffY)
+        }
+        
+        return distSum
     }
 }
