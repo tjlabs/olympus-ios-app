@@ -62,6 +62,10 @@ class NaviViewController: UIViewController, NavigationManagerDelegate, TJLabsNav
         naviView.updateResultInMap(result: userCoord)
     }
     
+    func isJupiterInOutStateChanged(_ state: InOutState) {
+        print("(NaviVC) isJupiterInOutStateChanged : state= \(state)")
+    }
+    
     func isUserGuidanceOut() {
         if isSafeDriving { return }
         print("(NaviVC) isUserGuidanceOut : guidance out!!")
@@ -71,7 +75,7 @@ class NaviViewController: UIViewController, NavigationManagerDelegate, TJLabsNav
             UIView.animate(withDuration: 0.2, animations: {
                 self.naviView.removeRouteAll()
             })
-            self.showToastWithIcon(message: "길안내 경로를 벗어났습니다.\n경로를 재탐색 합니다.", duration: 6)
+            self.showToastWithIcon(message: "길안내 경로를 벗어났습니다.\n경로를 재탐색 합니다.", duration: 3)
         }
     }
     

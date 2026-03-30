@@ -50,6 +50,10 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
         updateCoord(flag: true)
     }
     
+    func isJupiterInOutStateChanged(_ state: InOutState) {
+        print("(CardVC) isJupiterInOutStateChanged : state= \(state)")
+    }
+    
     func onJupiterReport(_ flag: Int) {
         print("(CardVC) onJupiterReport")
     }
