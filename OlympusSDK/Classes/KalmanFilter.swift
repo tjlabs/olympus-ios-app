@@ -180,7 +180,7 @@ class KalmanFilter {
         mode: UserMode,
         from: Int,
         shifteTraj: [CandidateTrajectory]? = nil,
-        indexAndNaviRouteResultBuffer: [(Int, NavigationRoute)]? = nil,
+        stackEditInfoBuffer: [StackEditInfo]? = nil,
         curResult: FineLocationTrackingOutput,
         paddings: [Float]
     ) {
@@ -237,18 +237,19 @@ class KalmanFilter {
 
                 return newResult
             }
-        } else if let indexAndNaviRouteResultBuffer = indexAndNaviRouteResultBuffer {
-            let routeByIndex: [Int: NavigationRoute] =
-                Dictionary(uniqueKeysWithValues: indexAndNaviRouteResultBuffer.map { ($0.0, $0.1) })
+        } else if let stackEditInfoBuffer = stackEditInfoBuffer {
+            let bufferByIndex: [Int: StackEditInfo] = Dictionary(
+                uniqueKeysWithValues: stackEditInfoBuffer.map { ($0.index, $0) }
+            )
             tuResultBuffer = tuResultBuffer.map { result in
-                guard let route = routeByIndex[result.index] else {
+                guard let buf = bufferByIndex[result.index] else {
                     return result
                 }
 
                 var newResult = result
-                newResult.x = route.x
-                newResult.y = route.y
-                newResult.heading = route.heading
+                newResult.x = buf.x
+                newResult.y = buf.y
+                newResult.heading = buf.heading
 
                 return newResult
             }
