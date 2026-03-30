@@ -73,7 +73,7 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
                 sectionCorrectionIndex = userVelocity.index
             }
         }
-
+        
         JupiterLogger.i(tag: "NavigationManager", message: "(onTracking) isFollowingNavigationRoute: followingResult= \(followingResult) // curNaviCase= \(curNaviCase)")
         self.resultMode = determineIndoorResultMode(resultMode: resultMode, naviCase: curNaviCase)
         let canFeedback = feedbackWhenFollowing(naviCase: curNaviCase, naviRouteResultBuffer: naviRouteResultBuffer)
@@ -92,15 +92,15 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
                 let naviCorrectionInfo = NaviCorrectionInfo(x: naviRouteResult.x, y: naviRouteResult.y, heading: naviRouteResult.heading)
                 let stackEditInfoBuffer = editInfoBuffer
                 return (naviCorrectionInfo, stackEditInfoBuffer)
-//                jupiterManager.setNaviCorrectionInfo(naviCorrectionInfo: NaviCorrectionInfo(x: naviRouteResult.x, y: naviRouteResult.y, heading: naviRouteResult.heading))
-//                jupiterManager.setStackEditInfoBuffer(stackEditInfoBuffer: editInfoBuffer)
+                //                jupiterManager.setNaviCorrectionInfo(naviCorrectionInfo: NaviCorrectionInfo(x: naviRouteResult.x, y: naviRouteResult.y, heading: naviRouteResult.heading))
+                //                jupiterManager.setStackEditInfoBuffer(stackEditInfoBuffer: editInfoBuffer)
             }
         } else {
             feedbackCount = 0
         }
         return nil
     }
-
+    
     // MARK: - Jupiter
     public func onJupiterSuccess(_ isSuccess: Bool) {
         if let blData = jupiterManager?.getBuildingsData() {
@@ -248,6 +248,10 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         self.naviMode = true
         self.naviDestination = dest
         routingManager?.setNaviDestination(dest: dest)
+    }
+    
+    public func setNaviWaypoints(waypoints: [[Double]]) {
+        routingManager?.setNavigationWaypoints(waypoints: waypoints)
     }
     
     public func getJupiterDebugResult() -> JupiterDebugResult? {

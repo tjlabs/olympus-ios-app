@@ -553,15 +553,15 @@ class RoutingManager {
         JupiterLogger.i(tag: "RoutingManager", message: "(setStartPointInNaviRoute) : started at \(matchedIndex) in routes // route= \(routes[matchedIndex])")
     }
     
-    func setNavigationWaypoints() {
-        let waypoints: [[Double]] = [
-            [1257, 689],
-            [1333, 529],
-            [1003, 447],
-            [925, 810],
-            [644, 1396],
-            [315, 1233]
-        ]
+    public func setNavigationWaypoints(waypoints: [[Double]]) {
+//        let waypoints: [[Double]] = [
+//            [1257, 689],
+//            [1333, 529],
+//            [1003, 447],
+//            [925, 810],
+//            [644, 1396],
+//            [315, 1233]
+//        ]
         self.waypointsForDisplay = waypoints
         delegate?.isWaypointsChanged()
     }
