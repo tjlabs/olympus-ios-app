@@ -7,6 +7,7 @@ public protocol NavigationManagerDelegate: AnyObject {
     func onJupiterError(_ code: Int, _ msg: String)
     func onJupiterResult(_ result: JupiterResult)
     func onJupiterReport(_ flag: Int)
+    func isJupiterInOutStateChanged(_ state: InOutState)
     
     func isUserGuidanceOut()
     func isNavigationRouteChanged(_ routes: [(String, String, Int, Float, Float)])
@@ -92,8 +93,6 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
                 let naviCorrectionInfo = NaviCorrectionInfo(x: naviRouteResult.x, y: naviRouteResult.y, heading: naviRouteResult.heading)
                 let stackEditInfoBuffer = editInfoBuffer
                 return (naviCorrectionInfo, stackEditInfoBuffer)
-                //                jupiterManager.setNaviCorrectionInfo(naviCorrectionInfo: NaviCorrectionInfo(x: naviRouteResult.x, y: naviRouteResult.y, heading: naviRouteResult.heading))
-                //                jupiterManager.setStackEditInfoBuffer(stackEditInfoBuffer: editInfoBuffer)
             }
         } else {
             feedbackCount = 0
@@ -132,6 +131,11 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     
     public func onJupiterReport(_ flag: Int) {
         delegate?.onJupiterReport(flag)
+    }
+    
+    public func isJupiterInOutStateChanged(_ state: InOutState) {
+        delegate?.isJupiterInOutStateChanged(state)
+        JupiterLogger.i(tag: "NavigationManager", message: "(isJupiterInOutStateChanged) : state= \(state)")
     }
     
     public func isJupiterPhaseChanged(index: Int, phase: JupiterPhase, xyh: [Float]?) {
@@ -189,6 +193,7 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         }
     }
     
+    private var region: String = ""
     private var id: String = ""
     private var sectorId: Int = 0
     public weak var delegate: NavigationManagerDelegate?
@@ -220,7 +225,8 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     private var recentLandmarkPeaks: [PeakData]?
     
     // MARK: - init & deinit
-    public init(id: String, sectorId: Int) {
+    public init(region: String = JupiterRegion.KOREA.rawValue, id: String, sectorId: Int) {
+        NavigationNetworkConstants.setServerURL(region: region)
         self.id = id
         self.sectorId = sectorId
         
