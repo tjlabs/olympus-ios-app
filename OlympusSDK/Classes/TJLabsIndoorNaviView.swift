@@ -3,7 +3,7 @@ import UIKit
 import TJLabsResource
 import TJLabsMap
 
-class TJLabsIndoorNaviView: UIView, JupiterManagerDelegate, TJLabsNaviViewDelegate {
+class TJLabsIndoorNaviView: UIView, TJLabsNaviViewDelegate, NavigationManagerDelegate {
     var parkingGuideStart: (() -> Void)?
     var parkingGuideFinish: (() -> Void)?
     
@@ -36,7 +36,7 @@ class TJLabsIndoorNaviView: UIView, JupiterManagerDelegate, TJLabsNaviViewDelega
             isParkingGuideRendered = true
         }
         
-        if result.level_name == "B2" && isParkingGuideRendered {
+        if result.level_name != "B0" && isParkingGuideRendered {
             parkingGuideFinish?()
         }
         
@@ -71,6 +71,7 @@ class TJLabsIndoorNaviView: UIView, JupiterManagerDelegate, TJLabsNaviViewDelega
         JupiterLogger.i(tag: "TJLabsIndoorNaviView", message: "route len= \(routes.count)")
         JupiterLogger.i(tag: "TJLabsIndoorNaviView", message: "routes= \(routes)")
         naviView.setNaviRoutes(routes: routes)
+        isNaviRouteRendered = false
     }
     
     func isNavigationRouteFailed() {
@@ -90,7 +91,7 @@ class TJLabsIndoorNaviView: UIView, JupiterManagerDelegate, TJLabsNaviViewDelega
     var userId: String?
     
     // Service
-    var serviceManager: JupiterManager?
+    var serviceManager: NavigationManager?
     var jupiterResult: JupiterResult?
     
     // routing
@@ -105,6 +106,11 @@ class TJLabsIndoorNaviView: UIView, JupiterManagerDelegate, TJLabsNaviViewDelega
     var isGuidanceOutReported: Bool = false
     var gOutReportedTime: Int = 0
 
+    // MARK: - Simulation
+    var simulationMode: Bool = false
+    var bleFileName: String = ""
+    var sensorFileName: String = ""
+    
     private let containerView: UIView = {
         let view = UIView()
         view.backgroundColor = .clear
@@ -121,14 +127,6 @@ class TJLabsIndoorNaviView: UIView, JupiterManagerDelegate, TJLabsNaviViewDelega
     required init?(coder: NSCoder) {
         super.init(coder: coder)
     }
-    
-//    init(region: String, sectorId: Int, userId: String) {
-//        super.init(frame: .zero)
-//        self.region = region
-//        self.sectorId = sectorId
-//        self.userId = userId
-//        commonInit()
-//    }
     
     deinit {
         self.stopSerivce()
@@ -192,29 +190,31 @@ class TJLabsIndoorNaviView: UIView, JupiterManagerDelegate, TJLabsNaviViewDelega
     }
     
     func setNavigationDestination(dest: Point) {
-        self.naviMode = true
         self.naviDestination = dest
-        JupiterLogger.i(tag: "TJLabsIndoorNaviView", message: "setNavigationDestination : naviDestination= \(dest)")
-        
-        let scenario = 4
-        JupiterLogger.i(tag: "TJLabsIndoorNaviView", message: "navigationMode : scenario= \(scenario)")
-        serviceManager?.navigationMode(flag: naviMode, scenario: scenario)
-//        serviceManager?.setNaviDestination(dest: dest)
+        JupiterLogger.i(tag: "TJLabsIndoorNaviView", message: "dest= \(dest)")
     }
     
     func startService() {
         guard let _ = self.region, let sectorId = self.sectorId, let userId = self.userId else { return }
-
-        serviceManager = JupiterManager(id: userId)
+        serviceManager = NavigationManager(id: userId, sectorId: sectorId)
         serviceManager?.delegate = self
         naviView.delegate = self
-       
-        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_0317.csv", sensorFileName: "sensor_coex_01_0317.csv")
-        serviceManager?.startJupiter(sectorId: sectorId, mode: .MODE_AUTO, debugOption: true)
+        
+        if let dest = self.naviDestination {
+            serviceManager?.setNaviDestination(dest: dest)
+        }
+        serviceManager?.setSimulationMode(flag: self.simulationMode, bleFileName: self.bleFileName, sensorFileName: self.sensorFileName)
+        serviceManager?.startService(sectorId: sectorId, mode: .MODE_AUTO, debugOption: true)
     }
     
     func stopSerivce() {
-        serviceManager?.stopJupiter(completion: { [self] isSuccess, msg in
+        serviceManager?.stopService(completion: { [self] isSuccess, msg in
         })
+    }
+    
+    public func setSimulationMode(flag: Bool, bleFileName: String, sensorFileName: String) {
+        self.simulationMode = flag
+        self.bleFileName = bleFileName
+        self.sensorFileName = sensorFileName
     }
 }

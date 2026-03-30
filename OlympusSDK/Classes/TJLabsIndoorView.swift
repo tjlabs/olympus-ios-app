@@ -109,6 +109,11 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
     var sectorId: Int?
     var userId: String?
     
+    // MARK: - Simulation
+    var simulationMode: Bool = true
+    var bleFileName: String = "ble_coex_01_0317.csv"
+    var sensorFileName: String = "sensor_coex_01_0317.csv"
+    
     var isResourceLoaded: Bool? {
         didSet {
             guard let isResourceLoaded = isResourceLoaded else { return }
@@ -166,6 +171,12 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         guard let _ = self.region, let _ = self.sectorId else { return }
         self.frame = matchView.bounds
         self.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    }
+    
+    public func setSimulationMode(flag: Bool, bleFileName: String, sensorFileName: String) {
+        self.simulationMode = flag
+        self.bleFileName = bleFileName
+        self.sensorFileName = sensorFileName
     }
     
     private func setupViewsIfNeeded() {
@@ -392,12 +403,11 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
     
     private func setupNaviView(destination: NaviDestination, routingOption: RoutingOption) {
         guard let region = self.region, let sectorId = self.sectorId, let userId = self.userId else { return }
-//        let indoorNaviView = TJLabsIndoorNaviView(region: region, sectorId: sectorId, userId: userId)
-//        self.indoorNaviView = indoorNaviView
         self.indoorNaviView = TJLabsIndoorNaviView()
-        self.indoorNaviView?.initialize(region: region, sectorId: sectorId, userId: userId)
+        self.indoorNaviView?.setSimulationMode(flag: self.simulationMode, bleFileName: self.bleFileName, sensorFileName: self.sensorFileName)
         let dest = Point(level_id: destination.level_id, x: Int(destination.x), y: Int(destination.y))
         self.indoorNaviView?.setNavigationDestination(dest: dest)
+        self.indoorNaviView?.initialize(region: region, sectorId: sectorId, userId: userId)
         guard let topView = self.topView else { return }
         
         containerView.isHidden = false
