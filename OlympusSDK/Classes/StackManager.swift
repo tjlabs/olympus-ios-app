@@ -26,7 +26,6 @@ class StackManager {
     var curResultBuffer = [FineLocationTrackingOutput]()
     var curPmResultBuffer = [FineLocationTrackingOutput]()
     var searchResultBuffer = [FineLocationTrackingOutput]()
-    var indexAndNaviRouteResultBuffer = [(Int, RoutingRoute)]()
     
     var recoveryIndex: Int = 0
     
@@ -334,32 +333,7 @@ class StackManager {
             return Array(searchResultBuffer.suffix(size))
         }
     }
-    
-    func stackIndexAndNaviRouteResult(naviRouteResult: RoutingRoute, userPeak: UserPeak? = nil, uvd: UserVelocity) {
-        if let curPeak = userPeak {
-            let peakIndex = curPeak.peak_index
-            self.indexAndNaviRouteResultBuffer = self.indexAndNaviRouteResultBuffer.filter { $0.0 >= peakIndex }
-        }
 
-        indexAndNaviRouteResultBuffer.append((uvd.index, naviRouteResult))
-        if indexAndNaviRouteResultBuffer.count > NAVI_ROUTE_RESULT_BUFFER_SIZE {
-            indexAndNaviRouteResultBuffer.remove(at: 0)
-        }
-    }
-    
-    func getIndexAndNaviRouteResultBuffer(size: Int) -> [(Int, RoutingRoute)] {
-        guard size > 0 else { return [] }
-        if indexAndNaviRouteResultBuffer.count <= size {
-            return indexAndNaviRouteResultBuffer
-        } else {
-            return Array(indexAndNaviRouteResultBuffer.suffix(size))
-        }
-    }
-    
-    func getIndexAndNaviRouteResultBuffer(index: Int) -> [(Int, RoutingRoute)] {
-        return self.indexAndNaviRouteResultBuffer.filter { $0.0 >= index }
-    }
-    
     func makeHeadingSet(resultBuffer: [FineLocationTrackingOutput]) -> [Float] {
         var headingSet: Set<Float> = []
         for result in resultBuffer {
