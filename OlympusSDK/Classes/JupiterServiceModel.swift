@@ -8,27 +8,27 @@ public struct ixyhs {
     var headingFail: Bool = false
 }
 
-typealias WardId = String
+public typealias WardId = String
 
-struct UserPeak {
-    let id: WardId
+public struct UserPeak {
+    public let id: WardId
     
     /// Peak 검출에 사용한 Buffer의 시작 uvd Index
-    let start_index: Int
+    public let start_index: Int
     /// Peak 검출에 사용한 Buffer의 마지막 uvd Index
-    let end_index: Int
+    public let end_index: Int
     /// Peak가 존재하는 시점의 uvd Index
-    let peak_index: Int
+    public let peak_index: Int
 
     /// Peak 검출에 사용한 Buffer의 시작 rssi
-    let start_rssi: Float
+    public let start_rssi: Float
     /// Peak 검출에 사용한 Buffer의 마지막 rssi
-    let end_rssi: Float
+    public let end_rssi: Float
     /// Peak rssi (buffer 내 max)
-    let peak_rssi: Float
+    public let peak_rssi: Float
 
     /// 당시 적용된 adaptive threshold
-    let threshold: Float
+    public let threshold: Float
 }
 
 struct PathMatchingResult {
@@ -101,17 +101,17 @@ enum LimitationType {
     case X_LIMIT, Y_LIMIT, SMALL_LIMIT, NO_LIMIT
 }
 
-public struct NavigationRoute: Codable {
+public struct NaviCorrectionInfo {
+    public let x: Float
+    public let y: Float
+    public let heading: Float
+}
+
+public struct StackEditInfo: Codable {
+    public let index: Int
     public let building: String
     public let level: String
-    public let section: Int
-    public var turnPoint: Bool
     public var x: Float
     public var y: Float
     public var heading: Float
-    public var passable: Bool = true
-}
-
-enum NaviCase {
-    case NONE, INIT, CASE_1, CASE_2, CASE_3
 }
