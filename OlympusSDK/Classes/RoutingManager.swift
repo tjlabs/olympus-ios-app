@@ -60,14 +60,14 @@ class RoutingManager {
     
     deinit { }
     
-    func setBuildingsData(buildingsData: [BuildingOutput]) {
+    func setBuildingsData(buildingsData: [BuildingData]) {
         let buildingLevelData = makeBuildingLevelInfo(buildingsData: buildingsData)
         buildingsAndLevelsMap = buildingLevelData
         makeBuildingIdMap(buildingsData: buildingsData)
         makeLevelIdMap(buildingsData: buildingsData)
     }
 
-    func makeBuildingIdMap(buildingsData: [BuildingOutput]) {
+    func makeBuildingIdMap(buildingsData: [BuildingData]) {
         buildingIdMap.removeAll()
         buildingNameMap.removeAll()
         
@@ -75,9 +75,11 @@ class RoutingManager {
             buildingIdMap[b.name] = b.id
             buildingNameMap[b.id] = b.name
         }
+        JupiterLogger.i(tag: "RoutingManager", message: "makeBuildingIdMap : buildingIdMap= \(buildingIdMap)")
+        JupiterLogger.i(tag: "RoutingManager", message: "makeBuildingIdMap : buildingNameMap= \(buildingNameMap)")
     }
     
-    func makeLevelIdMap(buildingsData: [BuildingOutput]) {
+    func makeLevelIdMap(buildingsData: [BuildingData]) {
         levelIdMap.removeAll()
         levelNameMap.removeAll()
         levelToBuildingIdMap.removeAll()
@@ -91,6 +93,9 @@ class RoutingManager {
                 levelToBuildingIdMap[l.id] = b.id
             }
         }
+        JupiterLogger.i(tag: "RoutingManager", message: "makeBuildingIdMap : levelIdMap= \(levelIdMap)")
+        JupiterLogger.i(tag: "RoutingManager", message: "makeBuildingIdMap : levelNameMap= \(levelNameMap)")
+        JupiterLogger.i(tag: "RoutingManager", message: "makeBuildingIdMap : levelToBuildingIdMap= \(levelToBuildingIdMap)")
     }
     
     func getBuildingIdWithName(buildingName: String) -> Int? {
@@ -113,7 +118,7 @@ class RoutingManager {
         return levelNameMap[level_id]
     }
     
-    private func makeBuildingLevelInfo(buildingsData: [BuildingOutput]) -> [String: [String]] {
+    private func makeBuildingLevelInfo(buildingsData: [BuildingData]) -> [String: [String]] {
         var infoBuildingLevel = [String: [String]]()
         for building in buildingsData {
             let buildingName = building.name
@@ -222,9 +227,15 @@ class RoutingManager {
         for n in route.nodes {
             guard let node_building_id = getBuildingIdHasLevelId(level_id: n.level_id),
                   let node_building_name = getBuildingNameWithId(building_id: node_building_id),
-                  let node_level_name = getLevelNameWithId(level_id: n.level_id) else { return }
+                  let node_level_name = getLevelNameWithId(level_id: n.level_id) else {
+                JupiterLogger.e(tag: "RoutingManager", message: "return first")
+                return
+            }
             let key = "\(sectorId)_\(node_building_name)_\(node_level_name)"
-            guard let nodeData = PathMatcher.shared.nodeData[key] else { return }
+            guard let nodeData = PathMatcher.shared.nodeData[key] else {
+                JupiterLogger.e(tag: "RoutingManager", message: "return second")
+                return
+            }
             guard let matchedNode = nodeData[n.number] else { return }
             if self.routeNodeData.isEmpty {
                 self.routeNodeData = nodeData
@@ -242,7 +253,10 @@ class RoutingManager {
         let end = route.destination
         guard let end_building_id = getBuildingIdHasLevelId(level_id: end.level_id),
               let end_building_name = getBuildingNameWithId(building_id: end_building_id),
-              let end_level_name = getLevelNameWithId(level_id: end.level_id) else { return }
+              let end_level_name = getLevelNameWithId(level_id: end.level_id) else {
+            JupiterLogger.e(tag: "RoutingManager", message: "return third")
+            return
+        }
         buildingOrder.append(end_building_name)
         levelOrder.append(end_level_name)
         nodeOrder.append(-1)

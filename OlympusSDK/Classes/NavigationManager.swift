@@ -103,6 +103,7 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     // MARK: - Jupiter
     public func onJupiterSuccess(_ isSuccess: Bool) {
         if let blData = jupiterManager?.getBuildingsData() {
+            JupiterLogger.i(tag: "NavigationManager", message: "onJupiterSuccess : buildingsData= \(blData)")
             routingManager?.setBuildingsData(buildingsData: blData)
         }
         delegate?.onJupiterSuccess(isSuccess)
@@ -274,16 +275,16 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     }
     
     //MARK: - Simulation Mode
-    public func setSimulationMode(flag: Bool, bleFileName: String, sensorFileName: String) {
-        jupiterManager?.setSimulationMode(flag: flag, bleFileName: bleFileName, sensorFileName: sensorFileName)
+    public func setSimulationMode(flag: Bool, rfdFileName: String, uvdFileName: String, eventFileName: String) {
+        jupiterManager?.setSimulationMode(flag: flag, rfdFileName: rfdFileName, uvdFileName: uvdFileName, eventFileName: eventFileName)
+    }
+    
+    public func setSimulationModeLegacy(flag: Bool, bleFileName: String, sensorFileName: String) {
+        jupiterManager?.setSimulationModeLegacy(flag: flag, bleFileName: bleFileName, sensorFileName: sensorFileName)
     }
     
     public func saveFilesForSimulation(completion: @escaping (Bool) -> Void) {
         jupiterManager?.saveFilesForSimulation(completion: completion)
-    }
-    
-    public func saveDebugFile(completion: @escaping (Bool) -> Void) {
-        jupiterManager?.saveDebugFile(completion: completion)
     }
     
     // MARK: - Private

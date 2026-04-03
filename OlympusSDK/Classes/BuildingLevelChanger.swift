@@ -24,7 +24,7 @@ class BuildingLevelChanger {
     let DEFAULT_TAG_DISTANCE: Float = 70
     
     var sectorId: Int
-    var blChangerTagMap = [Int: [BuildingLevelTag]]()
+//    var blChangerTagMap = [Int: [BuildingLevelTag]]()
     var buildingsAndLevelsMap = [String: [String]]()
     var buildingIdMap = [String: Int]()
     var buildingNameMap = [Int: String]()
@@ -51,14 +51,14 @@ class BuildingLevelChanger {
         levelWardsMap[levelKey] = levelWardsData
     }
     
-    func setBuildingsData(buildingsData: [BuildingOutput]) {
+    func setBuildingsData(buildingsData: [BuildingData]) {
         let buildingLevelData = makeBuildingLevelInfo(buildingsData: buildingsData)
         buildingsAndLevelsMap = buildingLevelData
         makeBuildingIdMap(buildingsData: buildingsData)
         makeLevelIdMap(buildingsData: buildingsData)
     }
 
-    func makeBuildingIdMap(buildingsData: [BuildingOutput]) {
+    func makeBuildingIdMap(buildingsData: [BuildingData]) {
         buildingIdMap.removeAll()
         buildingNameMap.removeAll()
         
@@ -68,7 +68,7 @@ class BuildingLevelChanger {
         }
     }
     
-    func makeLevelIdMap(buildingsData: [BuildingOutput]) {
+    func makeLevelIdMap(buildingsData: [BuildingData]) {
         levelIdMap.removeAll()
         levelNameMap.removeAll()
         levelToBuildingIdMap.removeAll()
@@ -112,10 +112,10 @@ class BuildingLevelChanger {
         return levelChangeAreaMap[key]
     }
     
-    func setBuildingLevelTagData(key: Int, blChangerTagData: [BuildingLevelTag]) {
-        blChangerTagMap[key] = blChangerTagData
-        JupiterLogger.i(tag: "BuildingLevelChanger", message: "(setBuildingLevelTagData) - \(blChangerTagData)")
-    }
+//    func setBuildingLevelTagData(key: Int, blChangerTagData: [BuildingLevelTag]) {
+//        blChangerTagMap[key] = blChangerTagData
+//        JupiterLogger.i(tag: "BuildingLevelChanger", message: "(setBuildingLevelTagData) - \(blChangerTagData)")
+//    }
     
     func accumulateDistance(uvd: UserVelocity, isGetFirstResponse: Bool, mode: UserMode, result: FineLocationTrackingOutput) {
         if (isGetFirstResponse && mode == .MODE_VEHICLE) {
@@ -126,118 +126,118 @@ class BuildingLevelChanger {
         }
     }
     
-    func determineTagDetection(time: Int, tag: BuildingLevelTag, buildingDestination: String, levelDestination: String, tagCoord: [Float], curResult: FineLocationTrackingOutput?) -> BuildingLevelTagResult? {
-        guard let curResult = curResult else { return nil }
-        let curBuilding = curResult.building_name
-        let curLevel = curResult.level_name
-        
-        var tagDistance = Float(tag.distance)
-        if (tagDistance == 0) {
-            tagDistance = DEFAULT_TAG_DISTANCE
-        }
-        
-        let levelArray: [String] = [tag.level_name, tag.linked_level_name]
-        let TIME_CONDITION = levelArray.contains("B0") && levelArray.contains(where: { $0 != "B0" }) ? JupiterTime.MINIMUM_BUILDING_LEVEL_CHANGE_TIME*3 : JupiterTime.MINIMUM_BUILDING_LEVEL_CHANGE_TIME
-        
-        if (tag.id != lastTag) {
-            // Different Tag Detected
-            let resultLevelName: String = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: levelDestination)
-            if (buildingDestination != curBuilding || resultLevelName != curLevel) {
-                if ((Double(time - self.buildingLevelChangedTime)) > TIME_CONDITION) {
-                    // Building Level 이 바뀐지 7초 이상 지남 -> 서버 결과를 이용해 바뀌어야 한다고 판단
-                    self.lastTag = tag.id
-                    self.distAfterTagDetection = 0
-                    setBuildingLevelChangedTime(value: time)
-                    let detectionResult = BuildingLevelTagResult(building: buildingDestination, level: levelDestination, x: tagCoord[0], y: tagCoord[1])
-                    JupiterLogger.i(tag: "BuildingLevelChanger", message: "(determineTagDetection) blTagResult: \(detectionResult)")
-                    return detectionResult
-//                    self.delegate?.isBuildingLevelChanged(isChanged: true, newBuilding: buildingDestination, newLevel: levelDestination, newCoord: tagCoord)
-                }
-            }
-        } else {
-            // Same Tag Detected
-            if (self.distAfterTagDetection >= tagDistance) {
-                let resultLevelName: String = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: levelDestination)
-                if (buildingDestination != curBuilding || resultLevelName != curLevel) {
-                    if (Double(time - self.buildingLevelChangedTime) > TIME_CONDITION) {
-                        // Building Level 이 바뀐지 7초 이상 지남 -> 서버 결과를 이용해 바뀌어야 한다고 판단
-                        self.lastTag = tag.id
-                        self.distAfterTagDetection = 0
-                        setBuildingLevelChangedTime(value: time)
-                        
-                        let detectionResult = BuildingLevelTagResult(building: buildingDestination, level: levelDestination, x: tagCoord[0], y: tagCoord[1])
-                        JupiterLogger.i(tag: "BuildingLevelChanger", message: "(determineTagDetection) blTagResult: \(detectionResult)")
-                        return detectionResult
-//                        self.delegate?.isBuildingLevelChanged(isChanged: true, newBuilding: buildingDestination, newLevel: levelDestination, newCoord: tagCoord)
-                    }
-                }
-            }
-        }
-        
-        return nil
-    }
-    
-    func isBuildingLevelChangerTagged(userPeak: UserPeak, curResult: FineLocationTrackingOutput?, mode: UserMode) -> BuildingLevelTag? {
-        let sectorKey = self.sectorId
-        guard let sectorTagData = self.blChangerTagMap[sectorKey], let result = curResult else { return nil }
-        
-        if !checkInLevelChangeArea(sectorId: sectorId, building: result.building_name, level: result.level_name, x: result.x, y: result.y, mode: mode) {
-//            JupiterLogger.i(tag: "BuildingLevelChanger", message: "(isBuildingLevelChangerTagged) - not in LevelChangeArea")
-            return nil
-        }
-        
-        let tagValues: [BuildingLevelTag] = sectorTagData
-//        JupiterLogger.i(tag: "BuildingLevelChanger", message: "(isBuildingLevelChangerTagged) - UserPeak: \(userPeak.id)")
-        for item in tagValues {
-            let tagLevelList = [item.level_name, item.linked_level_name]
-            if item.name == userPeak.id && tagLevelList.contains(result.level_name) {
-//                JupiterLogger.i(tag: "BuildingLevelChanger", message: "(isBuildingLevelChangerTagged) - \(item.name) tagged with userPeak \(userPeak.id)")
-                return item
-            }
-        }
-        
-        return nil
-    }
-    
-    func getBuildingLevelDestination(tag: BuildingLevelTag, curResult: FineLocationTrackingOutput?) -> (buildingDestination: String, levelDestination: String)? {
-        guard let curResult = curResult else { return nil }
-        let curBuilding: String = curResult.building_name
-        let curLevel: String = curResult.level_name
-        
-        let tagBuildingName = tag.building_name == "" ? curBuilding : tag.building_name
-//        JupiterLogger.i(tag: "BuildingLevelChanger", message: "(getBuildingLevelDestination) - cur: [\(curBuilding),\(curLevel)] -> dest:[\(tagBuildingName), \(tag.level_name) & \(tag.linked_level_name)]")
-        var buildingDestination: String = curBuilding
-        var levelDestination: String = curLevel
-        
-        if curBuilding != tagBuildingName {
-            // Building 바뀜
-            buildingDestination = tagBuildingName
-            levelDestination = tag.level_name
-            
-            return (buildingDestination, levelDestination)
-        } else {
-            // Level만 바뀜
-            let linked_level_name = tag.linked_level_name
-            let levelArray: [String] = [curLevel, linked_level_name]
-            
-            if (linked_level_name == "") {
-                return nil
-            } else {
-                if (curLevel == linked_level_name) {
-                    return nil
-                }
-                
-                let levelNameCorrected: String = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: curLevel)
-                for i in 0..<levelArray.count {
-                    if levelArray[i] != levelNameCorrected {
-                        levelDestination = levelArray[i]
-                    }
-                }
-                
-                return (buildingDestination, levelDestination)
-            }
-        }
-    }
+//    func determineTagDetection(time: Int, tag: BuildingLevelTag, buildingDestination: String, levelDestination: String, tagCoord: [Float], curResult: FineLocationTrackingOutput?) -> BuildingLevelTagResult? {
+//        guard let curResult = curResult else { return nil }
+//        let curBuilding = curResult.building_name
+//        let curLevel = curResult.level_name
+//        
+//        var tagDistance = Float(tag.distance)
+//        if (tagDistance == 0) {
+//            tagDistance = DEFAULT_TAG_DISTANCE
+//        }
+//        
+//        let levelArray: [String] = [tag.level_name, tag.linked_level_name]
+//        let TIME_CONDITION = levelArray.contains("B0") && levelArray.contains(where: { $0 != "B0" }) ? JupiterTime.MINIMUM_BUILDING_LEVEL_CHANGE_TIME*3 : JupiterTime.MINIMUM_BUILDING_LEVEL_CHANGE_TIME
+//        
+//        if (tag.id != lastTag) {
+//            // Different Tag Detected
+//            let resultLevelName: String = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: levelDestination)
+//            if (buildingDestination != curBuilding || resultLevelName != curLevel) {
+//                if ((Double(time - self.buildingLevelChangedTime)) > TIME_CONDITION) {
+//                    // Building Level 이 바뀐지 7초 이상 지남 -> 서버 결과를 이용해 바뀌어야 한다고 판단
+//                    self.lastTag = tag.id
+//                    self.distAfterTagDetection = 0
+//                    setBuildingLevelChangedTime(value: time)
+//                    let detectionResult = BuildingLevelTagResult(building: buildingDestination, level: levelDestination, x: tagCoord[0], y: tagCoord[1])
+//                    JupiterLogger.i(tag: "BuildingLevelChanger", message: "(determineTagDetection) blTagResult: \(detectionResult)")
+//                    return detectionResult
+////                    self.delegate?.isBuildingLevelChanged(isChanged: true, newBuilding: buildingDestination, newLevel: levelDestination, newCoord: tagCoord)
+//                }
+//            }
+//        } else {
+//            // Same Tag Detected
+//            if (self.distAfterTagDetection >= tagDistance) {
+//                let resultLevelName: String = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: levelDestination)
+//                if (buildingDestination != curBuilding || resultLevelName != curLevel) {
+//                    if (Double(time - self.buildingLevelChangedTime) > TIME_CONDITION) {
+//                        // Building Level 이 바뀐지 7초 이상 지남 -> 서버 결과를 이용해 바뀌어야 한다고 판단
+//                        self.lastTag = tag.id
+//                        self.distAfterTagDetection = 0
+//                        setBuildingLevelChangedTime(value: time)
+//                        
+//                        let detectionResult = BuildingLevelTagResult(building: buildingDestination, level: levelDestination, x: tagCoord[0], y: tagCoord[1])
+//                        JupiterLogger.i(tag: "BuildingLevelChanger", message: "(determineTagDetection) blTagResult: \(detectionResult)")
+//                        return detectionResult
+////                        self.delegate?.isBuildingLevelChanged(isChanged: true, newBuilding: buildingDestination, newLevel: levelDestination, newCoord: tagCoord)
+//                    }
+//                }
+//            }
+//        }
+//        
+//        return nil
+//    }
+//    
+//    func isBuildingLevelChangerTagged(userPeak: UserPeak, curResult: FineLocationTrackingOutput?, mode: UserMode) -> BuildingLevelTag? {
+//        let sectorKey = self.sectorId
+//        guard let sectorTagData = self.blChangerTagMap[sectorKey], let result = curResult else { return nil }
+//        
+//        if !checkInLevelChangeArea(sectorId: sectorId, building: result.building_name, level: result.level_name, x: result.x, y: result.y, mode: mode) {
+////            JupiterLogger.i(tag: "BuildingLevelChanger", message: "(isBuildingLevelChangerTagged) - not in LevelChangeArea")
+//            return nil
+//        }
+//        
+//        let tagValues: [BuildingLevelTag] = sectorTagData
+////        JupiterLogger.i(tag: "BuildingLevelChanger", message: "(isBuildingLevelChangerTagged) - UserPeak: \(userPeak.id)")
+//        for item in tagValues {
+//            let tagLevelList = [item.level_name, item.linked_level_name]
+//            if item.name == userPeak.id && tagLevelList.contains(result.level_name) {
+////                JupiterLogger.i(tag: "BuildingLevelChanger", message: "(isBuildingLevelChangerTagged) - \(item.name) tagged with userPeak \(userPeak.id)")
+//                return item
+//            }
+//        }
+//        
+//        return nil
+//    }
+//    
+//    func getBuildingLevelDestination(tag: BuildingLevelTag, curResult: FineLocationTrackingOutput?) -> (buildingDestination: String, levelDestination: String)? {
+//        guard let curResult = curResult else { return nil }
+//        let curBuilding: String = curResult.building_name
+//        let curLevel: String = curResult.level_name
+//        
+//        let tagBuildingName = tag.building_name == "" ? curBuilding : tag.building_name
+////        JupiterLogger.i(tag: "BuildingLevelChanger", message: "(getBuildingLevelDestination) - cur: [\(curBuilding),\(curLevel)] -> dest:[\(tagBuildingName), \(tag.level_name) & \(tag.linked_level_name)]")
+//        var buildingDestination: String = curBuilding
+//        var levelDestination: String = curLevel
+//        
+//        if curBuilding != tagBuildingName {
+//            // Building 바뀜
+//            buildingDestination = tagBuildingName
+//            levelDestination = tag.level_name
+//            
+//            return (buildingDestination, levelDestination)
+//        } else {
+//            // Level만 바뀜
+//            let linked_level_name = tag.linked_level_name
+//            let levelArray: [String] = [curLevel, linked_level_name]
+//            
+//            if (linked_level_name == "") {
+//                return nil
+//            } else {
+//                if (curLevel == linked_level_name) {
+//                    return nil
+//                }
+//                
+//                let levelNameCorrected: String = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: curLevel)
+//                for i in 0..<levelArray.count {
+//                    if levelArray[i] != levelNameCorrected {
+//                        levelDestination = levelArray[i]
+//                    }
+//                }
+//                
+//                return (buildingDestination, levelDestination)
+//            }
+//        }
+//    }
     
     func setBuildingLevelChangedTime(value: Int) {
         self.buildingLevelChangedTime = value
@@ -274,7 +274,7 @@ class BuildingLevelChanger {
         return (isBuildingLevelChanged, result)
     }
     
-    private func makeBuildingLevelInfo(buildingsData: [BuildingOutput]) -> [String: [String]] {
+    private func makeBuildingLevelInfo(buildingsData: [BuildingData]) -> [String: [String]] {
         var infoBuildingLevel = [String: [String]]()
         for building in buildingsData {
             let buildingName = building.name
