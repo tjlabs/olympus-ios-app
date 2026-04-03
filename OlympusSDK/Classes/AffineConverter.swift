@@ -5,25 +5,25 @@ import TJLabsResource
 class AffineConverter {
     static let shared = AffineConverter()
     
-    var affineParam = [Int: AffineTransParamOutput]()
+    var affineParam = [Int: WGS84Transform]()
     
     init () { }
     
     func initialize() { }
     
-    func setAffineParam(sectorId: Int, data: AffineTransParamOutput) {
+    func setAffineParam(sectorId: Int, data: WGS84Transform) {
         self.affineParam[sectorId] = data
     }
     
-    func getAffineParam(sectorId: Int) -> AffineTransParamOutput? {
+    func getAffineParam(sectorId: Int) -> WGS84Transform? {
         return self.affineParam[sectorId]
     }
     
-    func convertPpToLLH(x: Double, y: Double, heading: Double, param: AffineTransParamOutput) -> LLH {
-        let lon = param.xx_scale * x + param.xy_shear * y + param.x_translation
-        let lat = param.yx_shear * x + param.yy_scale * y + param.y_translation
+    func convertPpToLLH(x: Double, y: Double, heading: Double, param: WGS84Transform) -> LLH {
+        let lon = param.xxScale * x + param.xyShear * y + param.xTranslation
+        let lat = param.yxShear * x + param.yyScale * y + param.yTranslation
         
-        let headingOffsetDeg = param.heading_offset // songdo : 36.92
+        let headingOffsetDeg = param.headingOffset // songdo : 36.92
         let correctedHeading = fmod(-heading + headingOffsetDeg + 360.0, 360.0)
         
         return LLH(lat: lat, lon: lon, heading: correctedHeading)
