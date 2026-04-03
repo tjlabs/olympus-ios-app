@@ -12,3 +12,8 @@ public struct FineLocationTrackingOutput: Codable, Equatable {
     public var y: Float
     public var absolute_heading: Float
 }
+
+struct S3Output: Codable {
+    let presigned_url: String
+    let expires_in: Int
+}

@@ -39,3 +39,8 @@ struct MobileReport: Encodable {
     let mobile_time: Int
     let code: Int
 }
+
+struct S3Input: Codable {
+    let file_name: String
+    let content_type: String
+}

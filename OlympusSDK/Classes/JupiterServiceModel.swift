@@ -105,6 +105,12 @@ public struct NaviCorrectionInfo {
     public let x: Float
     public let y: Float
     public let heading: Float
+    
+    public init(x: Float, y: Float, heading: Float) {
+        self.x = x
+        self.y = y
+        self.heading = heading
+    }
 }
 
 public struct StackEditInfo: Codable {
@@ -114,4 +120,13 @@ public struct StackEditInfo: Codable {
     public var x: Float
     public var y: Float
     public var heading: Float
+    
+    public init(index: Int, building: String, level: String, x: Float, y: Float, heading: Float) {
+        self.index = index
+        self.building = building
+        self.level = level
+        self.x = x
+        self.y = y
+        self.heading = heading
+    }
 }
