@@ -5,7 +5,6 @@ import TJLabsCommon
 import TJLabsResource
 
 class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsResourceManagerDelegate, BuildingLevelChangerDelegate {
-    
     // MARK: - Classes
     private var tjlabsResourceManager = TJLabsResourceManager()
     
@@ -73,7 +72,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     var preResult: FineLocationTrackingOutput?
     var curPathMatchingResult: FineLocationTrackingOutput?
     var prePathMatchingResult: FineLocationTrackingOutput?
-    var buildingsData: [BuildingOutput]?
+    var buildingsData: [BuildingData]?
     
     // MARK: - Debuging
     var debug_calc_xyh: [Float] = [0, 0, 0]
@@ -110,13 +109,14 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     // MARK: - Functions
     func start(completion: @escaping (Bool, String) -> Void) {
-        tjlabsResourceManager.loadJupiterResource(region: region, sectorId: sectorId, landmarkTh: -92, completion: { isSuccess in
+        tjlabsResourceManager.loadResources(region: region, sectorId: sectorId, landmarkTh: -92, forceUpdate: true, completion: { isSuccess in
             let msg: String = isSuccess ? "JupiterCalcManager start success" : "JupiterCalcManager start failed"
             completion(isSuccess, msg)
         })
     }
     
-    func getBuildingsData() -> [BuildingOutput]? {
+    func getBuildingsData() -> [BuildingData]? {
+        JupiterLogger.i(tag: "JupiterCalcManager", message: "getBuildingsData : buildingsData= \(buildingsData)")
         return self.buildingsData
     }
     
@@ -154,15 +154,17 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             completion(false, uvdMsg)
             return
         }
-
-        rfdGenerator?.generateRfd()
+        
+        JupiterSimulator.shared.isSimulationMode ? rfdGenerator?.generateRfdSimulation() : rfdGenerator?.generateRfd()
+//        rfdGenerator?.generateRfd()
         rfdGenerator?.delegate = self
         rfdGenerator?.pressureProvider = { [self] in
             return self.pressure
         }
 
         uvdGenerator?.setUserMode(mode: mode)
-        uvdGenerator?.generateUvd()
+        JupiterSimulator.shared.isSimulationMode ? uvdGenerator?.generateUvdSimulation() : uvdGenerator?.generateUvd()
+//        uvdGenerator?.generateUvd()
         uvdGenerator?.delegate = self
 
         completion(true, "")
@@ -187,12 +189,12 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
 
         var llh: LLH?
         if let affineParam = AffineConverter.shared.getAffineParam(sectorId: sectorId) {
+            print("(getJupiterResult) : affineParam = \(affineParam)")
             let converted = AffineConverter.shared.convertPpToLLH(x: Double(x), y: Double(y), heading: Double(absoluteHeading), param: affineParam)
-            llh?.lat = converted.lat
-            llh?.lon = converted.lon
-            llh?.heading = converted.heading
+            llh = LLH(lat: converted.lat, lon: converted.lon, heading: converted.heading)
         }
         
+        print("(getJupiterResult) -> index:\(curUvd.index), llhs:\(llh)")
         let jupiterResult = JupiterResult(
             mobile_time: currentTime,
             building_name: buildingName,
@@ -267,6 +269,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
 
     // MARK: - RFDGeneratorDelegate Methods
     func onRfdResult(_ generator: TJLabsCommon.RFDGenerator, receivedForce: TJLabsCommon.ReceivedForce) {
+        JupiterFileManager.shared.writeRFD(rfd: receivedForce)
         handleRfd(rfd: receivedForce)
         delegate?.onRfdResult(receivedForce: receivedForce)
     }
@@ -302,6 +305,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     }
     
     func onUvdResult(_ generator: UVDGenerator, mode: UserMode, userVelocity: UserVelocity) {
+        JupiterFileManager.shared.writeUVD(uvd: userVelocity, mode: mode)
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
         DataBatchSender.shared.sendUvd(uvd: userVelocity)
         determineUserMode(mode: mode)
@@ -312,9 +316,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             let str = ",\(key)=\(value)"
             rfdDataString.append(str)
         }
-        let uvdDataString = "\(currentTime),\(userVelocity.index),\(userVelocity.length),\(userVelocity.heading),\(peakDetector.minPeakRssi),\(peakDetector.minAmp)\(rfdDataString)"
-        //        JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult): \(uvdDataString)")
-        JupiterFileManager.shared.writeDebugData(data: uvdDataString)
+//        let uvdDataString = "\(currentTime),\(userVelocity.index),\(userVelocity.length),\(userVelocity.heading),\(peakDetector.minPeakRssi),\(peakDetector.minAmp)\(rfdDataString)"
         
         // Update Current UVD
         self.curUvd = userVelocity
@@ -356,16 +358,16 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                 }
                 
                 // Building & Level Changer
-                if let blTag = blChanger.isBuildingLevelChangerTagged(userPeak: userPeak, curResult: curResult, mode: mode),
-                   let destinations = blChanger.getBuildingLevelDestination(tag: blTag, curResult: curResult),
-                   let detectionResult = blChanger.determineTagDetection(time: currentTime, tag: blTag, buildingDestination: destinations.buildingDestination, levelDestination: destinations.levelDestination, tagCoord: [Float(blTag.x), Float(blTag.y)], curResult: curResult),
-                   !JupiterResultState.isEntTrack {
-                    blTagResult = detectionResult
-                    if let kf = kalmanFilter {
-                        kf.updateTuBuildingLevel(building: detectionResult.building, level: detectionResult.level)
-                    }
-                    break peakHandling
-                }
+//                if let blTag = blChanger.isBuildingLevelChangerTagged(userPeak: userPeak, curResult: curResult, mode: mode),
+//                   let destinations = blChanger.getBuildingLevelDestination(tag: blTag, curResult: curResult),
+//                   let detectionResult = blChanger.determineTagDetection(time: currentTime, tag: blTag, buildingDestination: destinations.buildingDestination, levelDestination: destinations.levelDestination, tagCoord: [Float(blTag.x), Float(blTag.y)], curResult: curResult),
+//                   !JupiterResultState.isEntTrack {
+//                    blTagResult = detectionResult
+//                    if let kf = kalmanFilter {
+//                        kf.updateTuBuildingLevel(building: detectionResult.building, level: detectionResult.level)
+//                    }
+//                    break peakHandling
+//                }
             }
         }
         
@@ -1406,15 +1408,24 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     }
     
     // MARK: - TJLabsResourceManagerDelegate Methods
-    func onSectorData(_ manager: TJLabsResource.TJLabsResourceManager, data: TJLabsResource.SectorOutput) {
+    func onSectorBundleData(_ manager: TJLabsResource.TJLabsResourceManager, sectorId: Int, data: TJLabsResource.BundleOutput) {
         // TO-DO
     }
     
+    func onUnitsData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [TJLabsResource.UnitData]) {
+        // TO-DO
+    }
+    
+    func onWardsData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [TJLabsResource.LevelWard]) {
+        guard let blChanger = self.buildingLevelChanger else { return }
+        blChanger.setLevelWards(levelKey: key, levelWardsData: data)
+    }
+
     func onSectorError(_ manager: TJLabsResource.TJLabsResourceManager, error: TJLabsResource.ResourceError) {
         // TO-DO
     }
     
-    func onBuildingsData(_ manager: TJLabsResource.TJLabsResourceManager, data: [TJLabsResource.BuildingOutput]) {
+    func onBuildingsData(_ manager: TJLabsResource.TJLabsResourceManager, sectorId: Int, data: [TJLabsResource.BuildingData]) {
         guard let blChanger = self.buildingLevelChanger else { return }
         blChanger.setBuildingsData(buildingsData: data)
         self.buildingsData = data
@@ -1441,17 +1452,13 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         landmarkTagger?.setLandmarkData(key: key, data: data)
     }
     
-    func onLevelUnitsData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [TJLabsResource.UnitData]) {
-        // TO-DO
-    }
-    
     func onGeofenceData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: TJLabsResource.GeofenceData) {
-        let levelChangeArea = data.level_change_area
+        let levelChangeArea = data.levelChangeArea
         if let blChnager = self.buildingLevelChanger {
             blChnager.setLevelChangeArea(key: key, data: levelChangeArea)
         }
-        PathMatcher.shared.setEntranceMatchingArea(key: key, data: data.entrance_matching_area)
-        PathMatcher.shared.setEntranceArea(key: key, data: data.entrance_area)
+        PathMatcher.shared.setEntranceMatchingArea(key: key, data: data.entranceMatchingArea)
+        PathMatcher.shared.setEntranceArea(key: key, data: data.entranceArea)
     }
     
     func onEntranceData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: TJLabsResource.EntranceData) {
@@ -1468,22 +1475,10 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         // NONE
     }
     
-    func onLevelWardsData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [TJLabsResource.LevelWard]) {
-        guard let blChanger = self.buildingLevelChanger else { return }
-        blChanger.setLevelWards(levelKey: key, levelWardsData: data)
-    }
-    
-    func onAffineParam(_ manager: TJLabsResource.TJLabsResourceManager, data: TJLabsResource.AffineTransParamOutput) {
+    func onAffineParam(_ manager: TJLabsResource.TJLabsResourceManager, data: TJLabsResource.WGS84Transform) {
         AffineConverter.shared.setAffineParam(sectorId: sectorId, data: data)
     }
     
-    func onSpotsData(_ manager: TJLabsResource.TJLabsResourceManager, key: Int, type: TJLabsResource.SpotType, data: Any) {
-        if type == .BUILDING_LEVEL_TAG {
-            let blChangerTagData = data as! [TJLabsResource.BuildingLevelTag]
-            guard let blChanger = self.buildingLevelChanger else { return }
-            blChanger.setBuildingLevelTagData(key: key, blChangerTagData: blChangerTagData)
-        }
-    }
     func onError(_ manager: TJLabsResource.TJLabsResourceManager, error: TJLabsResource.ResourceError, key: String) {
         // TO-DO
     }

@@ -229,6 +229,24 @@ class JupiterNetworkManager {
         }
     }
     
+    func postS3(url: String, input: S3Input, completion: @escaping (Int, String, S3Input) -> Void) {
+        guard let body = encodeJson(input) else {
+            DispatchQueue.main.async { completion(406, "Invalid URL or failed to encode JSON", input) }
+            return
+        }
+        makeRequest(url: url, body: body) { request in
+            guard let request = request else {
+                DispatchQueue.main.async { completion(406, "Invalid URL or failed to encode JSON", input) }
+                return
+            }
+            let sessionConfig = URLSessionConfiguration.default
+            sessionConfig.timeoutIntervalForResource = JupiterNetworkConstants.TIMEOUT_VALUE_POST
+            sessionConfig.timeoutIntervalForRequest = JupiterNetworkConstants.TIMEOUT_VALUE_POST
+            let session = URLSession(configuration: sessionConfig)
+            self.performRequest(request: request, session: session, input: input, completion: completion)
+        }
+    }
+    
     // MARK: - CALC
     func postCalcDirs(url: String, input: DirectionsRequest, completion: @escaping (Int, String, DirectionsRequest) -> Void) {
         guard let body = encodeJson(input) else {

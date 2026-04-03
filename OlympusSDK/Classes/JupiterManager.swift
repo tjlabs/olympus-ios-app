@@ -107,15 +107,15 @@ public class JupiterManager: JupiterCalcManagerDelegate {
         ]
         
         performTasksWithCounter(tasks: tasks, onComplete: { [self] in
-            JupiterFileManager.shared.set(region: region, sectorId: sectorId, deviceModel: self.deviceModel, osVersion: self.deviceOsVersion)
             jupiterCalcManager = JupiterCalcManager(region: region, id: self.id, sectorId: sectorId)
             jupiterCalcManager?.start(completion: { [self] isSuccess, msg in
                 if isSuccess {
+                    self.uploadSimulationFiles()
                     // File Save Setting
                     if debugOption {
                         JupiterFileManager.shared.setDebugOption(flag: debugOption)
-                        JupiterFileManager.shared.createFiles(region: region, sector_id: sectorId, deviceModel: deviceModel, osVersion: deviceOsVersion)
-                        JupiterFileManager.shared.createFileWithName(region: region, sector_id: sectorId, deviceModel: deviceModel, osVersion: deviceOsVersion, fileName: "_")
+                        JupiterFileManager.shared.createFiles(id: self.id, os: "iOS")
+//                        JupiterFileManager.shared.createFiles(region: region, sector_id: sectorId, deviceModel: deviceModel, osVersion: deviceOsVersion)
                     }
                     jupiterCalcManager?.delegate = self
                     jupiterCalcManager?.setSendRfdLength(sendRfdLength)
@@ -124,6 +124,8 @@ public class JupiterManager: JupiterCalcManagerDelegate {
                         if isSuccess {
                             isStartService = true
                             startTimer()
+                            let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
+                            JupiterFileManager.shared.writeEvent(event: JupiterEvent(mobile_time: currentTime, event_code: .START_SERVICE))
                             delegate?.onJupiterSuccess(true)
                         } else {
                             delegate?.onJupiterError(0, msg)
@@ -139,6 +141,50 @@ public class JupiterManager: JupiterCalcManagerDelegate {
             self.delegate?.onJupiterError(0, msg)
             self.delegate?.onJupiterSuccess(false)
         })
+    }
+    
+    private func uploadSimulationFiles() {
+        let fileInfos = JupiterFileUploader.shared.getSimulationFilesInExports()
+        JupiterLogger.i(tag: "JupiterManager", message: "uploadSimulationFiles : fileInfos= \(fileInfos)")
+        let rfdFile = fileInfos.rfdFiles
+        let uvdFile = fileInfos.uvdFiles
+        let eventFile = fileInfos.eventFiles
+        
+        for r in rfdFile {
+            JupiterFileUploader.shared.requestS3FileURL(fileName: r.name, completion: { [self] output in
+                if let s3Output = output {
+                    let presigned_url = s3Output.presigned_url
+                    JupiterLogger.i(tag: "JupiterManager", message: "uploadSimulationFiles rfd : \(r.name)")
+                    JupiterFileUploader.shared.uploadFileToS3(s3Path: presigned_url, filePath: r.path, completion: { isSuccess in
+                        if isSuccess { JupiterFileManager.shared.deleteSimulationFile(at: r.path) }
+                    })
+                }
+            })
+        }
+        
+        for u in uvdFile {
+            JupiterFileUploader.shared.requestS3FileURL(fileName: u.name, completion: { [self] output in
+                if let s3Output = output {
+                    let presigned_url = s3Output.presigned_url
+                    JupiterLogger.i(tag: "JupiterManager", message: "uploadSimulationFiles uvd : \(u.name)")
+                    JupiterFileUploader.shared.uploadFileToS3(s3Path: presigned_url, filePath: u.path, completion: { isSuccess in
+                        if isSuccess { JupiterFileManager.shared.deleteSimulationFile(at: u.path) }
+                    })
+                }
+            })
+        }
+        
+        for e in eventFile {
+            JupiterFileUploader.shared.requestS3FileURL(fileName: e.name, completion: { [self] output in
+                if let s3Output = output {
+                    let presigned_url = s3Output.presigned_url
+                    JupiterLogger.i(tag: "JupiterManager", message: "uploadSimulationFiles event : \(e.name)")
+                    JupiterFileUploader.shared.uploadFileToS3(s3Path: presigned_url, filePath: e.path, completion: { isSuccess in
+                        if isSuccess { JupiterFileManager.shared.deleteSimulationFile(at: e.path) }
+                    })
+                }
+            })
+        }
     }
     
     private func performTasksWithCounter(tasks: [(_ group: DispatchGroup, _ reportError: @escaping (String) -> Void) -> Void],
@@ -196,15 +242,15 @@ public class JupiterManager: JupiterCalcManagerDelegate {
     }
     
     // MARK: - Bridging
-    public func getBuildingsData() -> [BuildingOutput]? {
+    public func getBuildingsData() -> [BuildingData]? {
         return jupiterCalcManager?.getBuildingsData()
     }
     
-    func getCurPmResultBuffer(from: Int) -> [FineLocationTrackingOutput]? {
+    public func getCurPmResultBuffer(from: Int) -> [FineLocationTrackingOutput]? {
         return jupiterCalcManager?.getCurPmResultBuffer(from: from)
     }
     
-    func getCurPmResultBuffer(size: Int) -> [FineLocationTrackingOutput]? {
+    public func getCurPmResultBuffer(size: Int) -> [FineLocationTrackingOutput]? {
         return jupiterCalcManager?.getCurPmResultBuffer(size: size)
     }
     
@@ -255,18 +301,16 @@ public class JupiterManager: JupiterCalcManagerDelegate {
     }
     
     //MARK: - Simulation Mode
-    public func setSimulationMode(flag: Bool, bleFileName: String, sensorFileName: String) {
-        JupiterSimulator.shared.setSimulationMode(flag: flag, bleFileName: bleFileName, sensorFileName: sensorFileName)
+    public func setSimulationMode(flag: Bool, rfdFileName: String, uvdFileName: String, eventFileName: String) {
+        JupiterSimulator.shared.setSimulationMode(flag: flag, rfdFileName: rfdFileName, uvdFileName: uvdFileName, eventFileName: eventFileName)
+    }
+    
+    public func setSimulationModeLegacy(flag: Bool, bleFileName: String, sensorFileName: String) {
+        JupiterSimulator.shared.setSimulationModeLegacy(flag: flag, bleFileName: bleFileName, sensorFileName: sensorFileName)
     }
     
     public func saveFilesForSimulation(completion: @escaping (Bool) -> Void) {
         JupiterFileManager.shared.saveFilesForSimulation(completion: { isSuccess in
-            completion(isSuccess)
-        })
-    }
-    
-    public func saveDebugFile(completion: @escaping (Bool) -> Void) {
-        JupiterFileManager.shared.saveDebugFile(completion: { isSuccess in
             completion(isSuccess)
         })
     }
