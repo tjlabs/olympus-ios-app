@@ -204,15 +204,15 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
 //            }
 //        }
         
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_01_0317.csv", sensorFileName: "sensor_coex_01_0317.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_0310.csv", sensorFileName: "sensor_coex_02_0310.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_0303.csv", sensorFileName: "sensor_coex_03_0303.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_0224.csv", sensorFileName: "sensor_coex_02_0224.csv")
+//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_01_0317.csv", sensorFileName: "sensor_coex_01_0317.csv")
+//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_02_0310.csv", sensorFileName: "sensor_coex_02_0310.csv")
+//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_03_0303.csv", sensorFileName: "sensor_coex_03_0303.csv")
+//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_02_0224.csv", sensorFileName: "sensor_coex_02_0224.csv")
         
         serviceManager?.setNaviDestination(dest: Point(level_id: 53, x: 335, y: 0))
-        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test02_ent2.csv", sensorFileName: "sensor_251013_songdo_test02_ent2.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test05_ent3.csv", sensorFileName: "sensor_251013_songdo_test05_ent3.csv")
+//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
+//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test02_ent2.csv", sensorFileName: "sensor_251013_songdo_test02_ent2.csv")
+//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test05_ent3.csv", sensorFileName: "sensor_251013_songdo_test05_ent3.csv")
         serviceManager?.startService(sectorId: sector_id, mode: .MODE_AUTO, debugOption: true)
         
         // service
@@ -268,8 +268,7 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
             })
         }
         
-//        serviceManager?.saveFilesForSimulation(completion: { [self] isSuccess in
-        serviceManager?.saveDebugFile(completion: { [self] isSuccess in
+        serviceManager?.saveFilesForSimulation(completion: { [self] isSuccess in
             DispatchQueue.main.async { [self] in
                 saveButton.isHidden = true
                 saveButton.isUserInteractionEnabled = true

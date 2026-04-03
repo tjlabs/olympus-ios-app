@@ -27,6 +27,7 @@ class NaviViewController: UIViewController, NavigationManagerDelegate, TJLabsNav
     }
     
     func onJupiterResult(_ result: JupiterResult) {
+        print("(onJupiterResult) -> index:\(result.index) , llh:\(result.llh)")
         let userCoord = TJLabsUserCoordinate(building: result.building_name, level: result.level_name, x: result.x, y: result.y, heading: result.absolute_heading, velocity: result.velocity)
         
         if result.level_name == "B0" && !isParkingGuideRendered {
@@ -186,13 +187,14 @@ class NaviViewController: UIViewController, NavigationManagerDelegate, TJLabsNav
         }
         
         print("(NaviVC) navigationMode : scenario= \(scenario)")
-        serviceManager?.setNaviDestination(dest: Point(level_id: 53, x: 335, y: 0))
-        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_0310.csv", sensorFileName: "sensor_coex_03_0310.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_02_0303.csv", sensorFileName: "sensor_coex_02_0303.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_0224.csv", sensorFileName: "sensor_coex_03_0224.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_03_01_0119.csv", sensorFileName: "sensor_coex_03_01_0119.csv")
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_coex_04_01_0119.csv", sensorFileName: "sensor_coex_04_01_0119.csv")
+        serviceManager?.setNaviDestination(dest: Point(level_id: 52, x: 335, y: 0))
+//        serviceManager?.setSimulationMode(flag: true, rfdFileName: "Rfd1.json", uvdFileName: "Uvd1.json", eventFileName: "Event1.json")
+        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
+//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_03_0310.csv", sensorFileName: "sensor_coex_03_0310.csv")
+//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_02_0303.csv", sensorFileName: "sensor_coex_02_0303.csv")
+//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_03_0224.csv", sensorFileName: "sensor_coex_03_0224.csv")
+//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_03_01_0119.csv", sensorFileName: "sensor_coex_03_01_0119.csv")
+//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_04_01_0119.csv", sensorFileName: "sensor_coex_04_01_0119.csv")
         serviceManager?.startService(sectorId: sectorId, mode: .MODE_AUTO, debugOption: true)
     }
     
