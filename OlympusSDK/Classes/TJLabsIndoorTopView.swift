@@ -2,7 +2,7 @@ import UIKit
 import TJLabsResource
 
 class TJLabsIndoorTopView: UIView {
-    var buildingInfo: BuildingOutput?
+    var buildingInfo: BuildingData?
     
     var onTapBack: (() -> Void)?
     var onTapRefresh: (() -> Void)?
@@ -71,7 +71,7 @@ class TJLabsIndoorTopView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func update(buildingInfo: BuildingOutput) {
+    func update(buildingInfo: BuildingData) {
         self.buildingInfo = buildingInfo
         setTitle(buildingInfo.name)
     }

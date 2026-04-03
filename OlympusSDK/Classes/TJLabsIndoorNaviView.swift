@@ -207,7 +207,8 @@ class TJLabsIndoorNaviView: UIView, TJLabsNaviViewDelegate, NavigationManagerDel
         if let dest = self.naviDestination {
             serviceManager?.setNaviDestination(dest: dest)
         }
-        serviceManager?.setSimulationMode(flag: self.simulationMode, bleFileName: self.bleFileName, sensorFileName: self.sensorFileName)
+//        serviceManager?.setSimulationMode(flag: <#T##Bool#>, rfdFileName: <#T##String#>, uvdFileName: <#T##String#>, eventFileName: <#T##String#>)
+//        serviceManager?.setSimulationModeLegacy(flag: self.simulationMode, bleFileName: self.bleFileName, sensorFileName: self.sensorFileName)
         serviceManager?.startService(sectorId: sectorId, mode: .MODE_AUTO, debugOption: true)
     }
     

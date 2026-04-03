@@ -3,8 +3,8 @@ import UIKit
 import TJLabsResource
 
 class TJLabsParkingInfoView: UIView, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UIScrollViewDelegate {
-    var buildingInfo: BuildingOutput?
-    var levelsInBuilding = [LevelOutput]()
+    var buildingInfo: BuildingData?
+    var levelsInBuilding = [LevelData]()
     
     private struct ParkingContentItem {
         let title: String
@@ -89,7 +89,7 @@ class TJLabsParkingInfoView: UIView, UICollectionViewDataSource, UICollectionVie
         fatalError("init(coder:) has not been implemented")
     }
     
-    var selectedLevel: LevelOutput? {
+    var selectedLevel: LevelData? {
         didSet {
             guard let selectedLevel = selectedLevel else { return }
             DispatchQueue.main.async { [weak self] in
@@ -99,7 +99,7 @@ class TJLabsParkingInfoView: UIView, UICollectionViewDataSource, UICollectionVie
         }
     }
     
-    func update(buildingInfo: BuildingOutput) {
+    func update(buildingInfo: BuildingData) {
         self.buildingInfo = buildingInfo
         self.levelsInBuilding = []
         
@@ -195,7 +195,7 @@ class TJLabsParkingInfoView: UIView, UICollectionViewDataSource, UICollectionVie
         }
     }
     
-    private func makeParkingItems(from levelInfo: LevelOutput) -> [ParkingContentItem] {
+    private func makeParkingItems(from levelInfo: LevelData) -> [ParkingContentItem] {
         let mirror = Mirror(reflecting: levelInfo)
         var values: [String: Any] = [:]
         for child in mirror.children {
@@ -266,7 +266,7 @@ class TJLabsParkingInfoView: UIView, UICollectionViewDataSource, UICollectionVie
         currentPage = clampedPage
     }
     
-    private func updateLevelContents(levelInfo: LevelOutput) {
+    private func updateLevelContents(levelInfo: LevelData) {
         titleLabel.text = "\(levelInfo.name) 주차 정보 현황"
         if let index = levelsInBuilding.firstIndex(where: { $0.name == levelInfo.name }) {
             currentPage = index

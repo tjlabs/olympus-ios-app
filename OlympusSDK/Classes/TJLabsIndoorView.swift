@@ -5,35 +5,16 @@ import TJLabsResource
 import UIKit
 
 public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
-    public func onSectorData(_ manager: TJLabsResource.TJLabsResourceManager, data: TJLabsResource.SectorOutput) {
-        self.sectorInfo = data
-        let buildings = data.buildings
-        if !buildings.isEmpty {
-            selectedBuilding = buildings[0]
-        }
-    }
     
-    public func onSectorError(_ manager: TJLabsResource.TJLabsResourceManager, error: TJLabsResource.ResourceError) {
+    public func onBuildingsData(_ manager: TJLabsResource.TJLabsResourceManager, sectorId: Int, data: [TJLabsResource.BuildingData]) {
         // TODO
     }
     
-    public func onBuildingsData(_ manager: TJLabsResource.TJLabsResourceManager, data: [TJLabsResource.BuildingOutput]) {
-        // TODO
+    public func onSectorBundleData(_ manager: TJLabsResource.TJLabsResourceManager, sectorId: Int, data: TJLabsResource.BundleOutput) {
+        self.sectorId = sectorId
     }
     
-    public func onScaleOffsetData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [Float]) {
-        // TODO
-    }
-    
-    public func onPathPixelData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: TJLabsResource.PathPixelData) {
-        // TODO
-    }
-    
-    public func onNodeLinkData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, type: TJLabsResource.NodeLinkType, data: Any) {
-        // TODO
-    }
-    
-    public func onLevelUnitsData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [TJLabsResource.UnitData]) {
+    public func onUnitsData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [TJLabsResource.UnitData]) {
         let SBL = key.split(separator: "_")
         if SBL.count != 3 { return }
         let building: String = String(SBL[1])
@@ -42,7 +23,9 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         var destinations = [NaviDestination]()
         for unit in data {
             if unit.category == .PARKING_SPACE { continue }
-            let dest = NaviDestination(building: building, level: level, level_id: unit.level_id, category: unit.category, name: unit.name, x: Float(unit.x), y: Float(unit.y))
+            guard let sectorId = self.sectorId else { return }
+            guard let level_id = TJLabsResourceManager.shared.getLevelId(sectorId: sectorId, buildingName: building, levelName: level) else { continue }
+            let dest = NaviDestination(building: building, level: level, level_id: level_id, category: unit.category, name: unit.name, x: Float(unit.x), y: Float(unit.y))
             destinations.append(dest)
         }
         
@@ -53,6 +36,26 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         } else {
             self.destinationsMap[building] = destinations
         }
+    }
+    
+    public func onWardsData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [TJLabsResource.LevelWard]) {
+        // TODO
+    }
+    
+    public func onSectorError(_ manager: TJLabsResource.TJLabsResourceManager, error: TJLabsResource.ResourceError) {
+        // TODO
+    }
+
+    public func onScaleOffsetData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [Float]) {
+        // TODO
+    }
+    
+    public func onPathPixelData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: TJLabsResource.PathPixelData) {
+        // TODO
+    }
+    
+    public func onNodeLinkData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, type: TJLabsResource.NodeLinkType, data: Any) {
+        // TODO
     }
     
     public func onGeofenceData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: TJLabsResource.GeofenceData) {
@@ -71,15 +74,7 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         // TODO
     }
     
-    public func onLevelWardsData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [TJLabsResource.LevelWard]) {
-        // TODO
-    }
-    
-    public func onAffineParam(_ manager: TJLabsResource.TJLabsResourceManager, data: TJLabsResource.AffineTransParamOutput) {
-        // TODO
-    }
-    
-    public func onSpotsData(_ manager: TJLabsResource.TJLabsResourceManager, key: Int, type: TJLabsResource.SpotType, data: Any) {
+    public func onAffineParam(_ manager: TJLabsResource.TJLabsResourceManager, data: TJLabsResource.WGS84Transform) {
         // TODO
     }
     
@@ -110,9 +105,14 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
     var userId: String?
     
     // MARK: - Simulation
-    var simulationMode: Bool = true
+    var simulationModeLegacy: Bool = true
     var bleFileName: String = "ble_coex_01_0317.csv"
     var sensorFileName: String = "sensor_coex_01_0317.csv"
+    
+    var simulationMode: Bool = false
+    var rfdFileName: String = ""
+    var uvdFileName: String = ""
+    var eventFileName: String = ""
     
     var isResourceLoaded: Bool? {
         didSet {
@@ -124,8 +124,8 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         }
     }
     
-    var sectorInfo: SectorOutput?
-    var selectedBuilding: BuildingOutput? {
+    var sectorInfo: BundleOutput?
+    var selectedBuilding: BuildingData? {
         didSet {
             guard let selectedBuilding = selectedBuilding else { return }
             DispatchQueue.main.async { [weak self] in
@@ -160,7 +160,7 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         self.sectorId = sectorId
         self.userId = userId
         TJLabsResourceManager.shared.delegate = self
-        TJLabsResourceManager.shared.loadMapResource(region: region, sectorId: sectorId, completion: { isSuccess in
+        TJLabsResourceManager.shared.loadResources(region: region, sectorId: sectorId, completion: { isSuccess in
             let msg = isSuccess ? "success" : "fail"
             JupiterLogger.i(tag: "TJLabsIndoorView", message: "initialize " + msg)
             self.isResourceLoaded = isSuccess
@@ -173,8 +173,15 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         self.autoresizingMask = [.flexibleWidth, .flexibleHeight]
     }
     
-    public func setSimulationMode(flag: Bool, bleFileName: String, sensorFileName: String) {
+    public func setSimulationMode(flag: Bool, rfdFileName: String, uvdFileName: String, eventFileName: String) {
         self.simulationMode = flag
+        self.rfdFileName = rfdFileName
+        self.uvdFileName = uvdFileName
+        self.eventFileName = eventFileName
+    }
+    
+    public func setSimulationModeLegacy(flag: Bool, bleFileName: String, sensorFileName: String) {
+        self.simulationModeLegacy = flag
         self.bleFileName = bleFileName
         self.sensorFileName = sensorFileName
     }
@@ -190,7 +197,7 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         bindActions()
     }
     
-    private func updateBuildingContents(buildingInfo: BuildingOutput) {
+    private func updateBuildingContents(buildingInfo: BuildingData) {
         JupiterLogger.i(tag: "TJLabsIndoorView", message: "updateBuildingContents")
         updateTopView(buildingInfo: buildingInfo)
         updateMidView(buildingInfo: buildingInfo)
@@ -214,7 +221,7 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         ])
     }
     
-    private func updateTopView(buildingInfo: BuildingOutput) {
+    private func updateTopView(buildingInfo: BuildingData) {
         topView?.update(buildingInfo: buildingInfo)
         JupiterLogger.i(tag: "TJLabsIndoorView", message: "updateTopView")
     }
@@ -236,7 +243,7 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         ])
     }
     
-    private func updateMidView(buildingInfo: BuildingOutput) {
+    private func updateMidView(buildingInfo: BuildingData) {
         midView?.update(buildingInfo: buildingInfo)
         JupiterLogger.i(tag: "TJLabsIndoorView", message: "updateMidView")
     }
@@ -258,7 +265,7 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         ])
     }
     
-    private func updateBottomView(buildingInfo: BuildingOutput) {
+    private func updateBottomView(buildingInfo: BuildingData) {
         bottomView?.update(buildingInfo: buildingInfo)
         JupiterLogger.i(tag: "TJLabsIndoorView", message: "updateBottomView")
     }

@@ -4,7 +4,7 @@ import TJLabsResource
 class TJLabsIndoorMidView: UIView {
     var onTapShowMap: (() -> Void)?
     
-    var buildingInfo: BuildingOutput?
+    var buildingInfo: BuildingData?
     var parkingStateView: TJLabsParkingStateView?
     var parkingInfoView: TJLabsParkingInfoView?
     var showMapView: TJLabsShowMapView?
@@ -60,7 +60,7 @@ class TJLabsIndoorMidView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func update(buildingInfo: BuildingOutput) {
+    func update(buildingInfo: BuildingData) {
         self.buildingInfo = buildingInfo
         self.parkingStateView?.update(buildingInfo: buildingInfo)
         self.parkingInfoView?.update(buildingInfo: buildingInfo)

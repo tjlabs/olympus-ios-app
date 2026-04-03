@@ -2,7 +2,7 @@ import UIKit
 import TJLabsResource
 
 class TJLabsParkingStateView: UIView, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
-    var buildingInfo: BuildingOutput?
+    var buildingInfo: BuildingData?
     
     private struct ParkingLevelItem {
         let level: String
@@ -92,7 +92,7 @@ class TJLabsParkingStateView: UIView, UICollectionViewDataSource, UICollectionVi
         fatalError("init(coder:) has not been implemented")
     }
     
-    func update(buildingInfo: BuildingOutput) {
+    func update(buildingInfo: BuildingData) {
         self.buildingInfo = buildingInfo
         parkingLevelItems = makeParkingLevelItems(from: buildingInfo.levels)
         updateVisibleCountLabel()

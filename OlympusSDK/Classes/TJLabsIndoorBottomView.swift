@@ -3,7 +3,7 @@ import TJLabsResource
 
 class TJLabsIndoorBottomView: UIView {
     var onSelectDestination: ((NaviDestination) -> Void)?
-    var buildingInfo: BuildingOutput?
+    var buildingInfo: BuildingData?
     
     private let containerView: UIView = {
         let view = UIView()
@@ -55,7 +55,7 @@ class TJLabsIndoorBottomView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func update(buildingInfo: BuildingOutput) {
+    func update(buildingInfo: BuildingData) {
         self.buildingInfo = buildingInfo
     }
     
