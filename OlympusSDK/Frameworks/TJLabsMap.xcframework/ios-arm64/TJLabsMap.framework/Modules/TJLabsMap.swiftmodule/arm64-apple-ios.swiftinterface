@@ -36,7 +36,7 @@ public protocol TJLabsMapViewDelegate : AnyObject {
   @_Concurrency.MainActor @preconcurrency public var pinLocations: [CoreFoundation.CGPoint]
   @_Concurrency.MainActor @preconcurrency public var pinCounts: Swift.Int
   @_Concurrency.MainActor @preconcurrency weak public var delegate: (any TJLabsMap.TJLabsMapViewDelegate)?
-  @_Concurrency.MainActor @preconcurrency public func initialize(region: Swift.String, sectorId: Swift.Int, showUnits: Swift.Bool = false)
+  @_Concurrency.MainActor @preconcurrency public func initialize(region: Swift.String, sectorId: Swift.Int, showUnits: Swift.Bool = false, landmarkTh: Swift.Float = -90)
   @_Concurrency.MainActor @preconcurrency public func configureFrame(to matchView: UIKit.UIView)
   @_Concurrency.MainActor @preconcurrency public func setDebugOption(flag: Swift.Bool)
   @_Concurrency.MainActor @preconcurrency public func setZoomScale(zoom: CoreFoundation.CGFloat)
@@ -51,13 +51,33 @@ extension TJLabsMap.TJLabsMapView {
   @_Concurrency.MainActor @preconcurrency @objc dynamic public func viewForZooming(in scrollView: UIKit.UIScrollView) -> UIKit.UIView?
   #endif
   @_Concurrency.MainActor @preconcurrency @objc dynamic public func scrollViewDidZoom(_ scrollView: UIKit.UIScrollView)
+  @_Concurrency.MainActor @preconcurrency public func getBuildingData() -> [Swift.Int : [TJLabsResource.BuildingData]]
+  #if compiler(>=5.3) && $NonescapableTypes
+  @_Concurrency.MainActor @preconcurrency public func getBuildingName(buildingId: Swift.Int) -> Swift.String?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @_Concurrency.MainActor @preconcurrency public func getBuildingId(buildingName: Swift.String) -> Swift.Int?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @_Concurrency.MainActor @preconcurrency public func getLevelName(levelId: Swift.Int) -> Swift.String?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @_Concurrency.MainActor @preconcurrency public func getLevelId(sectorId: Swift.Int, buildingName: Swift.String, levelName: Swift.String) -> Swift.Int?
+  #endif
+  @_Concurrency.MainActor @preconcurrency public func getBuildingLevelUnitsData() -> [Swift.String : [TJLabsResource.UnitData]]
+  #if compiler(>=5.3) && $NonescapableTypes
+  @_Concurrency.MainActor @preconcurrency public func getUnitsByLevelId(levelId: Swift.Int) -> [TJLabsResource.UnitData]?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @_Concurrency.MainActor @preconcurrency public func getLevelIdbyUnitId(unitId: Swift.Int) -> Swift.Int?
+  #endif
 }
 public struct MapNavigationNode {
 }
 @objc @_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @_Concurrency.MainActor @preconcurrency public class TJLabsNaviView : UIKit.UIView, UIKit.UICollectionViewDelegate, UIKit.UICollectionViewDataSource, UIKit.UICollectionViewDelegateFlowLayout, UIKit.UIScrollViewDelegate {
   @_Concurrency.MainActor @preconcurrency weak public var delegate: (any TJLabsMap.TJLabsNaviViewDelegate)?
   @objc deinit
-  @_Concurrency.MainActor @preconcurrency public func initialize(region: Swift.String, sectorId: Swift.Int)
+  @_Concurrency.MainActor @preconcurrency public func initialize(region: Swift.String, sectorId: Swift.Int, landmarkTh: Swift.Float = -90)
   @_Concurrency.MainActor @preconcurrency public func configureFrame(to matchView: UIKit.UIView)
   @_Concurrency.MainActor @preconcurrency public func setDebugOption(flag: Swift.Bool)
   @_Concurrency.MainActor @preconcurrency public func setPointOffset(offset: CoreFoundation.CGFloat)
@@ -95,6 +115,26 @@ extension TJLabsMap.TJLabsNaviView {
   @_Concurrency.MainActor @preconcurrency @objc dynamic public func collectionView(_ collectionView: UIKit.UICollectionView, didSelectItemAt indexPath: Foundation.IndexPath)
   #if compiler(>=5.3) && $NonescapableTypes
   @_Concurrency.MainActor @preconcurrency @objc dynamic public func viewForZooming(in scrollView: UIKit.UIScrollView) -> UIKit.UIView?
+  #endif
+  @_Concurrency.MainActor @preconcurrency public func getBuildingData() -> [Swift.Int : [TJLabsResource.BuildingData]]
+  #if compiler(>=5.3) && $NonescapableTypes
+  @_Concurrency.MainActor @preconcurrency public func getBuildingName(buildingId: Swift.Int) -> Swift.String?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @_Concurrency.MainActor @preconcurrency public func getBuildingId(buildingName: Swift.String) -> Swift.Int?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @_Concurrency.MainActor @preconcurrency public func getLevelName(levelId: Swift.Int) -> Swift.String?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @_Concurrency.MainActor @preconcurrency public func getLevelIdgetLevelId(sectorId: Swift.Int, buildingName: Swift.String, levelName: Swift.String) -> Swift.Int?
+  #endif
+  @_Concurrency.MainActor @preconcurrency public func getBuildingLevelUnitsData() -> [Swift.String : [TJLabsResource.UnitData]]
+  #if compiler(>=5.3) && $NonescapableTypes
+  @_Concurrency.MainActor @preconcurrency public func getUnitsByLevelId(levelId: Swift.Int) -> [TJLabsResource.UnitData]?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @_Concurrency.MainActor @preconcurrency public func getLevelIdbyUnitId(unitId: Swift.Int) -> Swift.Int?
   #endif
 }
 extension TJLabsMap.TJLabsNaviView.RoadType : Swift.Equatable {}

@@ -556,19 +556,12 @@
           {
             "kind": "Function",
             "name": "generateRfd",
-            "printedName": "generateRfd(rfdIntervalMillis:bleScanWindowTimeMillis:minRssiThreshold:maxRssiThreshold:)",
+            "printedName": "generateRfd(rfdIntervalMillis:minRssiThreshold:maxRssiThreshold:)",
             "children": [
               {
                 "kind": "TypeNominal",
                 "name": "Void",
                 "printedName": "()"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Double",
-                "printedName": "Swift.Double",
-                "hasDefaultArg": true,
-                "usr": "s:Sd"
               },
               {
                 "kind": "TypeNominal",
@@ -593,8 +586,28 @@
               }
             ],
             "declKind": "Func",
-            "usr": "s:12TJLabsCommon12RFDGeneratorC11generateRfd17rfdIntervalMillis017bleScanWindowTimeH016minRssiThreshold03maxnO0ySd_SdS2itF",
-            "mangledName": "$s12TJLabsCommon12RFDGeneratorC11generateRfd17rfdIntervalMillis017bleScanWindowTimeH016minRssiThreshold03maxnO0ySd_SdS2itF",
+            "usr": "s:12TJLabsCommon12RFDGeneratorC11generateRfd17rfdIntervalMillis16minRssiThreshold03maxjK0ySd_S2itF",
+            "mangledName": "$s12TJLabsCommon12RFDGeneratorC11generateRfd17rfdIntervalMillis16minRssiThreshold03maxjK0ySd_S2itF",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "generateRfdSimulation",
+            "printedName": "generateRfdSimulation()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:12TJLabsCommon12RFDGeneratorC21generateRfdSimulationyyF",
+            "mangledName": "$s12TJLabsCommon12RFDGeneratorC21generateRfdSimulationyyF",
             "moduleName": "TJLabsCommon",
             "declAttributes": [
               "AccessControl"
@@ -1522,6 +1535,521 @@
       },
       {
         "kind": "TypeDecl",
+        "name": "JupiterEvent",
+        "printedName": "JupiterEvent",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "mobile_time",
+            "printedName": "mobile_time",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:12TJLabsCommon12JupiterEventV11mobile_timeSivp",
+            "mangledName": "$s12TJLabsCommon12JupiterEventV11mobile_timeSivp",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12TJLabsCommon12JupiterEventV11mobile_timeSivg",
+                "mangledName": "$s12TJLabsCommon12JupiterEventV11mobile_timeSivg",
+                "moduleName": "TJLabsCommon",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "event_code",
+            "printedName": "event_code",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "JupiterEventCode",
+                "printedName": "TJLabsCommon.JupiterEventCode",
+                "usr": "s:12TJLabsCommon16JupiterEventCodeO"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:12TJLabsCommon12JupiterEventV10event_codeAA0cD4CodeOvp",
+            "mangledName": "$s12TJLabsCommon12JupiterEventV10event_codeAA0cD4CodeOvp",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "JupiterEventCode",
+                    "printedName": "TJLabsCommon.JupiterEventCode",
+                    "usr": "s:12TJLabsCommon16JupiterEventCodeO"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12TJLabsCommon12JupiterEventV10event_codeAA0cD4CodeOvg",
+                "mangledName": "$s12TJLabsCommon12JupiterEventV10event_codeAA0cD4CodeOvg",
+                "moduleName": "TJLabsCommon",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Constructor",
+            "name": "init",
+            "printedName": "init(mobile_time:event_code:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "JupiterEvent",
+                "printedName": "TJLabsCommon.JupiterEvent",
+                "usr": "s:12TJLabsCommon12JupiterEventV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "JupiterEventCode",
+                "printedName": "TJLabsCommon.JupiterEventCode",
+                "usr": "s:12TJLabsCommon16JupiterEventCodeO"
+              }
+            ],
+            "declKind": "Constructor",
+            "usr": "s:12TJLabsCommon12JupiterEventV11mobile_time10event_codeACSi_AA0cD4CodeOtcfc",
+            "mangledName": "$s12TJLabsCommon12JupiterEventV11mobile_time10event_codeACSi_AA0cD4CodeOtcfc",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "init_kind": "Designated"
+          }
+        ],
+        "declKind": "Struct",
+        "usr": "s:12TJLabsCommon12JupiterEventV",
+        "mangledName": "$s12TJLabsCommon12JupiterEventV",
+        "moduleName": "TJLabsCommon",
+        "declAttributes": [
+          "AccessControl"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP",
+            "mangledName": "$ss8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP",
+            "mangledName": "$ss9EscapableP"
+          }
+        ]
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "JupiterEventCode",
+        "printedName": "JupiterEventCode",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "START_SERVICE",
+            "printedName": "START_SERVICE",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(TJLabsCommon.JupiterEventCode.Type) -> TJLabsCommon.JupiterEventCode",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "JupiterEventCode",
+                    "printedName": "TJLabsCommon.JupiterEventCode",
+                    "usr": "s:12TJLabsCommon16JupiterEventCodeO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "TJLabsCommon.JupiterEventCode.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "JupiterEventCode",
+                        "printedName": "TJLabsCommon.JupiterEventCode",
+                        "usr": "s:12TJLabsCommon16JupiterEventCodeO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:12TJLabsCommon16JupiterEventCodeO13START_SERVICEyA2CmF",
+            "mangledName": "$s12TJLabsCommon16JupiterEventCodeO13START_SERVICEyA2CmF",
+            "moduleName": "TJLabsCommon"
+          },
+          {
+            "kind": "Var",
+            "name": "STOP_SERVICE",
+            "printedName": "STOP_SERVICE",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(TJLabsCommon.JupiterEventCode.Type) -> TJLabsCommon.JupiterEventCode",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "JupiterEventCode",
+                    "printedName": "TJLabsCommon.JupiterEventCode",
+                    "usr": "s:12TJLabsCommon16JupiterEventCodeO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "TJLabsCommon.JupiterEventCode.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "JupiterEventCode",
+                        "printedName": "TJLabsCommon.JupiterEventCode",
+                        "usr": "s:12TJLabsCommon16JupiterEventCodeO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:12TJLabsCommon16JupiterEventCodeO12STOP_SERVICEyA2CmF",
+            "mangledName": "$s12TJLabsCommon16JupiterEventCodeO12STOP_SERVICEyA2CmF",
+            "moduleName": "TJLabsCommon"
+          },
+          {
+            "kind": "Constructor",
+            "name": "init",
+            "printedName": "init(rawValue:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "TJLabsCommon.JupiterEventCode?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "JupiterEventCode",
+                    "printedName": "TJLabsCommon.JupiterEventCode",
+                    "usr": "s:12TJLabsCommon16JupiterEventCodeO"
+                  }
+                ],
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Constructor",
+            "usr": "s:12TJLabsCommon16JupiterEventCodeO8rawValueACSgSi_tcfc",
+            "mangledName": "$s12TJLabsCommon16JupiterEventCodeO8rawValueACSgSi_tcfc",
+            "moduleName": "TJLabsCommon",
+            "implicit": true,
+            "init_kind": "Designated"
+          },
+          {
+            "kind": "Var",
+            "name": "rawValue",
+            "printedName": "rawValue",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:12TJLabsCommon16JupiterEventCodeO8rawValueSivp",
+            "mangledName": "$s12TJLabsCommon16JupiterEventCodeO8rawValueSivp",
+            "moduleName": "TJLabsCommon",
+            "implicit": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12TJLabsCommon16JupiterEventCodeO8rawValueSivg",
+                "mangledName": "$s12TJLabsCommon16JupiterEventCodeO8rawValueSivg",
+                "moduleName": "TJLabsCommon",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          }
+        ],
+        "declKind": "Enum",
+        "usr": "s:12TJLabsCommon16JupiterEventCodeO",
+        "mangledName": "$s12TJLabsCommon16JupiterEventCodeO",
+        "moduleName": "TJLabsCommon",
+        "declAttributes": [
+          "AccessControl"
+        ],
+        "enumRawTypeName": "Int",
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP",
+            "mangledName": "$ss8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP",
+            "mangledName": "$ss9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ",
+            "mangledName": "$sSQ"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH",
+            "mangledName": "$sSH"
+          },
+          {
+            "kind": "Conformance",
+            "name": "RawRepresentable",
+            "printedName": "RawRepresentable",
+            "children": [
+              {
+                "kind": "TypeWitness",
+                "name": "RawValue",
+                "printedName": "RawValue",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ]
+              }
+            ],
+            "usr": "s:SY",
+            "mangledName": "$sSY"
+          }
+        ]
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "SimulatedUserVelocity",
+        "printedName": "SimulatedUserVelocity",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "uvd",
+            "printedName": "uvd",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "UserVelocity",
+                "printedName": "TJLabsCommon.UserVelocity",
+                "usr": "s:12TJLabsCommon12UserVelocityV"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:12TJLabsCommon21SimulatedUserVelocityV3uvdAA0dE0Vvp",
+            "mangledName": "$s12TJLabsCommon21SimulatedUserVelocityV3uvdAA0dE0Vvp",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "UserVelocity",
+                    "printedName": "TJLabsCommon.UserVelocity",
+                    "usr": "s:12TJLabsCommon12UserVelocityV"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12TJLabsCommon21SimulatedUserVelocityV3uvdAA0dE0Vvg",
+                "mangledName": "$s12TJLabsCommon21SimulatedUserVelocityV3uvdAA0dE0Vvg",
+                "moduleName": "TJLabsCommon",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "mode",
+            "printedName": "mode",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "UserMode",
+                "printedName": "TJLabsCommon.UserMode",
+                "usr": "s:12TJLabsCommon8UserModeO"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:12TJLabsCommon21SimulatedUserVelocityV4modeAA0D4ModeOvp",
+            "mangledName": "$s12TJLabsCommon21SimulatedUserVelocityV4modeAA0D4ModeOvp",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "UserMode",
+                    "printedName": "TJLabsCommon.UserMode",
+                    "usr": "s:12TJLabsCommon8UserModeO"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12TJLabsCommon21SimulatedUserVelocityV4modeAA0D4ModeOvg",
+                "mangledName": "$s12TJLabsCommon21SimulatedUserVelocityV4modeAA0D4ModeOvg",
+                "moduleName": "TJLabsCommon",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Constructor",
+            "name": "init",
+            "printedName": "init(uvd:mode:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "SimulatedUserVelocity",
+                "printedName": "TJLabsCommon.SimulatedUserVelocity",
+                "usr": "s:12TJLabsCommon21SimulatedUserVelocityV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "UserVelocity",
+                "printedName": "TJLabsCommon.UserVelocity",
+                "usr": "s:12TJLabsCommon12UserVelocityV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "UserMode",
+                "printedName": "TJLabsCommon.UserMode",
+                "usr": "s:12TJLabsCommon8UserModeO"
+              }
+            ],
+            "declKind": "Constructor",
+            "usr": "s:12TJLabsCommon21SimulatedUserVelocityV3uvd4modeAcA0dE0V_AA0D4ModeOtcfc",
+            "mangledName": "$s12TJLabsCommon21SimulatedUserVelocityV3uvd4modeAcA0dE0V_AA0D4ModeOtcfc",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "init_kind": "Designated"
+          }
+        ],
+        "declKind": "Struct",
+        "usr": "s:12TJLabsCommon21SimulatedUserVelocityV",
+        "mangledName": "$s12TJLabsCommon21SimulatedUserVelocityV",
+        "moduleName": "TJLabsCommon",
+        "declAttributes": [
+          "AccessControl"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP",
+            "mangledName": "$ss8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP",
+            "mangledName": "$ss9EscapableP"
+          }
+        ]
+      },
+      {
+        "kind": "TypeDecl",
         "name": "JupiterFileManager",
         "printedName": "JupiterFileManager",
         "children": [
@@ -1598,50 +2126,6 @@
           },
           {
             "kind": "Function",
-            "name": "set",
-            "printedName": "set(region:sectorId:deviceModel:osVersion:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Void",
-                "printedName": "()"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Int",
-                "printedName": "Swift.Int",
-                "usr": "s:Si"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Int",
-                "printedName": "Swift.Int",
-                "usr": "s:Si"
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:12TJLabsCommon18JupiterFileManagerC3set6region8sectorId11deviceModel9osVersionySS_SiSSSitF",
-            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC3set6region8sectorId11deviceModel9osVersionySS_SiSSSitF",
-            "moduleName": "TJLabsCommon",
-            "declAttributes": [
-              "AccessControl"
-            ],
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
             "name": "setDebugOption",
             "printedName": "setDebugOption(flag:)",
             "children": [
@@ -1669,7 +2153,7 @@
           {
             "kind": "Function",
             "name": "createFiles",
-            "printedName": "createFiles(region:sector_id:deviceModel:osVersion:)",
+            "printedName": "createFiles(id:os:)",
             "children": [
               {
                 "kind": "TypeNominal",
@@ -1681,68 +2165,6 @@
                 "name": "String",
                 "printedName": "Swift.String",
                 "usr": "s:SS"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Int",
-                "printedName": "Swift.Int",
-                "usr": "s:Si"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Int",
-                "printedName": "Swift.Int",
-                "usr": "s:Si"
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:12TJLabsCommon18JupiterFileManagerC11createFiles6region9sector_id11deviceModel9osVersionySS_SiSSSitF",
-            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC11createFiles6region9sector_id11deviceModel9osVersionySS_SiSSSitF",
-            "moduleName": "TJLabsCommon",
-            "declAttributes": [
-              "AccessControl"
-            ],
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
-            "name": "createFileWithName",
-            "printedName": "createFileWithName(region:sector_id:deviceModel:osVersion:fileName:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Void",
-                "printedName": "()"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Int",
-                "printedName": "Swift.Int",
-                "usr": "s:Si"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Int",
-                "printedName": "Swift.Int",
-                "usr": "s:Si"
               },
               {
                 "kind": "TypeNominal",
@@ -1752,8 +2174,8 @@
               }
             ],
             "declKind": "Func",
-            "usr": "s:12TJLabsCommon18JupiterFileManagerC06createD8WithName6region9sector_id11deviceModel9osVersion04fileH0ySS_SiSSSiSStF",
-            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC06createD8WithName6region9sector_id11deviceModel9osVersion04fileH0ySS_SiSSSiSStF",
+            "usr": "s:12TJLabsCommon18JupiterFileManagerC11createFiles2id2osySS_SStF",
+            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC11createFiles2id2osySS_SStF",
             "moduleName": "TJLabsCommon",
             "declAttributes": [
               "AccessControl"
@@ -1762,76 +2184,101 @@
           },
           {
             "kind": "Function",
-            "name": "writeSensorData",
-            "printedName": "writeSensorData(currentTime:data:)",
+            "name": "getSimulationFilesInExports",
+            "printedName": "getSimulationFilesInExports()",
             "children": [
               {
                 "kind": "TypeNominal",
-                "name": "Void",
-                "printedName": "()"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Int",
-                "printedName": "Swift.Int",
-                "usr": "s:Si"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "SensorData",
-                "printedName": "TJLabsCommon.SensorData",
-                "usr": "s:12TJLabsCommon10SensorDataV"
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:12TJLabsCommon18JupiterFileManagerC15writeSensorData11currentTime4dataySi_AA0gH0VtF",
-            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC15writeSensorData11currentTime4dataySi_AA0gH0VtF",
-            "moduleName": "TJLabsCommon",
-            "declAttributes": [
-              "AccessControl"
-            ],
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
-            "name": "writeBleData",
-            "printedName": "writeBleData(time:data:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Void",
-                "printedName": "()"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Int",
-                "printedName": "Swift.Int",
-                "usr": "s:Si"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Dictionary",
-                "printedName": "[Swift.String : Swift.Float]",
+                "name": "Tuple",
+                "printedName": "(rfdFiles: [(name: Swift.String, path: Swift.String)], uvdFiles: [(name: Swift.String, path: Swift.String)], eventFiles: [(name: Swift.String, path: Swift.String)])",
                 "children": [
                   {
                     "kind": "TypeNominal",
-                    "name": "String",
-                    "printedName": "Swift.String",
-                    "usr": "s:SS"
+                    "name": "Array",
+                    "printedName": "[(name: Swift.String, path: Swift.String)]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(name: Swift.String, path: Swift.String)",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          }
+                        ]
+                      }
+                    ],
+                    "usr": "s:Sa"
                   },
                   {
                     "kind": "TypeNominal",
-                    "name": "Float",
-                    "printedName": "Swift.Float",
-                    "usr": "s:Sf"
+                    "name": "Array",
+                    "printedName": "[(name: Swift.String, path: Swift.String)]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(name: Swift.String, path: Swift.String)",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          }
+                        ]
+                      }
+                    ],
+                    "usr": "s:Sa"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[(name: Swift.String, path: Swift.String)]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(name: Swift.String, path: Swift.String)",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          }
+                        ]
+                      }
+                    ],
+                    "usr": "s:Sa"
                   }
-                ],
-                "usr": "s:SD"
+                ]
               }
             ],
             "declKind": "Func",
-            "usr": "s:12TJLabsCommon18JupiterFileManagerC12writeBleData4time4dataySi_SDySSSfGtF",
-            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC12writeBleData4time4dataySi_SDySSSfGtF",
+            "usr": "s:12TJLabsCommon18JupiterFileManagerC27getSimulationFilesInExportsSaySS4name_SS4pathtG03rfdH0_AG03uvdH0AG05eventH0tyF",
+            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC27getSimulationFilesInExportsSaySS4name_SS4pathtG03rfdH0_AG03uvdH0AG05eventH0tyF",
             "moduleName": "TJLabsCommon",
             "declAttributes": [
               "AccessControl"
@@ -1840,13 +2287,14 @@
           },
           {
             "kind": "Function",
-            "name": "writeDebugData",
-            "printedName": "writeDebugData(data:)",
+            "name": "deleteSimulationFile",
+            "printedName": "deleteSimulationFile(at:)",
             "children": [
               {
                 "kind": "TypeNominal",
-                "name": "Void",
-                "printedName": "()"
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
               },
               {
                 "kind": "TypeNominal",
@@ -1856,11 +2304,12 @@
               }
             ],
             "declKind": "Func",
-            "usr": "s:12TJLabsCommon18JupiterFileManagerC14writeDebugData4dataySS_tF",
-            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC14writeDebugData4dataySS_tF",
+            "usr": "s:12TJLabsCommon18JupiterFileManagerC016deleteSimulationD02atSbSS_tF",
+            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC016deleteSimulationD02atSbSS_tF",
             "moduleName": "TJLabsCommon",
             "declAttributes": [
-              "AccessControl"
+              "AccessControl",
+              "DiscardableResult"
             ],
             "funcSelfKind": "NonMutating"
           },
@@ -1898,53 +2347,14 @@
             "mangledName": "$s12TJLabsCommon18JupiterFileManagerC22saveFilesForSimulation10completionyySbc_tF",
             "moduleName": "TJLabsCommon",
             "declAttributes": [
-              "AccessControl",
-              "RawDocComment"
-            ],
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
-            "name": "saveDebugFile",
-            "printedName": "saveDebugFile(completion:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Void",
-                "printedName": "()"
-              },
-              {
-                "kind": "TypeFunc",
-                "name": "Function",
-                "printedName": "(Swift.Bool) -> ()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Void",
-                    "printedName": "()"
-                  },
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Bool",
-                    "printedName": "Swift.Bool",
-                    "usr": "s:Sb"
-                  }
-                ]
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:12TJLabsCommon18JupiterFileManagerC09saveDebugD010completionyySbc_tF",
-            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC09saveDebugD010completionyySbc_tF",
-            "moduleName": "TJLabsCommon",
-            "declAttributes": [
               "AccessControl"
             ],
             "funcSelfKind": "NonMutating"
           },
           {
             "kind": "Function",
-            "name": "loadFilesForSimulation",
-            "printedName": "loadFilesForSimulation(bleFile:sensorFile:)",
+            "name": "loadFilesForSimulationLegacy",
+            "printedName": "loadFilesForSimulationLegacy(bleFile:sensorFile:)",
             "children": [
               {
                 "kind": "TypeNominal",
@@ -2009,8 +2419,172 @@
               }
             ],
             "declKind": "Func",
-            "usr": "s:12TJLabsCommon18JupiterFileManagerC22loadFilesForSimulation03bleD006sensorD0SaySDySSSfGG_SayAA10SensorDataVGtSS_SStF",
-            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC22loadFilesForSimulation03bleD006sensorD0SaySDySSSfGG_SayAA10SensorDataVGtSS_SStF",
+            "usr": "s:12TJLabsCommon18JupiterFileManagerC28loadFilesForSimulationLegacy03bleD006sensorD0SaySDySSSfGG_SayAA10SensorDataVGtSS_SStF",
+            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC28loadFilesForSimulationLegacy03bleD006sensorD0SaySDySSSfGG_SayAA10SensorDataVGtSS_SStF",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "loadFilesForSimulation",
+            "printedName": "loadFilesForSimulation(rfdFile:uvdFile:eventFile:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Tuple",
+                "printedName": "(rfdTimeOffset: Swift.Int, rfdList: [TJLabsCommon.ReceivedForce], uvdTimeOffset: Swift.Int, uvdList: [TJLabsCommon.SimulatedUserVelocity])",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[TJLabsCommon.ReceivedForce]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ReceivedForce",
+                        "printedName": "TJLabsCommon.ReceivedForce",
+                        "usr": "s:12TJLabsCommon13ReceivedForceV"
+                      }
+                    ],
+                    "usr": "s:Sa"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[TJLabsCommon.SimulatedUserVelocity]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "SimulatedUserVelocity",
+                        "printedName": "TJLabsCommon.SimulatedUserVelocity",
+                        "usr": "s:12TJLabsCommon21SimulatedUserVelocityV"
+                      }
+                    ],
+                    "usr": "s:Sa"
+                  }
+                ]
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:12TJLabsCommon18JupiterFileManagerC22loadFilesForSimulation03rfdD003uvdD005eventD0Si0J10TimeOffset_SayAA13ReceivedForceVG0J4ListSi0kmN0SayAA21SimulatedUserVelocityVG0kQ0tSS_S2StF",
+            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC22loadFilesForSimulation03rfdD003uvdD005eventD0Si0J10TimeOffset_SayAA13ReceivedForceVG0J4ListSi0kmN0SayAA21SimulatedUserVelocityVG0kQ0tSS_S2StF",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "writeEvent",
+            "printedName": "writeEvent(event:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "JupiterEvent",
+                "printedName": "TJLabsCommon.JupiterEvent",
+                "usr": "s:12TJLabsCommon12JupiterEventV"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:12TJLabsCommon18JupiterFileManagerC10writeEvent5eventyAA0cG0V_tF",
+            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC10writeEvent5eventyAA0cG0V_tF",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "writeRFD",
+            "printedName": "writeRFD(rfd:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "ReceivedForce",
+                "printedName": "TJLabsCommon.ReceivedForce",
+                "usr": "s:12TJLabsCommon13ReceivedForceV"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:12TJLabsCommon18JupiterFileManagerC8writeRFD3rfdyAA13ReceivedForceV_tF",
+            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC8writeRFD3rfdyAA13ReceivedForceV_tF",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "writeUVD",
+            "printedName": "writeUVD(uvd:mode:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "UserVelocity",
+                "printedName": "TJLabsCommon.UserVelocity",
+                "usr": "s:12TJLabsCommon12UserVelocityV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "UserMode",
+                "printedName": "TJLabsCommon.UserMode",
+                "usr": "s:12TJLabsCommon8UserModeO"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:12TJLabsCommon18JupiterFileManagerC8writeUVD3uvd4modeyAA12UserVelocityV_AA0J4ModeOtF",
+            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC8writeUVD3uvd4modeyAA12UserVelocityV_AA0J4ModeOtF",
             "moduleName": "TJLabsCommon",
             "declAttributes": [
               "AccessControl"
@@ -2107,6 +2681,178 @@
             ]
           },
           {
+            "kind": "Var",
+            "name": "isSimulationMode",
+            "printedName": "isSimulationMode",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:12TJLabsCommon16JupiterSimulatorC16isSimulationModeSbvp",
+            "mangledName": "$s12TJLabsCommon16JupiterSimulatorC16isSimulationModeSbvp",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage",
+              "AccessControl"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12TJLabsCommon16JupiterSimulatorC16isSimulationModeSbvg",
+                "mangledName": "$s12TJLabsCommon16JupiterSimulatorC16isSimulationModeSbvg",
+                "moduleName": "TJLabsCommon",
+                "implicit": true,
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12TJLabsCommon16JupiterSimulatorC16isSimulationModeSbvs",
+                "mangledName": "$s12TJLabsCommon16JupiterSimulatorC16isSimulationModeSbvs",
+                "moduleName": "TJLabsCommon",
+                "implicit": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12TJLabsCommon16JupiterSimulatorC16isSimulationModeSbvM",
+                "mangledName": "$s12TJLabsCommon16JupiterSimulatorC16isSimulationModeSbvM",
+                "moduleName": "TJLabsCommon",
+                "implicit": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "isSimulationModeLegacy",
+            "printedName": "isSimulationModeLegacy",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:12TJLabsCommon16JupiterSimulatorC22isSimulationModeLegacySbvp",
+            "mangledName": "$s12TJLabsCommon16JupiterSimulatorC22isSimulationModeLegacySbvp",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage",
+              "AccessControl"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12TJLabsCommon16JupiterSimulatorC22isSimulationModeLegacySbvg",
+                "mangledName": "$s12TJLabsCommon16JupiterSimulatorC22isSimulationModeLegacySbvg",
+                "moduleName": "TJLabsCommon",
+                "implicit": true,
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12TJLabsCommon16JupiterSimulatorC22isSimulationModeLegacySbvs",
+                "mangledName": "$s12TJLabsCommon16JupiterSimulatorC22isSimulationModeLegacySbvs",
+                "moduleName": "TJLabsCommon",
+                "implicit": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12TJLabsCommon16JupiterSimulatorC22isSimulationModeLegacySbvM",
+                "mangledName": "$s12TJLabsCommon16JupiterSimulatorC22isSimulationModeLegacySbvM",
+                "moduleName": "TJLabsCommon",
+                "implicit": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
             "kind": "Function",
             "name": "initailize",
             "printedName": "initailize()",
@@ -2128,8 +2874,8 @@
           },
           {
             "kind": "Function",
-            "name": "setSimulationMode",
-            "printedName": "setSimulationMode(flag:bleFileName:sensorFileName:)",
+            "name": "setSimulationModeLegacy",
+            "printedName": "setSimulationModeLegacy(flag:bleFileName:sensorFileName:)",
             "children": [
               {
                 "kind": "TypeNominal",
@@ -2156,8 +2902,8 @@
               }
             ],
             "declKind": "Func",
-            "usr": "s:12TJLabsCommon16JupiterSimulatorC17setSimulationMode4flag11bleFileName06sensorjK0ySb_S2StF",
-            "mangledName": "$s12TJLabsCommon16JupiterSimulatorC17setSimulationMode4flag11bleFileName06sensorjK0ySb_S2StF",
+            "usr": "s:12TJLabsCommon16JupiterSimulatorC23setSimulationModeLegacy4flag11bleFileName06sensorkL0ySb_S2StF",
+            "mangledName": "$s12TJLabsCommon16JupiterSimulatorC23setSimulationModeLegacy4flag11bleFileName06sensorkL0ySb_S2StF",
             "moduleName": "TJLabsCommon",
             "declAttributes": [
               "AccessControl"
@@ -2214,6 +2960,134 @@
             "declKind": "Func",
             "usr": "s:12TJLabsCommon16JupiterSimulatorC23getSimulationSensorDataAA0gH0VyF",
             "mangledName": "$s12TJLabsCommon16JupiterSimulatorC23getSimulationSensorDataAA0gH0VyF",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "setSimulationMode",
+            "printedName": "setSimulationMode(flag:rfdFileName:uvdFileName:eventFileName:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:12TJLabsCommon16JupiterSimulatorC17setSimulationMode4flag11rfdFileName03uvdjK005eventjK0ySb_S3StF",
+            "mangledName": "$s12TJLabsCommon16JupiterSimulatorC17setSimulationMode4flag11rfdFileName03uvdjK005eventjK0ySb_S3StF",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "getRfdForSimulation",
+            "printedName": "getRfdForSimulation()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Tuple",
+                "printedName": "(rfdTimeOffset: Swift.Int, simulationRfd: [TJLabsCommon.ReceivedForce])",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[TJLabsCommon.ReceivedForce]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ReceivedForce",
+                        "printedName": "TJLabsCommon.ReceivedForce",
+                        "usr": "s:12TJLabsCommon13ReceivedForceV"
+                      }
+                    ],
+                    "usr": "s:Sa"
+                  }
+                ]
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:12TJLabsCommon16JupiterSimulatorC19getRfdForSimulationSi13rfdTimeOffset_SayAA13ReceivedForceVG010simulationF0tyF",
+            "mangledName": "$s12TJLabsCommon16JupiterSimulatorC19getRfdForSimulationSi13rfdTimeOffset_SayAA13ReceivedForceVG010simulationF0tyF",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "getUvdForSimulation",
+            "printedName": "getUvdForSimulation()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Tuple",
+                "printedName": "(uvdTimeOffset: Swift.Int, simulationUvd: [TJLabsCommon.SimulatedUserVelocity])",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[TJLabsCommon.SimulatedUserVelocity]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "SimulatedUserVelocity",
+                        "printedName": "TJLabsCommon.SimulatedUserVelocity",
+                        "usr": "s:12TJLabsCommon21SimulatedUserVelocityV"
+                      }
+                    ],
+                    "usr": "s:Sa"
+                  }
+                ]
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:12TJLabsCommon16JupiterSimulatorC19getUvdForSimulationSi13uvdTimeOffset_SayAA21SimulatedUserVelocityVG010simulationF0tyF",
+            "mangledName": "$s12TJLabsCommon16JupiterSimulatorC19getUvdForSimulationSi13uvdTimeOffset_SayAA21SimulatedUserVelocityVG010simulationF0tyF",
             "moduleName": "TJLabsCommon",
             "declAttributes": [
               "AccessControl"
@@ -6011,6 +6885,26 @@
             "declKind": "Func",
             "usr": "s:12TJLabsCommon12UVDGeneratorC17stopUvdGenerationyyF",
             "mangledName": "$s12TJLabsCommon12UVDGeneratorC17stopUvdGenerationyyF",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "generateUvdSimulation",
+            "printedName": "generateUvdSimulation()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:12TJLabsCommon12UVDGeneratorC21generateUvdSimulationyyF",
+            "mangledName": "$s12TJLabsCommon12UVDGeneratorC21generateUvdSimulationyyF",
             "moduleName": "TJLabsCommon",
             "declAttributes": [
               "AccessControl"
@@ -11789,76 +12683,69 @@
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDGenerator.swift",
       "kind": "IntegerLiteral",
       "offset": 327,
-      "length": 1,
-      "value": "0"
-    },
-    {
-      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDGenerator.swift",
-      "kind": "IntegerLiteral",
-      "offset": 379,
-      "length": 1,
-      "value": "0"
-    },
-    {
-      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDGenerator.swift",
-      "kind": "IntegerLiteral",
-      "offset": 422,
-      "length": 1,
-      "value": "4"
-    },
-    {
-      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDGenerator.swift",
-      "kind": "IntegerLiteral",
-      "offset": 461,
-      "length": 1,
-      "value": "0"
-    },
-    {
-      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDGenerator.swift",
-      "kind": "BooleanLiteral",
-      "offset": 496,
-      "length": 5,
-      "value": "false"
-    },
-    {
-      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDGenerator.swift",
-      "kind": "IntegerLiteral",
-      "offset": 608,
-      "length": 1,
-      "value": "0"
-    },
-    {
-      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDGenerator.swift",
-      "kind": "IntegerLiteral",
-      "offset": 1953,
-      "length": 1,
-      "value": "1"
-    },
-    {
-      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDGenerator.swift",
-      "kind": "IntegerLiteral",
-      "offset": 1955,
-      "length": 1,
-      "value": "2"
-    },
-    {
-      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDGenerator.swift",
-      "kind": "IntegerLiteral",
-      "offset": 1992,
       "length": 4,
       "value": "1000"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDGenerator.swift",
       "kind": "IntegerLiteral",
-      "offset": 2022,
+      "offset": 382,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDGenerator.swift",
+      "kind": "IntegerLiteral",
+      "offset": 425,
+      "length": 1,
+      "value": "4"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDGenerator.swift",
+      "kind": "IntegerLiteral",
+      "offset": 464,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDGenerator.swift",
+      "kind": "BooleanLiteral",
+      "offset": 499,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDGenerator.swift",
+      "kind": "IntegerLiteral",
+      "offset": 611,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDGenerator.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1956,
+      "length": 1,
+      "value": "1"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDGenerator.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1958,
+      "length": 1,
+      "value": "2"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDGenerator.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1985,
       "length": 4,
       "value": "-100"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDGenerator.swift",
       "kind": "IntegerLiteral",
-      "offset": 2052,
+      "offset": 2015,
       "length": 3,
       "value": "-40"
     },
@@ -12130,85 +13017,148 @@
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
+      "kind": "IntegerLiteral",
+      "offset": 341,
+      "length": 1,
+      "value": "1"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
+      "kind": "IntegerLiteral",
+      "offset": 367,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
       "kind": "StringLiteral",
-      "offset": 160,
+      "offset": 728,
       "length": 26,
       "value": "\"tjlabs.jupiter.dataQueue\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
+      "kind": "FloatLiteral",
+      "offset": 827,
+      "length": 3,
+      "value": "1.0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
+      "kind": "IntegerLiteral",
+      "offset": 869,
+      "length": 2,
+      "value": "10"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
       "kind": "BooleanLiteral",
-      "offset": 246,
+      "offset": 1184,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
+      "kind": "StringLiteral",
+      "offset": 1381,
+      "length": 9,
+      "value": "\"UNKNOWN\""
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterSimulator.swift",
+      "kind": "BooleanLiteral",
+      "offset": 162,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterSimulator.swift",
+      "kind": "BooleanLiteral",
+      "offset": 214,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterSimulator.swift",
+      "kind": "StringLiteral",
+      "offset": 250,
+      "length": 2,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterSimulator.swift",
+      "kind": "StringLiteral",
+      "offset": 286,
+      "length": 2,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterSimulator.swift",
+      "kind": "IntegerLiteral",
+      "offset": 421,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterSimulator.swift",
+      "kind": "IntegerLiteral",
+      "offset": 451,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterSimulator.swift",
+      "kind": "IntegerLiteral",
+      "offset": 484,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterSimulator.swift",
       "kind": "StringLiteral",
       "offset": 521,
       "length": 2,
       "value": "\"\""
     },
     {
-      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
-      "kind": "IntegerLiteral",
-      "offset": 549,
-      "length": 1,
-      "value": "0"
-    },
-    {
-      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
-      "kind": "StringLiteral",
-      "offset": 581,
-      "length": 9,
-      "value": "\"Unknown\""
-    },
-    {
-      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
-      "kind": "IntegerLiteral",
-      "offset": 616,
-      "length": 1,
-      "value": "0"
-    },
-    {
-      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterSimulator.swift",
-      "kind": "BooleanLiteral",
-      "offset": 155,
-      "length": 5,
-      "value": "false"
-    },
-    {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterSimulator.swift",
       "kind": "StringLiteral",
-      "offset": 191,
+      "offset": 554,
       "length": 2,
       "value": "\"\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterSimulator.swift",
       "kind": "StringLiteral",
-      "offset": 227,
+      "offset": 589,
       "length": 2,
       "value": "\"\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterSimulator.swift",
       "kind": "IntegerLiteral",
-      "offset": 362,
+      "offset": 621,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterSimulator.swift",
       "kind": "IntegerLiteral",
-      "offset": 392,
+      "offset": 694,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterSimulator.swift",
       "kind": "IntegerLiteral",
-      "offset": 425,
+      "offset": 774,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterSimulator.swift",
+      "kind": "IntegerLiteral",
+      "offset": 804,
       "length": 1,
       "value": "0"
     },

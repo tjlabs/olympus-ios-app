@@ -28,7 +28,8 @@ import simd
   public init(userId: Swift.String)
   public func setScanMode(scanMode: TJLabsCommon.ScanMode)
   public func checkIsAvailableRfd() -> (Swift.Bool, Swift.String)
-  public func generateRfd(rfdIntervalMillis: Foundation.TimeInterval = 1/2, bleScanWindowTimeMillis: Swift.Double = 1000, minRssiThreshold: Swift.Int = -100, maxRssiThreshold: Swift.Int = -40)
+  public func generateRfd(rfdIntervalMillis: Foundation.TimeInterval = 1/2, minRssiThreshold: Swift.Int = -100, maxRssiThreshold: Swift.Int = -40)
+  public func generateRfdSimulation()
   public func stopRfdGeneration()
   @objc deinit
 }
@@ -66,27 +67,54 @@ extension Foundation.NSNotification.Name {
   public static let tjlabsDidReceiveData: Foundation.Notification.Name
   public static let tjlabsScanInfo: Foundation.Notification.Name
 }
+public struct JupiterEvent {
+  public let mobile_time: Swift.Int
+  public let event_code: TJLabsCommon.JupiterEventCode
+  public init(mobile_time: Swift.Int, event_code: TJLabsCommon.JupiterEventCode)
+}
+public enum JupiterEventCode : Swift.Int {
+  case START_SERVICE
+  case STOP_SERVICE
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init?(rawValue: Swift.Int)
+  #endif
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public struct SimulatedUserVelocity {
+  public let uvd: TJLabsCommon.UserVelocity
+  public let mode: TJLabsCommon.UserMode
+  public init(uvd: TJLabsCommon.UserVelocity, mode: TJLabsCommon.UserMode)
+}
 @_hasMissingDesignatedInitializers public class JupiterFileManager {
   public static let shared: TJLabsCommon.JupiterFileManager
   public func initalize()
-  public func set(region: Swift.String, sectorId: Swift.Int, deviceModel: Swift.String, osVersion: Swift.Int)
   public func setDebugOption(flag: Swift.Bool)
-  public func createFiles(region: Swift.String, sector_id: Swift.Int, deviceModel: Swift.String, osVersion: Swift.Int)
-  public func createFileWithName(region: Swift.String, sector_id: Swift.Int, deviceModel: Swift.String, osVersion: Swift.Int, fileName: Swift.String)
-  public func writeSensorData(currentTime: Swift.Int, data: TJLabsCommon.SensorData)
-  public func writeBleData(time: Swift.Int, data: [Swift.String : Swift.Float])
-  public func writeDebugData(data: Swift.String)
-  public func saveFilesForSimulation(completion: @escaping (Swift.Bool) -> Swift.Void)
-  public func saveDebugFile(completion: @escaping (Swift.Bool) -> Swift.Void)
-  public func loadFilesForSimulation(bleFile: Swift.String, sensorFile: Swift.String) -> ([[Swift.String : Swift.Float]], [TJLabsCommon.SensorData])
   @objc deinit
+  public func createFiles(id: Swift.String, os: Swift.String)
+  public func getSimulationFilesInExports() -> (rfdFiles: [(name: Swift.String, path: Swift.String)], uvdFiles: [(name: Swift.String, path: Swift.String)], eventFiles: [(name: Swift.String, path: Swift.String)])
+  @discardableResult
+  public func deleteSimulationFile(at path: Swift.String) -> Swift.Bool
+  public func saveFilesForSimulation(completion: @escaping (Swift.Bool) -> Swift.Void)
+  public func loadFilesForSimulationLegacy(bleFile: Swift.String, sensorFile: Swift.String) -> ([[Swift.String : Swift.Float]], [TJLabsCommon.SensorData])
+  public func loadFilesForSimulation(rfdFile: Swift.String, uvdFile: Swift.String, eventFile: Swift.String) -> (rfdTimeOffset: Swift.Int, rfdList: [TJLabsCommon.ReceivedForce], uvdTimeOffset: Swift.Int, uvdList: [TJLabsCommon.SimulatedUserVelocity])
+  public func writeEvent(event: TJLabsCommon.JupiterEvent)
+  public func writeRFD(rfd: TJLabsCommon.ReceivedForce)
+  public func writeUVD(uvd: TJLabsCommon.UserVelocity, mode: TJLabsCommon.UserMode)
 }
 @_hasMissingDesignatedInitializers public class JupiterSimulator {
   public static let shared: TJLabsCommon.JupiterSimulator
+  public var isSimulationMode: Swift.Bool
+  public var isSimulationModeLegacy: Swift.Bool
   public func initailize()
-  public func setSimulationMode(flag: Swift.Bool, bleFileName: Swift.String, sensorFileName: Swift.String)
+  public func setSimulationModeLegacy(flag: Swift.Bool, bleFileName: Swift.String, sensorFileName: Swift.String)
   public func getSimulationBleData() -> [Swift.String : Swift.Float]
   public func getSimulationSensorData() -> TJLabsCommon.SensorData
+  public func setSimulationMode(flag: Swift.Bool, rfdFileName: Swift.String, uvdFileName: Swift.String, eventFileName: Swift.String)
+  public func getRfdForSimulation() -> (rfdTimeOffset: Swift.Int, simulationRfd: [TJLabsCommon.ReceivedForce])
+  public func getUvdForSimulation() -> (uvdTimeOffset: Swift.Int, simulationUvd: [TJLabsCommon.SimulatedUserVelocity])
   @objc deinit
 }
 extension Swift.Array where Element : Swift.BinaryInteger {
@@ -257,6 +285,7 @@ public enum TimeFormat {
   public func checkIsAvailableUvd() -> (Swift.Bool, Swift.String)
   public func generateUvd(defaultPDRStepLength: Swift.Double = 0.6, minPDRStepLength: Swift.Double = 0.5, maxPDRStepLength: Swift.Double = 0.7)
   public func stopUvdGeneration()
+  public func generateUvdSimulation()
   @objc deinit
 }
 public struct SensorData {
@@ -323,6 +352,9 @@ public protocol UVDGeneratorDelegate : AnyObject {
 }
 extension TJLabsCommon.ScanMode : Swift.Equatable {}
 extension TJLabsCommon.ScanMode : Swift.Hashable {}
+extension TJLabsCommon.JupiterEventCode : Swift.Equatable {}
+extension TJLabsCommon.JupiterEventCode : Swift.Hashable {}
+extension TJLabsCommon.JupiterEventCode : Swift.RawRepresentable {}
 extension TJLabsCommon.TimeFormat : Swift.Equatable {}
 extension TJLabsCommon.TimeFormat : Swift.Hashable {}
 extension TJLabsCommon.UserMode : Swift.Equatable {}
