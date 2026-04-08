@@ -52,7 +52,7 @@ class LandmarkTagger {
         guard let landmarkData = self.landmarkData[key] else { return nil }
         guard let matchedLandmark = landmarkData[userPeak.id] else { return nil }
         
-        JupiterLogger.i(tag: "LandmarkTagger", message: "(findMatchedLandmarkWithUserPeak) matchedLandmark: \(matchedLandmark)")
+//        JupiterLogger.i(tag: "LandmarkTagger", message: "(findMatchedLandmarkWithUserPeak) matchedLandmark: \(matchedLandmark)")
         
         return (matchedLandmark, matchedCurResult!)
     }
