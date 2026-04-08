@@ -18,7 +18,7 @@
 		</data>
 		<key>Modules/TJLabsResource.swiftmodule/arm64-apple-ios-simulator.abi.json</key>
 		<data>
-		fLHBOiB3UD92DTH3BWipYhBTko4=
+		21qf0ywnb8J1pfCVg6CnhZG9qoY=
 		</data>
 		<key>Modules/TJLabsResource.swiftmodule/arm64-apple-ios-simulator.private.swiftinterface</key>
 		<data>
@@ -38,7 +38,7 @@
 		</data>
 		<key>Modules/TJLabsResource.swiftmodule/x86_64-apple-ios-simulator.abi.json</key>
 		<data>
-		fLHBOiB3UD92DTH3BWipYhBTko4=
+		21qf0ywnb8J1pfCVg6CnhZG9qoY=
 		</data>
 		<key>Modules/TJLabsResource.swiftmodule/x86_64-apple-ios-simulator.private.swiftinterface</key>
 		<data>
@@ -81,7 +81,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			bAsdiHraQ40ux+bX9jY5jDe54kiZMp8KM1o1ovXT1oE=
+			+iTTQy58z8hiB8RZHxCtuWVqHAS78ARBjYfPgfini2c=
 			</data>
 		</dict>
 		<key>Modules/TJLabsResource.swiftmodule/arm64-apple-ios-simulator.private.swiftinterface</key>
@@ -116,7 +116,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			bAsdiHraQ40ux+bX9jY5jDe54kiZMp8KM1o1ovXT1oE=
+			+iTTQy58z8hiB8RZHxCtuWVqHAS78ARBjYfPgfini2c=
 			</data>
 		</dict>
 		<key>Modules/TJLabsResource.swiftmodule/x86_64-apple-ios-simulator.private.swiftinterface</key>

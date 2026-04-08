@@ -1764,6 +1764,80 @@
             "moduleName": "TJLabsCommon"
           },
           {
+            "kind": "Var",
+            "name": "BECOME_BACKGROUND",
+            "printedName": "BECOME_BACKGROUND",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(TJLabsCommon.JupiterEventCode.Type) -> TJLabsCommon.JupiterEventCode",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "JupiterEventCode",
+                    "printedName": "TJLabsCommon.JupiterEventCode",
+                    "usr": "s:12TJLabsCommon16JupiterEventCodeO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "TJLabsCommon.JupiterEventCode.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "JupiterEventCode",
+                        "printedName": "TJLabsCommon.JupiterEventCode",
+                        "usr": "s:12TJLabsCommon16JupiterEventCodeO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:12TJLabsCommon16JupiterEventCodeO17BECOME_BACKGROUNDyA2CmF",
+            "mangledName": "$s12TJLabsCommon16JupiterEventCodeO17BECOME_BACKGROUNDyA2CmF",
+            "moduleName": "TJLabsCommon"
+          },
+          {
+            "kind": "Var",
+            "name": "BECOME_FOREGROUND",
+            "printedName": "BECOME_FOREGROUND",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(TJLabsCommon.JupiterEventCode.Type) -> TJLabsCommon.JupiterEventCode",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "JupiterEventCode",
+                    "printedName": "TJLabsCommon.JupiterEventCode",
+                    "usr": "s:12TJLabsCommon16JupiterEventCodeO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "TJLabsCommon.JupiterEventCode.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "JupiterEventCode",
+                        "printedName": "TJLabsCommon.JupiterEventCode",
+                        "usr": "s:12TJLabsCommon16JupiterEventCodeO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:12TJLabsCommon16JupiterEventCodeO17BECOME_FOREGROUNDyA2CmF",
+            "mangledName": "$s12TJLabsCommon16JupiterEventCodeO17BECOME_FOREGROUNDyA2CmF",
+            "moduleName": "TJLabsCommon"
+          },
+          {
             "kind": "Constructor",
             "name": "init",
             "printedName": "init(rawValue:)",
@@ -13031,36 +13105,50 @@
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
+      "kind": "IntegerLiteral",
+      "offset": 398,
+      "length": 1,
+      "value": "2"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
+      "kind": "IntegerLiteral",
+      "offset": 429,
+      "length": 1,
+      "value": "3"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
       "kind": "StringLiteral",
-      "offset": 728,
+      "offset": 790,
       "length": 26,
       "value": "\"tjlabs.jupiter.dataQueue\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
       "kind": "FloatLiteral",
-      "offset": 827,
+      "offset": 889,
       "length": 3,
       "value": "1.0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 869,
+      "offset": 931,
       "length": 2,
       "value": "10"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
       "kind": "BooleanLiteral",
-      "offset": 1184,
+      "offset": 1246,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
       "kind": "StringLiteral",
-      "offset": 1381,
+      "offset": 1443,
       "length": 9,
       "value": "\"UNKNOWN\""
     },

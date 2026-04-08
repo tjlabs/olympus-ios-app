@@ -75,6 +75,8 @@ public struct JupiterEvent {
 public enum JupiterEventCode : Swift.Int {
   case START_SERVICE
   case STOP_SERVICE
+  case BECOME_BACKGROUND
+  case BECOME_FOREGROUND
   #if compiler(>=5.3) && $NonescapableTypes
   public init?(rawValue: Swift.Int)
   #endif
