@@ -32,7 +32,7 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
     }
     
     func onJupiterResult(_ result: OlympusSDK.JupiterResult) {
-//        print("(CardVC) onJupiterResult : \(result)")
+//        print("(onJupiterResult) -> index:\(result.index) , xyh:[\(result.x),\(result.y),\(result.absolute_heading)] , llh:\(result.llh)")
         let building = result.building_name
         let level = result.level_name
         let x = result.x
@@ -146,73 +146,26 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
     var serviceState: Bool = false
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         setupLayout()
         bindActions()
         
         headingImage = headingImage?.resize(newWidth: 20)
-        
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_io_0811.csv", sensorFileName: "sensor_coex_io_0811.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_0604_05.csv", sensorFileName: "sensor_coex_0604_05.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_03_0930.csv", sensorFileName: "sensor_coex_03_0930.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_dr_03_1030.csv", sensorFileName: "sensor_coex_dr_03_1030.csv")
-    
-//        serviceManager.setDeadReckoningMode(flag: true, buildingName: "S3", levelName: "7F", x: 6, y: 16, heading: 270)
-        
-//        OlympusNavigationManager.shared.setDummyRoutes(option: false)
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_01_2_0811.csv", sensorFileName: "sensor_coex_01_2_0811.csv")
-        
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250818_test2.csv", sensorFileName: "sensor_songdo_250818_test2.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250818_test8.csv", sensorFileName: "sensor_songdo_250818_test8.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250822_km01.csv", sensorFileName: "sensor_songdo_250822_km01.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_250829_test02_ent1.csv", sensorFileName: "sensor_250829_test02_ent1.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_250911_songdo_test3.csv", sensorFileName: "sensor_250911_songdo_test3.csv")
-        
-        // Analysis
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_250829_test02_ent1.csv", sensorFileName: "sensor_250829_test02_ent1.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_250829_test08_ent2.csv", sensorFileName: "sensor_250829_test08_ent2.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_250829_test06_ent3.csv", sensorFileName: "sensor_250829_test06_ent3.csv")
-        
-        // Ent3
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250818_test6.csv", sensorFileName: "sensor_songdo_250818_test6.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250818_test10.csv", sensorFileName: "sensor_songdo_250818_test10.csv")
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_songdo_250822_stop.csv", sensorFileName: "sensor_songdo_250822_stop.csv")
-        
-//        serviceManager?.setSimulationMode(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
-        
-        // collect
-//        isCollect = true
-//        serviceManager.initCollect(region: self.region)
-//        serviceManager.startCollect()
-//        self.startTimer()
-        
-//        self.setPhoenixData()
         let uniqueId = makeUniqueId(uuid: self.userId)
         
         serviceManager = NavigationManager(id: uniqueId, sectorId: sector_id)
         serviceManager?.delegate = self
-        
-        var scenario: Int?
-//        if let fromSelectedName = fromSelectedName, !isSafeDriving {
-//            if fromSelectedName.contains("1번") {
-//                scenario = 1
-//            } else if fromSelectedName.contains("3번") {
-//                scenario = 3
-//            } else if fromSelectedName.contains("4번") {
-//                scenario = 4
-//            }
-//        }
-        
+
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_01_0317.csv", sensorFileName: "sensor_coex_01_0317.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_02_0310.csv", sensorFileName: "sensor_coex_02_0310.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_03_0303.csv", sensorFileName: "sensor_coex_03_0303.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_02_0224.csv", sensorFileName: "sensor_coex_02_0224.csv")
         
-        serviceManager?.setNaviDestination(dest: Point(level_id: 53, x: 335, y: 0))
+//        serviceManager?.setNaviDestination(dest: Point(level_id: 53, x: 335, y: 0))
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test02_ent2.csv", sensorFileName: "sensor_251013_songdo_test02_ent2.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test05_ent3.csv", sensorFileName: "sensor_251013_songdo_test05_ent3.csv")
+        
+        serviceManager?.setSimulationMode(flag: true, rfdFileName: "260407_songdo_test6_rfd.json", uvdFileName: "260407_songdo_test6_uvd.json", eventFileName: "260407_songdo_test6_event.json")
         serviceManager?.startService(sectorId: sector_id, mode: .MODE_AUTO, debugOption: true)
         
         // service

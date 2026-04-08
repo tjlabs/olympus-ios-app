@@ -24,8 +24,8 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        TJLabsAuthManager.shared.auth(name: "tjlabs", password: "TJlabs0407@", completion: { [self] statusCode, success in
+        SecretConfig.set(clientKey: "3c5df65e643ba2668aba5c6e5cab9f68", clientSecret: "4b05476b158bce1df2afe9b0c6760b679be378669da117924e2f4e36de5e46d4")
+        TJLabsAuthManager.shared.auth(accessKey: "AK_-xVNF3MeRzQMhBIVLU5GQ", secretAccessKey: "SK1nVeBlJldifxC7z8vD8ZeercMgrSqmzNzz5RItSrDaM", completion: { [self] statusCode, success in
             print("(TJLabsAuthManager) TJLabsAuth : \(statusCode), \(success)")
         })
         

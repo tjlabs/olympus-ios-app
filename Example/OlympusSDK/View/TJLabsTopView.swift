@@ -6,7 +6,8 @@ class TJLabsTopView: UIView {
     
     private let containerView: UIView = {
         let view = UIView()
-        view.backgroundColor = UIColor(hex: "#ec008b")
+//        view.backgroundColor = UIColor(hex: "#ec008b")
+        view.backgroundColor = UIColor.systemGray2
         return view
     }()
 
@@ -22,7 +23,7 @@ class TJLabsTopView: UIView {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 20, weight: .bold)
         label.textColor = .white
-        label.text = "COEX"
+        label.text = "Navi"
         label.textAlignment = .center
         return label
     }()
