@@ -12,15 +12,12 @@ struct MobileResult: Codable {
     let is_vehicle: Bool
     let mobile_time: Int
     let index: Int
+    let velocity: Float
     let level_id: Int
-    let jupiter_pos: Position
-    let navi_pos: Position?
+    let jupiter_position: Position
+    let navigation_position: Position?
     let phase: Int
     let is_indoor: Bool
-    let latitude: Double?
-    let longitude: Double?
-    let azimuth: Double?
-    let velocity: Float
     let validity_flag: Int
 }
 

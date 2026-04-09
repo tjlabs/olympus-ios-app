@@ -23,6 +23,7 @@ protocol JupiterCalcManagerDelegate: AnyObject {
                                    indexForEdit: Int,
                                    curPmResult: FineLocationTrackingOutput?) -> (NaviCorrectionInfo, [StackEditInfo])?
     func isJupiterPhaseChanged(index: Int, phase: JupiterPhase, xyh: [Float]?)
+    func onStateReported(_ code: JupiterServiceCode)
 }
 
 public protocol JupiterManagerDelegate: AnyObject {
@@ -38,12 +39,32 @@ public protocol JupiterManagerDelegate: AnyObject {
                                    travelingLinkDist: Float,
                                    indexForEdit: Int,
                                    curPmResult: FineLocationTrackingOutput?) -> (NaviCorrectionInfo, [StackEditInfo])?
-    func onJupiterSuccess(_ isSuccess: Bool)
-    func onJupiterError(_ code: Int, _ msg: String)
+    func onJupiterSuccess(_ isSuccess: Bool, _ code: JupiterErrorCode?)
+    func onJupiterReport(_ code: JupiterServiceCode, _ msg: String)
     func onJupiterResult(_ result: JupiterResult)
-    func onJupiterReport(_ flag: Int)
     func isJupiterInOutStateChanged(_ state: InOutState)
     func isJupiterPhaseChanged(index: Int, phase: JupiterPhase, xyh: [Float]?)
+}
+
+public enum JupiterErrorCode: Int {
+    case INVALID_ID = 0
+    case INVALID_MODE = 1
+    case NETWORK_DISCONNECT = 2
+    case DUPLICATED_SERVICE = 3
+    case LOGIN_FAIL = 4
+    case GENERATOR_FAIL = 5
+    case CALC_INIT_FAIL = 6
+}
+
+public enum JupiterServiceCode: Int {
+    case SERVICE_FAIL = 0
+    case SERVICE_SUCCESS = 1
+    case BECOME_BACKGROUND = 2
+    case BECOME_FOREGROUND = 3
+    case BLUETOOTH_UNAVAILABLE = 4
+    case BLUETOOTH_OFF = 5
+    case BLUETOOTH_SCAN_STOP = 6
+    case NETWORK_DISCONNECT = 7
 }
 
 public enum JupiterPhase {
