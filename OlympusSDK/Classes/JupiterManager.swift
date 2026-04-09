@@ -49,6 +49,8 @@ public class JupiterManager: JupiterCalcManagerDelegate {
     private var sendRfdLength = 2
     private var sendUvdLength = 4
     
+    private var mockingMode = false
+    
     // MARK: - JupiterResult Timer
     var outputTimer: DispatchSourceTimer?
     
@@ -90,7 +92,7 @@ public class JupiterManager: JupiterCalcManagerDelegate {
             return
         }
         
-        let loginInput = LoginInput(name: self.id, device_model: self.deviceModel, os_version: self.deviceOsVersion, sdk_version: JupiterManager.sdkVersion)
+        let loginInput = LoginInput(name: self.id)
         let tasks: [(_ group: DispatchGroup, _ reportError: @escaping (String) -> Void) -> Void] = [
             { group, reportError in
                 group.enter()
@@ -110,13 +112,12 @@ public class JupiterManager: JupiterCalcManagerDelegate {
             jupiterCalcManager = JupiterCalcManager(region: region, id: self.id, sectorId: sectorId)
             jupiterCalcManager?.start(completion: { [self] isSuccess, msg in
                 if isSuccess {
-                    self.uploadSimulationFiles()
-                    // File Save Setting
                     if debugOption {
+                        self.uploadSimulationFiles()
                         JupiterFileManager.shared.setDebugOption(flag: debugOption)
                         JupiterFileManager.shared.createFiles(id: self.id, os: "iOS")
-//                        JupiterFileManager.shared.createFiles(region: region, sector_id: sectorId, deviceModel: deviceModel, osVersion: deviceOsVersion)
                     }
+                    
                     jupiterCalcManager?.delegate = self
                     jupiterCalcManager?.setSendRfdLength(sendRfdLength)
                     jupiterCalcManager?.setSendUvdLength(sendUvdLength)
@@ -246,6 +247,10 @@ public class JupiterManager: JupiterCalcManagerDelegate {
         return jupiterCalcManager?.getBuildingsData()
     }
     
+    public func getLevelId(sectorId: Int, buildingName: String, levelName: String) -> Int? {
+        return jupiterCalcManager?.getLevelId(sectorId: sectorId, buildingName: buildingName, levelName: levelName)
+    }
+    
     public func getCurPmResultBuffer(from: Int) -> [FineLocationTrackingOutput]? {
         return jupiterCalcManager?.getCurPmResultBuffer(from: from)
     }
@@ -253,14 +258,6 @@ public class JupiterManager: JupiterCalcManagerDelegate {
     public func getCurPmResultBuffer(size: Int) -> [FineLocationTrackingOutput]? {
         return jupiterCalcManager?.getCurPmResultBuffer(size: size)
     }
-    
-//    func setNaviCorrectionInfo(naviCorrectionInfo: NaviCorrectionInfo) {
-//        jupiterCalcManager?.setNaviCorrectionInfo(naviCorrectionInfo: naviCorrectionInfo)
-//    }
-//    
-//    func setStackEditInfoBuffer(stackEditInfoBuffer: [StackEditInfo]) {
-//        jupiterCalcManager?.setStackEditInfoBuffer(stackEditInfoBuffer: stackEditInfoBuffer)
-//    }
     
     // MARK: - ID Validation
     private func checkIdIsAvailable(id: String) -> (Bool, String) {
@@ -291,8 +288,61 @@ public class JupiterManager: JupiterCalcManagerDelegate {
     }
     
     func outputTimerUpdate() {
-        guard let jupiterResult = jupiterCalcManager?.getJupiterResult() else { return }
-        delegate?.onJupiterResult(jupiterResult)
+        if mockingMode {
+            let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
+            let mockResult = JupiterResult(mobile_time: currentTime,
+                                           index: 1,
+                                           building_name: "Underground",
+                                           level_name: "B7",
+                                           jupiter_pos: Position(x: 1000, y: 1000, heading: 270),
+                                           velocity: 7,
+                                           is_vehicle: true,
+                                           is_indoor: true,
+                                           validity_flag: 1)
+            delegate?.onJupiterResult(mockResult)
+        } else {
+            guard let jupiterResult = jupiterCalcManager?.getJupiterResult(),
+                  let jupiterPhase = jupiterCalcManager?.jupiterPhase else { return }
+            delegate?.onJupiterResult(jupiterResult)
+            makeMobileResult(jupiterPhase: jupiterPhase, jupiterResult: jupiterResult)
+        }
+    }
+    
+    private func makeMobileResult(jupiterPhase: JupiterPhase, jupiterResult: JupiterResult) {
+        let is_vehicle = jupiterResult.is_vehicle
+        let has_route = false
+        let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
+        guard let levelId = self.getLevelId(sectorId: self.sectorId, buildingName: jupiterResult.building_name, levelName: jupiterResult.level_name) else { return }
+        
+        var phase = 0
+        switch jupiterPhase {
+        case .ENTERING:
+            phase = 1
+        case .SEARCHING:
+            phase = 2
+        case .TRACKING:
+            phase = 3
+        case .EXITING:
+            phase = 4
+        case .NONE:
+            phase = 0
+        }
+        
+        let mobileResult = MobileResult(tenant_user_name: self.id,
+                                        is_vehicle: is_vehicle,
+                                        mobile_time: currentTime,
+                                        index: jupiterResult.index,
+                                        level_id: levelId,
+                                        jupiter_pos: jupiterResult.jupiter_pos,
+                                        navi_pos: jupiterResult.navi_pos,
+                                        phase: phase,
+                                        is_indoor: jupiterResult.is_indoor,
+                                        latitude: jupiterResult.llh?.lat,
+                                        longitude: jupiterResult.llh?.lon,
+                                        azimuth: jupiterResult.llh?.heading,
+                                        velocity: jupiterResult.velocity,
+                                        validity_flag: jupiterResult.validity_flag)
+        DataBatchSender.shared.sendMobileResult(mobileResult: mobileResult)
     }
     
     public func getJupiterDebugResult() -> JupiterDebugResult? {
@@ -313,5 +363,10 @@ public class JupiterManager: JupiterCalcManagerDelegate {
         JupiterFileManager.shared.saveFilesForSimulation(completion: { isSuccess in
             completion(isSuccess)
         })
+    }
+    
+    // MARK: - Mocking Mode
+    public func setMockingMode() {
+        self.mockingMode = true
     }
 }
