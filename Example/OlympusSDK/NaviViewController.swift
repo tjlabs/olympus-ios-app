@@ -28,7 +28,7 @@ class NaviViewController: UIViewController, NavigationManagerDelegate, TJLabsNav
     
     func onJupiterResult(_ result: JupiterResult) {
 //        print("(onJupiterResult) -> index:\(result.index) , xyh:[\(result.x),\(result.y),\(result.absolute_heading)] , llh:\(result.llh)")
-        let userCoord = TJLabsUserCoordinate(building: result.building_name, level: result.level_name, x: result.x, y: result.y, heading: result.absolute_heading, velocity: result.velocity)
+        let userCoord = TJLabsUserCoordinate(building: result.building_name, level: result.level_name, x: result.jupiter_pos.x, y: result.jupiter_pos.y, heading: result.jupiter_pos.heading, velocity: result.velocity)
         
         if result.level_name == "B0" && !isParkingGuideRendered {
             DispatchQueue.main.async { [self] in

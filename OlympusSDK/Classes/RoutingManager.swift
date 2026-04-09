@@ -616,13 +616,13 @@ class RoutingManager {
     func calcNaviRouteResult(uvd: UserVelocity, jupiterResult: JupiterResult) -> RoutingRoute? {
         guard let curRoute = curRoute else { return nil }
         
-        let headingInRadian = TJLabsUtilFunctions.shared.degree2radian(degree: Double(jupiterResult.absolute_heading))
+        let headingInRadian = TJLabsUtilFunctions.shared.degree2radian(degree: Double(jupiterResult.jupiter_pos.heading))
         let dx = Float(uvd.length*cos(headingInRadian))
         let dy = Float(uvd.length*sin(headingInRadian))
         
         let newX = curRoute.x + dx
         let newY = curRoute.y + dy
-        let newH = jupiterResult.absolute_heading
+        let newH = jupiterResult.jupiter_pos.heading
         JupiterLogger.i(tag: "RoutingManager", message: "(calcNaviRouteResult) : index= \(jupiterResult.index), section= \(curRoute.section), new= [\(newX),\(newY),\(newH)]")
         
         var matchedRoute: RoutingRoute?

@@ -120,9 +120,9 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
             if let routingRoute = self.curRoutingRouteResult {
                 copied.building_name = routingRoute.building
                 copied.level_name = routingRoute.level
-                copied.x = routingRoute.x
-                copied.y = routingRoute.y
-                copied.absolute_heading = routingRoute.heading
+                copied.jupiter_pos.x = routingRoute.x
+                copied.jupiter_pos.y = routingRoute.y
+                copied.jupiter_pos.heading = routingRoute.heading
             }
             delegate?.onJupiterResult(copied)
         } else {
@@ -155,7 +155,7 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         routingManager?.clearRoutes()
         guard let curResult = self.jupiterResult else { return }
         guard let curLevelId = routingManager?.getLevelIdWithName(levelName: curResult.level_name) else { return }
-        let from = RoutingStart(level_id: curLevelId, x: Int(curResult.x), y: Int(curResult.y), absolute_heading: Int(curResult.absolute_heading))
+        let from = RoutingStart(level_id: curLevelId, x: Int(curResult.jupiter_pos.x), y: Int(curResult.jupiter_pos.y), absolute_heading: Int(curResult.jupiter_pos.heading))
         guard let to = self.naviDestination else { return }
         routingManager?.requestRouting(start: from, end: to, completion: { [self] routingResult in
             if let result = routingResult {

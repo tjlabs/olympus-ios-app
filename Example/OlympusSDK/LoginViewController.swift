@@ -24,7 +24,11 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        SecretConfig.set(clientKey: "3c5df65e643ba2668aba5c6e5cab9f68", clientSecret: "4b05476b158bce1df2afe9b0c6760b679be378669da117924e2f4e36de5e46d4")
+        
+        setDeviceInfo()
+        setLocaleInfo()
+        let clientMeta = self.makeClientMeta()
+        SecretConfig.set(clientKey: "32a0fc826654c94d03b9a1a17991732e", clientSecret: "1f551dd79c61ef3ca24d04cd7fe00dfbd93e9a97f0db263301f0651e68e79298", clientMeta: clientMeta)
         TJLabsAuthManager.shared.auth(accessKey: "AK_-xVNF3MeRzQMhBIVLU5GQ", secretAccessKey: "SK1nVeBlJldifxC7z8vD8ZeercMgrSqmzNzz5RItSrDaM", completion: { [self] statusCode, success in
             print("(TJLabsAuthManager) TJLabsAuth : \(statusCode), \(success)")
         })
@@ -35,10 +39,34 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
             isSaveId = true
         }
         idTextField.delegate = self
-        
-        setDeviceInfo()
-        setLocaleInfo()
         setServerURL(region: self.currentRegion)
+    }
+    
+    private func makeClientMeta() -> ClientMeta {
+        let clientSdks = [
+            SdkMeta(name: "TJLabsMap", version: "0.1.0"),
+            SdkMeta(name: "TJLabsJupiter", version: "0.1.0"),
+            SdkMeta(name: "TJLabsNavi", version: "0.1.0")
+        ]
+        
+        let bundleIdentifier = Bundle.main.bundleIdentifier ?? ""
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? ""
+        
+        let appVersion: String = version + "(\(build))"
+        let appPackage: String = bundleIdentifier
+        let deviceMode: String = self.deviceModel
+        let osVersion: String = self.deviceOsInfo
+        
+        let clientMeta = ClientMeta(
+            app_version: appVersion,
+            app_package: appPackage,
+            device_model: deviceMode,
+            os_version: osVersion,
+            sdks: clientSdks
+        )
+        
+        return clientMeta
     }
 
     override func didReceiveMemoryWarning() {

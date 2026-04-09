@@ -35,14 +35,8 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
 //        print("(onJupiterResult) -> index:\(result.index) , xyh:[\(result.x),\(result.y),\(result.absolute_heading)] , llh:\(result.llh)")
         let building = result.building_name
         let level = result.level_name
-        let x = result.x
-        let y = result.y
-        
-        if (result.ble_only_position) {
-            self.isBleOnlyMode = true
-        } else {
-            self.isBleOnlyMode = false
-        }
+        let x = result.jupiter_pos.x
+        let y = result.jupiter_pos.y
         
         if (building.count < 2 && level.count < 2) {
             print("(VC) Error : \(result)")

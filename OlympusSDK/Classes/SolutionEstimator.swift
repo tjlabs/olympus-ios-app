@@ -195,7 +195,7 @@ class SolutionEstimator {
                     }
                 }
                 
-                let curPmResult = FineLocationTrackingOutput(mobile_time: 0, index: searchTraj[0].index, building_name: building, level_name: level, scc: 1.0, x: 0, y: 0, absolute_heading: 0)
+                let curPmResult = FineLocationTrackingOutput(mobile_time: 0, index: searchTraj[0].index, building_name: building, level_name: level, x: 0, y: 0, absolute_heading: 0)
                 var headResult = curPmResult
                 headResult.x = head.x
                 headResult.y = head.y
