@@ -3,10 +3,9 @@ import TJLabsCommon
 import TJLabsResource
 
 public protocol NavigationManagerDelegate: AnyObject {
-    func onJupiterSuccess(_ isSuccess: Bool)
-    func onJupiterError(_ code: Int, _ msg: String)
+    func onJupiterSuccess(_ isSuccess: Bool, _ code: JupiterErrorCode?)
     func onJupiterResult(_ result: JupiterResult)
-    func onJupiterReport(_ flag: Int)
+    func onJupiterReport(_ code: JupiterServiceCode, _ msg: String)
     func isJupiterInOutStateChanged(_ state: InOutState)
     
     func isUserGuidanceOut()
@@ -101,16 +100,12 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     }
     
     // MARK: - Jupiter
-    public func onJupiterSuccess(_ isSuccess: Bool) {
-        if let blData = jupiterManager?.getBuildingsData() {
+    public func onJupiterSuccess(_ isSuccess: Bool, _ code: JupiterErrorCode?) {
+        if isSuccess, let blData = jupiterManager?.getBuildingsData() {
             JupiterLogger.i(tag: "NavigationManager", message: "onJupiterSuccess : buildingsData= \(blData)")
             routingManager?.setBuildingsData(buildingsData: blData)
         }
-        delegate?.onJupiterSuccess(isSuccess)
-    }
-    
-    public func onJupiterError(_ code: Int, _ msg: String) {
-        delegate?.onJupiterError(code, msg)
+        delegate?.onJupiterSuccess(isSuccess, code)
     }
     
     public func onJupiterResult(_ result: JupiterResult) {
@@ -130,8 +125,8 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         }
     }
     
-    public func onJupiterReport(_ flag: Int) {
-        delegate?.onJupiterReport(flag)
+    public func onJupiterReport(_ code: JupiterServiceCode, _ msg: String) {
+        delegate?.onJupiterReport(code, msg)
     }
     
     public func isJupiterInOutStateChanged(_ state: InOutState) {
@@ -226,24 +221,27 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     private var recentLandmarkPeaks: [PeakData]?
     
     // MARK: - init & deinit
-    public init(region: String = JupiterRegion.KOREA.rawValue, id: String, sectorId: Int) {
-        NavigationNetworkConstants.setServerURL(region: region)
+    public init(id: String) {
         self.id = id
-        self.sectorId = sectorId
-        
         self.jupiterManager = JupiterManager(id: id)
         self.jupiterManager?.delegate = self
-        
-        self.routingManager = RoutingManager(id: id, sectorId: sectorId)
-        self.routingManager?.delegate = self
     }
     
     deinit {
-        self.jupiterManager = nil
-        self.routingManager = nil
+        JupiterLogger.i(tag: "NavigationManager", message: "deinit")
+        jupiterManager?.delegate = nil
+        routingManager?.delegate = nil
+        delegate = nil
+
+        jupiterManager?.stopJupiter { _, _ in }
+        jupiterManager = nil
+        routingManager = nil
     }
     
     public func startService(region: String = JupiterRegion.KOREA.rawValue, sectorId: Int, mode: UserMode, debugOption: Bool = false) {
+        NavigationNetworkConstants.setServerURL(region: region)
+        self.routingManager = RoutingManager(id: id, sectorId: sectorId)
+        self.routingManager?.delegate = self
         jupiterManager?.startJupiter(region: region, sectorId: sectorId, mode: mode, debugOption: debugOption)
     }
     

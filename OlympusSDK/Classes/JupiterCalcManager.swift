@@ -4,7 +4,7 @@ import simd
 import TJLabsCommon
 import TJLabsResource
 
-class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsResourceManagerDelegate, BuildingLevelChangerDelegate {
+class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsResourceManagerDelegate, BuildingLevelChangerDelegate, StateManagerDelegate {
     // MARK: - Classes
     private var tjlabsResourceManager = TJLabsResourceManager()
     
@@ -17,6 +17,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     private var sectionController = SectionController()
     private var landmarkTagger: LandmarkTagger?
     private var solutionEstimator: SolutionEstimator?
+    private var stateManager: JupiterStateManager?
     
     // MARK: - Delegate
     weak var delegate: JupiterCalcManagerDelegate?
@@ -75,6 +76,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     var buildingsData: [BuildingData]?
     
     // MARK: - Debuging
+    var sectorDebugOption: Bool = false
+    var debugOption: Bool = false
     var debug_calc_xyh: [Float] = [0, 0, 0]
     var debug_tu_xyh: [Float] = [0, 0, 0]
     var debug_landmark: LandmarkData?
@@ -98,14 +101,34 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         self.kalmanFilter = KalmanFilter(stackManager: stackManager)
         self.landmarkTagger = LandmarkTagger(sectorId: sectorId)
         self.solutionEstimator = SolutionEstimator(sectorId: sectorId)
+        self.stateManager = JupiterStateManager()
         
         peakDetector.setInnerWardIds(ids: self.entManager!.getEntInnermostWardIds())
         
         tjlabsResourceManager.delegate = self
         buildingLevelChanger?.delegate = self
+        stateManager?.delegate = self
     }
     
-    deinit { }
+    deinit {
+        JupiterLogger.i(tag: "JupiterCalcManager", message: "deinit")
+        // 1. delegate 끊기
+        tjlabsResourceManager.delegate = nil
+        buildingLevelChanger?.delegate = nil
+        stateManager = nil
+        delegate = nil
+
+        // 2. generator stop
+        stopGenerator()
+
+        // 3. generator delegate 끊기
+        rfdGenerator?.delegate = nil
+        uvdGenerator?.delegate = nil
+
+        // 4. optional cleanup (선택)
+        rfdGenerator = nil
+        uvdGenerator = nil
+    }
     
     // MARK: - Functions
     func start(completion: @escaping (Bool, String) -> Void) {
@@ -156,7 +179,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         }
         
         JupiterSimulator.shared.isSimulationMode ? rfdGenerator?.generateRfdSimulation() : rfdGenerator?.generateRfd()
-//        rfdGenerator?.generateRfd()
         rfdGenerator?.delegate = self
         rfdGenerator?.pressureProvider = { [self] in
             return self.pressure
@@ -164,7 +186,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
 
         uvdGenerator?.setUserMode(mode: mode)
         JupiterSimulator.shared.isSimulationMode ? uvdGenerator?.generateUvdSimulation() : uvdGenerator?.generateUvd()
-//        uvdGenerator?.generateUvd()
         uvdGenerator?.delegate = self
 
         completion(true, "")
@@ -191,8 +212,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             let converted = AffineConverter.shared.convertPpToLLH(x: Double(x), y: Double(y), heading: Double(absoluteHeading), param: affineParam)
             llh = LLH(lat: converted.lat, lon: converted.lon, heading: converted.heading)
         }
-        
-//        print("(getJupiterResult) -> index:\(curUvd.index), llhs:\(llh)")
         
         let is_vehicle = curUserModeEnum == .MODE_VEHICLE
         let jupiterResult = JupiterResult(mobile_time: currentTime,
@@ -261,24 +280,19 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
 
     // MARK: - RFDGeneratorDelegate Methods
     func onRfdResult(_ generator: TJLabsCommon.RFDGenerator, receivedForce: TJLabsCommon.ReceivedForce) {
-        JupiterFileManager.shared.writeRFD(rfd: receivedForce)
+        if debugOption { JupiterFileManager.shared.writeRFD(rfd: receivedForce) }
         handleRfd(rfd: receivedForce)
         delegate?.onRfdResult(receivedForce: receivedForce)
-        for (key, value) in receivedForce.rfs {
-            if key.contains("46E") || key.contains("114") || key.contains("117") {
-                if jupiterPhase == .ENTERING {
-                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(onRfdResult): \(key):\(value)")
-                }
-            }
-        }
     }
     
     func handleRfd(rfd: ReceivedForce) {
-        let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-        DataBatchSender.shared.sendRfd(rfd: rfd)
-        
-        // Update Current RFD
         self.curRfd = rfd
+        guard let bleAvailable = rfdGenerator?.checkIsAvailableRfd() else { return }
+        if !bleAvailable.0 { delegate?.onStateReported(.BLUETOOTH_UNAVAILABLE) }
+        guard let bleReady = rfdGenerator?.isBluetoothReady() else { return }
+        guard let lastScannedTime = rfdGenerator?.getBleLastScannedTime() else { return }
+        stateManager?.checkBleOff(bluetoothReady: bleReady, bleLastScannedTime: lastScannedTime)
+        stateManager?.checkNetworkConnection()
     }
     
     func onRfdError(_ generator: TJLabsCommon.RFDGenerator, code: Int, msg: String) {
@@ -304,20 +318,17 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     }
     
     func onUvdResult(_ generator: UVDGenerator, mode: UserMode, userVelocity: UserVelocity) {
-        JupiterFileManager.shared.writeUVD(uvd: userVelocity, mode: mode)
+        if debugOption { JupiterFileManager.shared.writeUVD(uvd: userVelocity, mode: mode) }
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-        DataBatchSender.shared.sendUvd(uvd: userVelocity)
         determineUserMode(mode: mode)
-//        JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult): mode= \(mode), [idx:\(userVelocity.index), len:\(userVelocity.length), heading:\(userVelocity.heading)]")
-        
+
         let rfs = curRfd.rfs
         var rfdDataString = ""
         for (key, value) in rfs {
             let str = ",\(key)=\(value)"
             rfdDataString.append(str)
         }
-//        let uvdDataString = "\(currentTime),\(userVelocity.index),\(userVelocity.length),\(userVelocity.heading),\(peakDetector.minPeakRssi),\(peakDetector.minAmp)\(rfdDataString)"
-        
+
         // Update Current UVD
         self.curUvd = userVelocity
         let curIndex = userVelocity.index
@@ -326,7 +337,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         guard let landmarkTagger = self.landmarkTagger else { return }
         stackManager.stackUvd(uvd: userVelocity)
         let uvdBuffer = stackManager.getUvdBuffer()
-        //        JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult): [idx:\(userVelocity.index), len:\(userVelocity.length), heading:\(userVelocity.heading)]")
         let capturedRfd = self.curRfd
         let bleData = capturedRfd.rfs // [String: Float] BLE_ID: RSSI
         
@@ -552,9 +562,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                 let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBuffer.map{ Float($0.heading) })
                 forceStop = majorSection.isEmpty
                 if !forceStop {
-                    let wardHeadings: [Float] = innermostWard.headings
-                    let wardX = innermostWard.x
-                    let wardY = innermostWard.y
+//                    let wardHeadings: [Float] = innermostWard.headings
+//                    let wardX = innermostWard.x
+//                    let wardY = innermostWard.y
                     
                     // Convensia Ent1
 //                    let wardHeadings: [Float] = [0, 315, 270]
@@ -562,9 +572,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
 //                    let wardY: Float = 199
                     
 //                    // Convensia Ent2
-//                    let wardHeadings: [Float] = [90, 158, 180]
-//                    let wardX: Float = 348
-//                    let wardY: Float = 165
+                    let wardHeadings: [Float] = [90, 158, 180]
+                    let wardX: Float = 348
+                    let wardY: Float = 165
                     
                     let headingForCompensation = majorSection.average - uvdBuffer[0].heading
                     
@@ -1554,7 +1564,10 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     // MARK: - TJLabsResourceManagerDelegate Methods
     func onSectorBundleData(_ manager: TJLabsResource.TJLabsResourceManager, sectorId: Int, data: TJLabsResource.BundleOutput) {
-        // TO-DO
+        self.sectorDebugOption = tjlabsResourceManager.isDebug()
+        if !debugOption && sectorDebugOption {
+            debugOption = true
+        }
     }
     
     func onUnitsData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: [TJLabsResource.UnitData]) {
@@ -1630,5 +1643,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     func isBuildingLevelChanged(isChanged: Bool, newBuilding: String, newLevel: String, newCoord: [Float]) {
         // TODO
+    }
+    
+    func onStateReported(_ code: JupiterServiceCode) {
+        delegate?.onStateReported(code)
     }
 }

@@ -32,7 +32,28 @@ public class JupiterManager: JupiterCalcManagerDelegate {
         self.jupiterPhase = phase
     }
     
-    public static let sdkVersion: String = "0.0.1"
+    func onStateReported(_ code: JupiterServiceCode) {
+        switch(code) {
+        case .SERVICE_FAIL:
+            delegate?.onJupiterReport(code, "Service Fail")
+        case .SERVICE_SUCCESS:
+            delegate?.onJupiterReport(code, "Service Success")
+        case .BECOME_BACKGROUND:
+            delegate?.onJupiterReport(code, "Become Background")
+        case .BECOME_FOREGROUND:
+            delegate?.onJupiterReport(code, "Become Foreground")
+        case .BLUETOOTH_UNAVAILABLE:
+            delegate?.onJupiterReport(code, "Bluetooth is unavailable")
+        case .BLUETOOTH_OFF:
+            delegate?.onJupiterReport(code, "Bluetooth Off")
+        case .BLUETOOTH_SCAN_STOP:
+            delegate?.onJupiterReport(code, "Bluetooth Scan Stop (over 6s)")
+        case .NETWORK_DISCONNECT:
+            delegate?.onJupiterReport(code, "Newtork is disconnected")
+        }
+    }
+    
+    public static let sdkVersion: String = "2.0.0"
     
     var id: String = ""
     var sectorId: Int = 0
@@ -64,31 +85,29 @@ public class JupiterManager: JupiterCalcManagerDelegate {
     }
     
     deinit {
-        jupiterCalcManager = nil
+        jupiterCalcManager?.delegate = nil
+        stopJupiter(completion: { _,_ in })
     }
 
     // MARK: - Start & Stop Jupiter Service
     public func startJupiter(region: String = JupiterRegion.KOREA.rawValue, sectorId: Int, mode: UserMode, debugOption: Bool = false) {
         JupiterNetworkConstants.setServerURL(region: region)
-        
-        let (isNetworkAvailable, msgCheckNetworkAvailable) = JupiterNetworkManager.shared.isConnectedToInternet()
-        let (isIdAvailable, msgCheckIdAvailable) = checkIdIsAvailable(id: id)
+        self.sectorId = sectorId
+        let (isNetworkAvailable, _) = JupiterNetworkManager.shared.isConnectedToInternet()
+        let (isIdAvailable, _) = checkIdIsAvailable(id: id)
         
         if !isNetworkAvailable {
-            delegate?.onJupiterError(0, msgCheckNetworkAvailable)
-            delegate?.onJupiterSuccess(false)
+            delegate?.onJupiterSuccess(false, JupiterErrorCode.NETWORK_DISCONNECT)
             return
         }
         
         if !isIdAvailable {
-            delegate?.onJupiterError(0, msgCheckIdAvailable)
-            delegate?.onJupiterSuccess(false)
+            delegate?.onJupiterSuccess(false, JupiterErrorCode.INVALID_ID)
             return
         }
         
         if isStartService {
-            delegate?.onJupiterError(0, "The service is already starting.")
-            delegate?.onJupiterSuccess(false)
+            delegate?.onJupiterSuccess(false, JupiterErrorCode.DUPLICATED_SERVICE)
             return
         }
         
@@ -99,9 +118,10 @@ public class JupiterManager: JupiterCalcManagerDelegate {
                 let loginURL = JupiterNetworkConstants.getUserLoginURL()
                 JupiterNetworkManager.shared.postUserLogin(url: loginURL, input: loginInput) { success, msg in
                     JupiterLogger.i(tag: "JupiterManager", message: "(login) - url \(loginURL)")
-                    if success != 200 {
+                    let successRange = 200..<300
+                    if !successRange.contains(success) {
                         reportError(msg)
-                        self.delegate?.onJupiterError(success, msg)
+                        self.delegate?.onJupiterSuccess(false, JupiterErrorCode.LOGIN_FAIL)
                     }
                     group.leave()
                 }
@@ -117,7 +137,7 @@ public class JupiterManager: JupiterCalcManagerDelegate {
                         JupiterFileManager.shared.setDebugOption(flag: debugOption)
                         JupiterFileManager.shared.createFiles(id: self.id, os: "iOS")
                     }
-                    
+                    jupiterCalcManager?.debugOption = debugOption
                     jupiterCalcManager?.delegate = self
                     jupiterCalcManager?.setSendRfdLength(sendRfdLength)
                     jupiterCalcManager?.setSendUvdLength(sendUvdLength)
@@ -126,21 +146,18 @@ public class JupiterManager: JupiterCalcManagerDelegate {
                             isStartService = true
                             startTimer()
                             let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-                            JupiterFileManager.shared.writeEvent(event: JupiterEvent(mobile_time: currentTime, event_code: .START_SERVICE))
-                            delegate?.onJupiterSuccess(true)
+                            JupiterFileManager.shared.writeEvent(event: JupiterEvent(mobile_time: currentTime, event_code: JupiterServiceCode.SERVICE_SUCCESS.rawValue))
+                            delegate?.onJupiterSuccess(true, nil)
                         } else {
-                            delegate?.onJupiterError(0, msg)
-                            delegate?.onJupiterSuccess(false)
+                            delegate?.onJupiterSuccess(false, JupiterErrorCode.GENERATOR_FAIL)
                         }
                     })
                 } else {
-                    delegate?.onJupiterError(0, msg)
-                    delegate?.onJupiterSuccess(false)
+                    delegate?.onJupiterSuccess(false, JupiterErrorCode.CALC_INIT_FAIL)
                 }
             })
         }, onError: { msg in
-            self.delegate?.onJupiterError(0, msg)
-            self.delegate?.onJupiterSuccess(false)
+            self.delegate?.onJupiterSuccess(false, JupiterErrorCode.CALC_INIT_FAIL)
         })
     }
     
@@ -152,7 +169,7 @@ public class JupiterManager: JupiterCalcManagerDelegate {
         let eventFile = fileInfos.eventFiles
         
         for r in rfdFile {
-            JupiterFileUploader.shared.requestS3FileURL(fileName: r.name, completion: { [self] output in
+            JupiterFileUploader.shared.requestS3FileURL(fileName: r.name, completion: { output in
                 if let s3Output = output {
                     let presigned_url = s3Output.presigned_url
                     JupiterLogger.i(tag: "JupiterManager", message: "uploadSimulationFiles rfd : \(r.name)")
@@ -164,7 +181,7 @@ public class JupiterManager: JupiterCalcManagerDelegate {
         }
         
         for u in uvdFile {
-            JupiterFileUploader.shared.requestS3FileURL(fileName: u.name, completion: { [self] output in
+            JupiterFileUploader.shared.requestS3FileURL(fileName: u.name, completion: { output in
                 if let s3Output = output {
                     let presigned_url = s3Output.presigned_url
                     JupiterLogger.i(tag: "JupiterManager", message: "uploadSimulationFiles uvd : \(u.name)")
@@ -176,7 +193,7 @@ public class JupiterManager: JupiterCalcManagerDelegate {
         }
         
         for e in eventFile {
-            JupiterFileUploader.shared.requestS3FileURL(fileName: e.name, completion: { [self] output in
+            JupiterFileUploader.shared.requestS3FileURL(fileName: e.name, completion: { output in
                 if let s3Output = output {
                     let presigned_url = s3Output.presigned_url
                     JupiterLogger.i(tag: "JupiterManager", message: "uploadSimulationFiles event : \(e.name)")
@@ -222,9 +239,10 @@ public class JupiterManager: JupiterCalcManagerDelegate {
         if isStartService {
             stopTimer()
             stopGenerator()
+            jupiterCalcManager?.delegate = nil
             jupiterCalcManager = nil
-            
             isStartService = false
+            completion(true, "Jupiter stopped")
         } else {
             completion(false, "After the service has fully started, it can be stop")
         }
@@ -292,8 +310,8 @@ public class JupiterManager: JupiterCalcManagerDelegate {
             let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
             let mockResult = JupiterResult(mobile_time: currentTime,
                                            index: 1,
-                                           building_name: "Underground",
-                                           level_name: "B7",
+                                           building_name: "MockBuilding",
+                                           level_name: "B2",
                                            jupiter_pos: Position(x: 1000, y: 1000, heading: 270),
                                            velocity: 7,
                                            is_vehicle: true,
@@ -310,9 +328,11 @@ public class JupiterManager: JupiterCalcManagerDelegate {
     
     private func makeMobileResult(jupiterPhase: JupiterPhase, jupiterResult: JupiterResult) {
         let is_vehicle = jupiterResult.is_vehicle
-        let has_route = false
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-        guard let levelId = self.getLevelId(sectorId: self.sectorId, buildingName: jupiterResult.building_name, levelName: jupiterResult.level_name) else { return }
+        guard let levelId = self.getLevelId(sectorId: self.sectorId, buildingName: jupiterResult.building_name, levelName: jupiterResult.level_name) else {
+            JupiterLogger.e(tag: "JupiterManager", message: "(makeMobileResult) level_id find fail \(self.sectorId):\(jupiterResult.building_name):\(jupiterResult.level_name)")
+            return
+        }
         
         var phase = 0
         switch jupiterPhase {
@@ -327,20 +347,17 @@ public class JupiterManager: JupiterCalcManagerDelegate {
         case .NONE:
             phase = 0
         }
-        
+            
         let mobileResult = MobileResult(tenant_user_name: self.id,
                                         is_vehicle: is_vehicle,
                                         mobile_time: currentTime,
                                         index: jupiterResult.index,
+                                        velocity: jupiterResult.velocity,
                                         level_id: levelId,
-                                        jupiter_pos: jupiterResult.jupiter_pos,
-                                        navi_pos: jupiterResult.navi_pos,
+                                        jupiter_position: jupiterResult.jupiter_pos,
+                                        navigation_position: jupiterResult.navi_pos,
                                         phase: phase,
                                         is_indoor: jupiterResult.is_indoor,
-                                        latitude: jupiterResult.llh?.lat,
-                                        longitude: jupiterResult.llh?.lon,
-                                        azimuth: jupiterResult.llh?.heading,
-                                        velocity: jupiterResult.velocity,
                                         validity_flag: jupiterResult.validity_flag)
         DataBatchSender.shared.sendMobileResult(mobileResult: mobileResult)
     }

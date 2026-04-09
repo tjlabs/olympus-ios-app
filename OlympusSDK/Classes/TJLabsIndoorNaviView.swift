@@ -16,15 +16,11 @@ class TJLabsIndoorNaviView: UIView, TJLabsNaviViewDelegate, NavigationManagerDel
         // TODO
     }
     
-    func onJupiterReport(_ flag: Int) {
-        //
-    }
-    
-    func onJupiterSuccess(_ isSuccess: Bool) {
+    func onJupiterReport(_ code: JupiterServiceCode, _ msg: String) {
         // TODO
     }
     
-    func onJupiterError(_ code: Int, _ msg: String) {
+    func onJupiterSuccess(_ isSuccess: Bool, _ code: JupiterErrorCode?) {
         // TODO
     }
     
@@ -200,7 +196,7 @@ class TJLabsIndoorNaviView: UIView, TJLabsNaviViewDelegate, NavigationManagerDel
     
     func startService() {
         guard let _ = self.region, let sectorId = self.sectorId, let userId = self.userId else { return }
-        serviceManager = NavigationManager(id: userId, sectorId: sectorId)
+        serviceManager = NavigationManager(id: userId)
         serviceManager?.delegate = self
         naviView.delegate = self
         
