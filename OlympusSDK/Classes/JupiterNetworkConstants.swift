@@ -5,12 +5,12 @@ public class JupiterNetworkConstants {
     static let TIMEOUT_VALUE_PUT: TimeInterval = 5.0
     static let TIMEOUT_VALUE_POST: TimeInterval = 5.0
     
-    static let USER_LOGIN_SERVER_VERSION = "2025-03-26"
+    static let USER_LOGIN_SERVER_VERSION = "2026-04-07"
     static let USER_RC_SERVER_VERSION = "2024-06-12"
     
     static let REC_RFD_SERVER_VERSION = "2025-04-02"
     static let REC_UVD_SERVER_VERSION = "2025-04-02"
-    static let REC_MOBILE_RESULT_SERVER_VERSION = "2025-08-11"
+    static let REC_MOBILE_RESULT_SERVER_VERSION = "2026-04-09"
     static let REC_MOBILE_REPORT_SERVER_VERSION = "2025-04-02"
     static let REC_S3_SERVER_VERSION = "2026-04-02"
     
@@ -96,7 +96,7 @@ public class JupiterNetworkConstants {
     }
     
     public static func getUserLoginURL() -> String {
-        return USER_URL + "/" + USER_LOGIN_SERVER_VERSION + "/tenants/user"
+        return USER_URL + "/" + USER_LOGIN_SERVER_VERSION + "/tenants/me/users"
     }
     
     public static func getUserRcURL() -> String {
