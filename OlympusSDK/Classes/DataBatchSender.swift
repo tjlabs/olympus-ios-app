@@ -43,33 +43,15 @@ class DataBatchSender {
         }
     }
     
-    func sendMobileResult(userId: String, sectorId: Int, result: JupiterResult, normalizationScale: Float, deviceMinRss: Float) {
-        let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-        let mobileResult = MobileResult(tenant_user_name: userId,
-                                        mobile_time: currentTime,
-                                        index: result.index,
-                                        sector_id: sectorId,
-                                        building_name: result.building_name,
-                                        level_name: result.level_name,
-                                        x: result.x,
-                                        y: result.y,
-                                        scc: result.scc,
-                                        phase: 6,
-                                        absolute_heading: result.absolute_heading,
-                                        normalization_scale: normalizationScale,
-                                        device_min_rss: Int(deviceMinRss),
-                                        sc_compensation: 1.0,
-                                        ble_only_position: result.ble_only_position,
-                                        is_indoor: result.isIndoor,
-                                        in_out_state: JupiterInOutState.curInOutState.rawValue,
-                                        latitude: result.llh?.lat,
-                                        longitude: result.llh?.lon,
-                                        velocity: result.velocity,
-                                        calculated_time: 0.1)
+    func sendMobileResult(mobileResult: MobileResult) {
         inputMobileResultArray.append(mobileResult)
         if inputMobileResultArray.count >= MOBILE_RESULT_BUFFER_LENGTH {
             let resultURL = JupiterNetworkConstants.getRecMobileResultURL()
             JupiterNetworkManager.shared.postMobileResult(url: resultURL, input: inputMobileResultArray, completion: { [self] statusCode, returnedString, _ in
+                let successRange = 200..<300
+                if !successRange.contains(statusCode) {
+                    JupiterLogger.e(tag: "DataBatchSender", message: "(sendMobileResult) \(statusCode), \(returnedString)")
+                }
             })
             inputMobileResultArray.removeAll()
         }
