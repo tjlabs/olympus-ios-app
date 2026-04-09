@@ -55,6 +55,7 @@ class EntranceManager {
         
         if let innermostWard = data.innermostWard {
             self.entInnerWardIdMap[key] = innermostWard.name
+            JupiterLogger.i(tag: "EntranceManager", message: "(setEntData) innermostWard : \(key) , \(innermostWard.name)")
         }
     }
     
@@ -116,7 +117,6 @@ class EntranceManager {
                                                 index: uvd.index,
                                                 building_name: entTrackBuilding,
                                                 level_name: entRouteLevel[roundedIndex],
-                                                scc: 1.0,
                                                 x: entRouteCoord[roundedIndex][0],
                                                 y: entRouteCoord[roundedIndex][1],
                                                 absolute_heading: entRouteCoord[roundedIndex][2])
@@ -128,7 +128,7 @@ class EntranceManager {
         guard let curEntKey = self.curEntKey else { return false }
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
         
-//        JupiterLogger.i(tag: "EntranceManager", message: "(forcedStopEntTrack) - start & stop : stop -> forcedStopEntTrack // time = \(currentTime), isLastEntrancePosition = \(isLastEntPos)")
+        JupiterLogger.i(tag: "EntranceManager", message: "(forcedStopEntTrack) - start & stop : stop -> forcedStopEntTrack // time = \(currentTime), isLastEntrancePosition = \(isLastEntPos)")
 
         if isLastEntPos && curEntKey != "" {
             if let bleID = entInnerWardIdMap[curEntKey] {

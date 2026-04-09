@@ -552,9 +552,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                 let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBuffer.map{ Float($0.heading) })
                 forceStop = majorSection.isEmpty
                 if !forceStop {
-//                    let wardHeadings: [Float] = innermostWard.headings
-//                    let wardX = innermostWard.x
-//                    let wardY = innermostWard.y
+                    let wardHeadings: [Float] = innermostWard.headings
+                    let wardX = innermostWard.x
+                    let wardY = innermostWard.y
                     
                     // Convensia Ent1
 //                    let wardHeadings: [Float] = [0, 315, 270]
@@ -562,9 +562,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
 //                    let wardY: Float = 199
                     
 //                    // Convensia Ent2
-                    let wardHeadings: [Float] = [90, 158, 180]
-                    let wardX: Float = 348
-                    let wardY: Float = 165
+//                    let wardHeadings: [Float] = [90, 158, 180]
+//                    let wardX: Float = 348
+//                    let wardY: Float = 165
                     
                     let headingForCompensation = majorSection.average - uvdBuffer[0].heading
                     
