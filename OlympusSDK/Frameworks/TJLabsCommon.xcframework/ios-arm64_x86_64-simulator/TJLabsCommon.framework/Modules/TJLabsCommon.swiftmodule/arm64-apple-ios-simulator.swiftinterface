@@ -28,6 +28,12 @@ import simd
   public init(userId: Swift.String)
   public func setScanMode(scanMode: TJLabsCommon.ScanMode)
   public func checkIsAvailableRfd() -> (Swift.Bool, Swift.String)
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func isBluetoothReady() -> Swift.Bool?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func getBleLastScannedTime() -> Swift.Double?
+  #endif
   public func generateRfd(rfdIntervalMillis: Foundation.TimeInterval = 1/2, minRssiThreshold: Swift.Int = -100, maxRssiThreshold: Swift.Int = -40)
   public func generateRfdSimulation()
   public func stopRfdGeneration()
@@ -69,21 +75,8 @@ extension Foundation.NSNotification.Name {
 }
 public struct JupiterEvent {
   public let mobile_time: Swift.Int
-  public let event_code: TJLabsCommon.JupiterEventCode
-  public init(mobile_time: Swift.Int, event_code: TJLabsCommon.JupiterEventCode)
-}
-public enum JupiterEventCode : Swift.Int {
-  case START_SERVICE
-  case STOP_SERVICE
-  case BECOME_BACKGROUND
-  case BECOME_FOREGROUND
-  #if compiler(>=5.3) && $NonescapableTypes
-  public init?(rawValue: Swift.Int)
-  #endif
-  public typealias RawValue = Swift.Int
-  public var rawValue: Swift.Int {
-    get
-  }
+  public let event_code: Swift.Int
+  public init(mobile_time: Swift.Int, event_code: Swift.Int)
 }
 public struct SimulatedUserVelocity {
   public let uvd: TJLabsCommon.UserVelocity
@@ -354,9 +347,6 @@ public protocol UVDGeneratorDelegate : AnyObject {
 }
 extension TJLabsCommon.ScanMode : Swift.Equatable {}
 extension TJLabsCommon.ScanMode : Swift.Hashable {}
-extension TJLabsCommon.JupiterEventCode : Swift.Equatable {}
-extension TJLabsCommon.JupiterEventCode : Swift.Hashable {}
-extension TJLabsCommon.JupiterEventCode : Swift.RawRepresentable {}
 extension TJLabsCommon.TimeFormat : Swift.Equatable {}
 extension TJLabsCommon.TimeFormat : Swift.Hashable {}
 extension TJLabsCommon.UserMode : Swift.Equatable {}

@@ -555,6 +555,64 @@
           },
           {
             "kind": "Function",
+            "name": "isBluetoothReady",
+            "printedName": "isBluetoothReady()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.Bool?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:12TJLabsCommon12RFDGeneratorC16isBluetoothReadySbSgyF",
+            "mangledName": "$s12TJLabsCommon12RFDGeneratorC16isBluetoothReadySbSgyF",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "getBleLastScannedTime",
+            "printedName": "getBleLastScannedTime()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.Double?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Double",
+                    "printedName": "Swift.Double",
+                    "usr": "s:Sd"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:12TJLabsCommon12RFDGeneratorC21getBleLastScannedTimeSdSgyF",
+            "mangledName": "$s12TJLabsCommon12RFDGeneratorC21getBleLastScannedTimeSdSgyF",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
             "name": "generateRfd",
             "printedName": "generateRfd(rfdIntervalMillis:minRssiThreshold:maxRssiThreshold:)",
             "children": [
@@ -1589,14 +1647,14 @@
             "children": [
               {
                 "kind": "TypeNominal",
-                "name": "JupiterEventCode",
-                "printedName": "TJLabsCommon.JupiterEventCode",
-                "usr": "s:12TJLabsCommon16JupiterEventCodeO"
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
               }
             ],
             "declKind": "Var",
-            "usr": "s:12TJLabsCommon12JupiterEventV10event_codeAA0cD4CodeOvp",
-            "mangledName": "$s12TJLabsCommon12JupiterEventV10event_codeAA0cD4CodeOvp",
+            "usr": "s:12TJLabsCommon12JupiterEventV10event_codeSivp",
+            "mangledName": "$s12TJLabsCommon12JupiterEventV10event_codeSivp",
             "moduleName": "TJLabsCommon",
             "declAttributes": [
               "HasStorage",
@@ -1612,14 +1670,14 @@
                 "children": [
                   {
                     "kind": "TypeNominal",
-                    "name": "JupiterEventCode",
-                    "printedName": "TJLabsCommon.JupiterEventCode",
-                    "usr": "s:12TJLabsCommon16JupiterEventCodeO"
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
                   }
                 ],
                 "declKind": "Accessor",
-                "usr": "s:12TJLabsCommon12JupiterEventV10event_codeAA0cD4CodeOvg",
-                "mangledName": "$s12TJLabsCommon12JupiterEventV10event_codeAA0cD4CodeOvg",
+                "usr": "s:12TJLabsCommon12JupiterEventV10event_codeSivg",
+                "mangledName": "$s12TJLabsCommon12JupiterEventV10event_codeSivg",
                 "moduleName": "TJLabsCommon",
                 "implicit": true,
                 "accessorKind": "get"
@@ -1645,14 +1703,14 @@
               },
               {
                 "kind": "TypeNominal",
-                "name": "JupiterEventCode",
-                "printedName": "TJLabsCommon.JupiterEventCode",
-                "usr": "s:12TJLabsCommon16JupiterEventCodeO"
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
               }
             ],
             "declKind": "Constructor",
-            "usr": "s:12TJLabsCommon12JupiterEventV11mobile_time10event_codeACSi_AA0cD4CodeOtcfc",
-            "mangledName": "$s12TJLabsCommon12JupiterEventV11mobile_time10event_codeACSi_AA0cD4CodeOtcfc",
+            "usr": "s:12TJLabsCommon12JupiterEventV11mobile_time10event_codeACSi_Sitcfc",
+            "mangledName": "$s12TJLabsCommon12JupiterEventV11mobile_time10event_codeACSi_Sitcfc",
             "moduleName": "TJLabsCommon",
             "declAttributes": [
               "AccessControl"
@@ -1681,293 +1739,6 @@
             "printedName": "Escapable",
             "usr": "s:s9EscapableP",
             "mangledName": "$ss9EscapableP"
-          }
-        ]
-      },
-      {
-        "kind": "TypeDecl",
-        "name": "JupiterEventCode",
-        "printedName": "JupiterEventCode",
-        "children": [
-          {
-            "kind": "Var",
-            "name": "START_SERVICE",
-            "printedName": "START_SERVICE",
-            "children": [
-              {
-                "kind": "TypeFunc",
-                "name": "Function",
-                "printedName": "(TJLabsCommon.JupiterEventCode.Type) -> TJLabsCommon.JupiterEventCode",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "JupiterEventCode",
-                    "printedName": "TJLabsCommon.JupiterEventCode",
-                    "usr": "s:12TJLabsCommon16JupiterEventCodeO"
-                  },
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Metatype",
-                    "printedName": "TJLabsCommon.JupiterEventCode.Type",
-                    "children": [
-                      {
-                        "kind": "TypeNominal",
-                        "name": "JupiterEventCode",
-                        "printedName": "TJLabsCommon.JupiterEventCode",
-                        "usr": "s:12TJLabsCommon16JupiterEventCodeO"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ],
-            "declKind": "EnumElement",
-            "usr": "s:12TJLabsCommon16JupiterEventCodeO13START_SERVICEyA2CmF",
-            "mangledName": "$s12TJLabsCommon16JupiterEventCodeO13START_SERVICEyA2CmF",
-            "moduleName": "TJLabsCommon"
-          },
-          {
-            "kind": "Var",
-            "name": "STOP_SERVICE",
-            "printedName": "STOP_SERVICE",
-            "children": [
-              {
-                "kind": "TypeFunc",
-                "name": "Function",
-                "printedName": "(TJLabsCommon.JupiterEventCode.Type) -> TJLabsCommon.JupiterEventCode",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "JupiterEventCode",
-                    "printedName": "TJLabsCommon.JupiterEventCode",
-                    "usr": "s:12TJLabsCommon16JupiterEventCodeO"
-                  },
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Metatype",
-                    "printedName": "TJLabsCommon.JupiterEventCode.Type",
-                    "children": [
-                      {
-                        "kind": "TypeNominal",
-                        "name": "JupiterEventCode",
-                        "printedName": "TJLabsCommon.JupiterEventCode",
-                        "usr": "s:12TJLabsCommon16JupiterEventCodeO"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ],
-            "declKind": "EnumElement",
-            "usr": "s:12TJLabsCommon16JupiterEventCodeO12STOP_SERVICEyA2CmF",
-            "mangledName": "$s12TJLabsCommon16JupiterEventCodeO12STOP_SERVICEyA2CmF",
-            "moduleName": "TJLabsCommon"
-          },
-          {
-            "kind": "Var",
-            "name": "BECOME_BACKGROUND",
-            "printedName": "BECOME_BACKGROUND",
-            "children": [
-              {
-                "kind": "TypeFunc",
-                "name": "Function",
-                "printedName": "(TJLabsCommon.JupiterEventCode.Type) -> TJLabsCommon.JupiterEventCode",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "JupiterEventCode",
-                    "printedName": "TJLabsCommon.JupiterEventCode",
-                    "usr": "s:12TJLabsCommon16JupiterEventCodeO"
-                  },
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Metatype",
-                    "printedName": "TJLabsCommon.JupiterEventCode.Type",
-                    "children": [
-                      {
-                        "kind": "TypeNominal",
-                        "name": "JupiterEventCode",
-                        "printedName": "TJLabsCommon.JupiterEventCode",
-                        "usr": "s:12TJLabsCommon16JupiterEventCodeO"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ],
-            "declKind": "EnumElement",
-            "usr": "s:12TJLabsCommon16JupiterEventCodeO17BECOME_BACKGROUNDyA2CmF",
-            "mangledName": "$s12TJLabsCommon16JupiterEventCodeO17BECOME_BACKGROUNDyA2CmF",
-            "moduleName": "TJLabsCommon"
-          },
-          {
-            "kind": "Var",
-            "name": "BECOME_FOREGROUND",
-            "printedName": "BECOME_FOREGROUND",
-            "children": [
-              {
-                "kind": "TypeFunc",
-                "name": "Function",
-                "printedName": "(TJLabsCommon.JupiterEventCode.Type) -> TJLabsCommon.JupiterEventCode",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "JupiterEventCode",
-                    "printedName": "TJLabsCommon.JupiterEventCode",
-                    "usr": "s:12TJLabsCommon16JupiterEventCodeO"
-                  },
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Metatype",
-                    "printedName": "TJLabsCommon.JupiterEventCode.Type",
-                    "children": [
-                      {
-                        "kind": "TypeNominal",
-                        "name": "JupiterEventCode",
-                        "printedName": "TJLabsCommon.JupiterEventCode",
-                        "usr": "s:12TJLabsCommon16JupiterEventCodeO"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ],
-            "declKind": "EnumElement",
-            "usr": "s:12TJLabsCommon16JupiterEventCodeO17BECOME_FOREGROUNDyA2CmF",
-            "mangledName": "$s12TJLabsCommon16JupiterEventCodeO17BECOME_FOREGROUNDyA2CmF",
-            "moduleName": "TJLabsCommon"
-          },
-          {
-            "kind": "Constructor",
-            "name": "init",
-            "printedName": "init(rawValue:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Optional",
-                "printedName": "TJLabsCommon.JupiterEventCode?",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "JupiterEventCode",
-                    "printedName": "TJLabsCommon.JupiterEventCode",
-                    "usr": "s:12TJLabsCommon16JupiterEventCodeO"
-                  }
-                ],
-                "usr": "s:Sq"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Int",
-                "printedName": "Swift.Int",
-                "usr": "s:Si"
-              }
-            ],
-            "declKind": "Constructor",
-            "usr": "s:12TJLabsCommon16JupiterEventCodeO8rawValueACSgSi_tcfc",
-            "mangledName": "$s12TJLabsCommon16JupiterEventCodeO8rawValueACSgSi_tcfc",
-            "moduleName": "TJLabsCommon",
-            "implicit": true,
-            "init_kind": "Designated"
-          },
-          {
-            "kind": "Var",
-            "name": "rawValue",
-            "printedName": "rawValue",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Int",
-                "printedName": "Swift.Int",
-                "usr": "s:Si"
-              }
-            ],
-            "declKind": "Var",
-            "usr": "s:12TJLabsCommon16JupiterEventCodeO8rawValueSivp",
-            "mangledName": "$s12TJLabsCommon16JupiterEventCodeO8rawValueSivp",
-            "moduleName": "TJLabsCommon",
-            "implicit": true,
-            "accessors": [
-              {
-                "kind": "Accessor",
-                "name": "Get",
-                "printedName": "Get()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Int",
-                    "printedName": "Swift.Int",
-                    "usr": "s:Si"
-                  }
-                ],
-                "declKind": "Accessor",
-                "usr": "s:12TJLabsCommon16JupiterEventCodeO8rawValueSivg",
-                "mangledName": "$s12TJLabsCommon16JupiterEventCodeO8rawValueSivg",
-                "moduleName": "TJLabsCommon",
-                "implicit": true,
-                "accessorKind": "get"
-              }
-            ]
-          }
-        ],
-        "declKind": "Enum",
-        "usr": "s:12TJLabsCommon16JupiterEventCodeO",
-        "mangledName": "$s12TJLabsCommon16JupiterEventCodeO",
-        "moduleName": "TJLabsCommon",
-        "declAttributes": [
-          "AccessControl"
-        ],
-        "enumRawTypeName": "Int",
-        "conformances": [
-          {
-            "kind": "Conformance",
-            "name": "Copyable",
-            "printedName": "Copyable",
-            "usr": "s:s8CopyableP",
-            "mangledName": "$ss8CopyableP"
-          },
-          {
-            "kind": "Conformance",
-            "name": "Escapable",
-            "printedName": "Escapable",
-            "usr": "s:s9EscapableP",
-            "mangledName": "$ss9EscapableP"
-          },
-          {
-            "kind": "Conformance",
-            "name": "Equatable",
-            "printedName": "Equatable",
-            "usr": "s:SQ",
-            "mangledName": "$sSQ"
-          },
-          {
-            "kind": "Conformance",
-            "name": "Hashable",
-            "printedName": "Hashable",
-            "usr": "s:SH",
-            "mangledName": "$sSH"
-          },
-          {
-            "kind": "Conformance",
-            "name": "RawRepresentable",
-            "printedName": "RawRepresentable",
-            "children": [
-              {
-                "kind": "TypeWitness",
-                "name": "RawValue",
-                "printedName": "RawValue",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Int",
-                    "printedName": "Swift.Int",
-                    "usr": "s:Si"
-                  }
-                ]
-              }
-            ],
-            "usr": "s:SY",
-            "mangledName": "$sSY"
           }
         ]
       },
@@ -12798,28 +12569,28 @@
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDGenerator.swift",
       "kind": "IntegerLiteral",
-      "offset": 1956,
+      "offset": 2165,
       "length": 1,
       "value": "1"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDGenerator.swift",
       "kind": "IntegerLiteral",
-      "offset": 1958,
+      "offset": 2167,
       "length": 1,
       "value": "2"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDGenerator.swift",
       "kind": "IntegerLiteral",
-      "offset": 1985,
+      "offset": 2194,
       "length": 4,
       "value": "-100"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDGenerator.swift",
       "kind": "IntegerLiteral",
-      "offset": 2015,
+      "offset": 2224,
       "length": 3,
       "value": "-40"
     },
@@ -13091,64 +12862,36 @@
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
-      "kind": "IntegerLiteral",
-      "offset": 341,
-      "length": 1,
-      "value": "1"
-    },
-    {
-      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
-      "kind": "IntegerLiteral",
-      "offset": 367,
-      "length": 1,
-      "value": "0"
-    },
-    {
-      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
-      "kind": "IntegerLiteral",
-      "offset": 398,
-      "length": 1,
-      "value": "2"
-    },
-    {
-      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
-      "kind": "IntegerLiteral",
-      "offset": 429,
-      "length": 1,
-      "value": "3"
-    },
-    {
-      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
       "kind": "StringLiteral",
-      "offset": 790,
+      "offset": 610,
       "length": 26,
       "value": "\"tjlabs.jupiter.dataQueue\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
       "kind": "FloatLiteral",
-      "offset": 889,
+      "offset": 709,
       "length": 3,
       "value": "1.0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 931,
+      "offset": 751,
       "length": 2,
       "value": "10"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
       "kind": "BooleanLiteral",
-      "offset": 1246,
+      "offset": 1066,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
       "kind": "StringLiteral",
-      "offset": 1443,
+      "offset": 1263,
       "length": 9,
       "value": "\"UNKNOWN\""
     },
