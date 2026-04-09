@@ -47,7 +47,7 @@ class DataBatchSender {
         inputMobileResultArray.append(mobileResult)
         if inputMobileResultArray.count >= MOBILE_RESULT_BUFFER_LENGTH {
             let resultURL = JupiterNetworkConstants.getRecMobileResultURL()
-            JupiterNetworkManager.shared.postMobileResult(url: resultURL, input: inputMobileResultArray, completion: { [self] statusCode, returnedString, _ in
+            JupiterNetworkManager.shared.postMobileResult(url: resultURL, input: inputMobileResultArray, completion: { statusCode, returnedString, _ in
                 let successRange = 200..<300
                 if !successRange.contains(statusCode) {
                     JupiterLogger.e(tag: "DataBatchSender", message: "(sendMobileResult) \(statusCode), \(returnedString)")
