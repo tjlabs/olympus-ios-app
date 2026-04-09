@@ -21,6 +21,16 @@ public enum AuthRegion : Swift.String {
     get
   }
 }
+public struct ClientMeta : Swift.Codable {
+  public init(app_version: Swift.String, app_package: Swift.String, device_model: Swift.String, os_version: Swift.String, sdks: [TJLabsAuth.SdkMeta])
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct SdkMeta : Swift.Codable {
+  public init(name: Swift.String, version: Swift.String)
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
 public enum TokenResult {
   case success(Swift.String)
   case failure(TJLabsAuth.TokenResult.FailureReason, statusCode: Swift.Int?, message: Swift.String?)
@@ -35,13 +45,20 @@ public enum TokenResult {
   }
 }
 public enum SecretConfig {
-  public static func set(clientKey: Swift.String, clientSecret: Swift.String)
+  #if compiler(>=5.3) && $NonescapableTypes
+  public static func set(clientKey: Swift.String, clientSecret: Swift.String, clientMeta: TJLabsAuth.ClientMeta?)
+  #endif
   public static var clientKey: Swift.String {
     get
   }
   public static var clientSecret: Swift.String {
     get
   }
+  #if compiler(>=5.3) && $NonescapableTypes
+  public static var clientMeta: TJLabsAuth.ClientMeta? {
+    get
+  }
+  #endif
 }
 @_hasMissingDesignatedInitializers public class TJLabsAuthConstants {
   public static func setServerURL(region: Swift.String, serverType: Swift.String)

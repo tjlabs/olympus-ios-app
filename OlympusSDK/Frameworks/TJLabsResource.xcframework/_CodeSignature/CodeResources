@@ -38,7 +38,7 @@
 		</data>
 		<key>ios-arm64/TJLabsResource.framework/TJLabsResource</key>
 		<data>
-		dXZLNqEzZxkrZ5DziNNzYyB315g=
+		xsOaoHiVW5/qY5dgPqUC0rwJ4YI=
 		</data>
 		<key>ios-arm64/TJLabsResource.framework/_CodeSignature/CodeResources</key>
 		<data>
@@ -58,7 +58,7 @@
 		</data>
 		<key>ios-arm64/dSYMs/TJLabsResource.framework.dSYM/Contents/Resources/Swift/aarch64/TJLabsAuth.swiftinterface</key>
 		<data>
-		KQDzsZjLdO+RJlj5hYQI8365LNI=
+		dUJ5e3nJGA0LyR0ywvnRo3h63js=
 		</data>
 		<key>ios-arm64_x86_64-simulator/TJLabsResource.framework/6_bl_tag.json</key>
 		<data>
@@ -134,11 +134,11 @@
 		</data>
 		<key>ios-arm64_x86_64-simulator/dSYMs/TJLabsResource.framework.dSYM/Contents/Resources/Swift/aarch64/TJLabsAuth.swiftinterface</key>
 		<data>
-		5Yn8t6oRhVvkyRamccVF0t8GCfQ=
+		qz4qUII0WHcyCkH/07CJYz15Tso=
 		</data>
 		<key>ios-arm64_x86_64-simulator/dSYMs/TJLabsResource.framework.dSYM/Contents/Resources/Swift/x86_64/TJLabsAuth.swiftinterface</key>
 		<data>
-		I6Nn6P63QWqR2hRJLKyBvgUY5RM=
+		mqUvd/bxQLG+1D7B9Y2INOjF5Ys=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -203,7 +203,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			zFLa5e55FLyy7IkrB8PpCtdFgSxz01uGkOrz2smZRYo=
+			FoRV7AuybpVv+F5/3UbDVM8huM/l2gCvvR5n7NkFw/I=
 			</data>
 		</dict>
 		<key>ios-arm64/TJLabsResource.framework/_CodeSignature/CodeResources</key>
@@ -238,7 +238,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			yaZN95DUnG+QmCOncxs2YS9WkZH+78KMtbpkbYlIs0o=
+			bYmAZnbdNSlBT9cLGq/V2acfC1OMaH2B8a9Dlz/asaI=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/TJLabsResource.framework/6_bl_tag.json</key>
@@ -371,14 +371,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			DmpYZnKolrOgVL69ohXKKqRmJILzbm3L1PpYo/4IAkQ=
+			3eu+OY4NiUWqLVrho9kvcs0TUXL4vRfQG1dTFQjadWs=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/dSYMs/TJLabsResource.framework.dSYM/Contents/Resources/Swift/x86_64/TJLabsAuth.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			1DfPBnnOEh6xDH838POHsC6X0GHxljyBDQNRMcHgMrY=
+			cmbD+4Rx4fLpe14ldXbKHpdrk2odzRIeAwfpT7dflf8=
 			</data>
 		</dict>
 	</dict>
