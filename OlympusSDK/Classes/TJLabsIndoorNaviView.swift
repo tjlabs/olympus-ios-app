@@ -29,7 +29,7 @@ class TJLabsIndoorNaviView: UIView, TJLabsNaviViewDelegate, NavigationManagerDel
     }
     
     func onJupiterResult(_ result: JupiterResult) {
-        let userCoord = TJLabsUserCoordinate(building: result.building_name, level: result.level_name, x: result.x, y: result.y, heading: result.absolute_heading, velocity: result.velocity)
+        let userCoord = TJLabsUserCoordinate(building: result.building_name, level: result.level_name, x: result.jupiter_pos.x, y: result.jupiter_pos.y, heading: result.jupiter_pos.heading, velocity: result.velocity)
         
         if result.level_name == "B0" && !isParkingGuideRendered {
             parkingGuideStart?()
