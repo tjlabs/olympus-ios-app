@@ -38,7 +38,7 @@
 		</data>
 		<key>ios-arm64/TJLabsMap.framework/TJLabsMap</key>
 		<data>
-		VFhuk5A8R0t6rHs3ZakE/83mMqs=
+		JU8rKtYDiOZwIIbuDF6OWR+iaG4=
 		</data>
 		<key>ios-arm64/TJLabsMap.framework/_CodeSignature/CodeResources</key>
 		<data>
@@ -50,7 +50,7 @@
 		</data>
 		<key>ios-arm64/dSYMs/TJLabsMap.framework.dSYM/Contents/Resources/DWARF/TJLabsMap</key>
 		<data>
-		LxwAX1oBjNG55Ysiy922sQoNnrg=
+		N1PkPbojmue8QTYY9pLNPxReMss=
 		</data>
 		<key>ios-arm64/dSYMs/TJLabsMap.framework.dSYM/Contents/Resources/Relocations/aarch64/TJLabsMap.yml</key>
 		<data>
@@ -110,7 +110,7 @@
 		</data>
 		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/TJLabsMap</key>
 		<data>
-		gi94JUtywmyDhibM7aLrnM2JLCE=
+		rnBeI/Q2vlQpTD02Ey7c0ousCrY=
 		</data>
 		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/_CodeSignature/CodeResources</key>
 		<data>
@@ -122,7 +122,7 @@
 		</data>
 		<key>ios-arm64_x86_64-simulator/dSYMs/TJLabsMap.framework.dSYM/Contents/Resources/DWARF/TJLabsMap</key>
 		<data>
-		gKykwfitb0KvYG5LaxoiY3VdkRU=
+		N1g6xGQovrrY2ZGa/eLk0d6wnhQ=
 		</data>
 		<key>ios-arm64_x86_64-simulator/dSYMs/TJLabsMap.framework.dSYM/Contents/Resources/Relocations/aarch64/TJLabsMap.yml</key>
 		<data>
@@ -203,7 +203,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			XIkm6PrBWitE0+J5/uOlPPduWckBLdOzuFvsx8x/LUM=
+			sYfDKOTGDXckLXgdk54TtZNYnMDEHtcJAZo0VnJazB4=
 			</data>
 		</dict>
 		<key>ios-arm64/TJLabsMap.framework/_CodeSignature/CodeResources</key>
@@ -224,7 +224,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			Ci7e+gxYkADWlxxUwzrfod/0SmtTfuvPQSgOMagQWgQ=
+			4gc56dHls6srSKeJUuAt9hQMUknb4AMAS9yAeDUW7U0=
 			</data>
 		</dict>
 		<key>ios-arm64/dSYMs/TJLabsMap.framework.dSYM/Contents/Resources/Relocations/aarch64/TJLabsMap.yml</key>
@@ -329,7 +329,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			M1A7tY5EE0Fd8yt/IEwDTL/DIzFlKPpx4vofeYupaEI=
+			7orMoV9TMKHbvv1PvGk1jBz3LbpccWfRrxzupZv52kA=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/TJLabsMap.framework/_CodeSignature/CodeResources</key>
@@ -350,7 +350,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			paHwFp7EH8vxsEah5uK01fbOLorybv3VmndU8NOHa/0=
+			pKYOLDUBuSvGPjja4XxztQKqQmCge6OYR1SRy+NvW4k=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/dSYMs/TJLabsMap.framework.dSYM/Contents/Resources/Relocations/aarch64/TJLabsMap.yml</key>

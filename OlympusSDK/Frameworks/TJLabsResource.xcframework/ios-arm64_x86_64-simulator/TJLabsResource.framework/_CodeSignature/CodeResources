@@ -8,6 +8,34 @@
 		<data>
 		lcnid6ZZOJzeQnGp0qIppJ3yUgY=
 		</data>
+		<key>Frameworks/TJLabsAuth.framework/Info.plist</key>
+		<data>
+		HKQtk6Kns8W40U1DDoqr0ffF0L0=
+		</data>
+		<key>Frameworks/TJLabsAuth.framework/TJLabsAuth</key>
+		<data>
+		4uv3TIhb5IbWvB6S86dxdddq/rQ=
+		</data>
+		<key>Frameworks/TJLabsAuth.framework/TJLabsAuthSecretConfig.plist</key>
+		<data>
+		w5Mo+thk3fLxAvYYbmwEk6qxu9U=
+		</data>
+		<key>Frameworks/TJLabsAuth.framework/_CodeSignature/CodeResources</key>
+		<data>
+		OLqi9AUaZE2nAr9PIXDDDH3qgvo=
+		</data>
+		<key>Frameworks/TJLabsCommon.framework/Info.plist</key>
+		<data>
+		YWnQnirqqeeeBxko87zco02YsUA=
+		</data>
+		<key>Frameworks/TJLabsCommon.framework/TJLabsCommon</key>
+		<data>
+		DICkJzW5EmeG+2LNoFOaO0Olqoo=
+		</data>
+		<key>Frameworks/TJLabsCommon.framework/_CodeSignature/CodeResources</key>
+		<data>
+		SC7p0Ek9gGasvxnJmCBISGXY/94=
+		</data>
 		<key>Headers/TJLabsResource.h</key>
 		<data>
 		gRDIHuLWtPfy+Y4ixRILV8PONac=
@@ -68,6 +96,55 @@
 			<key>hash2</key>
 			<data>
 			mo6EQho8AoBnAJv8zD6KevejiRxvBbJX6JXO6s0X5Lk=
+			</data>
+		</dict>
+		<key>Frameworks/TJLabsAuth.framework/Info.plist</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			p5Ha9058JGipCGmG+j5W9LnbgfYV4nj55xm396P1flo=
+			</data>
+		</dict>
+		<key>Frameworks/TJLabsAuth.framework/TJLabsAuth</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			cHRSvbDftJ1PvH3U1FKTqRy/3hlKLi6bBbtIhhmaOnA=
+			</data>
+		</dict>
+		<key>Frameworks/TJLabsAuth.framework/TJLabsAuthSecretConfig.plist</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			yFOcm9dWjQylhYeUdYvs5chyoLGmOspkmCNydmBiVEg=
+			</data>
+		</dict>
+		<key>Frameworks/TJLabsAuth.framework/_CodeSignature/CodeResources</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			WwO+sIykeSoBiDGriLTXyP6sGL2aCe9erUXgd20UK+E=
+			</data>
+		</dict>
+		<key>Frameworks/TJLabsCommon.framework/Info.plist</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			F/3IePaHqM+8CB4/wcPcAl6rezuqzJo822U0KijIcns=
+			</data>
+		</dict>
+		<key>Frameworks/TJLabsCommon.framework/TJLabsCommon</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			psVdPzafxObXo8M/LKZKCHcfxrUQL2cuoOMLBgUf2cI=
+			</data>
+		</dict>
+		<key>Frameworks/TJLabsCommon.framework/_CodeSignature/CodeResources</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			2/F6b3l4XhFrxGA+gL/cjukwEiA6Dv7STXcXCFYQ7+Y=
 			</data>
 		</dict>
 		<key>Headers/TJLabsResource.h</key>

@@ -14,11 +14,11 @@
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios.abi.json</key>
 		<data>
-		owW0vcP2gylMWQ7AtFpElLM/dRE=
+		J4/sDgaL2gaGpleUV5LsJL9CXoo=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios.private.swiftinterface</key>
 		<data>
-		dUJ5e3nJGA0LyR0ywvnRo3h63js=
+		BMoIP6nsPUkIyvoE3n65/F6pz5Y=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios.swiftdoc</key>
 		<data>
@@ -26,15 +26,19 @@
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios.swiftinterface</key>
 		<data>
-		dUJ5e3nJGA0LyR0ywvnRo3h63js=
+		BMoIP6nsPUkIyvoE3n65/F6pz5Y=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios.swiftmodule</key>
 		<data>
-		VwyZldYdcxCGbWMZwwUf32cKEXU=
+		asEnJV1JI5/jd1RYrrvd2EIU430=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
 		6d2520IH98kFCk1ucPuRIP3INXw=
+		</data>
+		<key>TJLabsAuthSecretConfig.plist</key>
+		<data>
+		w5Mo+thk3fLxAvYYbmwEk6qxu9U=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -50,14 +54,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			L3wQXo7OEVyvq70qwmSqXGHdWVOrJUbyWRMz+C0wQdM=
+			3l7k8FP70SLJTn3Z5NN1Q+ywng9XQlZkvB268QJ6Bx8=
 			</data>
 		</dict>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios.private.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			bYmAZnbdNSlBT9cLGq/V2acfC1OMaH2B8a9Dlz/asaI=
+			Imbkkf4wwcIJSIyQfW1sy18GrpLpeRud09/IRdQOtto=
 			</data>
 		</dict>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios.swiftdoc</key>
@@ -71,14 +75,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			bYmAZnbdNSlBT9cLGq/V2acfC1OMaH2B8a9Dlz/asaI=
+			Imbkkf4wwcIJSIyQfW1sy18GrpLpeRud09/IRdQOtto=
 			</data>
 		</dict>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			GovOd4xNX9E9mu+16QnHtwImszuO2hKepOoGizUoJgU=
+			pdy2n2DVSYIXt8JspcNT614r6c3AMvKClFt/gUhqhcc=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>
@@ -86,6 +90,13 @@
 			<key>hash2</key>
 			<data>
 			brQFpDQxszsDuTXI3YPOuqJfiJk7BFbE29/V0g4jHL4=
+			</data>
+		</dict>
+		<key>TJLabsAuthSecretConfig.plist</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			yFOcm9dWjQylhYeUdYvs5chyoLGmOspkmCNydmBiVEg=
 			</data>
 		</dict>
 	</dict>

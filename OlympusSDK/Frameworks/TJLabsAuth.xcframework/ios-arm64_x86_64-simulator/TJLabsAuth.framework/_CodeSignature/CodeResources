@@ -14,11 +14,11 @@
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios-simulator.abi.json</key>
 		<data>
-		owW0vcP2gylMWQ7AtFpElLM/dRE=
+		J4/sDgaL2gaGpleUV5LsJL9CXoo=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios-simulator.private.swiftinterface</key>
 		<data>
-		qz4qUII0WHcyCkH/07CJYz15Tso=
+		GgjysoTy34douNVQVdl/LeEzkvs=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios-simulator.swiftdoc</key>
 		<data>
@@ -26,19 +26,19 @@
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios-simulator.swiftinterface</key>
 		<data>
-		qz4qUII0WHcyCkH/07CJYz15Tso=
+		GgjysoTy34douNVQVdl/LeEzkvs=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios-simulator.swiftmodule</key>
 		<data>
-		mugR6o8dyBE45kxoui0TO9vyOLU=
+		WZ6LEM/7ZQl+eM4gxxecPxm2oiY=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/x86_64-apple-ios-simulator.abi.json</key>
 		<data>
-		owW0vcP2gylMWQ7AtFpElLM/dRE=
+		J4/sDgaL2gaGpleUV5LsJL9CXoo=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/x86_64-apple-ios-simulator.private.swiftinterface</key>
 		<data>
-		mqUvd/bxQLG+1D7B9Y2INOjF5Ys=
+		K22DTidyEmScD8WGE8fnh7cVmwU=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/x86_64-apple-ios-simulator.swiftdoc</key>
 		<data>
@@ -46,15 +46,19 @@
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/x86_64-apple-ios-simulator.swiftinterface</key>
 		<data>
-		mqUvd/bxQLG+1D7B9Y2INOjF5Ys=
+		K22DTidyEmScD8WGE8fnh7cVmwU=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/x86_64-apple-ios-simulator.swiftmodule</key>
 		<data>
-		Mm+7rBRUlZU6naY4FJnH3vdJ1gw=
+		0OZqUWTDhNKTOjr0Y/2RS4ZWN0o=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
 		6d2520IH98kFCk1ucPuRIP3INXw=
+		</data>
+		<key>TJLabsAuthSecretConfig.plist</key>
+		<data>
+		w5Mo+thk3fLxAvYYbmwEk6qxu9U=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -70,14 +74,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			L3wQXo7OEVyvq70qwmSqXGHdWVOrJUbyWRMz+C0wQdM=
+			3l7k8FP70SLJTn3Z5NN1Q+ywng9XQlZkvB268QJ6Bx8=
 			</data>
 		</dict>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios-simulator.private.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			3eu+OY4NiUWqLVrho9kvcs0TUXL4vRfQG1dTFQjadWs=
+			e5JE1sjOjQE6Q6Volz+K/3CH5rxxgARJqhh09/7LqyY=
 			</data>
 		</dict>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios-simulator.swiftdoc</key>
@@ -91,28 +95,28 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			3eu+OY4NiUWqLVrho9kvcs0TUXL4vRfQG1dTFQjadWs=
+			e5JE1sjOjQE6Q6Volz+K/3CH5rxxgARJqhh09/7LqyY=
 			</data>
 		</dict>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios-simulator.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			4mg/BAqPPXD6uTXg8JJhCLMJ/pgSbnv4JYRV8//0guo=
+			VpnfO+niHzdm3HIm6yQ3Nkl7qmTHgpVrS29PSGK48IE=
 			</data>
 		</dict>
 		<key>Modules/TJLabsAuth.swiftmodule/x86_64-apple-ios-simulator.abi.json</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			L3wQXo7OEVyvq70qwmSqXGHdWVOrJUbyWRMz+C0wQdM=
+			3l7k8FP70SLJTn3Z5NN1Q+ywng9XQlZkvB268QJ6Bx8=
 			</data>
 		</dict>
 		<key>Modules/TJLabsAuth.swiftmodule/x86_64-apple-ios-simulator.private.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			cmbD+4Rx4fLpe14ldXbKHpdrk2odzRIeAwfpT7dflf8=
+			pKFoSIpwM3VEtz4orIaJuYMZXx+4MRoVYzWZk+kolsg=
 			</data>
 		</dict>
 		<key>Modules/TJLabsAuth.swiftmodule/x86_64-apple-ios-simulator.swiftdoc</key>
@@ -126,14 +130,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			cmbD+4Rx4fLpe14ldXbKHpdrk2odzRIeAwfpT7dflf8=
+			pKFoSIpwM3VEtz4orIaJuYMZXx+4MRoVYzWZk+kolsg=
 			</data>
 		</dict>
 		<key>Modules/TJLabsAuth.swiftmodule/x86_64-apple-ios-simulator.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			biXtQFVKuUACAVFaSUTRRcquMPnwVJcfPbIWbvfnDCY=
+			k4pEL1cogwfFle+UXpjLsUXZUGbojniHdxTVw0qLf2Q=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>
@@ -141,6 +145,13 @@
 			<key>hash2</key>
 			<data>
 			brQFpDQxszsDuTXI3YPOuqJfiJk7BFbE29/V0g4jHL4=
+			</data>
+		</dict>
+		<key>TJLabsAuthSecretConfig.plist</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			yFOcm9dWjQylhYeUdYvs5chyoLGmOspkmCNydmBiVEg=
 			</data>
 		</dict>
 	</dict>

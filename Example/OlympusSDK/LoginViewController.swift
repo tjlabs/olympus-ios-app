@@ -28,7 +28,7 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         setDeviceInfo()
         setLocaleInfo()
         let clientMeta = self.makeClientMeta()
-        SecretConfig.set(clientKey: "32a0fc826654c94d03b9a1a17991732e", clientSecret: "1f551dd79c61ef3ca24d04cd7fe00dfbd93e9a97f0db263301f0651e68e79298", clientMeta: clientMeta)
+        SecretConfig.set(clientMeta: clientMeta)
         TJLabsAuthManager.shared.auth(accessKey: "AK_-xVNF3MeRzQMhBIVLU5GQ", secretAccessKey: "SK1nVeBlJldifxC7z8vD8ZeercMgrSqmzNzz5RItSrDaM", completion: { [self] statusCode, success in
             print("(TJLabsAuthManager) TJLabsAuth : \(statusCode), \(success)")
         })

@@ -46,8 +46,9 @@ public enum TokenResult {
 }
 public enum SecretConfig {
   #if compiler(>=5.3) && $NonescapableTypes
-  public static func set(clientKey: Swift.String, clientSecret: Swift.String, clientMeta: TJLabsAuth.ClientMeta?)
+  public static func set(clientMeta: TJLabsAuth.ClientMeta?)
   #endif
+  public static func configureFromEmbeddedPlist()
   public static var clientKey: Swift.String {
     get
   }

@@ -951,24 +951,12 @@
           {
             "kind": "Function",
             "name": "set",
-            "printedName": "set(clientKey:clientSecret:clientMeta:)",
+            "printedName": "set(clientMeta:)",
             "children": [
               {
                 "kind": "TypeNominal",
                 "name": "Void",
                 "printedName": "()"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
               },
               {
                 "kind": "TypeNominal",
@@ -986,8 +974,29 @@
               }
             ],
             "declKind": "Func",
-            "usr": "s:10TJLabsAuth12SecretConfigO3set9clientKey0fC00F4MetaySS_SSAA06ClientH0VSgtFZ",
-            "mangledName": "$s10TJLabsAuth12SecretConfigO3set9clientKey0fC00F4MetaySS_SSAA06ClientH0VSgtFZ",
+            "usr": "s:10TJLabsAuth12SecretConfigO3set10clientMetayAA06ClientG0VSg_tFZ",
+            "mangledName": "$s10TJLabsAuth12SecretConfigO3set10clientMetayAA06ClientG0VSg_tFZ",
+            "moduleName": "TJLabsAuth",
+            "static": true,
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "configureFromEmbeddedPlist",
+            "printedName": "configureFromEmbeddedPlist()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:10TJLabsAuth12SecretConfigO26configureFromEmbeddedPlistyyFZ",
+            "mangledName": "$s10TJLabsAuth12SecretConfigO26configureFromEmbeddedPlistyyFZ",
             "moduleName": "TJLabsAuth",
             "static": true,
             "declAttributes": [
@@ -1573,6 +1582,13 @@
       "offset": 150,
       "length": 2,
       "value": "\"\""
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsAuth-sdk-ios\/TJLabsAuth\/SecretConfig.swift",
+      "kind": "BooleanLiteral",
+      "offset": 259,
+      "length": 5,
+      "value": "false"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsAuth-sdk-ios\/TJLabsAuth\/TJLabsAuthConstants.swift",
