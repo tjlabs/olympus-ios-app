@@ -53,20 +53,22 @@ public enum JupiterPhase {
 // MARK: - JupiterResult
 public struct JupiterResult: Codable {
     public var mobile_time: Int
+    public var index: Int
     public var building_name: String
     public var level_name: String
-    public var scc: Float
+    public var jupiter_pos: Position
+    public var navi_pos: Position?
+    public var llh: LLH?
+    public var velocity: Float
+    public var is_vehicle: Bool
+    public var is_indoor: Bool
+    public var validity_flag: Int
+}
+
+public struct Position: Codable {
     public var x: Float
     public var y: Float
-    public var llh: LLH?
-    public var absolute_heading: Float
-    public var index: Int
-    public var velocity: Float
-    public var mode: String
-    public var ble_only_position: Bool
-    public var isIndoor: Bool
-    public var validity: Bool
-    public var validity_flag: Int
+    public var heading: Float
 }
 
 public struct LLH: Codable {
@@ -80,7 +82,6 @@ public struct JupiterDebugResult {
     public var mobile_time: Int
     public var building_name: String
     public var level_name: String
-    public var scc: Float
     public var x: Float
     public var y: Float
     public var llh: LLH?

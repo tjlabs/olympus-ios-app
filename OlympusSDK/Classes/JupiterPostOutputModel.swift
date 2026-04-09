@@ -7,7 +7,6 @@ public struct FineLocationTrackingOutput: Codable, Equatable {
     public var index: Int
     public var building_name: String
     public var level_name: String
-    public var scc: Float
     public var x: Float
     public var y: Float
     public var absolute_heading: Float
