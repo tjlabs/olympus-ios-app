@@ -23,12 +23,12 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
         //TODO
     }
     
-    func onJupiterSuccess(_ isSuccess: Bool) {
-        print("(CardVC) onJupiterSuccess : \(isSuccess)")
+    func onJupiterSuccess(_ isSuccess: Bool, _ code: OlympusSDK.JupiterErrorCode?) {
+        // TODO
     }
     
-    func onJupiterError(_ code: Int, _ msg: String) {
-        print("(CardVC) onJupiterError : \(code) , \(msg)")
+    func onJupiterReport(_ code: OlympusSDK.JupiterServiceCode, _ msg: String) {
+        // TODO
     }
     
     func onJupiterResult(_ result: OlympusSDK.JupiterResult) {
@@ -48,9 +48,6 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
         print("(CardVC) isJupiterInOutStateChanged : state= \(state)")
     }
     
-    func onJupiterReport(_ flag: Int) {
-        print("(CardVC) onJupiterReport")
-    }
     
     private var saveButton: UIView = {
         let view = UIView()
@@ -146,7 +143,7 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
         headingImage = headingImage?.resize(newWidth: 20)
         let uniqueId = makeUniqueId(uuid: self.userId)
         
-        serviceManager = NavigationManager(id: uniqueId, sectorId: sector_id)
+        serviceManager = NavigationManager(id: uniqueId)
         serviceManager?.delegate = self
 
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_01_0317.csv", sensorFileName: "sensor_coex_01_0317.csv")
@@ -154,12 +151,12 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_03_0303.csv", sensorFileName: "sensor_coex_03_0303.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_02_0224.csv", sensorFileName: "sensor_coex_02_0224.csv")
         
-//        serviceManager?.setNaviDestination(dest: Point(level_id: 53, x: 335, y: 0))
+        serviceManager?.setNaviDestination(dest: Point(level_id: 53, x: 335, y: 0))
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test02_ent2.csv", sensorFileName: "sensor_251013_songdo_test02_ent2.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test05_ent3.csv", sensorFileName: "sensor_251013_songdo_test05_ent3.csv")
         
-        serviceManager?.setSimulationMode(flag: true, rfdFileName: "260407_songdo_test6_rfd.json", uvdFileName: "260407_songdo_test6_uvd.json", eventFileName: "260407_songdo_test6_event.json")
+        serviceManager?.setSimulationMode(flag: true, rfdFileName: "260407_songdo_test4_rfd.json", uvdFileName: "260407_songdo_test4_uvd.json", eventFileName: "260407_songdo_test4_event.json")
         serviceManager?.startService(sectorId: sector_id, mode: .MODE_AUTO, debugOption: true)
         
         // service

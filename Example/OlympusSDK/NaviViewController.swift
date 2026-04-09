@@ -14,15 +14,11 @@ class NaviViewController: UIViewController, NavigationManagerDelegate, TJLabsNav
         self.isNaviRouteLoaded = true
     }
     
-    func onJupiterReport(_ flag: Int) {
-        //
-    }
-    
-    func onJupiterSuccess(_ isSuccess: Bool) {
+    func onJupiterSuccess(_ isSuccess: Bool, _ code: OlympusSDK.JupiterErrorCode?) {
         // TODO
     }
     
-    func onJupiterError(_ code: Int, _ msg: String) {
+    func onJupiterReport(_ code: OlympusSDK.JupiterServiceCode, _ msg: String) {
         // TODO
     }
     
@@ -171,7 +167,7 @@ class NaviViewController: UIViewController, NavigationManagerDelegate, TJLabsNav
     
     func startService() {
         let uniqueId = makeUniqueId(uuid: self.userId)
-        serviceManager = NavigationManager(id: uniqueId, sectorId: sectorId)
+        serviceManager = NavigationManager(id: uniqueId)
         serviceManager?.delegate = self
         naviView.delegate = self
         
