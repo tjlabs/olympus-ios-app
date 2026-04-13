@@ -524,4 +524,37 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         
         return distSum
     }
+    
+    // MARK: - Bridging
+    public func getMatchedLevelId(key: String) -> Int? {
+        return jupiterManager?.getMatchedLevelId(key: key)
+    }
+    
+    public func getBuildingsData() -> [BuildingData]? {
+        return jupiterManager?.getBuildingsData()
+    }
+
+    public func getBuildingName(buildingId: Int) -> String? {
+        return jupiterManager?.getBuildingName(buildingId: buildingId)
+    }
+
+    public func getBuildingId(buildingName: String) -> Int? {
+        return jupiterManager?.getBuildingId(buildingName: buildingName)
+    }
+
+    public func getLevelName(levelId: Int) -> String? {
+        return jupiterManager?.getLevelName(levelId: levelId)
+    }
+
+    public func getLevelId(sectorId: Int, buildingName: String, levelName: String) -> Int? {
+        return jupiterManager?.getLevelId(sectorId: sectorId, buildingName: buildingName, levelName: levelName)
+    }
+    
+    public func getDefaultPosition(sectorId: Int) -> DefaultPosition? {
+        return jupiterManager?.getDefaultPosition(sectorId: sectorId)
+    }
+    
+    public func getWGS84Transform(sectorId: Int) -> WGS84Transform? {
+        return jupiterManager?.getWGS84Transform(sectorId: sectorId)
+    }
 }
