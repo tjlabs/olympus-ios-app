@@ -77,8 +77,30 @@ public struct SectorBundle : Swift.Codable {
   public let id: Swift.Int
   public let name: Swift.String
   public let debug: Swift.Bool
+  public let defaultPosition: TJLabsResource.DefaultPosition?
   public let wgs84Transform: TJLabsResource.WGS84Transform?
   public let buildings: [TJLabsResource.Building]
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct DefaultPosition : Swift.Codable {
+  public let building: TJLabsResource.DefaultBuilding
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct DefaultBuilding : Swift.Codable {
+  public let id: Swift.Int
+  public let name: Swift.String
+  public let level: TJLabsResource.DefaultLevel
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct DefaultLevel : Swift.Codable {
+  public let id: Swift.Int
+  public let name: Swift.String
+  public let x: Swift.Int
+  public let y: Swift.Int
+  public let heading: Swift.Int
   public func encode(to encoder: any Swift.Encoder) throws
   public init(from decoder: any Swift.Decoder) throws
 }
@@ -418,7 +440,7 @@ public class TJLabsResourceManager {
   public func getBuildingLevelImageData() -> [Swift.String : UIKit.UIImage]
   public func getBuildingLevelWardsData() -> [Swift.String : [TJLabsResource.LevelWard]]
   #if compiler(>=5.3) && $NonescapableTypes
-  public func getAffineParamData(sectorId: Swift.Int) -> TJLabsResource.WGS84Transform?
+  public func getWGS84Transform(sectorId: Swift.Int) -> TJLabsResource.WGS84Transform?
   #endif
   #if compiler(>=5.3) && $NonescapableTypes
   public func getCurrentSectorBundle() -> TJLabsResource.SectorBundle?
@@ -428,6 +450,9 @@ public class TJLabsResourceManager {
   #endif
   #if compiler(>=5.3) && $NonescapableTypes
   public func getSectorName() -> Swift.String?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func getDefaultPosition(sectorId: Swift.Int) -> TJLabsResource.DefaultPosition?
   #endif
   public func setDebugOption(flag: Swift.Bool)
   @objc deinit
