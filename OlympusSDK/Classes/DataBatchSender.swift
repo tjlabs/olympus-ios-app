@@ -6,9 +6,6 @@ class DataBatchSender {
     init() { }
     
     private let MOBILE_RESULT_BUFFER_LENGTH: Int = 20
-    
-    private var inputReceivedForceArray = [ReceivedForce]()
-    private var inputUserVelocityArray = [UserVelocity]()
     private var inputMobileResultArray = [MobileResult]()
     
     var sendRfdLength = 2
@@ -17,30 +14,7 @@ class DataBatchSender {
     var lastPostedUvdIndex = 0
     
     func initialize() {
-        inputReceivedForceArray = [ReceivedForce]()
-        inputUserVelocityArray = [UserVelocity]()
         inputMobileResultArray = [MobileResult]()
-    }
-    
-    func sendRfd(rfd: ReceivedForce) {
-        let rfdURL = JupiterNetworkConstants.getRecRfdURL()
-        inputReceivedForceArray.append(rfd)
-        if inputReceivedForceArray.count >= sendRfdLength {
-            JupiterNetworkManager.shared.postReceivedForce(url: rfdURL, input: inputReceivedForceArray) { [self] statusCode, returnedString, inputRfd in
-            }
-            inputReceivedForceArray.removeAll()
-        }
-    }
-    
-    func sendUvd(uvd: UserVelocity) {
-        let uvdURL = JupiterNetworkConstants.getRecUvdURL()
-        inputUserVelocityArray.append(uvd)
-        if inputUserVelocityArray.count >= sendUvdLength {
-            JupiterNetworkManager.shared.postUserVelocity(url: uvdURL, input: inputUserVelocityArray) { [self] statusCode, returnedString, inputUvd in
-                lastPostedUvdIndex = inputUvd[inputUvd.count-1].index
-            }
-            inputUserVelocityArray.removeAll()
-        }
     }
     
     func sendMobileResult(mobileResult: MobileResult) {
