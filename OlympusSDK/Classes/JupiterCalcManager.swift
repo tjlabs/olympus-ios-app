@@ -144,14 +144,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     }
     
     // MARK: - Set REC length
-    public func setSendRfdLength(_ length: Int = 10) {
-        DataBatchSender.shared.sendRfdLength = length
-    }
-    
-    public func setSendUvdLength(_ length: Int = 10) {
-        DataBatchSender.shared.sendUvdLength = length
-    }
-    
     func startGenerator(mode: UserMode, completion: @escaping (Bool, String) -> Void) {
         rfdGenerator = RFDGenerator(userId: id)
         uvdGenerator = UVDGenerator(userId: id)
@@ -562,9 +554,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                 let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBuffer.map{ Float($0.heading) })
                 forceStop = majorSection.isEmpty
                 if !forceStop {
-//                    let wardHeadings: [Float] = innermostWard.headings
-//                    let wardX = innermostWard.x
-//                    let wardY = innermostWard.y
+                    let wardHeadings: [Float] = innermostWard.headings
+                    let wardX = innermostWard.x
+                    let wardY = innermostWard.y
                     
                     // Convensia Ent1
 //                    let wardHeadings: [Float] = [0, 315, 270]
@@ -572,9 +564,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
 //                    let wardY: Float = 199
                     
 //                    // Convensia Ent2
-                    let wardHeadings: [Float] = [90, 158, 180]
-                    let wardX: Float = 348
-                    let wardY: Float = 165
+//                    let wardHeadings: [Float] = [90, 158, 180]
+//                    let wardX: Float = 348
+//                    let wardY: Float = 165
                     
                     let headingForCompensation = majorSection.average - uvdBuffer[0].heading
                     
@@ -1534,24 +1526,32 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     }
     
     // MARK: - Bridging
-    public func getMatchedLevelId(key: String) -> Int? {
+    func getMatchedLevelId(key: String) -> Int? {
         return tjlabsResourceManager.getMatchedLevelId(key: key)
     }
 
-    public func getBuildingName(buildingId: Int) -> String? {
+    func getBuildingName(buildingId: Int) -> String? {
         return tjlabsResourceManager.getBuildingName(buildingId: buildingId)
     }
 
-    public func getBuildingId(buildingName: String) -> Int? {
+    func getBuildingId(buildingName: String) -> Int? {
         return tjlabsResourceManager.getBuildingId(buildingName: buildingName)
     }
 
-    public func getLevelName(levelId: Int) -> String? {
+    func getLevelName(levelId: Int) -> String? {
         return tjlabsResourceManager.getLevelName(levelId: levelId)
     }
 
-    public func getLevelId(sectorId: Int, buildingName: String, levelName: String) -> Int? {
+    func getLevelId(sectorId: Int, buildingName: String, levelName: String) -> Int? {
         return tjlabsResourceManager.getLevelId(sectorId: sectorId, buildingName: buildingName, levelName: levelName)
+    }
+    
+    func getDefaultPosition(sectorId: Int) -> DefaultPosition? {
+        return tjlabsResourceManager.getDefaultPosition(sectorId: sectorId)
+    }
+    
+    func getWGS84Transform(sectorId: Int) -> WGS84Transform? {
+        return tjlabsResourceManager.getWGS84Transform(sectorId: sectorId)
     }
     
     func getCurPmResultBuffer(from: Int) -> [FineLocationTrackingOutput] {
