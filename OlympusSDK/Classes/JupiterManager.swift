@@ -91,10 +91,11 @@ public class JupiterManager: JupiterCalcManagerDelegate {
 
     // MARK: - Start & Stop Jupiter Service
     public func startJupiter(region: String = JupiterRegion.KOREA.rawValue, sectorId: Int, mode: UserMode, debugOption: Bool = false) {
-        JupiterNetworkConstants.setServerURL(region: region)
         self.sectorId = sectorId
-        let (isNetworkAvailable, _) = JupiterNetworkManager.shared.isConnectedToInternet()
-        let (isIdAvailable, _) = checkIdIsAvailable(id: id)
+        
+        JupiterNetworkConstants.setServerURL(region: region)
+        let (isNetworkAvailable, msgCheckNetworkAvailable) = JupiterNetworkManager.shared.isConnectedToInternet()
+        let (isIdAvailable, msgCheckIdAvailable) = checkIdIsAvailable(id: id)
         
         if !isNetworkAvailable {
             delegate?.onJupiterSuccess(false, JupiterErrorCode.NETWORK_DISCONNECT)
@@ -116,12 +117,11 @@ public class JupiterManager: JupiterCalcManagerDelegate {
             { group, reportError in
                 group.enter()
                 let loginURL = JupiterNetworkConstants.getUserLoginURL()
-                JupiterNetworkManager.shared.postUserLogin(url: loginURL, input: loginInput) { success, msg in
-                    JupiterLogger.i(tag: "JupiterManager", message: "(login) - url \(loginURL)")
+                JupiterNetworkManager.shared.postUserLogin(url: loginURL, input: loginInput) { statusCode, msg in
+                    JupiterLogger.i(tag: "JupiterManager", message: "(login) - url \(loginURL), statusCode=\(statusCode), msg=\(msg)")
                     let successRange = 200..<300
-                    if !successRange.contains(success) {
+                    if !successRange.contains(statusCode) {
                         reportError(msg)
-                        self.delegate?.onJupiterSuccess(false, JupiterErrorCode.LOGIN_FAIL)
                     }
                     group.leave()
                 }
@@ -132,10 +132,11 @@ public class JupiterManager: JupiterCalcManagerDelegate {
             jupiterCalcManager = JupiterCalcManager(region: region, id: self.id, sectorId: sectorId)
             jupiterCalcManager?.start(completion: { [self] isSuccess, msg in
                 if isSuccess {
+                    // File Save Setting
                     if debugOption {
-                        self.uploadSimulationFiles()
-                        JupiterFileManager.shared.setDebugOption(flag: debugOption)
-                        JupiterFileManager.shared.createFiles(id: self.id, os: "iOS")
+//                        self.uploadSimulationFiles()
+//                        JupiterFileManager.shared.setDebugOption(flag: debugOption)
+//                        JupiterFileManager.shared.createFiles(id: self.id, os: "iOS")
                     }
                     jupiterCalcManager?.debugOption = debugOption
                     jupiterCalcManager?.delegate = self
@@ -157,7 +158,8 @@ public class JupiterManager: JupiterCalcManagerDelegate {
                 }
             })
         }, onError: { msg in
-            self.delegate?.onJupiterSuccess(false, JupiterErrorCode.CALC_INIT_FAIL)
+            JupiterLogger.e(tag: "JupiterManager", message: "startJupiter failed during login: \(msg)")
+            self.delegate?.onJupiterSuccess(false, JupiterErrorCode.LOGIN_FAIL)
         })
     }
     
@@ -261,19 +263,43 @@ public class JupiterManager: JupiterCalcManagerDelegate {
     }
     
     // MARK: - Bridging
-    public func getBuildingsData() -> [BuildingData]? {
+    func getBuildingsData() -> [BuildingData]? {
         return jupiterCalcManager?.getBuildingsData()
     }
     
-    public func getLevelId(sectorId: Int, buildingName: String, levelName: String) -> Int? {
+    func getMatchedLevelId(key: String) -> Int? {
+        return jupiterCalcManager?.getMatchedLevelId(key: key)
+    }
+
+    func getBuildingName(buildingId: Int) -> String? {
+        return jupiterCalcManager?.getBuildingName(buildingId: buildingId)
+    }
+
+    func getBuildingId(buildingName: String) -> Int? {
+        return jupiterCalcManager?.getBuildingId(buildingName: buildingName)
+    }
+
+    func getLevelName(levelId: Int) -> String? {
+        return jupiterCalcManager?.getLevelName(levelId: levelId)
+    }
+
+    func getLevelId(sectorId: Int, buildingName: String, levelName: String) -> Int? {
         return jupiterCalcManager?.getLevelId(sectorId: sectorId, buildingName: buildingName, levelName: levelName)
     }
     
-    public func getCurPmResultBuffer(from: Int) -> [FineLocationTrackingOutput]? {
+    func getDefaultPosition(sectorId: Int) -> DefaultPosition? {
+        return jupiterCalcManager?.getDefaultPosition(sectorId: sectorId)
+    }
+    
+    func getWGS84Transform(sectorId: Int) -> WGS84Transform? {
+        return jupiterCalcManager?.getWGS84Transform(sectorId: sectorId)
+    }
+    
+    func getCurPmResultBuffer(from: Int) -> [FineLocationTrackingOutput]? {
         return jupiterCalcManager?.getCurPmResultBuffer(from: from)
     }
     
-    public func getCurPmResultBuffer(size: Int) -> [FineLocationTrackingOutput]? {
+    func getCurPmResultBuffer(size: Int) -> [FineLocationTrackingOutput]? {
         return jupiterCalcManager?.getCurPmResultBuffer(size: size)
     }
     
