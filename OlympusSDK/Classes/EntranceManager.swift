@@ -55,7 +55,7 @@ class EntranceManager {
         
         if let innermostWard = data.innermostWard {
             self.entInnerWardIdMap[key] = innermostWard.name
-            JupiterLogger.i(tag: "EntranceManager", message: "(setEntData) innermostWard : \(key) , \(innermostWard.name)")
+            JupiterLogger.i(tag: "EntranceManager", message: "(setEntData) \(key) innermostWard : \(innermostWard.name) -> xy:[\(innermostWard.x), \(innermostWard.y)], h:[\(innermostWard.headings)]")
         }
     }
     
