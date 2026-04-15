@@ -134,14 +134,12 @@ public class JupiterManager: JupiterCalcManagerDelegate {
                 if isSuccess {
                     // File Save Setting
                     if debugOption {
-//                        self.uploadSimulationFiles()
-//                        JupiterFileManager.shared.setDebugOption(flag: debugOption)
-//                        JupiterFileManager.shared.createFiles(id: self.id, os: "iOS")
+                        self.uploadSimulationFiles()
+                        JupiterFileManager.shared.setDebugOption(flag: debugOption)
+                        JupiterFileManager.shared.createFiles(id: self.id, os: "iOS")
                     }
                     jupiterCalcManager?.debugOption = debugOption
                     jupiterCalcManager?.delegate = self
-                    jupiterCalcManager?.setSendRfdLength(sendRfdLength)
-                    jupiterCalcManager?.setSendUvdLength(sendUvdLength)
                     startGenerator(mode: mode, completion: { [self] isSuccess, msg in
                         if isSuccess {
                             isStartService = true

@@ -97,6 +97,12 @@ struct JumpInfo {
     var jumped_nodes: [PassedNodeInfo]
 }
 
+struct EntWardArea {
+    var x: Float
+    var y: Float
+    var heading: [Float]
+}
+
 enum LimitationType {
     case X_LIMIT, Y_LIMIT, SMALL_LIMIT, NO_LIMIT
 }

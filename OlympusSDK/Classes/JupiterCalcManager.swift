@@ -554,73 +554,207 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                 let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBuffer.map{ Float($0.heading) })
                 forceStop = majorSection.isEmpty
                 if !forceStop {
-                    let wardHeadings: [Float] = innermostWard.headings
-                    let wardX = innermostWard.x
-                    let wardY = innermostWard.y
-                    
-                    // Convensia Ent1
-//                    let wardHeadings: [Float] = [0, 315, 270]
-//                    let wardX: Float = 52
-//                    let wardY: Float = 199
-                    
-//                    // Convensia Ent2
-//                    let wardHeadings: [Float] = [90, 158, 180]
-//                    let wardX: Float = 348
-//                    let wardY: Float = 165
+                    var wardArea: [EntWardArea]?
+                    if innermostWard.name.contains("46E") {
+                        // Convensia Ent1
+                        wardArea = [
+                            EntWardArea(x: 35, y: 199, heading: [0]),
+                            EntWardArea(x: 36, y: 199, heading: [0]),
+                            EntWardArea(x: 37, y: 199, heading: [0]),
+                            EntWardArea(x: 38, y: 199, heading: [0]),
+                            EntWardArea(x: 39, y: 199, heading: [0]),
+                            EntWardArea(x: 40, y: 199, heading: [0]),
+                            EntWardArea(x: 41, y: 199, heading: [0]),
+                            EntWardArea(x: 42, y: 199, heading: [0]),
+                            EntWardArea(x: 43, y: 199, heading: [0]),
+                            EntWardArea(x: 44, y: 199, heading: [0]),
+                            EntWardArea(x: 45, y: 199, heading: [0]),
+                            EntWardArea(x: 46, y: 199, heading: [0]),
+                            EntWardArea(x: 47, y: 199, heading: [0]),
+                            EntWardArea(x: 48, y: 199, heading: [0]),
+                            EntWardArea(x: 49, y: 199, heading: [0, 315]),
+                            EntWardArea(x: 50, y: 199, heading: [0, 315]),
+                            EntWardArea(x: 51, y: 199, heading: [0, 315]),
+                            EntWardArea(x: 52, y: 199, heading: [0, 315, 270]),
+                            EntWardArea(x: 52, y: 198, heading: [315, 270]),
+                            EntWardArea(x: 52, y: 197, heading: [315, 270]),
+                            EntWardArea(x: 52, y: 196, heading: [315, 270]),
+                            EntWardArea(x: 52, y: 195, heading: [315, 270]),
+                            EntWardArea(x: 52, y: 194, heading: [315, 270]),
+                            EntWardArea(x: 52, y: 193, heading: [270]),
+                            EntWardArea(x: 52, y: 192, heading: [270]),
+                            EntWardArea(x: 52, y: 191, heading: [270]),
+                            EntWardArea(x: 52, y: 190, heading: [270]),
+                            EntWardArea(x: 52, y: 189, heading: [270])
+                        ]
+                    } else if innermostWard.name.contains("114") {
+                        // Convensia Ent2
+                        wardArea = [
+                            EntWardArea(x: 348, y: 155, heading: [158]),
+                            EntWardArea(x: 354, y: 155, heading: [158]),
+                            EntWardArea(x: 353, y: 156, heading: [158]),
+                            EntWardArea(x: 352, y: 156, heading: [158]),
+                            EntWardArea(x: 352, y: 157, heading: [158]),
+                            EntWardArea(x: 351, y: 157, heading: [158]),
+                            EntWardArea(x: 350, y: 157, heading: [158]),
+                            EntWardArea(x: 349, y: 158, heading: [158]),
+                            EntWardArea(x: 348, y: 158, heading: [90, 158]),
+                            EntWardArea(x: 348, y: 159, heading: [90, 158]),
+                            EntWardArea(x: 348, y: 160, heading: [90, 158]),
+                            EntWardArea(x: 348, y: 161, heading: [90]),
+                            EntWardArea(x: 348, y: 162, heading: [90]),
+                            EntWardArea(x: 348, y: 163, heading: [90]),
+                            EntWardArea(x: 348, y: 164, heading: [90]),
+                            EntWardArea(x: 348, y: 165, heading: [90]),
+                            EntWardArea(x: 348, y: 166, heading: [90]),
+                            EntWardArea(x: 348, y: 167, heading: [90]),
+                            EntWardArea(x: 348, y: 168, heading: [90, 135, 180])
+                        ]
+                    } else if innermostWard.name.contains("117") {
+                        wardArea = [
+                            EntWardArea(x: 348, y: 50, heading: [90]),
+                            EntWardArea(x: 348, y: 51, heading: [90]),
+                            EntWardArea(x: 348, y: 52, heading: [90]),
+                            EntWardArea(x: 348, y: 53, heading: [90]),
+                            EntWardArea(x: 348, y: 54, heading: [90]),
+                            EntWardArea(x: 348, y: 55, heading: [90]),
+                            EntWardArea(x: 348, y: 56, heading: [90]),
+                            EntWardArea(x: 348, y: 57, heading: [90]),
+                            EntWardArea(x: 348, y: 58, heading: [90]),
+                            EntWardArea(x: 348, y: 59, heading: [90]),
+                            EntWardArea(x: 348, y: 60, heading: [90]),
+                            EntWardArea(x: 348, y: 61, heading: [90]),
+                            EntWardArea(x: 348, y: 62, heading: [90]),
+                            EntWardArea(x: 348, y: 63, heading: [90]),
+                            EntWardArea(x: 348, y: 64, heading: [90, 135]),
+                            EntWardArea(x: 348, y: 65, heading: [90, 135]),
+                            EntWardArea(x: 348, y: 66, heading: [90, 135]),
+                            EntWardArea(x: 348, y: 67, heading: [90, 135]),
+                            EntWardArea(x: 348, y: 68, heading: [90, 135, 180])
+                        ]
+                    } else {
+                        wardArea = [
+                            EntWardArea(x: innermostWard.x, y: innermostWard.y, heading: innermostWard.headings)
+                        ]
+                    }
                     
                     let headingForCompensation = majorSection.average - uvdBuffer[0].heading
                     
-                    let pathHeadings = wardHeadings
-                    var resultDict = [Float: [[Float]]]()
-                    for pathHeading in pathHeadings {
-                        let startHeading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(pathHeading) - Double(headingForCompensation)))
-                        var coord: [Float] = [0, 0]
-                        var heading: Float = startHeading
+                    if let curResult = curResult {
+                        struct EntTrackCandidateResult {
+                            let dist: Float
+                            let result: FineLocationTrackingOutput
+                            let wardX: Float
+                            let wardY: Float
+                            let pathHeading: Float
+                        }
                         
-                        var offset: [Float] = [0, 0]
-                        var resultBuffer = [[Float]]()
-                        for i in 1..<uvdBuffer.count {
-                            let curUvd = uvdBuffer[i]
-                            let preUvd = uvdBuffer[i-1]
+                        let candidateInputs: [(wardX: Float, wardY: Float, pathHeading: Float)] = wardArea!.flatMap { area in
+                            area.heading.map { heading in
+                                (wardX: area.x, wardY: area.y, pathHeading: heading)
+                            }
+                        }
+                        
+                        let candidateResults = NSLock()
+                        var evaluatedCandidates = [EntTrackCandidateResult]()
+                        
+                        DispatchQueue.concurrentPerform(iterations: candidateInputs.count) { candidateIndex in
+                            let candidate = candidateInputs[candidateIndex]
+                            let wardX = candidate.wardX
+                            let wardY = candidate.wardY
+                            let pathHeading = candidate.pathHeading
                             
-                            let diffHeading: Float = Float(curUvd.heading - preUvd.heading)
-                            let updatedHeading = TJLabsUtilFunctions.shared.compensateDegree(Double(heading + diffHeading))
-                            let updatedHeadingRadian = TJLabsUtilFunctions.shared.degree2radian(degree: updatedHeading)
-
-                            let dx = curUvd.length * cos(updatedHeadingRadian)
-                            let dy = curUvd.length * sin(updatedHeadingRadian)
+                            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - EntTrack Finished : ward=(\(wardX), \(wardY)) heading=\(pathHeading)")
                             
-                            coord[0] += Float(dx)
-                            coord[1] += Float(dy)
-                            heading = Float(updatedHeading)
+                            let startHeading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(pathHeading) - Double(headingForCompensation)))
+                            var coord: [Float] = [0, 0]
+                            var heading: Float = startHeading
                             
-                            if uvdBuffer[i].index == userPeak.peak_index {
-                                offset[0] = Float(wardX) - coord[0]
-                                offset[1] = Float(wardY) - coord[1]
+                            var offset: [Float] = [0, 0]
+                            var resultBuffer = [[Float]]()
+                            resultBuffer.reserveCapacity(max(uvdBuffer.count - 1, 0))
+                            
+                            for i in 1..<uvdBuffer.count {
+                                let curUvd = uvdBuffer[i]
+                                let preUvd = uvdBuffer[i-1]
+                                
+                                let diffHeading: Float = Float(curUvd.heading - preUvd.heading)
+                                let updatedHeading = TJLabsUtilFunctions.shared.compensateDegree(Double(heading + diffHeading))
+                                let updatedHeadingRadian = TJLabsUtilFunctions.shared.degree2radian(degree: updatedHeading)
+                                
+                                let dx = curUvd.length * cos(updatedHeadingRadian)
+                                let dy = curUvd.length * sin(updatedHeadingRadian)
+                                
+                                coord[0] += Float(dx)
+                                coord[1] += Float(dy)
+                                heading = Float(updatedHeading)
+                                
+                                if uvdBuffer[i].index == userPeak.peak_index {
+                                    offset[0] = Float(wardX) - coord[0]
+                                    offset[1] = Float(wardY) - coord[1]
+                                }
+                                
+                                resultBuffer.append([coord[0], coord[1], heading])
                             }
                             
-                            resultBuffer.append([coord[0], coord[1], heading])
-                        }
-                        
-                        var compensatedBuffer = [[Float]]()
-                        for value in resultBuffer {
-                            let new: [Float] = [value[0] + offset[0], value[1] + offset[1], value[2]]
-                            compensatedBuffer.append(new)
-                        }
-                        resultDict[pathHeading] = compensatedBuffer
-                    }
-                    
-                    var minDist: Float = 1000
-                    if let curResult = curResult {
-                        var tempResult = curResult
-                        JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - EntTrack Finished (2) : major=\(pathHeadings)")
-                        for pathHeading in pathHeadings {
-                            guard let result = resultDict[pathHeading] else { continue }
-                            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - EntTrack Finished (2) : pathHeading=\(pathHeading)")
-                            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) - EntTrack : \(result)")
-                            let lastX = result[result.count-1][0]
-                            let lastY = result[result.count-1][1]
-                            let lastHeading = TJLabsUtilFunctions.shared.compensateDegree(Double(result[result.count-1][2]))
+                            guard !resultBuffer.isEmpty else { return }
+                            
+                            var compensatedBuffer = [[Float]]()
+                            compensatedBuffer.reserveCapacity(resultBuffer.count)
+                            for value in resultBuffer {
+                                let new: [Float] = [value[0] + offset[0], value[1] + offset[1], value[2]]
+                                compensatedBuffer.append(new)
+                            }
+                            
+                            let sampleCount = 7
+                            let lastIndex = compensatedBuffer.count - 1
+                            var sampleIndices = [Int]()
+                            if lastIndex == 0 {
+                                sampleIndices = [0]
+                            } else {
+                                for sampleOrder in 0..<sampleCount {
+                                    let ratio = Double(sampleOrder) / Double(sampleCount - 1)
+                                    let sampledIndex = Int(round(ratio * Double(lastIndex)))
+                                    if sampleIndices.last != sampledIndex {
+                                        sampleIndices.append(sampledIndex)
+                                    }
+                                }
+                            }
+                            
+                            var totalDist: Float = 0
+                            var validSampleCount = 0
+                            for sampleIndex in sampleIndices {
+                                let sample = compensatedBuffer[sampleIndex]
+                                let sampleX = sample[0]
+                                let sampleY = sample[1]
+                                let sampleHeading = TJLabsUtilFunctions.shared.compensateDegree(Double(sample[2]))
+                                
+                                var sampleResult = curResult
+                                sampleResult.x = sampleX
+                                sampleResult.y = sampleY
+                                sampleResult.absolute_heading = Float(sampleHeading)
+                                
+                                guard let samplePm = PathMatcher.shared.pathMatching(sectorId: sectorId,
+                                                                                     building: sampleResult.building_name,
+                                                                                     level: sampleResult.level_name,
+                                                                                     x: sampleResult.x, y: sampleResult.y, heading: sampleResult.absolute_heading, isUseHeading: true, mode: .MODE_VEHICLE, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else {
+                                    validSampleCount = 0
+                                    break
+                                }
+                                
+                                let dx = sampleX - samplePm.x
+                                let dy = sampleY - samplePm.y
+                                let sampleDist = sqrt(dx*dx + dy*dy)
+                                totalDist += sampleDist
+                                validSampleCount += 1
+                            }
+                            
+                            guard validSampleCount == sampleIndices.count, validSampleCount > 0 else { return }
+                            let dist = totalDist / Float(validSampleCount)
+                            
+                            let lastX = compensatedBuffer[lastIndex][0]
+                            let lastY = compensatedBuffer[lastIndex][1]
+                            let lastHeading = TJLabsUtilFunctions.shared.compensateDegree(Double(compensatedBuffer[lastIndex][2]))
                             var lastResult = curResult
                             lastResult.x = lastX
                             lastResult.y = lastY
@@ -629,34 +763,28 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                             guard let lastPm = PathMatcher.shared.pathMatching(sectorId: sectorId,
                                                                                building: lastResult.building_name,
                                                                                level: lastResult.level_name,
-                                                                               x: lastResult.x, y: lastResult.y, heading: lastResult.absolute_heading, isUseHeading: true, mode: .MODE_VEHICLE, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else { continue }
-                            let dist0 = abs(lastX - lastPm.x) + abs(lastY - lastPm.y)
+                                                                               x: lastResult.x, y: lastResult.y, heading: lastResult.absolute_heading, isUseHeading: true, mode: .MODE_VEHICLE, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else { return }
                             
-                            let firstX = result[0][0]
-                            let firstY = result[0][1]
-                            let firstHeading = TJLabsUtilFunctions.shared.compensateDegree(Double(result[0][2]))
-                            var firstResult = curResult
-                            firstResult.x = firstX
-                            firstResult.y = firstY
-                            firstResult.absolute_heading = Float(firstHeading)
-                            guard let firstPm = PathMatcher.shared.pathMatching(sectorId: sectorId,
-                                                                               building: firstResult.building_name,
-                                                                               level: firstResult.level_name,
-                                                                               x: firstResult.x, y: firstResult.y, heading: firstResult.absolute_heading, isUseHeading: true, mode: .MODE_VEHICLE, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else { continue }
-                            let dist1 = abs(firstX - firstPm.x) + abs(firstY - firstPm.y)
+                            lastResult.x = lastPm.x
+                            lastResult.y = lastPm.y
                             
-                            let dist = dist0+dist1
-                            if dist < minDist {
-                                lastResult.x = lastPm.x
-                                lastResult.y = lastPm.y
-                                tempResult = lastResult
-                                minDist = dist
-                                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - EntTrack Finished (2) : dist \(dist) // tempResult \(tempResult)")
-                            }
+                            let candidateResult = EntTrackCandidateResult(dist: dist,
+                                                                         result: lastResult,
+                                                                         wardX: wardX,
+                                                                         wardY: wardY,
+                                                                         pathHeading: pathHeading)
+                            candidateResults.lock()
+                            evaluatedCandidates.append(candidateResult)
+                            candidateResults.unlock()
                         }
-                        tempResult.building_name = entManager.getEntTrackEndBuilding()
-                        tempResult.level_name = innermostWard.level.name
-                        startIndoorTracking(uvd: uvd, fltResult: tempResult)
+                        
+                        if let bestCandidate = evaluatedCandidates.min(by: { $0.dist < $1.dist }) {
+                            var tempResult = bestCandidate.result
+                            tempResult.building_name = entManager.getEntTrackEndBuilding()
+                            tempResult.level_name = innermostWard.level.name
+                            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - EntTrack Finished : wardXY:[\(bestCandidate.wardX),\(bestCandidate.wardY)] // headings:\(bestCandidate.pathHeading) // dist \(bestCandidate.dist) // tempResult \(tempResult)")
+                            startIndoorTracking(uvd: uvd, fltResult: tempResult)
+                        }
                     }
                 }
                 
@@ -664,7 +792,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
 //                    // Turn
 //                    let uvdBuffer = stackManager.getUvdBuffer(from: uvd.index-50)
 //                    let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBuffer.map{ Float($0.heading) })
-//                    
+//
 //                    if !majorSection.isEmpty {
 //                        let wardHeadings: [Float] = innermostWard.headings
 ////                        let wardHeadings: [Float] = [0, 270]
@@ -672,41 +800,41 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
 ////                        let wardY = innermostWard.y
 //                        let wardX: Float = 52
 //                        let wardY: Float = 181
-//                        
+//
 //                        let headingForCompensation = majorSection.average - uvdBuffer[0].heading
-//                        
+//
 //                        let pathHeadings = wardHeadings
 //                        var resultDict = [Float: [[Float]]]()
 //                        for pathHeading in pathHeadings {
 //                            let startHeading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(pathHeading) - Double(headingForCompensation)))
 //                            var coord: [Float] = [0, 0]
 //                            var heading: Float = startHeading
-//                            
+//
 //                            var offset: [Float] = [0, 0]
 //                            var resultBuffer = [[Float]]()
 //                            for i in 1..<uvdBuffer.count {
 //                                let curUvd = uvdBuffer[i]
 //                                let preUvd = uvdBuffer[i-1]
-//                                
+//
 //                                let diffHeading: Float = Float(curUvd.heading - preUvd.heading)
 //                                let updatedHeading = TJLabsUtilFunctions.shared.compensateDegree(Double(heading + diffHeading))
 //                                let updatedHeadingRadian = TJLabsUtilFunctions.shared.degree2radian(degree: updatedHeading)
 //
 //                                let dx = curUvd.length * cos(updatedHeadingRadian)
 //                                let dy = curUvd.length * sin(updatedHeadingRadian)
-//                                
+//
 //                                coord[0] += Float(dx)
 //                                coord[1] += Float(dy)
 //                                heading = Float(updatedHeading)
-//                                
+//
 //                                if uvdBuffer[i].index == userPeak.peak_index {
 //                                    offset[0] = Float(wardX) - coord[0]
 //                                    offset[1] = Float(wardY) - coord[1]
 //                                }
-//                                
+//
 //                                resultBuffer.append([coord[0], coord[1], heading])
 //                            }
-//                            
+//
 //                            var compensatedBuffer = [[Float]]()
 //                            for value in resultBuffer {
 //                                let new: [Float] = [value[0] + offset[0], value[1] + offset[1], value[2]]
@@ -714,7 +842,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
 //                            }
 //                            resultDict[pathHeading] = compensatedBuffer
 //                        }
-//                        
+//
 //                        var minDist: Float = 1000
 //                        if let curResult = curResult {
 //                            var tempResult = curResult
@@ -728,13 +856,13 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
 //                                lastResult.x = lastX
 //                                lastResult.y = lastY
 //                                lastResult.absolute_heading = Float(lastHeading)
-//                                
+//
 //                                guard let lastPm = PathMatcher.shared.pathMatching(sectorId: sectorId,
 //                                                                                   building: lastResult.building_name,
 //                                                                                   level: lastResult.level_name,
 //                                                                                   x: lastResult.x, y: lastResult.y, heading: lastResult.absolute_heading, isUseHeading: true, mode: .MODE_VEHICLE, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else { continue }
 //                                let dist0 = abs(lastX - lastPm.x) + abs(lastY - lastPm.y)
-//                                
+//
 //                                let firstX = result[0][0]
 //                                let firstY = result[0][1]
 //                                let firstHeading = TJLabsUtilFunctions.shared.compensateDegree(Double(result[0][2]))
@@ -747,7 +875,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
 //                                                                                   level: firstResult.level_name,
 //                                                                                   x: firstResult.x, y: firstResult.y, heading: firstResult.absolute_heading, isUseHeading: true, mode: .MODE_VEHICLE, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else { continue }
 //                                let dist1 = abs(firstX - firstPm.x) + abs(firstY - firstPm.y)
-//                                
+//
 //                                let dist = dist0+dist1
 //                                if dist < minDist {
 //                                    lastResult.x = lastPm.x
@@ -773,7 +901,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
 //                    let dir = TJLabsUtilFunctions.shared.degree2radian(degree: Double(innermostWard.headings[0]))
 //                    let dx = length*cos(dir)
 //                    let dy = length*sin(dir)
-//                    
+//
 //                    let x = Float(innermostWard.x) + Float(dx)
 //                    let y = Float(innermostWard.y) + Float(dy)
 //                    if let curResult = curResult {
@@ -816,7 +944,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     }
     
     private func startIndoorSearching(uvd: UserVelocity, blChanger: BuildingLevelChanger, buildingLevelByPeakBuffer: [(String, String)]) {
-        if jupiterPhase != .NONE { return }
+        if jupiterPhase != .NONE || jupiterPhase != .ENTERING { return }
         if blChanger.isIndoorLevel(buildingLevelByPeakBuffer: buildingLevelByPeakBuffer) {
             jupiterPhase = .SEARCHING
             delegate?.isJupiterPhaseChanged(index: uvd.index, phase: jupiterPhase, xyh: nil)
@@ -994,6 +1122,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         JupiterResultState.isIndoor = true
         delegate?.isJupiterPhaseChanged(index: uvd.index, phase: jupiterPhase, xyh: [fltResult.x, fltResult.y, fltResult.absolute_heading])
         JupiterLogger.i(tag: "JupiterCalcManager", message: "(startIndoorTracking) : start indoor tracking at uvd:\(fltResult.index) // phase = \(jupiterPhase)")
+        JupiterLogger.i(tag: "JupiterCalcManager", message: "(startIndoorTracking) : start indoor tracking at xyh:[\(fltResult.x), \(fltResult.y), \(fltResult.absolute_heading)]")
     }
     
     private func calcIndoorResult(mode: UserMode, uvd: UserVelocity, olderPeakIndex: Int?, jumpInfo: JumpInfo?, uturnLink: Bool = false) {
@@ -1037,7 +1166,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
 //            result = kalmanFilter.pdrTimeUpdate(region: region, sectorId: sectorId, uvd: uvd, pastUvd: pastUvd, pathMatchingCondition: pathMatchingCondition)
             return (nil, false)
         } else {
-            guard let drTuResult = kalmanFilter.drTimeUpdate(region: region, sectorId: sectorId, uvd: uvd, pastUvd: pastUvd, uturnLink: uturnLink) else { return (nil, false) }
+            guard let drTuResult = kalmanFilter.drTimeUpdate(region: region, sectorId: sectorId, uvd: uvd, pastUvd: pastUvd, uturnLink: uturnLink, isInNode: PathMatcher.shared.isInNode) else { return (nil, false) }
             return (drTuResult, false)
         }
     }

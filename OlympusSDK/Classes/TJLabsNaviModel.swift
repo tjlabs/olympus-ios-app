@@ -50,9 +50,19 @@ struct Origin: Codable {
 struct DirectionsRequest: Encodable {
     let tenant_user_name: String
     let mobile_time: Int
+    let request_type: DirRqType
+    let is_vehicle: Bool
     let origin: Origin
     let destination: Point
     let waypoints: [Point]
+}
+
+enum DirRqType: String, Codable {
+    case INITIAL = "initial"
+    case REROUTE = "reroute"
+    case DEST_CHANGED = "destination_changed"
+    case WP_CHANGED = "waypoint_changed"
+    case RESUME = "resume"
 }
 
 public struct RoutingStart: Codable {

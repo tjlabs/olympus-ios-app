@@ -183,12 +183,12 @@ class RoutingManager {
     }
     
     // MARK: - Request
-    func requestRouting(start: RoutingStart, end: Point, waypoints: [Point] = [], completion: @escaping (RoutingResult?) -> Void) {
+    func requestRouting(type: DirRqType, start: RoutingStart, end: Point, waypoints: [Point] = [], completion: @escaping (RoutingResult?) -> Void) {
         let from: Origin = Origin(level_id: start.level_id, x: start.x, y: start.y, absolute_heading: start.absolute_heading)
         let to: Point = Point(level_id: end.level_id, x: end.x, y: end.y)
         
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-        let input = DirectionsRequest(tenant_user_name: self.id, mobile_time: currentTime, origin: from, destination: to, waypoints: waypoints)
+        let input = DirectionsRequest(tenant_user_name: self.id, mobile_time: currentTime, request_type: type, is_vehicle: true, origin: from, destination: to, waypoints: waypoints)
         let successRange = 200..<300
         NavigationNetworkManager.shared.postCalcDirs(url: NavigationNetworkConstants.getCalcDirsURL(), input: input, completion: { [self] statusCode, returnedString, inputDirs in
             if successRange.contains(statusCode)  {

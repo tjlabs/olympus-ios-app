@@ -647,13 +647,13 @@ class KalmanFilter {
         return result_deg
     }
     
-    func drTimeUpdate(region: String, sectorId: Int, uvd: UserVelocity, pastUvd: UserVelocity, uturnLink: Bool) -> FineLocationTrackingOutput? {
+    func drTimeUpdate(region: String, sectorId: Int, uvd: UserVelocity, pastUvd: UserVelocity, uturnLink: Bool, isInNode: Bool) -> FineLocationTrackingOutput? {
         guard let stackManager = self.stackManager else { return nil }
         guard var nextTuResult = timeUpdate(uvd: uvd, pastUvd: pastUvd) else { return nil }
         let paddingValues = JupiterMode.PADDING_VALUES_MEDIUM
         
         let drBufferStraightResults = stackManager.isDrBufferStraightCircularStd(numIndex: DR_HEADING_CORR_NUM_IDX, condition: 2.5)
-        let isDrStraight = nextTuResult.level_name == "B0" ? false : drBufferStraightResults.0
+        let isDrStraight = nextTuResult.level_name == "B0" ? false : (drBufferStraightResults.0 && !isInNode)
         
         if let pmResults = PathMatcher.shared.pathMatching(sectorId: sectorId, building: nextTuResult.building_name, level: nextTuResult.level_name, x: nextTuResult.x, y: nextTuResult.y, heading: nextTuResult.absolute_heading, isUseHeading: true, mode: .MODE_VEHICLE, paddingValues: paddingValues) {
             nextTuResult.absolute_heading = isDrStraight ? Float(TJLabsUtilFunctions.shared.compensateDegree(Double(pmResults.heading))) : Float(TJLabsUtilFunctions.shared.compensateDegree(Double(nextTuResult.absolute_heading)))
