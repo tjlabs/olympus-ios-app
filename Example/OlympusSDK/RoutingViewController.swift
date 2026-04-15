@@ -391,8 +391,8 @@ class RoutingViewController: UIViewController {
     }
 
     @objc private func didTapRoutingStart() {
-//        goToNaviViewController(userId: userId)
-        goToCardViewController(region: region, userId: userId)
+        goToNaviViewController(userId: userId)
+//        goToCardViewController(region: region, userId: userId)
     }
 
     @objc private func didTapSafeDrivingStart() {

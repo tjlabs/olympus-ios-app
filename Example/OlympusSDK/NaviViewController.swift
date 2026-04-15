@@ -171,18 +171,6 @@ class NaviViewController: UIViewController, NavigationManagerDelegate, TJLabsNav
         serviceManager?.delegate = self
         naviView.delegate = self
         
-        var scenario: Int?
-        if let fromSelectedName = fromSelectedName, !isSafeDriving {
-            if fromSelectedName.contains("1번") {
-                scenario = 1
-            } else if fromSelectedName.contains("3번") {
-                scenario = 3
-            } else if fromSelectedName.contains("4번") {
-                scenario = 4
-            }
-        }
-        
-        print("(NaviVC) navigationMode : scenario= \(scenario)")
 //        serviceManager?.setNaviDestination(dest: Point(level_id: 52, x: 335, y: 0))
 //        serviceManager?.setSimulationMode(flag: true, rfdFileName: "Rfd1.json", uvdFileName: "Uvd1.json", eventFileName: "Event1.json")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")

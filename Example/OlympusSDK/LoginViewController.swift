@@ -44,9 +44,9 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     
     private func makeClientMeta() -> ClientMeta {
         let clientSdks = [
-            SdkMeta(name: "TJLabsMap", version: "0.1.0"),
+            SdkMeta(name: "TJLabsCommon", version: "0.1.0"),
+            SdkMeta(name: "TJLabsResource", version: "0.1.0"),
             SdkMeta(name: "TJLabsJupiter", version: "0.1.0"),
-            SdkMeta(name: "TJLabsNavi", version: "0.1.0")
         ]
         
         let bundleIdentifier = Bundle.main.bundleIdentifier ?? ""

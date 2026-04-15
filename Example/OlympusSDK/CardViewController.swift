@@ -151,12 +151,12 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_03_0303.csv", sensorFileName: "sensor_coex_03_0303.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_02_0224.csv", sensorFileName: "sensor_coex_02_0224.csv")
         
-        serviceManager?.setNaviDestination(dest: Point(level_id: 53, x: 335, y: 0))
+//        serviceManager?.setNaviDestination(dest: Point(level_id: 53, x: 335, y: 0))
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test02_ent2.csv", sensorFileName: "sensor_251013_songdo_test02_ent2.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test05_ent3.csv", sensorFileName: "sensor_251013_songdo_test05_ent3.csv")
         
-        serviceManager?.setSimulationMode(flag: true, rfdFileName: "260407_songdo_test4_rfd.json", uvdFileName: "260407_songdo_test4_uvd.json", eventFileName: "260407_songdo_test4_event.json")
+        serviceManager?.setSimulationMode(flag: true, rfdFileName: "260407_songdo_test5_rfd.json", uvdFileName: "260407_songdo_test5_uvd.json", eventFileName: "260407_songdo_test5_event.json")
         serviceManager?.startService(sectorId: sector_id, mode: .MODE_AUTO, debugOption: true)
         
         // service
