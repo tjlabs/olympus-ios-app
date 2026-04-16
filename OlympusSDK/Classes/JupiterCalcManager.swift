@@ -35,7 +35,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     private var rfdEmptyMillis: Double = 0
     private var pressure: Float = 0
     
-    var curRfd = ReceivedForce(tenant_user_name: "", mobile_time: 0, rfs: [String: Float](), pressure: 0)
+    var curRfd = ReceivedForce(tenant_user_name: "", mobile_time: 0, rfs: [String: Double](), pressure: 0)
     var curUvd = UserVelocity(tenant_user_name: "", mobile_time: 0, index: 0, length: 0, heading: 0, looking: false)
     var pastUvd = UserVelocity(tenant_user_name: "", mobile_time: 0, index: 0, length: 0, heading: 0, looking: false)
     var curVelocity: Float = 0
@@ -131,6 +131,13 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     }
     
     // MARK: - Functions
+    func initialize(completion: @escaping (Bool, String) -> Void) {
+        tjlabsResourceManager.loadResources(region: region, sectorId: sectorId, landmarkTh: -92, forceUpdate: true, completion: { isSuccess in
+            let msg: String = isSuccess ? "JupiterCalcManager start success" : "JupiterCalcManager initialize failed"
+            completion(isSuccess, msg)
+        })
+    }
+    
     func start(completion: @escaping (Bool, String) -> Void) {
         tjlabsResourceManager.loadResources(region: region, sectorId: sectorId, landmarkTh: -92, forceUpdate: true, completion: { isSuccess in
             let msg: String = isSuccess ? "JupiterCalcManager start success" : "JupiterCalcManager start failed"
@@ -337,7 +344,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         
         // Moving Averaging
         guard let wardAvgManager = wardAvgManager else { return }
-        let avgBleData: [String: Float] = wardAvgManager.updateEpoch(bleData: bleData)
+        let avgBleData: [String: Double] = wardAvgManager.updateEpoch(bleData: bleData)
         
         var jumpInfo: JumpInfo?
         var blTagResult: BuildingLevelTagResult?
@@ -524,7 +531,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         }
     }
     
-    private func startEntranceTracking(currentTime: Int, entManager: EntranceManager, uvd: UserVelocity, userPeak: UserPeak, bleData: [String: Float]) {
+    private func startEntranceTracking(currentTime: Int, entManager: EntranceManager, uvd: UserVelocity, userPeak: UserPeak, bleData: [String: Double]) {
         let peakId = userPeak.id
         if !JupiterResultState.isIndoor && jupiterPhase != .ENTERING && jupiterPhase != .SEARCHING {
             guard let entKey = entManager.checkStartEntTrack(wardId: peakId, sec: 3) else { return }

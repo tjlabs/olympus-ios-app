@@ -4,6 +4,8 @@ import TJLabsResource
 import TJLabsMap
 
 class TJLabsIndoorNaviView: UIView, TJLabsNaviViewDelegate, NavigationManagerDelegate {
+    
+    
     var parkingGuideStart: (() -> Void)?
     var parkingGuideFinish: (() -> Void)?
     
@@ -18,6 +20,13 @@ class TJLabsIndoorNaviView: UIView, TJLabsNaviViewDelegate, NavigationManagerDel
     
     func onJupiterReport(_ code: JupiterServiceCode, _ msg: String) {
         // TODO
+    }
+    
+    func onInitSuccess(_ isSuccess: Bool, _ code: InitErrorCode?) {
+        // TODO
+        if isSuccess {
+            serviceManager?.startService(mode: .MODE_AUTO)
+        }
     }
     
     func onJupiterSuccess(_ isSuccess: Bool, _ code: JupiterErrorCode?) {
@@ -196,7 +205,7 @@ class TJLabsIndoorNaviView: UIView, TJLabsNaviViewDelegate, NavigationManagerDel
     
     func startService() {
         guard let _ = self.region, let sectorId = self.sectorId, let userId = self.userId else { return }
-        serviceManager = NavigationManager(id: userId)
+        serviceManager = NavigationManager(id: userId, sectorId: sectorId, debugOption: true)
         serviceManager?.delegate = self
         naviView.delegate = self
         
@@ -205,7 +214,6 @@ class TJLabsIndoorNaviView: UIView, TJLabsNaviViewDelegate, NavigationManagerDel
         }
 //        serviceManager?.setSimulationMode(flag: <#T##Bool#>, rfdFileName: <#T##String#>, uvdFileName: <#T##String#>, eventFileName: <#T##String#>)
 //        serviceManager?.setSimulationModeLegacy(flag: self.simulationMode, bleFileName: self.bleFileName, sensorFileName: self.sensorFileName)
-        serviceManager?.startService(sectorId: sectorId, mode: .MODE_AUTO, debugOption: true)
     }
     
     func stopSerivce() {

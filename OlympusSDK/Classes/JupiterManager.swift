@@ -1,4 +1,5 @@
 import Foundation
+import TJLabsAuth
 import TJLabsCommon
 import TJLabsResource
 import UIKit
@@ -66,22 +67,25 @@ public class JupiterManager: JupiterCalcManagerDelegate {
     private var jupiterPhase: JupiterPhase = .NONE
     public weak var delegate: JupiterManagerDelegate?
     
-    private var isStartService = false
-    private var sendRfdLength = 2
-    private var sendUvdLength = 4
+    private var isInitService = false
+    private var isStartJupiter = false
     
     private var mockingMode = false
     
     // MARK: - JupiterResult Timer
     var outputTimer: DispatchSourceTimer?
     
-    public init(id: String) {
+    public init(id: String, region: String = JupiterRegion.KOREA.rawValue, sectorId: Int, debugOption: Bool = false) {
         self.id = id
+        self.sectorId = sectorId
+        
         self.deviceIdentifier = UIDevice.modelIdentifier
         self.deviceModel = UIDevice.modelName
         let deviceOs = UIDevice.current.systemVersion
         let arr = deviceOs.components(separatedBy: ".")
         self.deviceOsVersion = Int(arr[0]) ?? 0
+        
+        initialize(region: region, sectorId: sectorId, debugOption: debugOption)
     }
     
     deinit {
@@ -90,25 +94,28 @@ public class JupiterManager: JupiterCalcManagerDelegate {
     }
 
     // MARK: - Start & Stop Jupiter Service
-    public func startJupiter(region: String = JupiterRegion.KOREA.rawValue, sectorId: Int, mode: UserMode, debugOption: Bool = false) {
-        self.sectorId = sectorId
-        
+    func initialize(region: String, sectorId: Int, debugOption: Bool) {
         JupiterNetworkConstants.setServerURL(region: region)
-        let (isNetworkAvailable, msgCheckNetworkAvailable) = JupiterNetworkManager.shared.isConnectedToInternet()
-        let (isIdAvailable, msgCheckIdAvailable) = checkIdIsAvailable(id: id)
+        let (isNetworkAvailable, _) = JupiterNetworkManager.shared.isConnectedToInternet()
+        let (isIdAvailable, _) = checkIdIsAvailable(id: id)
+        
+        if !TJLabsAuthManager.shared.isAuthorized {
+            delegate?.onInitSuccess(false, .NOT_AUTHORIZED)
+            return
+        }
         
         if !isNetworkAvailable {
-            delegate?.onJupiterSuccess(false, JupiterErrorCode.NETWORK_DISCONNECT)
+            delegate?.onInitSuccess(false, .NETWORK_DISCONNECT)
             return
         }
         
         if !isIdAvailable {
-            delegate?.onJupiterSuccess(false, JupiterErrorCode.INVALID_ID)
+            delegate?.onInitSuccess(false, .INVALID_ID)
             return
         }
         
-        if isStartService {
-            delegate?.onJupiterSuccess(false, JupiterErrorCode.DUPLICATED_SERVICE)
+        if isInitService {
+            delegate?.onInitSuccess(false, .DUPLICATED_SERVICE)
             return
         }
         
@@ -130,7 +137,7 @@ public class JupiterManager: JupiterCalcManagerDelegate {
         
         performTasksWithCounter(tasks: tasks, onComplete: { [self] in
             jupiterCalcManager = JupiterCalcManager(region: region, id: self.id, sectorId: sectorId)
-            jupiterCalcManager?.start(completion: { [self] isSuccess, msg in
+            jupiterCalcManager?.initialize(completion: { [self] isSuccess, msg in
                 if isSuccess {
                     // File Save Setting
                     if debugOption {
@@ -140,24 +147,39 @@ public class JupiterManager: JupiterCalcManagerDelegate {
                     }
                     jupiterCalcManager?.debugOption = debugOption
                     jupiterCalcManager?.delegate = self
-                    startGenerator(mode: mode, completion: { [self] isSuccess, msg in
-                        if isSuccess {
-                            isStartService = true
-                            startTimer()
-                            let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-                            JupiterFileManager.shared.writeEvent(event: JupiterEvent(mobile_time: currentTime, event_code: JupiterServiceCode.SERVICE_SUCCESS.rawValue))
-                            delegate?.onJupiterSuccess(true, nil)
-                        } else {
-                            delegate?.onJupiterSuccess(false, JupiterErrorCode.GENERATOR_FAIL)
-                        }
-                    })
+                    
+                    isInitService = true
+                    delegate?.onInitSuccess(true, nil)
                 } else {
-                    delegate?.onJupiterSuccess(false, JupiterErrorCode.CALC_INIT_FAIL)
+                    delegate?.onInitSuccess(false, .CALC_INIT_FAIL)
                 }
             })
         }, onError: { msg in
-            JupiterLogger.e(tag: "JupiterManager", message: "startJupiter failed during login: \(msg)")
-            self.delegate?.onJupiterSuccess(false, JupiterErrorCode.LOGIN_FAIL)
+            JupiterLogger.e(tag: "JupiterManager", message: "init failed during login: \(msg)")
+            self.delegate?.onInitSuccess(false, .LOGIN_FAIL)
+        })
+    }
+    
+    public func startJupiter(mode: UserMode) {
+        if isInitService {
+            delegate?.onJupiterSuccess(false, .NOT_INITIALIZED)
+            return
+        }
+        
+        if isStartJupiter {
+            delegate?.onJupiterSuccess(false, .DUPLICATED_SERVICE)
+            return
+        }
+        startGenerator(mode: mode, completion: { [self] isSuccess, msg in
+            if isSuccess {
+                isStartJupiter = true
+                startTimer()
+                let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
+                JupiterFileManager.shared.writeEvent(event: JupiterEvent(mobile_time: currentTime, event_code: JupiterServiceCode.SERVICE_SUCCESS.rawValue))
+                delegate?.onJupiterSuccess(true, nil)
+            } else {
+                delegate?.onJupiterSuccess(false, .GENERATOR_FAIL)
+            }
         })
     }
     
@@ -236,12 +258,12 @@ public class JupiterManager: JupiterCalcManagerDelegate {
     }
 
     public func stopJupiter(completion: @escaping (Bool, String) -> Void) {
-        if isStartService {
+        if isStartJupiter {
             stopTimer()
             stopGenerator()
             jupiterCalcManager?.delegate = nil
             jupiterCalcManager = nil
-            isStartService = false
+            isStartJupiter = false
             completion(true, "Jupiter stopped")
         } else {
             completion(false, "After the service has fully started, it can be stop")
@@ -255,7 +277,7 @@ public class JupiterManager: JupiterCalcManagerDelegate {
     }
     
     private func stopGenerator() {
-        if isStartService {
+        if isStartJupiter {
             jupiterCalcManager?.stopGenerator()
         }
     }

@@ -39,6 +39,7 @@ public protocol JupiterManagerDelegate: AnyObject {
                                    travelingLinkDist: Float,
                                    indexForEdit: Int,
                                    curPmResult: FineLocationTrackingOutput?) -> (NaviCorrectionInfo, [StackEditInfo])?
+    func onInitSuccess(_ isSuccess: Bool, _ code: InitErrorCode?)
     func onJupiterSuccess(_ isSuccess: Bool, _ code: JupiterErrorCode?)
     func onJupiterReport(_ code: JupiterServiceCode, _ msg: String)
     func onJupiterResult(_ result: JupiterResult)
@@ -46,14 +47,20 @@ public protocol JupiterManagerDelegate: AnyObject {
     func isJupiterPhaseChanged(index: Int, phase: JupiterPhase, xyh: [Float]?)
 }
 
-public enum JupiterErrorCode: Int {
-    case INVALID_ID = 0
-    case INVALID_MODE = 1
-    case NETWORK_DISCONNECT = 2
-    case DUPLICATED_SERVICE = 3
-    case LOGIN_FAIL = 4
-    case GENERATOR_FAIL = 5
+public enum InitErrorCode: Int {
+    case NOT_AUTHORIZED = 0
+    case INVALID_ID = 1
+    case INVALID_MODE = 2
+    case NETWORK_DISCONNECT = 3
+    case DUPLICATED_SERVICE = 4
+    case LOGIN_FAIL = 5
     case CALC_INIT_FAIL = 6
+}
+
+public enum JupiterErrorCode: Int {
+    case NOT_INITIALIZED = 0
+    case DUPLICATED_SERVICE = 1
+    case GENERATOR_FAIL = 2
 }
 
 public enum JupiterServiceCode: Int {

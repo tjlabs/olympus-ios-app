@@ -3,6 +3,7 @@ import TJLabsCommon
 import TJLabsResource
 
 public protocol NavigationManagerDelegate: AnyObject {
+    func onInitSuccess(_ isSuccess: Bool, _ code: InitErrorCode?)
     func onJupiterSuccess(_ isSuccess: Bool, _ code: JupiterErrorCode?)
     func onJupiterResult(_ result: JupiterResult)
     func onJupiterReport(_ code: JupiterServiceCode, _ msg: String)
@@ -103,12 +104,16 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         return nil
     }
     
-    // MARK: - Jupiter
-    public func onJupiterSuccess(_ isSuccess: Bool, _ code: JupiterErrorCode?) {
+    public func onInitSuccess(_ isSuccess: Bool, _ code: InitErrorCode?) {
         if isSuccess, let blData = jupiterManager?.getBuildingsData() {
             JupiterLogger.i(tag: "NavigationManager", message: "onJupiterSuccess : buildingsData= \(blData)")
             routingManager?.setBuildingsData(buildingsData: blData)
         }
+        delegate?.onInitSuccess(isSuccess, code)
+    }
+    
+    // MARK: - Jupiter
+    public func onJupiterSuccess(_ isSuccess: Bool, _ code: JupiterErrorCode?) {
         delegate?.onJupiterSuccess(isSuccess, code)
     }
     
@@ -225,9 +230,10 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     private var recentLandmarkPeaks: [PeakData]?
     
     // MARK: - init & deinit
-    public init(id: String) {
+    public init(id: String, region: String = JupiterRegion.KOREA.rawValue, sectorId: Int, debugOption: Bool = false) {
         self.id = id
-        self.jupiterManager = JupiterManager(id: id)
+        self.sectorId = sectorId
+        self.jupiterManager = JupiterManager(id: id, region: region, sectorId: sectorId, debugOption: debugOption)
         self.jupiterManager?.delegate = self
     }
     
@@ -242,12 +248,16 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         routingManager = nil
     }
     
-    public func startService(region: String = JupiterRegion.KOREA.rawValue, sectorId: Int, mode: UserMode, debugOption: Bool = false) {
+    public func startService(mode: UserMode) {
         NavigationNetworkConstants.setServerURL(region: region)
         self.routingManager = RoutingManager(id: id, sectorId: sectorId)
         self.routingManager?.delegate = self
-        jupiterManager?.startJupiter(region: region, sectorId: sectorId, mode: mode, debugOption: debugOption)
+        jupiterManager?.startJupiter(mode: mode)
     }
+    
+//    public func startService(region: String = JupiterRegion.KOREA.rawValue, sectorId: Int, mode: UserMode, debugOption: Bool = false) {
+//        jupiterManager?.startJupiter(region: region, sectorId: sectorId, mode: mode, debugOption: debugOption)
+//    }
     
     public func stopService(completion: @escaping (Bool, String) -> Void) {
         jupiterManager?.stopJupiter(completion: completion)
