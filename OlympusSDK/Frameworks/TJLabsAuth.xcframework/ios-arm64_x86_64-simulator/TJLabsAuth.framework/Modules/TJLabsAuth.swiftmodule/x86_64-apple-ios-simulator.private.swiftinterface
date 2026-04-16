@@ -70,6 +70,7 @@ public enum SecretConfig {
 }
 @_hasMissingDesignatedInitializers public class TJLabsAuthManager {
   public static let shared: TJLabsAuth.TJLabsAuthManager
+  public var isAuthorized: Swift.Bool
   public func getAccessToken(update: Swift.Bool = true, completion: @escaping (TJLabsAuth.TokenResult) -> Swift.Void)
   public func auth(accessKey: Swift.String, secretAccessKey: Swift.String, completion: @escaping (Swift.Int, Swift.Bool) -> Swift.Void)
   public func isTokenNearExpiry(threshold: Foundation.TimeInterval = 60) -> Swift.Bool

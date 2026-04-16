@@ -1193,7 +1193,7 @@
               {
                 "kind": "TypeNominal",
                 "name": "Dictionary",
-                "printedName": "[Swift.String : Swift.Float]",
+                "printedName": "[Swift.String : Swift.Double]",
                 "children": [
                   {
                     "kind": "TypeNominal",
@@ -1203,17 +1203,17 @@
                   },
                   {
                     "kind": "TypeNominal",
-                    "name": "Float",
-                    "printedName": "Swift.Float",
-                    "usr": "s:Sf"
+                    "name": "Double",
+                    "printedName": "Swift.Double",
+                    "usr": "s:Sd"
                   }
                 ],
                 "usr": "s:SD"
               }
             ],
             "declKind": "Var",
-            "usr": "s:12TJLabsCommon13ReceivedForceV3rfsSDySSSfGvp",
-            "mangledName": "$s12TJLabsCommon13ReceivedForceV3rfsSDySSSfGvp",
+            "usr": "s:12TJLabsCommon13ReceivedForceV3rfsSDySSSdGvp",
+            "mangledName": "$s12TJLabsCommon13ReceivedForceV3rfsSDySSSdGvp",
             "moduleName": "TJLabsCommon",
             "declAttributes": [
               "HasStorage",
@@ -1230,7 +1230,7 @@
                   {
                     "kind": "TypeNominal",
                     "name": "Dictionary",
-                    "printedName": "[Swift.String : Swift.Float]",
+                    "printedName": "[Swift.String : Swift.Double]",
                     "children": [
                       {
                         "kind": "TypeNominal",
@@ -1240,17 +1240,17 @@
                       },
                       {
                         "kind": "TypeNominal",
-                        "name": "Float",
-                        "printedName": "Swift.Float",
-                        "usr": "s:Sf"
+                        "name": "Double",
+                        "printedName": "Swift.Double",
+                        "usr": "s:Sd"
                       }
                     ],
                     "usr": "s:SD"
                   }
                 ],
                 "declKind": "Accessor",
-                "usr": "s:12TJLabsCommon13ReceivedForceV3rfsSDySSSfGvg",
-                "mangledName": "$s12TJLabsCommon13ReceivedForceV3rfsSDySSSfGvg",
+                "usr": "s:12TJLabsCommon13ReceivedForceV3rfsSDySSSdGvg",
+                "mangledName": "$s12TJLabsCommon13ReceivedForceV3rfsSDySSSdGvg",
                 "moduleName": "TJLabsCommon",
                 "implicit": true,
                 "accessorKind": "get"
@@ -1327,7 +1327,7 @@
               {
                 "kind": "TypeNominal",
                 "name": "Dictionary",
-                "printedName": "[Swift.String : Swift.Float]",
+                "printedName": "[Swift.String : Swift.Double]",
                 "children": [
                   {
                     "kind": "TypeNominal",
@@ -1337,9 +1337,9 @@
                   },
                   {
                     "kind": "TypeNominal",
-                    "name": "Float",
-                    "printedName": "Swift.Float",
-                    "usr": "s:Sf"
+                    "name": "Double",
+                    "printedName": "Swift.Double",
+                    "usr": "s:Sd"
                   }
                 ],
                 "usr": "s:SD"
@@ -1352,8 +1352,8 @@
               }
             ],
             "declKind": "Constructor",
-            "usr": "s:12TJLabsCommon13ReceivedForceV16tenant_user_name11mobile_time3rfs8pressureACSS_SiSDySSSfGSftcfc",
-            "mangledName": "$s12TJLabsCommon13ReceivedForceV16tenant_user_name11mobile_time3rfs8pressureACSS_SiSDySSSfGSftcfc",
+            "usr": "s:12TJLabsCommon13ReceivedForceV16tenant_user_name11mobile_time3rfs8pressureACSS_SiSDySSSdGSftcfc",
+            "mangledName": "$s12TJLabsCommon13ReceivedForceV16tenant_user_name11mobile_time3rfs8pressureACSS_SiSDySSSdGSftcfc",
             "moduleName": "TJLabsCommon",
             "declAttributes": [
               "AccessControl"
@@ -2204,17 +2204,17 @@
               {
                 "kind": "TypeNominal",
                 "name": "Tuple",
-                "printedName": "([[Swift.String : Swift.Float]], [TJLabsCommon.SensorData])",
+                "printedName": "([[Swift.String : Swift.Double]], [TJLabsCommon.SensorData])",
                 "children": [
                   {
                     "kind": "TypeNominal",
                     "name": "Array",
-                    "printedName": "[[Swift.String : Swift.Float]]",
+                    "printedName": "[[Swift.String : Swift.Double]]",
                     "children": [
                       {
                         "kind": "TypeNominal",
                         "name": "Dictionary",
-                        "printedName": "[Swift.String : Swift.Float]",
+                        "printedName": "[Swift.String : Swift.Double]",
                         "children": [
                           {
                             "kind": "TypeNominal",
@@ -2224,9 +2224,9 @@
                           },
                           {
                             "kind": "TypeNominal",
-                            "name": "Float",
-                            "printedName": "Swift.Float",
-                            "usr": "s:Sf"
+                            "name": "Double",
+                            "printedName": "Swift.Double",
+                            "usr": "s:Sd"
                           }
                         ],
                         "usr": "s:SD"
@@ -2264,8 +2264,8 @@
               }
             ],
             "declKind": "Func",
-            "usr": "s:12TJLabsCommon18JupiterFileManagerC28loadFilesForSimulationLegacy03bleD006sensorD0SaySDySSSfGG_SayAA10SensorDataVGtSS_SStF",
-            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC28loadFilesForSimulationLegacy03bleD006sensorD0SaySDySSSfGG_SayAA10SensorDataVGtSS_SStF",
+            "usr": "s:12TJLabsCommon18JupiterFileManagerC28loadFilesForSimulationLegacy03bleD006sensorD0SaySDySSSdGG_SayAA10SensorDataVGtSS_SStF",
+            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC28loadFilesForSimulationLegacy03bleD006sensorD0SaySDySSSdGG_SayAA10SensorDataVGtSS_SStF",
             "moduleName": "TJLabsCommon",
             "declAttributes": [
               "AccessControl"
@@ -2763,7 +2763,7 @@
               {
                 "kind": "TypeNominal",
                 "name": "Dictionary",
-                "printedName": "[Swift.String : Swift.Float]",
+                "printedName": "[Swift.String : Swift.Double]",
                 "children": [
                   {
                     "kind": "TypeNominal",
@@ -2773,17 +2773,17 @@
                   },
                   {
                     "kind": "TypeNominal",
-                    "name": "Float",
-                    "printedName": "Swift.Float",
-                    "usr": "s:Sf"
+                    "name": "Double",
+                    "printedName": "Swift.Double",
+                    "usr": "s:Sd"
                   }
                 ],
                 "usr": "s:SD"
               }
             ],
             "declKind": "Func",
-            "usr": "s:12TJLabsCommon16JupiterSimulatorC20getSimulationBleDataSDySSSfGyF",
-            "mangledName": "$s12TJLabsCommon16JupiterSimulatorC20getSimulationBleDataSDySSSfGyF",
+            "usr": "s:12TJLabsCommon16JupiterSimulatorC20getSimulationBleDataSDySSSdGyF",
+            "mangledName": "$s12TJLabsCommon16JupiterSimulatorC20getSimulationBleDataSDySSSdGyF",
             "moduleName": "TJLabsCommon",
             "declAttributes": [
               "AccessControl"
@@ -12772,35 +12772,35 @@
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/TJLabsBluetoothManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 1286,
+      "offset": 1287,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/TJLabsBluetoothManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 1326,
+      "offset": 1327,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/TJLabsBluetoothManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 1364,
+      "offset": 1365,
       "length": 4,
       "value": "1000"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/TJLabsBluetoothManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 1401,
+      "offset": 1402,
       "length": 4,
       "value": "-100"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/TJLabsBluetoothManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 1438,
+      "offset": 1439,
       "length": 3,
       "value": "-40"
     },
@@ -12926,70 +12926,70 @@
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterSimulator.swift",
       "kind": "IntegerLiteral",
-      "offset": 421,
+      "offset": 422,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterSimulator.swift",
       "kind": "IntegerLiteral",
-      "offset": 451,
+      "offset": 452,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterSimulator.swift",
       "kind": "IntegerLiteral",
-      "offset": 484,
+      "offset": 485,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterSimulator.swift",
       "kind": "StringLiteral",
-      "offset": 521,
+      "offset": 522,
       "length": 2,
       "value": "\"\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterSimulator.swift",
       "kind": "StringLiteral",
-      "offset": 554,
+      "offset": 555,
       "length": 2,
       "value": "\"\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterSimulator.swift",
       "kind": "StringLiteral",
-      "offset": 589,
+      "offset": 590,
       "length": 2,
       "value": "\"\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterSimulator.swift",
       "kind": "IntegerLiteral",
-      "offset": 621,
+      "offset": 622,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterSimulator.swift",
       "kind": "IntegerLiteral",
-      "offset": 694,
+      "offset": 695,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterSimulator.swift",
       "kind": "IntegerLiteral",
-      "offset": 774,
+      "offset": 775,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterSimulator.swift",
       "kind": "IntegerLiteral",
-      "offset": 804,
+      "offset": 805,
       "length": 1,
       "value": "0"
     },

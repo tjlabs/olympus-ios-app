@@ -53,9 +53,9 @@ public enum ScanMode {
 public struct ReceivedForce : Swift.Encodable {
   public let tenant_user_name: Swift.String
   public let mobile_time: Swift.Int
-  public let rfs: [Swift.String : Swift.Float]
+  public let rfs: [Swift.String : Swift.Double]
   public let pressure: Swift.Float
-  public init(tenant_user_name: Swift.String, mobile_time: Swift.Int, rfs: [Swift.String : Swift.Float], pressure: Swift.Float)
+  public init(tenant_user_name: Swift.String, mobile_time: Swift.Int, rfs: [Swift.String : Swift.Double], pressure: Swift.Float)
   public func encode(to encoder: any Swift.Encoder) throws
 }
 public protocol RFDGeneratorDelegate : AnyObject {
@@ -93,7 +93,7 @@ public struct SimulatedUserVelocity {
   @discardableResult
   public func deleteSimulationFile(at path: Swift.String) -> Swift.Bool
   public func saveFilesForSimulation(completion: @escaping (Swift.Bool) -> Swift.Void)
-  public func loadFilesForSimulationLegacy(bleFile: Swift.String, sensorFile: Swift.String) -> ([[Swift.String : Swift.Float]], [TJLabsCommon.SensorData])
+  public func loadFilesForSimulationLegacy(bleFile: Swift.String, sensorFile: Swift.String) -> ([[Swift.String : Swift.Double]], [TJLabsCommon.SensorData])
   public func loadFilesForSimulation(rfdFile: Swift.String, uvdFile: Swift.String, eventFile: Swift.String) -> (rfdTimeOffset: Swift.Int, rfdList: [TJLabsCommon.ReceivedForce], uvdTimeOffset: Swift.Int, uvdList: [TJLabsCommon.SimulatedUserVelocity])
   public func writeEvent(event: TJLabsCommon.JupiterEvent)
   public func writeRFD(rfd: TJLabsCommon.ReceivedForce)
@@ -105,7 +105,7 @@ public struct SimulatedUserVelocity {
   public var isSimulationModeLegacy: Swift.Bool
   public func initailize()
   public func setSimulationModeLegacy(flag: Swift.Bool, bleFileName: Swift.String, sensorFileName: Swift.String)
-  public func getSimulationBleData() -> [Swift.String : Swift.Float]
+  public func getSimulationBleData() -> [Swift.String : Swift.Double]
   public func getSimulationSensorData() -> TJLabsCommon.SensorData
   public func setSimulationMode(flag: Swift.Bool, rfdFileName: Swift.String, uvdFileName: Swift.String, eventFileName: Swift.String)
   public func getRfdForSimulation() -> (rfdTimeOffset: Swift.Int, simulationRfd: [TJLabsCommon.ReceivedForce])
