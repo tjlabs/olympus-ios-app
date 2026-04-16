@@ -21,14 +21,14 @@ public struct UserPeak {
     public let peak_index: Int
 
     /// Peak 검출에 사용한 Buffer의 시작 rssi
-    public let start_rssi: Float
+    public let start_rssi: Double
     /// Peak 검출에 사용한 Buffer의 마지막 rssi
-    public let end_rssi: Float
+    public let end_rssi: Double
     /// Peak rssi (buffer 내 max)
-    public let peak_rssi: Float
+    public let peak_rssi: Double
 
     /// 당시 적용된 adaptive threshold
-    public let threshold: Float
+    public let threshold: Double
 }
 
 struct PathMatchingResult {

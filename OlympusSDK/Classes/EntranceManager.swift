@@ -124,7 +124,7 @@ class EntranceManager {
         return result
     }
             
-    func forcedStopEntTrack(bleAvg: [String: Float], sec: Int) -> Bool {
+    func forcedStopEntTrack(bleAvg: [String: Double], sec: Int) -> Bool {
         guard let curEntKey = self.curEntKey else { return false }
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
         

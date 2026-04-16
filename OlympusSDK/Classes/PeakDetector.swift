@@ -3,7 +3,7 @@ import Foundation
 final class PeakDetector {
 
     private struct PeakPlateauState {
-        var lastPlateauMax: Float? = nil
+        var lastPlateauMax: Double? = nil
         var lastPeakIndex: Int? = nil
         var inMaxPlateau: Bool = false
     }
@@ -11,25 +11,25 @@ final class PeakDetector {
     // MARK: - Config
     private(set) var BUFFER_SIZE: Int = 50
     
-    private let MISSING_FLOOR_RSSI: Float = -100.0
+    private let MISSING_FLOOR_RSSI: Double = -100.0
 
-    var minPeakRssi: Float = -95.0
+    var minPeakRssi: Double = -95.0
     private let TOPK_FOR_REF = 10
-    private var globalTopkRssi: [Float] = []
-    private let REF_RSSI_CAP: Float = -65.0
-    private let THRESHOLD_AT_CAP: Float = -82.0
+    private var globalTopkRssi: [Double] = []
+    private let REF_RSSI_CAP: Double = -65.0
+    private let THRESHOLD_AT_CAP: Double = -82.0
     
     private var maxConsecutiveMissing: Int = 60
 
-    var minAmp: Float = 2
+    var minAmp: Double = 2
     
     // MARK: - State
     private var indexHistory: [WardId: [Int]] = [:]
-    private var rssiHistory: [WardId: [Float]] = [:]
+    private var rssiHistory: [WardId: [Double]] = [:]
     private var missingCount: [WardId: Int] = [:]
 
     private var plateauState: [WardId: PeakPlateauState] = [:]
-    private let PLATEAU_EPS: Float = 1e-6
+    private let PLATEAU_EPS: Double = 1e-6
     
     // MARK: - Inner Ward
     private var innerWardIds = [String]()
@@ -52,7 +52,7 @@ final class PeakDetector {
         }
     }
 
-    func setPeakParams(minPeakRssi: Float = -95.0,
+    func setPeakParams(minPeakRssi: Double = -95.0,
                        maxConsecutiveMissing: Int = 60) {
         self.minPeakRssi = minPeakRssi
         self.maxConsecutiveMissing = max(1, maxConsecutiveMissing)
@@ -62,7 +62,7 @@ final class PeakDetector {
         self.innerWardIds = ids
     }
 
-    func updateEpoch(uvdIndex: Int, bleAvg: [WardId: Float], windowSize: Int, jupiterPhase: JupiterPhase) -> UserPeak? {
+    func updateEpoch(uvdIndex: Int, bleAvg: [WardId: Double], windowSize: Int, jupiterPhase: JupiterPhase) -> UserPeak? {
         // 1) Append current values for seen IDs
         for (id, rssi) in bleAvg {
             appendIndex(id: id, index: uvdIndex)
@@ -222,7 +222,7 @@ final class PeakDetector {
         indexHistory[id] = arr
     }
     
-    private func appendRssi(id: WardId, rssi: Float) {
+    private func appendRssi(id: WardId, rssi: Double) {
         var arr = rssiHistory[id] ?? []
         arr.append(rssi)
         if arr.count > BUFFER_SIZE {
@@ -231,17 +231,17 @@ final class PeakDetector {
         rssiHistory[id] = arr
     }
     
-    func computeAdpativeMinPeakRssi(bleAvg: [WardId: Float]) {
-        let newValues: [Float] = bleAvg.values.compactMap { v in
+    func computeAdpativeMinPeakRssi(bleAvg: [WardId: Double]) {
+        let newValues: [Double] = bleAvg.values.compactMap { v in
             guard v.isFinite, !v.isNaN else { return nil }
             return v
         }
 
         globalTopkRssi = updateGlobalTopkRssi(globalTopkRssi, newValues: newValues, k: TOPK_FOR_REF)
-        let epochRefRssi: Float? = {
+        let epochRefRssi: Double? = {
             guard !globalTopkRssi.isEmpty else { return nil }
-            let sum = globalTopkRssi.reduce(0.0 as Float, +)
-            return sum / Float(globalTopkRssi.count)
+            let sum = globalTopkRssi.reduce(0.0 as Double, +)
+            return sum / Double(globalTopkRssi.count)
         }()
 
         let thr = computeAdaptiveRssiThreshold(epochRefRssi: epochRefRssi,
@@ -255,10 +255,10 @@ final class PeakDetector {
         minPeakRssi = thr
     }
     
-    func computeMinAmp(minPeakRssi: Float,
-                       ampMin: Float = 2.0, ampMax: Float = 8.0,
-                       lowRssi: Float = -100, highRssi: Float = -82.0) {
-        var amp: Float
+    func computeMinAmp(minPeakRssi: Double,
+                       ampMin: Double = 2.0, ampMax: Double = 8.0,
+                       lowRssi: Double = -100, highRssi: Double = -82.0) {
+        var amp: Double
         
         if minPeakRssi <= lowRssi {
             amp = ampMin
@@ -272,7 +272,7 @@ final class PeakDetector {
         self.minAmp = amp
     }
 
-    private func updateGlobalTopkRssi(_ globalTopk: [Float], newValues: [Float], k: Int) -> [Float] {
+    private func updateGlobalTopkRssi(_ globalTopk: [Double], newValues: [Double], k: Int) -> [Double] {
         let kk = max(1, k)
 
         var topk = globalTopk.filter { $0.isFinite && !$0.isNaN }
@@ -307,7 +307,7 @@ final class PeakDetector {
         return topk
     }
 
-    private func insertionIndexDesc(in arr: [Float], value: Float) -> Int {
+    private func insertionIndexDesc(in arr: [Double], value: Double) -> Int {
         var lo = 0
         var hi = arr.count
         while lo < hi {
@@ -321,14 +321,14 @@ final class PeakDetector {
         return lo
     }
 
-    private func computeAdaptiveRssiThreshold(epochRefRssi: Float?,
-                                              refCap: Float,
-                                              thresholdAtCap: Float,
-                                              extraMarginMax: Float,
-                                              extraMarginScale: Float,
-                                              minThreshold: Float,
-                                              maxThreshold: Float) -> Float {
-        let baseMargin: Float = refCap - thresholdAtCap  // e.g., (-65) - (-82) = 17
+    private func computeAdaptiveRssiThreshold(epochRefRssi: Double?,
+                                              refCap: Double,
+                                              thresholdAtCap: Double,
+                                              extraMarginMax: Double,
+                                              extraMarginScale: Double,
+                                              minThreshold: Double,
+                                              maxThreshold: Double) -> Double {
+        let baseMargin: Double = refCap - thresholdAtCap  // e.g., (-65) - (-82) = 17
 
         guard let refRaw = epochRefRssi, refRaw.isFinite, !refRaw.isNaN else {
             let thr = refCap - baseMargin
@@ -341,8 +341,8 @@ final class PeakDetector {
         let delta = max(0.0, refCap - ref)
 
         // Saturating extra margin: extra = extraMarginMax * (1 - exp(-delta/scale))
-        let scale = max(1e-6 as Float, extraMarginScale)
-        let extra = extraMarginMax * (1.0 - expf(-delta / scale))
+        let scale = max(1e-6 as Double, extraMarginScale)
+        let extra = extraMarginMax * (1.0 - exp(-delta / scale))
 
         let margin = baseMargin + extra
         let thr = ref - margin
@@ -350,7 +350,7 @@ final class PeakDetector {
         return clamp(thr, minThreshold, maxThreshold)
     }
 
-    private func clamp(_ x: Float, _ lo: Float, _ hi: Float) -> Float {
+    private func clamp(_ x: Double, _ lo: Double, _ hi: Double) -> Double {
         return min(max(x, lo), hi)
     }
 }
