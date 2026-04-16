@@ -651,14 +651,14 @@ class SolutionEstimator {
             for cand in lossParamAtEachCand {
                 guard cand.linkGroupSwitchCount <= 1 else { continue }
                 let penalty: Float = !cand.isInSameLinkGroup ? 2.0 : 1.0
-                let loss = (cand.loss_lm + cand.loss_g_d + cand.loss_g_h) * penalty
+                let loss = ((cand.loss_lm + cand.loss_g_d + cand.loss_g_h) * penalty)/3
                 selected.append((cand: cand, loss: loss))
             }
         } else {
             // 1. cand.isInSameLinkGroup을 만족하는 후보군들은 반드시 포함
             for cand in lossParamAtEachCand where cand.isInSameLinkGroup {
                 let penalty: Float = 1.0
-                let loss = (cand.loss_lm + cand.loss_g_d + cand.loss_g_h) * penalty
+                let loss = ((cand.loss_lm + cand.loss_g_d + cand.loss_g_h) * penalty)/3
                 selected.append((cand: cand, loss: loss))
             }
             
@@ -676,7 +676,7 @@ class SolutionEstimator {
                 // 3. 2에서 뽑아낸 후보군이 기존 포함 후보가 아니면 추가
                 if !isAlreadyIncluded {
                     let penalty: Float = 1.0
-                    let loss = (minDistCand.loss_lm + minDistCand.loss_g_d + minDistCand.loss_g_h) * penalty
+                    let loss = ((minDistCand.loss_lm + minDistCand.loss_g_d + minDistCand.loss_g_h) * penalty)/3
                     selected.append((cand: minDistCand, loss: loss))
                 }
             }
@@ -730,10 +730,114 @@ class SolutionEstimator {
         return results
     }
     
+    func calculateTrackingResult(lossParamAtEachCand: [CandidateResult], isLinkNotChanged: Bool, olderUserPeak: UserPeak, preFixed: FixedPeak?) -> [SelectedCandidate] {
+        guard !lossParamAtEachCand.isEmpty else { return [] }
+        
+        typealias ScoredCand = (cand: CandidateResult, loss: Float)
+        
+        var selected: [ScoredCand] = []
+        selected.reserveCapacity(lossParamAtEachCand.count)
+        
+        var loss_lm_pre_fixed: Float = 0
+        var lm_linkGroups = Set<Int>()
+        var division: Float = 3
+        if let preFixed = preFixed {
+            if olderUserPeak.id == preFixed.id {
+                // 이전에 결정된 Landmark 사용
+                division += 1
+                lm_linkGroups = preFixed.lm_linkGroups
+            }
+        }
+        
+        if isLinkNotChanged {
+            // 정상 주행 상태에서는 link group 전환이 많지 않은 후보만 허용
+            for cand in lossParamAtEachCand {
+                guard cand.linkGroupSwitchCount <= 1 else { continue }
+                 
+                let penalty: Float = !cand.isInSameLinkGroup ? 2.0 : 1.0
+                let loss = ((cand.loss_lm + cand.loss_g_d + cand.loss_g_h + loss_lm_pre_fixed) * penalty)/division
+                selected.append((cand: cand, loss: loss))
+            }
+        } else {
+            // 1. cand.isInSameLinkGroup을 만족하는 후보군들은 반드시 포함
+            for cand in lossParamAtEachCand where cand.isInSameLinkGroup {
+                let penalty: Float = 1.0
+                let loss = ((cand.loss_lm + cand.loss_g_d + cand.loss_g_h + loss_lm_pre_fixed) * penalty)/division
+                selected.append((cand: cand, loss: loss))
+            }
+            
+            // 2. cand.isInSameLinkGroup과 무관하게 distWithRecentPeakResult 값이 가장 작은 후보군을 하나 뽑음
+            if let minDistCand = lossParamAtEachCand.min(by: {
+                ($0.distWithRecentPeakResult ?? Float.greatestFiniteMagnitude) < ($1.distWithRecentPeakResult ?? Float.greatestFiniteMagnitude)
+            }) {
+                let isAlreadyIncluded = selected.contains {
+                    $0.cand.recent?.x == minDistCand.recent?.x &&
+                    $0.cand.recent?.y == minDistCand.recent?.y &&
+                    $0.cand.head.x == minDistCand.head.x &&
+                    $0.cand.head.y == minDistCand.head.y
+                }
+                
+                // 3. 2에서 뽑아낸 후보군이 기존 포함 후보가 아니면 추가
+                if !isAlreadyIncluded {
+                    let penalty: Float = 1.0
+                    let loss = ((minDistCand.loss_lm + minDistCand.loss_g_d + minDistCand.loss_g_h + loss_lm_pre_fixed) * penalty)/division
+                    selected.append((cand: minDistCand, loss: loss))
+                }
+            }
+        }
+        
+        selected.sort { lhs, rhs in
+            if lhs.loss == rhs.loss {
+                return (lhs.cand.distWithRecentPeakResult ?? Float.greatestFiniteMagnitude) < (rhs.cand.distWithRecentPeakResult ?? Float.greatestFiniteMagnitude)
+            }
+            return lhs.loss < rhs.loss
+        }
+        
+        var results: [SelectedCandidate] = []
+        results.reserveCapacity(min(2, selected.count))
+        var seenKeys = Set<String>()
+        
+        for item in selected {
+            let cand = item.cand
+            let recentX = cand.recent?.x ?? -1
+            let recentY = cand.recent?.y ?? -1
+            let key = "\(recentX)_\(recentY)_\(cand.head.x)_\(cand.head.y)"
+            if !seenKeys.insert(key).inserted { continue }
+            
+            let selectedCand = SelectedCandidate(older: cand.older,
+                                                 recent: cand.recent,
+                                                 links: cand.links,
+                                                 linkGroups: cand.linkGroups,
+                                                 traj: cand.traj,
+                                                 tail: cand.tail,
+                                                 head: cand.head,
+                                                 headResult: cand.headResult,
+                                                 loss: item.loss)
+            
+            if results.isEmpty {
+                results.append(selectedCand)
+            } else {
+                let first = results[0]
+                if let fRecent = first.recent, let sRecent = selectedCand.recent {
+                    let dist = dist2(Float(fRecent.x), Float(fRecent.y), Float(sRecent.x), Float(sRecent.y))
+                    if dist < 5 {
+                        continue
+                    } else {
+                        results.append(selectedCand)
+                    }
+                }
+            }
+            
+            if results.count == 2 { break }
+        }
+        
+        return results
+    }
+
     func selectCandidate(filtered: [SelectedCandidate]) -> (SelectedCandidate, Float)? {
-        let TT_VERY_LOW: Float = 10
-        let TT_LOW: Float = 20
-        let TT_HIGH: Float = 30
+        let TT_VERY_LOW: Float = 10/3
+        let TT_LOW: Float = 20/3
+        let TT_HIGH: Float = 30/3
         let RT_LOW: Float = 0.3
         let RT_HIGH: Float = 0.6
         
@@ -744,7 +848,7 @@ class SolutionEstimator {
         
         guard let second = second else {
             JupiterLogger.i(tag: "SolutionEstimator", message: "(selectCandidate) only first remains // filtered size: \(filtered.count) // first: \(first.loss)")
-            if first.loss > 40 {
+            if first.loss > 40/3 {
                 return nil
             } else {
                 return (first, 0.0)

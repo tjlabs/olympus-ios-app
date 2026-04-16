@@ -31,6 +31,16 @@ public struct UserPeak {
     public let threshold: Double
 }
 
+struct FixedPeak {
+    let id: WardId
+    let peak_index: Int
+    let peak_rssi: Double
+    let lm_x: Int?
+    let lm_y: Int?
+    let lm_links: [Int]
+    let lm_linkGroups: Set<Int>
+}
+
 struct PathMatchingResult {
     let xyhs: ixyhs
     let matchedHeadings: [Float]

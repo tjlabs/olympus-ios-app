@@ -54,6 +54,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     private var correctionIndex: Int = 0
     private var uvdIndexWhenCorrection: Int = 0
     var paddingValues = JupiterMode.PADDING_VALUES_MEDIUM
+    var preFixed: FixedPeak?
     
     // MARK: - Recovery
     private var recoveryIndex: Int = 0
@@ -1325,7 +1326,13 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                         self.debug_selected_cand = trackingResult
                         self.correctionIndex = userPeak.peak_index
                         self.uvdIndexWhenCorrection = userVelocity.index
-
+                        self.preFixed = FixedPeak(id: recentUserPeak.id,
+                                                  peak_index: recentUserPeak.peak_index,
+                                                  peak_rssi: recentUserPeak.peak_rssi,
+                                                  lm_x: selectedCandResult.0.recent?.x,
+                                                  lm_y: selectedCandResult.0.recent?.y,
+                                                  lm_links: selectedCandResult.0.links,
+                                                  lm_linkGroups: selectedCandResult.0.linkGroups)
                         stackManager.editCurResultBuffer(sectorId: sectorId,
                                                          mode: mode,
                                                          from: userPeak.peak_index,
