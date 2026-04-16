@@ -23,6 +23,12 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
         //TODO
     }
     
+    func onInitSuccess(_ isSuccess: Bool, _ code: OlympusSDK.InitErrorCode?) {
+        if isSuccess {
+            serviceManager?.startService(mode: .MODE_AUTO)
+        }
+    }
+    
     func onJupiterSuccess(_ isSuccess: Bool, _ code: OlympusSDK.JupiterErrorCode?) {
         // TODO
     }
@@ -143,7 +149,7 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
         headingImage = headingImage?.resize(newWidth: 20)
         let uniqueId = makeUniqueId(uuid: self.userId)
         
-        serviceManager = NavigationManager(id: uniqueId)
+        serviceManager = NavigationManager(id: uniqueId, sectorId: self.sector_id, debugOption: true)
         serviceManager?.delegate = self
 
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_01_0317.csv", sensorFileName: "sensor_coex_01_0317.csv")
@@ -157,7 +163,6 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test05_ent3.csv", sensorFileName: "sensor_251013_songdo_test05_ent3.csv")
         
         serviceManager?.setSimulationMode(flag: true, rfdFileName: "260407_songdo_test5_rfd.json", uvdFileName: "260407_songdo_test5_uvd.json", eventFileName: "260407_songdo_test5_event.json")
-        serviceManager?.startService(sectorId: sector_id, mode: .MODE_AUTO, debugOption: true)
         
         // service
 //        serviceManager.addObserver(self)

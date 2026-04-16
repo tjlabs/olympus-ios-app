@@ -14,8 +14,15 @@ class NaviViewController: UIViewController, NavigationManagerDelegate, TJLabsNav
         self.isNaviRouteLoaded = true
     }
     
-    func onJupiterSuccess(_ isSuccess: Bool, _ code: OlympusSDK.JupiterErrorCode?) {
+    func onInitSuccess(_ isSuccess: Bool, _ code: OlympusSDK.InitErrorCode?) {
         // TODO
+        if isSuccess {
+            serviceManager?.startService(mode: .MODE_AUTO)
+        }
+    }
+    
+    func onJupiterSuccess(_ isSuccess: Bool, _ code: OlympusSDK.JupiterErrorCode?) {
+        print("(NaviVC) onJupiterSuccess : \(isSuccess): \(code)")
     }
     
     func onJupiterReport(_ code: OlympusSDK.JupiterServiceCode, _ msg: String) {
@@ -167,19 +174,18 @@ class NaviViewController: UIViewController, NavigationManagerDelegate, TJLabsNav
     
     func startService() {
         let uniqueId = makeUniqueId(uuid: self.userId)
-        serviceManager = NavigationManager(id: uniqueId)
+        serviceManager = NavigationManager(id: uniqueId, sectorId: self.sectorId, debugOption: true)
         serviceManager?.delegate = self
         naviView.delegate = self
         
 //        serviceManager?.setNaviDestination(dest: Point(level_id: 52, x: 335, y: 0))
-//        serviceManager?.setSimulationMode(flag: true, rfdFileName: "Rfd1.json", uvdFileName: "Uvd1.json", eventFileName: "Event1.json")
+        serviceManager?.setSimulationMode(flag: true, rfdFileName: "Rfd1.json", uvdFileName: "Uvd1.json", eventFileName: "Event1.json")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_03_0310.csv", sensorFileName: "sensor_coex_03_0310.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_02_0303.csv", sensorFileName: "sensor_coex_02_0303.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_03_0224.csv", sensorFileName: "sensor_coex_03_0224.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_03_01_0119.csv", sensorFileName: "sensor_coex_03_01_0119.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_04_01_0119.csv", sensorFileName: "sensor_coex_04_01_0119.csv")
-        serviceManager?.startService(sectorId: sectorId, mode: .MODE_AUTO, debugOption: true)
     }
     
     func stopSerivce() {
