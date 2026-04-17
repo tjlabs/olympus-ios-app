@@ -55,6 +55,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     private var uvdIndexWhenCorrection: Int = 0
     var paddingValues = JupiterMode.PADDING_VALUES_MEDIUM
     var preFixed: FixedPeak?
+    var preSearchList: [SelectedSearch]?
     
     // MARK: - Recovery
     private var recoveryIndex: Int = 0
@@ -1037,56 +1038,116 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                                                                              buildingLevelByUserPeak: buildingLevelByPeak,
                                                                                              landmarks: (matchedWithOldUserPeak, matchedWithUserPeak),
                                                                                              mode: mode, isDrStraight: isDrStraight.0)
-                let candSearch = solutionEstimator.calculateSearchCand(lossParamAtEachCand: searchResult)
-                if !candSearch.isEmpty {
-                    self.debug_list_search = candSearch
-                }
-                if let selectedSearch = solutionEstimator.calculateSearchResult(lossParamAtEachCand: searchResult) {
-                    let bestResult = selectedSearch.headResult
-                    self.debug_selected_search = selectedSearch
-                    self.searchingIndex = userPeak.peak_index
-                    self.curResult = bestResult
-                    JupiterResultState.isIndoor = true
-                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) searchResult= [index:\(bestResult.index), x:\(bestResult.x), y:\(bestResult.y), h:\(bestResult.absolute_heading)]")
-                    stackManager.stackSearchResult(searchResult: bestResult)
-                    let searchResultBuffer = stackManager.getSearchResultBuffer(size: 2)
-                    if searchResultBuffer.count < 2 { break peakHandling }
-                    
-                    let preSearchResult = searchResultBuffer[0]
-                    let curSearchResult = searchResultBuffer[1]
-                    let isConnected = checkResultConnectionForTracking(preResult: preSearchResult, curResult: curSearchResult, uvdBuffer: uvdBufferForSearching, mode: mode)
-                    if isConnected {
-                        guard let ixyhs = stackManager.propagateUsingUvd(uvdBuffer: uvdBufferForSearching, fltResult: bestResult) else { break peakHandling }
-                        var curResult = bestResult
-                        let propagatedX = bestResult.x + ixyhs.x
-                        let propagatedY = bestResult.y + ixyhs.y
-                        let propagatedH = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(bestResult.absolute_heading + ixyhs.heading)))
-                        curResult.x = propagatedX
-                        curResult.y = propagatedY
-                        curResult.absolute_heading = propagatedH
-                        guard let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: curResult.x, y: curResult.y, heading: curResult.absolute_heading, isUseHeading: false, mode: mode, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else { break peakHandling }
-                        curResult.x = pmResult.x
-                        curResult.y = pmResult.y
-                        curResult.absolute_heading = pmResult.heading
+                let curSearchList = solutionEstimator.calculateSearchCand(lossParamAtEachCand: searchResult)
+                if !curSearchList.isEmpty {
+                    if let preSearchList = self.preSearchList, let preFisrt = preSearchList.first {
+                        let uvdBufferForConnection = solutionEstimator.getUvdBufferForEstimation(startIndex: preFisrt.headResult.index,
+                                                                                                 endIndex: userVelocity.index,
+                                                                                                 uvdBuffer: uvdBuffer)
+                        struct ConnectedSearchCandidate {
+                            let loss: Float
+                            let curSearch: SelectedSearch
+                        }
                         
-                        correctionIndex = userPeak.peak_index
-                        correctionId = userPeak.id
-                        startIndoorTracking(uvd: userVelocity, fltResult: curResult)
+                        var connectedCandidates = [ConnectedSearchCandidate]()
+                        // 이전 Search 결과 있음
+                        for preSearch in preSearchList {
+                            for curSearch in curSearchList {
+                                if let isConnected = checkResultConnectionForTracking(preResult: preSearch.headResult, curResult: curSearch.headResult, uvdBuffer: uvdBufferForConnection, mode: mode) {
+                                    let loss: Float = (isConnected.dLoss + isConnected.hLoss)/2
+                                    connectedCandidates.append(ConnectedSearchCandidate(loss: loss, curSearch: curSearch))
+                                }
+                            }
+                        }
+                        
+                        if connectedCandidates.isEmpty {
+                            JupiterLogger.i(tag: "JupiterCalcManager",
+                                            message: "(calcIndoorSearching) every combination is not connected")
+                        }
+                        
+                        let topMatchedCurSearchList: [SelectedSearch] = connectedCandidates
+                            .sorted { $0.loss < $1.loss }
+                            .prefix(5)
+                            .map { $0.curSearch }
+                        
+                        if !topMatchedCurSearchList.isEmpty {
+                            self.debug_list_search = topMatchedCurSearchList
+                            JupiterLogger.i(tag: "JupiterCalcManager",
+                                            message: "(calcIndoorSearching) topMatchedCurSearchList =\(topMatchedCurSearchList)")
+                            if let selectedSearch = topMatchedCurSearchList.first {
+                                let bestResult = selectedSearch.headResult
+                                self.debug_selected_search = selectedSearch
+                                self.searchingIndex = userPeak.peak_index
+                                self.curResult = bestResult
+                                JupiterResultState.isIndoor = true
+                                JupiterLogger.i(tag: "JupiterCalcManager",
+                                                message: "(calcIndoorSearching) Connected // searchResult= [index:\(bestResult.index), x:\(bestResult.x), y:\(bestResult.y), h:\(bestResult.absolute_heading)]")
+                                stackManager.stackSearchResult(searchResult: bestResult)
+                            }
+                        }
+                    } else {
+                        // 이전 Search 결과 없음
+                        if let selectedSearch = solutionEstimator.calculateSearchResult(lossParamAtEachCand: searchResult) {
+                            let bestResult = selectedSearch.headResult
+                            self.debug_selected_search = selectedSearch
+                            self.searchingIndex = userPeak.peak_index
+                            self.curResult = bestResult
+                            JupiterResultState.isIndoor = true
+                            JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) First // searchResult= [index:\(bestResult.index), x:\(bestResult.x), y:\(bestResult.y), h:\(bestResult.absolute_heading)]")
+                            stackManager.stackSearchResult(searchResult: bestResult)
+                        }
                     }
+                    self.preSearchList = curSearchList
+                } else {
+                    self.debug_list_search = []
+                    self.debug_selected_search = nil
                 }
+                
+//                if let selectedSearch = solutionEstimator.calculateSearchResult(lossParamAtEachCand: searchResult) {
+//                    let bestResult = selectedSearch.headResult
+//                    self.debug_selected_search = selectedSearch
+//                    self.searchingIndex = userPeak.peak_index
+//                    self.curResult = bestResult
+//                    JupiterResultState.isIndoor = true
+//                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) searchResult= [index:\(bestResult.index), x:\(bestResult.x), y:\(bestResult.y), h:\(bestResult.absolute_heading)]")
+//                    stackManager.stackSearchResult(searchResult: bestResult)
+//                    let searchResultBuffer = stackManager.getSearchResultBuffer(size: 2)
+//                    if searchResultBuffer.count < 2 { break peakHandling }
+//                    
+//                    let preSearchResult = searchResultBuffer[0]
+//                    let curSearchResult = searchResultBuffer[1]
+//                    if let isConnected = checkResultConnectionForTracking(preResult: preSearchResult, curResult: curSearchResult, uvdBuffer: uvdBufferForSearching, mode: mode) {
+//                        guard let ixyhs = stackManager.propagateUsingUvd(uvdBuffer: uvdBufferForSearching, fltResult: bestResult) else { break peakHandling }
+//                        var curResult = bestResult
+//                        let propagatedX = bestResult.x + ixyhs.x
+//                        let propagatedY = bestResult.y + ixyhs.y
+//                        let propagatedH = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(bestResult.absolute_heading + ixyhs.heading)))
+//                        curResult.x = propagatedX
+//                        curResult.y = propagatedY
+//                        curResult.absolute_heading = propagatedH
+//                        guard let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: curResult.x, y: curResult.y, heading: curResult.absolute_heading, isUseHeading: false, mode: mode, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else { break peakHandling }
+//                        curResult.x = pmResult.x
+//                        curResult.y = pmResult.y
+//                        curResult.absolute_heading = pmResult.heading
+//                        
+//                        correctionIndex = userPeak.peak_index
+//                        correctionId = userPeak.id
+//                        startIndoorTracking(uvd: userVelocity, fltResult: curResult)
+//                    }
+//                }
             }
         }
     }
     
-    private func checkResultConnectionForTracking(preResult: FineLocationTrackingOutput, curResult: FineLocationTrackingOutput, uvdBuffer: [UserVelocity], mode: UserMode) -> Bool {
-        if (preResult.index == 0 || curResult.index == 0) { return false }
+    private func checkResultConnectionForTracking(preResult: FineLocationTrackingOutput, curResult: FineLocationTrackingOutput, uvdBuffer: [UserVelocity], mode: UserMode) -> (dLoss: Float, hLoss: Float)? {
+        if (preResult.index == 0 || curResult.index == 0) { return nil }
         
         let distanceCondition: Float = mode == .MODE_PEDESTRIAN ? 10 : 20
         let headingCondition: Float = mode == .MODE_PEDESTRIAN ? 15 : 30
 
         if (curResult.index <= preResult.index) {
             JupiterLogger.i(tag: "JupiterCalcManager", message: "(checkResultConnectionForTracking) : curResultIndex=\(curResult.index) , preResultIndex=\(preResult.index)")
-            return false
+            return nil
         } else {
             var drBufferStartIndex: Int = 0
             var drBufferEndIndex: Int = 0
@@ -1102,8 +1163,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                 }
             }
             
-            guard let prePmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: preResult.building_name, level: preResult.level_name, x: preResult.x, y: preResult.y, heading: preResult.absolute_heading, isUseHeading: false, mode: mode, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else { return false }
-            guard let curPmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: curResult.x, y: curResult.y, heading: curResult.absolute_heading, isUseHeading: false, mode: mode, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else { return false }
+            guard let prePmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: preResult.building_name, level: preResult.level_name, x: preResult.x, y: preResult.y, heading: preResult.absolute_heading, isUseHeading: false, mode: mode, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else { return nil }
+            guard let curPmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: curResult.x, y: curResult.y, heading: curResult.absolute_heading, isUseHeading: false, mode: mode, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else { return nil }
 
             var propagatedXyh: [Float] = [prePmResult.x, prePmResult.y, prePmResult.heading]
             for i in drBufferStartIndex..<drBufferEndIndex {
@@ -1119,7 +1180,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             propagatedXyh[2] += dh
             propagatedXyh[2] = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(propagatedXyh[2])))
             
-            guard let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: propagatedXyh[0], y: propagatedXyh[1], heading: propagatedXyh[2], isUseHeading: false, mode: mode, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else { return false }
+            guard let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: propagatedXyh[0], y: propagatedXyh[1], heading: propagatedXyh[2], isUseHeading: false, mode: mode, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else { return nil }
             
             let diffX = abs(pmResult.x - curPmResult.x)
             let diffY = abs(pmResult.y - curPmResult.y)
@@ -1129,12 +1190,13 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             if (diffH > 270) { diffH = 360 - diffH }
             
             let rendezvousDistance = sqrt(diffX*diffX + diffY*diffY)
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(checkResultConnectionForTracking) : rendezvous // cur:[\(curPmResult.x),\(curPmResult.y),\(curPmResult.heading)] , pm:[\(pmResult.x),\(pmResult.y),\(pmResult.heading)]")
             JupiterLogger.i(tag: "JupiterCalcManager", message: "(checkResultConnectionForTracking) : rendezvousDistance=\(rendezvousDistance) , diffH=\(diffH)")
             if (rendezvousDistance <= distanceCondition) && diffH <= headingCondition {
-                return true
+                return (rendezvousDistance, diffH)
             }
         }
-        return false
+        return nil
     }
     
     private func startIndoorTracking(uvd: UserVelocity, fltResult: FineLocationTrackingOutput?) {
