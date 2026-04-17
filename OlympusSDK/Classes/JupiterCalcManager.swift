@@ -1051,14 +1051,47 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                         
                         var connectedCandidates = [ConnectedSearchCandidate]()
                         // 이전 Search 결과 있음
+                        guard let curResult = self.curResult else { return }
+                        let key = "\(self.sectorId)_\(curResult.building_name)_\(curResult.level_name)"
+                        guard let linkData = PathMatcher.shared.linkData[key] else { return }
+                        
                         for preSearch in preSearchList {
                             for curSearch in curSearchList {
-                                if let isConnected = checkResultConnectionForTracking(preResult: preSearch.headResult, curResult: curSearch.headResult, uvdBuffer: uvdBufferForConnection, mode: mode) {
-                                    let loss: Float = (isConnected.dLoss + isConnected.hLoss)/2
-                                    connectedCandidates.append(ConnectedSearchCandidate(loss: loss, curSearch: curSearch))
+                                
+                                guard let preLast = preSearch.traj.last, let curFirst = curSearch.traj.first else { continue }
+                                JupiterLogger.i(tag: "JupiterCalcManager",
+                                                message: "(calcIndoorSearching) preLastH= \(preLast.heading), curFirstH= \(curFirst.heading)")
+                                let dh = headingDelta(preLast.heading, curFirst.heading)
+                                if dh > 30 { continue }
+                                guard let preRecent = preSearch.recent, let curOlder = curSearch.older else { continue }
+                                var preLinkGroupSet = Set<Int>()
+                                var curLinkGroupSet = Set<Int>()
+                                for preLink in preRecent.matched_links {
+                                    guard let matchedLink = linkData[preLink] else { continue }
+                                    preLinkGroupSet.insert(matchedLink.group_number)
                                 }
+                                
+                                for curLink in curOlder.matched_links {
+                                    guard let matchedLink = linkData[curLink] else { continue }
+                                    curLinkGroupSet.insert(matchedLink.group_number)
+                                }
+                                
+                                let isInSameLinkGroup = !preLinkGroupSet.isDisjoint(with: curLinkGroupSet)
+                                if !isInSameLinkGroup { continue }
+                                
+                                let dx = preRecent.x - curOlder.x
+                                let dy = preRecent.y - curOlder.y
+                                let loss: Float = sqrt(Float(dx*dx + dy*dy))
+                                connectedCandidates.append(ConnectedSearchCandidate(loss: loss, curSearch: curSearch))
+                                
+//                                if let isConnected = checkResultConnectionForTracking(preResult: preSearch.headResult, curResult: curSearch.headResult, uvdBuffer: uvdBufferForConnection, mode: mode) {
+//                                    let loss: Float = (isConnected.dLoss + isConnected.hLoss)/2
+//                                    connectedCandidates.append(ConnectedSearchCandidate(loss: loss, curSearch: curSearch))
+//                                }
                             }
                         }
+                        
+                        self.debug_list_search = curSearchList
                         
                         if connectedCandidates.isEmpty {
                             JupiterLogger.i(tag: "JupiterCalcManager",
@@ -1071,7 +1104,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                             .map { $0.curSearch }
                         
                         if !topMatchedCurSearchList.isEmpty {
-                            self.debug_list_search = topMatchedCurSearchList
                             JupiterLogger.i(tag: "JupiterCalcManager",
                                             message: "(calcIndoorSearching) topMatchedCurSearchList =\(topMatchedCurSearchList)")
                             if let selectedSearch = topMatchedCurSearchList.first {
@@ -1083,6 +1115,16 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                 JupiterLogger.i(tag: "JupiterCalcManager",
                                                 message: "(calcIndoorSearching) Connected // searchResult= [index:\(bestResult.index), x:\(bestResult.x), y:\(bestResult.y), h:\(bestResult.absolute_heading)]")
                                 stackManager.stackSearchResult(searchResult: bestResult)
+                                
+                                var curResult = bestResult
+                                guard let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: curResult.x, y: curResult.y, heading: curResult.absolute_heading, isUseHeading: false, mode: mode, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else { break peakHandling }
+                                curResult.x = pmResult.x
+                                curResult.y = pmResult.y
+                                curResult.absolute_heading = pmResult.heading
+                                
+                                correctionIndex = userPeak.peak_index
+                                correctionId = userPeak.id
+                                startIndoorTracking(uvd: userVelocity, fltResult: curResult)
                             }
                         }
                     } else {
@@ -1099,7 +1141,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                     }
                     self.preSearchList = curSearchList
                 } else {
-                    self.debug_list_search = []
+//                    self.debug_list_search = []
                     self.debug_selected_search = nil
                 }
                 
@@ -1137,6 +1179,12 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
 //                }
             }
         }
+    }
+    
+    func headingDelta(_ a: Float, _ b: Float) -> Float {
+        var d = a - b
+        d = fmod(d + 540.0, 360.0) - 180.0
+        return abs(d)
     }
     
     private func checkResultConnectionForTracking(preResult: FineLocationTrackingOutput, curResult: FineLocationTrackingOutput, uvdBuffer: [UserVelocity], mode: UserMode) -> (dLoss: Float, hLoss: Float)? {
