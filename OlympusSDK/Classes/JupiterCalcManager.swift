@@ -85,8 +85,10 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     var debug_best_landmark: PeakData?
     var debug_recon_raw_traj: [[Double]]?
     var debug_recon_corr_traj: [FineLocationTrackingOutput]?
+    var debug_list_search = [SelectedSearch]()
     var debug_selected_search: SelectedSearch?
     var debug_selected_cand: SelectedCandidate?
+    var debug_tracking_cand: SelectedCandidate?
     var debug_ratio: Float?
     var debug_navi_xyh: [Float] = [0, 0, 0]
     
@@ -270,6 +272,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             recon_raw_traj: self.debug_recon_raw_traj,
             recon_corr_traj: self.debug_recon_corr_traj,
             selected_cand: self.debug_selected_cand,
+            tracking_cand: self.debug_tracking_cand,
+            cand_search: self.debug_list_search,
             selected_search: self.debug_selected_search,
             ratio: self.debug_ratio,
             navi_xyh: self.debug_navi_xyh
@@ -365,6 +369,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                     stackManager.stackBuildingLevelByPeak(buildingLevel: buildingLevelByPeak)
                     let buildingLevelByPeakBuffer = stackManager.getBuildingLevelByPeakBuffer(size: 3)
                     startIndoorSearching(uvd: userVelocity, blChanger: blChanger, buildingLevelByPeakBuffer: buildingLevelByPeakBuffer)
+                } else {
+                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) getMatchedBuildingLevelByUserPeak result is nil")
                 }
                 
                 // Building & Level Changer
@@ -952,11 +958,16 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     }
     
     private func startIndoorSearching(uvd: UserVelocity, blChanger: BuildingLevelChanger, buildingLevelByPeakBuffer: [(String, String)]) {
-        if jupiterPhase != .NONE || jupiterPhase != .ENTERING { return }
-        if blChanger.isIndoorLevel(buildingLevelByPeakBuffer: buildingLevelByPeakBuffer) {
-            jupiterPhase = .SEARCHING
-            delegate?.isJupiterPhaseChanged(index: uvd.index, phase: jupiterPhase, xyh: nil)
-            JupiterLogger.i(tag: "JupiterCalcManager", message: "(startIndoorSearching) start")
+        if jupiterPhase == .NONE || jupiterPhase == .ENTERING {
+            if blChanger.isIndoorLevel(buildingLevelByPeakBuffer: buildingLevelByPeakBuffer) {
+                jupiterPhase = .SEARCHING
+                delegate?.isJupiterPhaseChanged(index: uvd.index, phase: jupiterPhase, xyh: nil)
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(startIndoorSearching) start")
+            } else {
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(startIndoorSearching) isIndoorLevel result is nil")
+            }
+        } else {
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(startIndoorSearching) jupiterPhase is \(jupiterPhase)")
         }
     }
     
@@ -1026,6 +1037,10 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                                                                              buildingLevelByUserPeak: buildingLevelByPeak,
                                                                                              landmarks: (matchedWithOldUserPeak, matchedWithUserPeak),
                                                                                              mode: mode, isDrStraight: isDrStraight.0)
+                let candSearch = solutionEstimator.calculateSearchCand(lossParamAtEachCand: searchResult)
+                if !candSearch.isEmpty {
+                    self.debug_list_search = candSearch
+                }
                 if let selectedSearch = solutionEstimator.calculateSearchResult(lossParamAtEachCand: searchResult) {
                     let bestResult = selectedSearch.headResult
                     self.debug_selected_search = selectedSearch
@@ -1296,6 +1311,12 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                                                                        curPmResult: curPmResult,
                                                                                        mode: mode, matchedNode: matchedNode, isDrStraight: isDrStraight.0)
                     let filteredCandResult = solutionEstimator.calculateJupiterResult(lossParamAtEachCand: lossParamResult, isLinkNotChanged: isLinkNotChanged)
+                    let trackingCandResult = solutionEstimator.calculateTrackingResult(lossParamAtEachCand: lossParamResult, isLinkNotChanged: isLinkNotChanged, olderUserPeak: olderUserPeak, preFixed: preFixed)
+                    if !trackingCandResult.isEmpty {
+                        JupiterLogger.i(tag: "JupiterCalcManager", message: "(applyCorrectionWithPeaks) : trackingCandResult= \(trackingCandResult)")
+                        self.debug_tracking_cand = trackingCandResult[0]
+                    }
+                    
                     if let selectedCandResult = solutionEstimator.selectCandidate(filtered: filteredCandResult) {
                         let trackingResult = selectedCandResult.0
                         self.debug_ratio = selectedCandResult.1

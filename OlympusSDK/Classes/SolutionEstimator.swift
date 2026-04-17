@@ -132,7 +132,7 @@ class SolutionEstimator {
             guard let rpIdx = anchorIdx else { continue }
             
             for cand in recentLandmarkCands {
-                JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParamAtEachCandInSearch) CAND_START cand=[\(cand.x),\(cand.y)] matchedLinks=\(cand.matched_links)")
+                JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParamAtEachCandInSearch) CAND_START cand=[\(cand.x),\(cand.y)] matchedLinks=\(cand.matched_links)")
 
                 // Recent Peak과 매칭되는 landmark 후보군들로 shit 시키기
                 let offsetX = Float(cand.x) - searchTraj[rpIdx].x
@@ -147,7 +147,7 @@ class SolutionEstimator {
                 }
                 
                 guard let first = shiftedTraj.first, let last = shiftedTraj.last else {
-                    JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParamAtEachCandInSearch) shiftedTraj first/last missing")
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParamAtEachCandInSearch) shiftedTraj first/last missing")
                     continue
                 }
                 
@@ -160,7 +160,7 @@ class SolutionEstimator {
                                                                  isUseHeading: false,
                                                                  mode: mode,
                                                                  paddingValues: JupiterMode.PADDING_VALUES_LARGE) else {
-                    JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParamAtEachCandInSearch) tail pathMatching failed with [\(first.x),\(first.y),\(first.heading)]")
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParamAtEachCandInSearch) tail pathMatching failed with [\(first.x),\(first.y),\(first.heading)]")
                     continue
                 }
                 
@@ -173,7 +173,7 @@ class SolutionEstimator {
                                                                  isUseHeading: isDrStraight,
                                                                  mode: mode,
                                                                  paddingValues: JupiterMode.PADDING_VALUES_LARGE) else {
-                    JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParamAtEachCandInSearch) head pathMatching failed with [\(last.x),\(last.y),\(last.heading)] // isUseHeading= \(isDrStraight)")
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParamAtEachCandInSearch) head pathMatching failed with [\(last.x),\(last.y),\(last.heading)] // isUseHeading= \(isDrStraight)")
                     continue
                 }
                 
@@ -195,6 +195,8 @@ class SolutionEstimator {
                     }
                 }
                 
+                if localOlderCand == nil { continue }
+                
                 let curPmResult = FineLocationTrackingOutput(mobile_time: 0, index: searchTraj[0].index, building_name: building, level_name: level, x: 0, y: 0, absolute_heading: 0)
                 var headResult = curPmResult
                 headResult.x = head.x
@@ -208,8 +210,8 @@ class SolutionEstimator {
                                                                            shiftedTraj: shiftedTraj,
                                                                            targetIndices: residualIndices,
                                                                            mode: mode) else {
-                    JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParamAtEachCandInSearch) computeIntermediateLossByIndex failed")
-                    JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParamAtEachCandInSearch) residualIndices= \(residualIndices)")
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParamAtEachCandInSearch) computeIntermediateLossByIndex failed")
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParamAtEachCandInSearch) residualIndices= \(residualIndices)")
                     continue
                 }
                 
@@ -248,10 +250,41 @@ class SolutionEstimator {
         return resultList
     }
     
+    func calculateSearchCand(lossParamAtEachCand: [SearchResult]) -> [SelectedSearch] {
+        guard !lossParamAtEachCand.isEmpty else { return [] }
+        
+        let sorted = lossParamAtEachCand.sorted { lhs, rhs in
+            let lhsLoss = (lhs.loss_lm + lhs.loss_g_d + lhs.loss_g_h)/3
+            let rhsLoss = (rhs.loss_lm + rhs.loss_g_d + rhs.loss_g_h)/3
+            return lhsLoss < rhsLoss
+        }
+        
+        let topCandidates = sorted.prefix(5)
+        var candidates: [SelectedSearch] = []
+        candidates.reserveCapacity(topCandidates.count)
+        
+        for item in topCandidates {
+            let loss = (item.loss_lm + item.loss_g_d + item.loss_g_h)/3
+            let selected = SelectedSearch(older: item.older,
+                                          recent: item.recent,
+                                          traj: item.traj,
+                                          tail: item.tail,
+                                          head: item.head,
+                                          headResult: item.headResult,
+                                          loss: loss)
+            if loss > 10 {
+                continue
+            }
+            candidates.append(selected)
+        }
+        
+        return candidates
+    }
+    
     func calculateSearchResult(lossParamAtEachCand: [SearchResult]) -> SelectedSearch? {
         guard let best = lossParamAtEachCand.min(by: {
-            let lhsLoss = $0.loss_lm + $0.loss_g_d + $0.loss_g_h
-            let rhsLoss = $1.loss_lm + $1.loss_g_d + $1.loss_g_h
+            let lhsLoss = ($0.loss_lm + $0.loss_g_d + $0.loss_g_h)/3
+            let rhsLoss = ($1.loss_lm + $1.loss_g_d + $1.loss_g_h)/3
             return lhsLoss < rhsLoss
         }) else {
             return nil
@@ -294,7 +327,7 @@ class SolutionEstimator {
         let curLinkNums: [Int] = curPmLinks.map{$0.number}
         let curLinkGroupNums: [Int] = curPmLinks.map{ $0.group_number }
         let isInNode = matchedNode == nil ? false : true
-        JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParam) curPmResult [\(curPmResult.x),\(curPmResult.y),\(curPmResult.absolute_heading)] is in [\(curPmLinks.map{$0.number})] links, isInNode = \(isInNode)")
+        JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParam) curPmResult [\(curPmResult.x),\(curPmResult.y),\(curPmResult.absolute_heading)] is in [\(curPmLinks.map{$0.number})] links, isInNode = \(isInNode)")
         
         let olderUserPeak = userPeakAndLinksBuffer[userPeakAndLinksBuffer.count - 2].0
         let olderUserLinks = userPeakAndLinksBuffer[userPeakAndLinksBuffer.count - 2].1
@@ -319,14 +352,14 @@ class SolutionEstimator {
             guard let rpIdx = anchorIdx else { continue }
             
             for cand in recentLandmarkCands {
-                JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParam) CAND_START cand=[\(cand.x),\(cand.y)] matchedLinks=\(cand.matched_links)")
+                JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParam) CAND_START cand=[\(cand.x),\(cand.y)] matchedLinks=\(cand.matched_links)")
                 let candLinkNums = cand.matched_links
                 var candLinkGroupNums: Set<Int> = []
                 for cNum in candLinkNums {
                     guard let matchedLinkWithCand = linkData[cNum] else { continue }
                     candLinkGroupNums.insert(matchedLinkWithCand.group_number)
                 }
-                JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParam) candLinkGroupNums= \(candLinkGroupNums)")
+                JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParam) candLinkGroupNums= \(candLinkGroupNums)")
 
                 // 1. Candidate에 대해 Recent User Link와 같은 Link Group 내에 있는지 확인
                 let isInSameLinkGroup = !candLinkGroupNums.isDisjoint(with: Set(recentUserGroupNums))
@@ -352,7 +385,7 @@ class SolutionEstimator {
                 }
                 
                 guard let first = shiftedTraj.first, let last = shiftedTraj.last else {
-                    JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParam) shiftedTraj first/last missing")
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParam) shiftedTraj first/last missing")
                     continue
                 }
                 
@@ -365,7 +398,7 @@ class SolutionEstimator {
                                                                  isUseHeading: false,
                                                                  mode: mode,
                                                                  paddingValues: JupiterMode.PADDING_VALUES_LARGE) else {
-                    JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParam) tail pathMatching failed with [\(first.x),\(first.y),\(first.heading)]")
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParam) tail pathMatching failed with [\(first.x),\(first.y),\(first.heading)]")
                     continue
                 }
                 
@@ -378,7 +411,7 @@ class SolutionEstimator {
                                                                  isUseHeading: isDrStraight,
                                                                  mode: mode,
                                                                  paddingValues: JupiterMode.PADDING_VALUES_LARGE) else {
-                    JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParam) head pathMatching failed with [\(last.x),\(last.y),\(last.heading)] // isUseHeading= \(isDrStraight)")
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParam) head pathMatching failed with [\(last.x),\(last.y),\(last.heading)] // isUseHeading= \(isDrStraight)")
                     continue
                 }
                 
@@ -389,13 +422,13 @@ class SolutionEstimator {
                 headResult.absolute_heading = head.heading
 
                 guard let headLinks = PathMatcher.shared.getLinkInfosWithResult(sectorId: sectorId, result: headResult, checkAll: true, acceptDist: 15) else {
-                    JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParam) getLinkInfosWithResult failed with head [\(head.x),\(head.y),\(head.heading)] ")
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParam) getLinkInfosWithResult failed with head [\(head.x),\(head.y),\(head.heading)] ")
                     continue
                 }
-                JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParam) head [\(head.x),\(head.y),\(head.heading)] is in \(headLinks.map{$0.number}) links")
+                JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParam) head [\(head.x),\(head.y),\(head.heading)] is in \(headLinks.map{$0.number}) links")
                 let reachableResult = isLinkReachableWithGroupSwitchLimit(nodeData: nodeData, linkData: linkData, from: curPmLinks, to: headLinks, maxGroupSwitches: 3)
                 if !reachableResult.isReachable {
-                    JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParam) head [\(head.x),\(head.y),\(head.heading)] to curPm [\(curPmResult.x),\(curPmResult.y),\(curPmResult.absolute_heading)] is not reachable")
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParam) head [\(head.x),\(head.y),\(head.heading)] to curPm [\(curPmResult.x),\(curPmResult.y),\(curPmResult.absolute_heading)] is not reachable")
                     continue
                 }
                 guard let switchCount = reachableResult.switchCount else { continue }
@@ -427,8 +460,8 @@ class SolutionEstimator {
                                                                            shiftedTraj: shiftedTraj,
                                                                            targetIndices: residualIndices,
                                                                            mode: mode) else {
-                    JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParam) computeIntermediateLossByIndex failed")
-                    JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParam) residualIndices= \(residualIndices)")
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParam) computeIntermediateLossByIndex failed")
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParam) residualIndices= \(residualIndices)")
                     continue
                 }
                 
@@ -485,7 +518,7 @@ class SolutionEstimator {
         var preIxyhs: ixyhs?
         
         let FAIL_TH = Int(Double(targetIndices.count-1) * 0.3)
-        JupiterLogger.i(tag: "RecoveryManager", message: "(computeIntermediateLossByIndex) : FAIL_TH= \(FAIL_TH)")
+        JupiterLogger.i(tag: "SolutionEstimator", message: "(computeIntermediateLossByIndex) : FAIL_TH= \(FAIL_TH)")
         var failCount = 0
         for idx in targetIndices {
             let point = shiftedTraj[idx]
@@ -505,8 +538,8 @@ class SolutionEstimator {
                 if !curLinkGroupNums.isDisjoint(with: preLinkGroupNums) {
                     let isReachable = isLinkReachableWithGroupSwitchLimit(nodeData: nodeData, linkData: linkData, from: _pre, to: matchedLinks, maxGroupSwitches: maxGroupSwitches).0
                     if !isReachable {
-                        JupiterLogger.i(tag: "RecoveryManager", message: "(computeIntermediateLossByIndex) idx \(idx) fail -> [\(_preIxyhs.x),\(_preIxyhs.y)] to [\(pm.xyhs.x),\(pm.xyhs.y)] is not reachable")
-                        JupiterLogger.i(tag: "RecoveryManager", message: "(computeIntermediateLossByIndex) pre \(_pre) link to matched \(matchedLinks) link is not reachable")
+                        JupiterLogger.i(tag: "SolutionEstimator", message: "(computeIntermediateLossByIndex) idx \(idx) fail -> [\(_preIxyhs.x),\(_preIxyhs.y)] to [\(pm.xyhs.x),\(pm.xyhs.y)] is not reachable")
+                        JupiterLogger.i(tag: "SolutionEstimator", message: "(computeIntermediateLossByIndex) pre \(_pre) link to matched \(matchedLinks) link is not reachable")
                         failCount += 1
                     }
                 }
@@ -514,7 +547,7 @@ class SolutionEstimator {
             preIxyhs = pm.xyhs
             preLinks = matchedLinks
             if failCount >= FAIL_TH {
-                JupiterLogger.i(tag: "RecoveryManager", message: "(computeIntermediateLossByIndex) : failCount= \(failCount)")
+                JupiterLogger.i(tag: "SolutionEstimator", message: "(computeIntermediateLossByIndex) : failCount= \(failCount)")
                 return nil
             }
             
@@ -732,7 +765,6 @@ class SolutionEstimator {
     
     func calculateTrackingResult(lossParamAtEachCand: [CandidateResult], isLinkNotChanged: Bool, olderUserPeak: UserPeak, preFixed: FixedPeak?) -> [SelectedCandidate] {
         guard !lossParamAtEachCand.isEmpty else { return [] }
-        
         typealias ScoredCand = (cand: CandidateResult, loss: Float)
         
         var selected: [ScoredCand] = []
@@ -741,49 +773,32 @@ class SolutionEstimator {
         var loss_lm_pre_fixed: Float = 0
         var lm_linkGroups = Set<Int>()
         var division: Float = 3
-        if let preFixed = preFixed {
-            if olderUserPeak.id == preFixed.id {
-                // 이전에 결정된 Landmark 사용
-                division += 1
-                lm_linkGroups = preFixed.lm_linkGroups
-            }
+        guard let preFixed = preFixed else { return [] }
+        
+        if olderUserPeak.id == preFixed.id {
+            // 이전에 결정된 Landmark 사용
+            division += 1
+            lm_linkGroups = preFixed.lm_linkGroups
+        } else {
+            return []
         }
         
-        if isLinkNotChanged {
-            // 정상 주행 상태에서는 link group 전환이 많지 않은 후보만 허용
-            for cand in lossParamAtEachCand {
-                guard cand.linkGroupSwitchCount <= 1 else { continue }
-                 
-                let penalty: Float = !cand.isInSameLinkGroup ? 2.0 : 1.0
-                let loss = ((cand.loss_lm + cand.loss_g_d + cand.loss_g_h + loss_lm_pre_fixed) * penalty)/division
-                selected.append((cand: cand, loss: loss))
-            }
-        } else {
-            // 1. cand.isInSameLinkGroup을 만족하는 후보군들은 반드시 포함
-            for cand in lossParamAtEachCand where cand.isInSameLinkGroup {
-                let penalty: Float = 1.0
-                let loss = ((cand.loss_lm + cand.loss_g_d + cand.loss_g_h + loss_lm_pre_fixed) * penalty)/division
-                selected.append((cand: cand, loss: loss))
-            }
-            
-            // 2. cand.isInSameLinkGroup과 무관하게 distWithRecentPeakResult 값이 가장 작은 후보군을 하나 뽑음
-            if let minDistCand = lossParamAtEachCand.min(by: {
-                ($0.distWithRecentPeakResult ?? Float.greatestFiniteMagnitude) < ($1.distWithRecentPeakResult ?? Float.greatestFiniteMagnitude)
-            }) {
-                let isAlreadyIncluded = selected.contains {
-                    $0.cand.recent?.x == minDistCand.recent?.x &&
-                    $0.cand.recent?.y == minDistCand.recent?.y &&
-                    $0.cand.head.x == minDistCand.head.x &&
-                    $0.cand.head.y == minDistCand.head.y
-                }
-                
-                // 3. 2에서 뽑아낸 후보군이 기존 포함 후보가 아니면 추가
-                if !isAlreadyIncluded {
-                    let penalty: Float = 1.0
-                    let loss = ((minDistCand.loss_lm + minDistCand.loss_g_d + minDistCand.loss_g_h + loss_lm_pre_fixed) * penalty)/division
-                    selected.append((cand: minDistCand, loss: loss))
-                }
-            }
+        for cand in lossParamAtEachCand {
+            let penalty = cand.isInSameLinkGroup ? 1.0 : 2.0
+            let candLinkGroups = cand.linkGroups
+            let isInSameLinkGroup = !lm_linkGroups.isDisjoint(with: Set(candLinkGroups))
+            if !isInSameLinkGroup { continue }
+            guard let older = cand.older,
+                  let lmX = preFixed.lm_x,
+                  let lmY = preFixed.lm_y else { continue }
+            let diffX = older.x - lmX
+            let diffY = older.y - lmY
+
+            loss_lm_pre_fixed = sqrt(Float(diffX*diffX + diffY*diffY))
+            let totalLoss = cand.loss_lm + cand.loss_g_d + cand.loss_g_h + loss_lm_pre_fixed
+            let weightedLoss = totalLoss * Float(penalty)
+            let loss = weightedLoss / division
+            selected.append((cand: cand, loss: loss))
         }
         
         selected.sort { lhs, rhs in
