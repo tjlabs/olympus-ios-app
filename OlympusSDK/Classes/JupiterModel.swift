@@ -50,11 +50,9 @@ public protocol JupiterManagerDelegate: AnyObject {
 public enum InitErrorCode: Int {
     case NOT_AUTHORIZED = 0
     case INVALID_ID = 1
-    case INVALID_MODE = 2
-    case NETWORK_DISCONNECT = 3
-    case DUPLICATED_SERVICE = 4
-    case LOGIN_FAIL = 5
-    case CALC_INIT_FAIL = 6
+    case NETWORK_DISCONNECT = 2
+    case LOGIN_FAIL = 3
+    case LOAD_RESOURCE_FAIL = 4
 }
 
 public enum JupiterErrorCode: Int {
@@ -129,6 +127,8 @@ public struct JupiterDebugResult {
     public var recon_raw_traj: [[Double]]?
     public var recon_corr_traj: [FineLocationTrackingOutput]?
     public var selected_cand: SelectedCandidate?
+    public var tracking_cand: SelectedCandidate?
+    public var cand_search: [SelectedSearch]
     public var selected_search: SelectedSearch?
     public var ratio: Float?
     public var navi_xyh: [Float]

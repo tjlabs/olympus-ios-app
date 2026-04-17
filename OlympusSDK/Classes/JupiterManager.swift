@@ -114,11 +114,6 @@ public class JupiterManager: JupiterCalcManagerDelegate {
             return
         }
         
-        if isInitService {
-            delegate?.onInitSuccess(false, .DUPLICATED_SERVICE)
-            return
-        }
-        
         let loginInput = LoginInput(name: self.id)
         let tasks: [(_ group: DispatchGroup, _ reportError: @escaping (String) -> Void) -> Void] = [
             { group, reportError in
@@ -151,7 +146,7 @@ public class JupiterManager: JupiterCalcManagerDelegate {
                     isInitService = true
                     delegate?.onInitSuccess(true, nil)
                 } else {
-                    delegate?.onInitSuccess(false, .CALC_INIT_FAIL)
+                    delegate?.onInitSuccess(false, .LOAD_RESOURCE_FAIL)
                 }
             })
         }, onError: { msg in
@@ -161,7 +156,7 @@ public class JupiterManager: JupiterCalcManagerDelegate {
     }
     
     public func startJupiter(mode: UserMode) {
-        if isInitService {
+        if !isInitService {
             delegate?.onJupiterSuccess(false, .NOT_INITIALIZED)
             return
         }
