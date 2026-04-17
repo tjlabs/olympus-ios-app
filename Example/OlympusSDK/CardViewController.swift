@@ -24,14 +24,14 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
     }
     
     func onInitSuccess(_ isSuccess: Bool, _ code: OlympusSDK.InitErrorCode?) {
+        print("(CardVC) onInitSuccess : \(isSuccess), \(code)")
         if isSuccess {
             serviceManager?.startService(mode: .MODE_AUTO)
         }
     }
     
     func onJupiterSuccess(_ isSuccess: Bool, _ code: OlympusSDK.JupiterErrorCode?) {
-        // TODO
-    }
+        print("(CardVC) onJupiterSuccess : \(isSuccess), \(code)")    }
     
     func onJupiterReport(_ code: OlympusSDK.JupiterServiceCode, _ msg: String) {
         // TODO
@@ -111,11 +111,11 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
 //    var sector_id: Int = 14 // DS
 //    var mode: String = "pdr"
     
-//    var sector_id: Int = 6
-//    var mode: String = "auto"
-    
-    var sector_id: Int = 20  // Convensia
+    var sector_id: Int = 6
     var mode: String = "auto"
+    
+//    var sector_id: Int = 20  // Convensia
+//    var mode: String = "auto"
     
 //    var sector_id: Int = 2
 //    var mode: String = "pdr"
@@ -155,14 +155,16 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_01_0317.csv", sensorFileName: "sensor_coex_01_0317.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_02_0310.csv", sensorFileName: "sensor_coex_02_0310.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_03_0303.csv", sensorFileName: "sensor_coex_03_0303.csv")
-//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_02_0224.csv", sensorFileName: "sensor_coex_02_0224.csv")
+//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_01_0224.csv", sensorFileName: "sensor_coex_01_0224.csv")
+        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_test6_0129.csv", sensorFileName: "sensor_coex_test6_0129.csv")
         
 //        serviceManager?.setNaviDestination(dest: Point(level_id: 53, x: 335, y: 0))
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test02_ent2.csv", sensorFileName: "sensor_251013_songdo_test02_ent2.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test05_ent3.csv", sensorFileName: "sensor_251013_songdo_test05_ent3.csv")
         
-        serviceManager?.setSimulationMode(flag: true, rfdFileName: "260407_songdo_test5_rfd.json", uvdFileName: "260407_songdo_test5_uvd.json", eventFileName: "260407_songdo_test5_event.json")
+//        serviceManager?.setSimulationMode(flag: true, rfdFileName: "260407_songdo_test5_rfd.json", uvdFileName: "260407_songdo_test5_uvd.json", eventFileName: "260407_songdo_test5_event.json")
+//        serviceManager?.setSimulationMode(flag: true, rfdFileName: "Rfd1.json", uvdFileName: "Uvd1.json", eventFileName: "Event1.json")
         
         // service
 //        serviceManager.addObserver(self)
@@ -331,8 +333,10 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
                            best_landmark: PeakData?,
                            recon_raw_traj: [[Double]]?,
                            recon_corr_traj: [FineLocationTrackingOutput]?,
+                           cand_search: [SelectedSearch],
                            selected_search: SelectedSearch?,
                            selected_cand: SelectedCandidate?,
+                           tracking_cand: SelectedCandidate?,
                            navi_route: [[Float]],
                            naviXYH: [Double],
                            limits: [Double], isBleOnlyMode: Bool, isPmSuccess: Bool, isIndoor: Bool) {
@@ -551,9 +555,89 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
             }
         }
         
+        if let tracking_cand = tracking_cand {
+            let cand_traj = tracking_cand.traj
+            var xAxisValue = [Double]()
+            var yAxisValue = [Double]()
+            for traj in cand_traj {
+                xAxisValue.append(Double(traj.x))
+                yAxisValue.append(Double(traj.y))
+            }
+            
+            let valuesCandTraj = (0..<xAxisValue.count).map { (i) -> ChartDataEntry in
+                return ChartDataEntry(x: xAxisValue[i], y: yAxisValue[i])
+            }
+            
+            let setCandTraj = ScatterChartDataSet(entries: valuesCandTraj, label: "CandTraj")
+            setCandTraj.drawValuesEnabled = false
+            setCandTraj.setScatterShape(.circle)
+            setCandTraj.setColor(.systemMint)
+            setCandTraj.scatterShapeSize = 3
+            chartData.append(setCandTraj)
+            
+            if let bestOlder = tracking_cand.older {
+                let oldX: [Double] = [Double(bestOlder.x)]
+                let oldY: [Double] = [Double(bestOlder.y)]
+                let valuesOld = (0..<oldX.count).map { (i) -> ChartDataEntry in
+                    return ChartDataEntry(x: oldX[i], y: oldY[i])
+                }
+                
+                let setOld = ScatterChartDataSet(entries: valuesOld, label: "BestOld")
+                setOld.drawValuesEnabled = false
+                setOld.setScatterShape(.square)
+                setOld.setColor(.systemPink)
+                setOld.scatterShapeSize = 6
+                chartData.append(setOld)
+            }
+            
+            
+            if let bestRecent = tracking_cand.recent {
+                let recentX: [Double] = [Double(bestRecent.x)]
+                let recentY: [Double] = [Double(bestRecent.y)]
+                let valuesRecent = (0..<recentX.count).map { (i) -> ChartDataEntry in
+                    return ChartDataEntry(x: recentX[i], y: recentY[i])
+                }
+                
+                let setRecent = ScatterChartDataSet(entries: valuesRecent, label: "BestRecent")
+                setRecent.drawValuesEnabled = false
+                setRecent.setScatterShape(.square)
+                setRecent.setColor(.systemTeal)
+                setRecent.scatterShapeSize = 4
+                chartData.append(setRecent)
+            }
+        }
+        
+        var lossString = "["
+        for each in cand_search {
+            let each_traj = each.traj
+            
+            var xAxisValue = [Double]()
+            var yAxisValue = [Double]()
+            for traj in each_traj {
+                xAxisValue.append(Double(traj.x))
+                yAxisValue.append(Double(traj.y))
+            }
+            
+            let valuesSearchTraj = (0..<xAxisValue.count).map { (i) -> ChartDataEntry in
+                return ChartDataEntry(x: xAxisValue[i], y: yAxisValue[i])
+            }
+            
+            let setSearchTraj = ScatterChartDataSet(entries: valuesSearchTraj, label: "CandSearchTraj")
+            setSearchTraj.drawValuesEnabled = false
+            setSearchTraj.setScatterShape(.circle)
+            setSearchTraj.setColor(.systemMint)
+            setSearchTraj.scatterShapeSize = 5
+            chartData.append(setSearchTraj)
+            
+            lossString += String(round(each.loss))
+            lossString += ","
+        }
+        lossString += "]"
+        lossLabel.text = lossString
+        
         if let selected_search = selected_search {
             let search_traj = selected_search.traj
-            lossLabel.text = String(selected_search.loss)
+//            lossLabel.text = String(selected_search.loss)
             var xAxisValue = [Double]()
             var yAxisValue = [Double]()
             for traj in search_traj {
@@ -782,8 +866,10 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
                               best_landmark: debugResult.best_landmark,
                               recon_raw_traj: debugResult.recon_raw_traj,
                               recon_corr_traj: debugResult.recon_corr_traj,
+                              cand_search: debugResult.cand_search,
                               selected_search: debugResult.selected_search,
                               selected_cand: debugResult.selected_cand,
+                              tracking_cand: debugResult.tracking_cand,
                               navi_route: naviRoute,
                               naviXYH: navi_xyh,
                               limits: [0, 0, 0, 0], isBleOnlyMode: self.isBleOnlyMode, isPmSuccess: true, isIndoor: isIndoor)
