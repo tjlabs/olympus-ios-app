@@ -74,7 +74,6 @@ public class OlympusSectionController {
             uvdSectionLength = 0
             uvdSectionHeadings = []
             userStraightIndexes = []
-            print(getLocalTimeString() + " , (Olympus) flt check : extendedCheckIsNeedAnchorNodeUpdate // sectionChanged to \(sectionNumber) // straightAngle:\(straightAngle) & std:\(circularStandardDeviationAll) // diffHeading:\(diffHeading)")
         }
         
         return isNeedUpdate
