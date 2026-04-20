@@ -3,7 +3,6 @@ import UIKit
 import simd
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
-    
     public static let sdkVersion: String = "0.3.8"
     var isSimulationMode: Bool = false
     var isDeadReckoningMode: Bool = false
