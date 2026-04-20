@@ -978,12 +978,6 @@ public class OlympusNetworkManager {
             requestURL.httpBody = encodingData
             requestURL.addValue("application/json", forHTTPHeaderField: "Content-Type")
             requestURL.setValue("\(encodingData)", forHTTPHeaderField: "Content-Length")
-            
-            print("")
-            print("====================================")
-            print("POST OPE 데이터 :: ", input)
-            print("====================================")
-            print("")
 
             let dataTask = self.osrSession.dataTask(with: requestURL, completionHandler: { (data, response, error) in
                 // [error가 존재하면 종료]
@@ -1016,12 +1010,6 @@ public class OlympusNetworkManager {
                 
                 // [콜백 반환]
                 DispatchQueue.main.async {
-                    print("")
-                    print("====================================")
-                    print("RESPONSE OPE 데이터 :: ", resultCode)
-                    print("                 :: ", resultData)
-                    print("====================================")
-                    print("")
                     completion(resultCode, resultData)
                 }
             })

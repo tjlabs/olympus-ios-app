@@ -354,7 +354,6 @@ func checkForTrajMatching(index: Int,
         return nil
     }
     
-    print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : index = \(index)")
     // 최근 30개의 UserMask와 UserVelocity를 비교
     let indexCount = Int(round(Double(indexStandard)*1.5))
     let tailIndex = max(max(0, index - indexCount), ambiguitySolvedIndex)
@@ -381,19 +380,14 @@ func checkForTrajMatching(index: Int,
     
     var p_xyh: [Double] = []
     var user_xyh: [Double] = []
-
-    print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : mask len = \(userMaskList.count)")
-    print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : \(changeIndices.count-1) segments")
     
     let segmentCount = changeIndices.count-1
     if segmentCount == 1 {
-        print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : \(segmentCount) seg // link \(linkCoord) , \(linkDirections)")
         let start = changeIndices[0]
         let end = changeIndices[1]
 
         let m_seg = Array(userMaskList[start..<end])
         let majorHeading = m_seg.first!.absolute_heading
-        print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : majorHeading = \(majorHeading)")
         let oppositeHeading = compensateHeading(heading: majorHeading-180)
         
         var points = linkCoord
@@ -407,7 +401,6 @@ func checkForTrajMatching(index: Int,
         if candidateDirections.isEmpty && mode != OlympusConstants.MODE_DR {
             let newX = linkCoord[0] + cos(majorHeading*OlympusConstants.D2R)
             let newY = linkCoord[1] + sin(majorHeading*OlympusConstants.D2R)
-            print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : newXY = \(newX), \(newY)")
             let ppHeadings = OlympusPathMatchingCalculator.shared.getPathMatchingHeadings(building: fltResult.building_name, level: fltResult.level_name, x: newX, y: newY, PADDING_VALUE: 1, mode: mode)
             for mapHeading in ppHeadings {
                 if mapHeading != majorHeading && mapHeading != oppositeHeading {
@@ -417,13 +410,11 @@ func checkForTrajMatching(index: Int,
             points = [newX, newY]
         }
         
-        print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : candidateDirections = \(candidateDirections)")
         let length = Double(sameCount)
         let propagatedPoints = OlympusPathMatchingCalculator.shared.findPropagatedPoints(fltResult: fltResult, originCoord: points, candidateDirections: candidateDirections, majorHeading: majorHeading, length: length, pathType: pathType)
         
         return (BadCaseType.STRAIGHT, propagatedPoints)
     } else {
-        print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : \(segmentCount) seg // link \(linkCoord) , \(linkDirections)")
         
         var userPropagtionIndex: Int?
         var candidateDirections: [Double]?
@@ -432,15 +423,12 @@ func checkForTrajMatching(index: Int,
             let start = changeIndices[i]
             let end = changeIndices[i + 1]
             guard end - start >= 2 else {
-                print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : \(i+1) seg too short")
                 continue
             }
             
             let m_seg = Array(userMaskList[start..<end])
             let p_seg = Array(unitDRInfoList[start..<end])
             let majorHeading = m_seg.first!.absolute_heading
-            print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : \(i+1) seg = \(start) ~ \(end)")
-            print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : majorHeading = \(majorHeading)")
             
             // mask 거리 계산 (bounding box 기준)
             let mxs = m_seg.map { Double($0.x) }
@@ -452,19 +440,14 @@ func checkForTrajMatching(index: Int,
             
             // 회전 + 이동 보정
             let aligned = alignPsegToMseg(m_seg: m_seg, p_seg: p_seg, majorHeading: majorHeading, seg_counts: changeIndices.count-1)
-            
-            print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : mask x // \(mxs)")
-            print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : mask y // \(mys)")
-            print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : aligned.x // \(aligned.x)")
-            print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : aligned.y // \(aligned.y)")
+
             let pxs = aligned.x
             let pys = aligned.y
             let phs = aligned.h
 
             let p_dist = hypot(pxs.last! - pxs.first!, pys.last! - pys.first!)
             p_xyh = [pxs.last!, pys.last!, phs.last!]
-            
-            print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : aligned.h = \(phs)")
+
             p_total_dist += p_dist
             
             if start == 0 {
@@ -498,8 +481,6 @@ func checkForTrajMatching(index: Int,
                     
                     let alignedTraj = applyAlignment(to: unitDRInfoList, using: aligned.alignTransform)
                     let alignedHeading = alignedTraj.h
-                    print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : userPropagtionIndex = \(idx)")
-                    print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : alignedTraj = \(alignedTraj)")
                     
                     let group = DispatchGroup()
                     let queue = DispatchQueue(label: "traj.match.queue", attributes: .concurrent)
@@ -563,8 +544,6 @@ func checkForTrajMatching(index: Int,
                     group.wait()
                     user_xyh = bestXYHS
                     
-                    print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : best // dist = \(minDist), xyhs = \(bestXYHS), node = \(bestNodeNumber)")
-                    
                     var points = [[Double]]()
                     points.append(user_xyh)
                     
@@ -572,7 +551,6 @@ func checkForTrajMatching(index: Int,
                 }
             }
         }
-        print(getLocalTimeString() + " , (OlympusServiceManager) checkForTrajMatching : p_xyh = \(p_xyh)")
     }
     
     return nil
@@ -610,9 +588,7 @@ func alignPsegToMseg(m_seg: [UserMask], p_seg: [UnitDRInfo], majorHeading: Doubl
     }
     
     let rotateDeg = majorHeading - headings[centralIdx]
-    
-//        let px = p_seg.map { $0.length * cos($0.heading * .pi / 180) }
-//        let py = p_seg.map { $0.length * sin($0.heading * .pi / 180) }
+
     let (px, py) = drXY(from: p_seg)
     
     let px_c = px[centralIdx]
