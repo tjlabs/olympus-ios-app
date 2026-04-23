@@ -4,7 +4,7 @@ import simd
 
 public class OlympusServiceManager: Observation, StateTrackingObserver, BuildingLevelChangeObserver {
     
-    public static let sdkVersion: String = "0.3.8"
+    public static let sdkVersion: String = "0.3.9"
     var isSimulationMode: Bool = false
     var isDeadReckoningMode: Bool = false
     var bleFileName: String = ""
@@ -2303,7 +2303,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                                         jumpedNodes.append(nodeInfo)
                                     }
                                 }
-                                print(getLocalTimeString() + " , (Olympus) Node Find : processPhase6 STABLE")
+//                                print(getLocalTimeString() + " , (Olympus) Node Find : processPhase6 STABLE")
                                 safeMakeTemporalResultWrapper(input: updatedResult, isStableMode: false, mustInSameLink: false, updateType: .STABLE, pathMatchingType: .WIDE, jumpedNodes: jumpedNodes)
                             }
                         } else if (fltResult.x == 0 && fltResult.y == 0) {
@@ -2616,8 +2616,9 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             }
             
             if (mustInSameLink && levelName != "B0") {
-                let directions = KF.linkDirections
-                let linkCoord = KF.linkCoord
+                let linkInfo = KF.getLinkInfoSnapshot()
+                let directions = linkInfo.directions
+                let linkCoord = linkInfo.coord
                 if (directions.count == 2) {
                     let MARGIN: Double = 30
                     if (directions.contains(0) && directions.contains(180)) {
@@ -2715,8 +2716,11 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     let snapshotResult = result
                     let snapshotUserMaskBuffer = self.userMaskBuffer
                     let snapshotUnitDRInfoBuffer = self.unitDRInfoBuffer
-                    let snapshotLinkCoord = KF.linkCoord
-                    let snapshotLinkDirections = KF.linkDirections
+                    let linkInfo = KF.getLinkInfoSnapshot()
+                    
+                    let snapshotLinkDirections = linkInfo.coord
+                    let snapshotLinkCoord = linkInfo.directions
+                    
                     let snapshotAmbiguitySolvedIndex = self.ambiguitySolvedIndex
                     let snapshotRunMode = self.runMode
 
@@ -2846,7 +2850,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                 var onPoints = [OnPoint]()
                 // 만약 같은 링크에 있다면
                 if result.x == temporalResult.x || result.y == temporalResult.y {
-                    let candidates = OlympusPathMatchingCalculator.shared.getOpeCandidateNodes(preResult: self.temporalResult, curResult: result, linkDir: KF.linkDirections, pathType: pathTypeForNodeAndLink)
+                    let candidates = OlympusPathMatchingCalculator.shared.getOpeCandidateNodes(preResult: self.temporalResult, curResult: result, linkDir: KF.getLinkInfoSnapshot().directions, pathType: pathTypeForNodeAndLink)
                     for candidate in candidates {
                         onPoints.append(OnPoint(x: Int(candidate.nodeCoord[0]), y: Int(candidate.nodeCoord[1])))
                     }
@@ -2858,7 +2862,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                         var jumpedResult = result
                         jumpedResult.x = intersectionPoint.x
                         jumpedResult.y = intersectionPoint.y
-                        let candidates = OlympusPathMatchingCalculator.shared.getOpeCandidateNodes(preResult: self.temporalResult, curResult: jumpedResult, linkDir: KF.linkDirections, pathType: pathTypeForNodeAndLink)
+                        let candidates = OlympusPathMatchingCalculator.shared.getOpeCandidateNodes(preResult: self.temporalResult, curResult: jumpedResult, linkDir: KF.getLinkInfoSnapshot().directions, pathType: pathTypeForNodeAndLink)
                         for candidate in candidates {
                             onPoints.append(OnPoint(x: Int(candidate.nodeCoord[0]), y: Int(candidate.nodeCoord[1])))
                         }
