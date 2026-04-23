@@ -177,7 +177,7 @@ public class OlympusStateManager: NSObject {
                     }
                 }
             } else {
-                print(getLocalTimeString() + " , (Olympus) checkOutdoorBleEmpty : phase \(olympusResult.phase)")
+//                print(getLocalTimeString() + " , (Olympus) checkOutdoorBleEmpty : phase \(olympusResult.phase)")
                 if olympusResult.phase > 1 {
                     isPhaseBreak = true
                 }
