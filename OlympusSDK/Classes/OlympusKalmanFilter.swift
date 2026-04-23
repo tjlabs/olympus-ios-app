@@ -40,9 +40,6 @@ public class OlympusKalmanFilter: NSObject {
     var usedUvdIndex: Int = 0
     var pathTrajMatchingNodeInfo = PassedNodeInfo(nodeNumber: -1, nodeCoord: [], nodeHeadings: [], matchedIndex: -1, userHeading: 0)
     
-//    var linkCoord: [Double] = [0, 0]
-//    var linkDirections = [Double]()
-    
     var linkInfoLock = NSLock()
     private var linkInfo: (coord: [Double], directions: [Double]) = (coord: [0, 0], directions: [Double]())
     
@@ -74,8 +71,6 @@ public class OlympusKalmanFilter: NSObject {
         self.pathTrajMatchingNodeInfo = PassedNodeInfo(nodeNumber: -1, nodeCoord: [], nodeHeadings: [], matchedIndex: -1, userHeading: 0)
         
         self.resetLinkInfo()
-//        self.linkCoord = [0, 0]
-//        self.linkDirections = [Double]()
 
         self.tuResultNow = FineLocationTrackingFromServer()
         self.tuResultWhenUvdPosted = FineLocationTrackingFromServer()
@@ -104,14 +99,6 @@ public class OlympusKalmanFilter: NSObject {
         print(getLocalTimeString() + " , (Olympus) KalmanFilter : init when RouteTrack finished")
     }
     
-//    public func setLinkInfo(coord: [Double], directions: [Double]) {
-//        queue.async { [weak self] in
-//            guard let self = self else { return }
-//            self.linkCoord = coord
-//            self.linkDirections = directions
-//        }
-//    }
-    
     
     public func setLinkInfo(coord: [Double], directions: [Double]) {
         linkInfoLock.lock()
@@ -125,7 +112,6 @@ public class OlympusKalmanFilter: NSObject {
         let snapshot = linkInfo
         return snapshot
     }
-    
     
     public func refreshTuResult(xyh: [Double], inputPhase: Int, inputTrajLength: Double, mode: String) {
         self.tuResult.x = xyh[0]
