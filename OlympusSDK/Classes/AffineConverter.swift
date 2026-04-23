@@ -25,7 +25,7 @@ class AffineConverter {
         
         let headingOffsetDeg = param.headingOffset // songdo : 36.92
         let correctedHeading = fmod(-heading + headingOffsetDeg + 360.0, 360.0)
-        
-        return LLH(lat: lat, lon: lon, heading: correctedHeading)
+        JupiterLogger.i(tag: "AffineConverter", message: "(convertPpToLLH) : heading=\(heading) , headingOffsetDeg= \(headingOffsetDeg), correctedHeading= \(correctedHeading)")
+        return LLH(lat: lat, lon: lon, azimuth: correctedHeading)
     }
 }

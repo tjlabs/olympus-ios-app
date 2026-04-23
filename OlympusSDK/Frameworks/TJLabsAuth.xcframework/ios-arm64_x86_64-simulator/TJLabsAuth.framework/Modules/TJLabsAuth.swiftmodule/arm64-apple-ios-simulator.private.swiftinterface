@@ -9,6 +9,17 @@ import Swift
 import _Concurrency
 import _StringProcessing
 import _SwiftConcurrencyShims
+public enum AuthCloud : Swift.String {
+  case AWS
+  case GCP
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init?(rawValue: Swift.String)
+  #endif
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
 public enum AuthRegion : Swift.String {
   case KOREA
   case US_EAST
@@ -62,7 +73,7 @@ public enum SecretConfig {
   #endif
 }
 @_hasMissingDesignatedInitializers public class TJLabsAuthConstants {
-  public static func setServerURL(region: Swift.String, serverType: Swift.String)
+  public static func setServerURL(cloud: Swift.String, region: Swift.String, serverType: Swift.String)
   public static func getUserBaseURL() -> Swift.String
   public static func getUserTokenVersion() -> Swift.String
   public static func getUserTokenURL() -> Swift.String
@@ -76,6 +87,9 @@ public enum SecretConfig {
   public func isTokenNearExpiry(threshold: Foundation.TimeInterval = 60) -> Swift.Bool
   @objc deinit
 }
+extension TJLabsAuth.AuthCloud : Swift.Equatable {}
+extension TJLabsAuth.AuthCloud : Swift.Hashable {}
+extension TJLabsAuth.AuthCloud : Swift.RawRepresentable {}
 extension TJLabsAuth.AuthRegion : Swift.Equatable {}
 extension TJLabsAuth.AuthRegion : Swift.Hashable {}
 extension TJLabsAuth.AuthRegion : Swift.RawRepresentable {}

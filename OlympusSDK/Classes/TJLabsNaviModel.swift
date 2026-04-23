@@ -50,7 +50,7 @@ struct Origin: Codable {
 struct DirectionsRequest: Encodable {
     let tenant_user_name: String
     let mobile_time: Int
-    let request_type: DirRqType
+    let request_type: String
     let is_vehicle: Bool
     let origin: Origin
     let destination: Point

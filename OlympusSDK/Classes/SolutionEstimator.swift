@@ -506,7 +506,8 @@ class SolutionEstimator {
                                                 shiftedTraj: [CandidateTrajectory],
                                                 targetIndices: [Int],
                                                 maxGroupSwitches: Int = 1,
-                                                mode: UserMode) -> [LossPointResult]? {
+                                                mode: UserMode,
+                                                isUseHeading: Bool = false) -> [LossPointResult]? {
         
         if shiftedTraj.isEmpty || targetIndices.isEmpty { return nil }
         let key = "\(sectorId)_\(curPmResult.building_name)_\(curPmResult.level_name)"
@@ -526,7 +527,7 @@ class SolutionEstimator {
                                                                  building: curPmResult.building_name,
                                                                  level: curPmResult.level_name,
                                                                  x: point.x, y: point.y, heading: point.heading,
-                                                                 isUseHeading: false, mode: mode,
+                                                                 isUseHeading: isUseHeading, mode: mode,
                                                                  paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else { return nil }
             var newResult = curPmResult
             newResult.x = pm.xyhs.x
@@ -863,11 +864,13 @@ class SolutionEstimator {
         
         guard let second = second else {
             JupiterLogger.i(tag: "SolutionEstimator", message: "(selectCandidate) only first remains // filtered size: \(filtered.count) // first: \(first.loss)")
-            if first.loss > 40/3 {
-                return nil
-            } else {
-                return (first, 0.0)
-            }
+//            if first.loss > 40/3 {
+//                return nil
+//            } else {
+//                return (first, 0.0)
+//            }
+            
+            return nil
         }
         
         let best = (first.loss <= second.loss) ? first : second

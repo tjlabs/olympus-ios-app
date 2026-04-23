@@ -95,6 +95,7 @@ class TJLabsIndoorNaviView: UIView, TJLabsNaviViewDelegate, NavigationManagerDel
     }
     private var didSetupLayout = false
 
+    var cloud: String?
     var region: String?
     var sectorId: Int?
     var userId: String?
@@ -189,9 +190,9 @@ class TJLabsIndoorNaviView: UIView, TJLabsNaviViewDelegate, NavigationManagerDel
     }
 
     func setupNaviView() {
-        guard let region = self.region, let sectorId = self.sectorId else { return }
+        guard let cloud = self.cloud, let region = self.region, let sectorId = self.sectorId else { return }
         
-        naviView.initialize(region: region, sectorId: sectorId)
+        naviView.initialize(cloud: cloud, region: region, sectorId: sectorId)
         naviView.setPointOffset(offset: 200)
         naviView.setZoomAndMarkerScale(zoom: 2.0)
         containerView.addSubview(naviView)

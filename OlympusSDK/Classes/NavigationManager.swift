@@ -198,8 +198,9 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         }
     }
     
-    private var region: String = ""
     private var id: String = ""
+    private var cloud: String = ""
+    private var region: String = ""
     private var sectorId: Int = 0
     public weak var delegate: NavigationManagerDelegate?
     
@@ -230,10 +231,12 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     private var recentLandmarkPeaks: [PeakData]?
     
     // MARK: - init & deinit
-    public init(id: String, region: String = JupiterRegion.KOREA.rawValue, sectorId: Int, debugOption: Bool = false) {
+    public init(id: String, cloud: String = JupiterCloud.AWS.rawValue, region: String = JupiterRegion.KOREA.rawValue, sectorId: Int, debugOption: Bool = false) {
         self.id = id
+        self.cloud = cloud
+        self.region = region
         self.sectorId = sectorId
-        self.jupiterManager = JupiterManager(id: id, region: region, sectorId: sectorId, debugOption: debugOption)
+        self.jupiterManager = JupiterManager(id: id, cloud: cloud, region: region, sectorId: sectorId, debugOption: debugOption)
         self.jupiterManager?.delegate = self
     }
     
@@ -249,7 +252,7 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     }
     
     public func startService(mode: UserMode) {
-        NavigationNetworkConstants.setServerURL(region: region)
+        NavigationNetworkConstants.setServerURL(cloud: cloud, region: region)
         self.routingManager = RoutingManager(id: id, sectorId: sectorId)
         self.routingManager?.delegate = self
         jupiterManager?.startJupiter(mode: mode)

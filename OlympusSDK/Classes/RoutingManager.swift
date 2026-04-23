@@ -188,7 +188,8 @@ class RoutingManager {
         let to: Point = Point(level_id: end.level_id, x: end.x, y: end.y)
         
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-        let input = DirectionsRequest(tenant_user_name: self.id, mobile_time: currentTime, request_type: type, is_vehicle: true, origin: from, destination: to, waypoints: waypoints)
+        let input = DirectionsRequest(tenant_user_name: self.id, mobile_time: currentTime, request_type: type.rawValue, is_vehicle: true, origin: from, destination: to, waypoints: waypoints)
+        JupiterLogger.e(tag: "RoutingManager", message: "(requestRouting) : input= \(input)")
         let successRange = 200..<300
         NavigationNetworkManager.shared.postCalcDirs(url: NavigationNetworkConstants.getCalcDirsURL(), input: input, completion: { [self] statusCode, returnedString, inputDirs in
             if successRange.contains(statusCode)  {

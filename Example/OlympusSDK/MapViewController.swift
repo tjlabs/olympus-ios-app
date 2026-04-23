@@ -8,6 +8,7 @@ import TJLabsMap
 
 
 class MapViewController: UIViewController {
+    var cloud: String = ResourceCloud.AWS.rawValue
     var region: String = ResourceRegion.KOREA.rawValue
     var sectorId: Int = 6
     var userId: String = ""
@@ -131,7 +132,7 @@ class MapViewController: UIViewController {
     }
     
     func setupMapView() {
-        mapView.initialize(region: self.region, sectorId: self.sectorId)
+        mapView.initialize(cloud: "GCP", region: self.region, sectorId: self.sectorId)
         mapView.configureFrame(to: mainView)
         mapView.setZoomScale(zoom: 2.0)
         mainView.addSubview(mapView)

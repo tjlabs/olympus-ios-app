@@ -36,7 +36,7 @@ public protocol TJLabsMapViewDelegate : AnyObject {
   @_Concurrency.MainActor @preconcurrency public var pinLocations: [CoreFoundation.CGPoint]
   @_Concurrency.MainActor @preconcurrency public var pinCounts: Swift.Int
   @_Concurrency.MainActor @preconcurrency weak public var delegate: (any TJLabsMap.TJLabsMapViewDelegate)?
-  @_Concurrency.MainActor @preconcurrency public func initialize(region: Swift.String, sectorId: Swift.Int, showUnits: Swift.Bool = false, landmarkTh: Swift.Float = -90)
+  @_Concurrency.MainActor @preconcurrency public func initialize(cloud: Swift.String, region: Swift.String, sectorId: Swift.Int, showUnits: Swift.Bool = false, landmarkTh: Swift.Float = -90)
   @_Concurrency.MainActor @preconcurrency public func configureFrame(to matchView: UIKit.UIView)
   @_Concurrency.MainActor @preconcurrency public func setDebugOption(flag: Swift.Bool)
   @_Concurrency.MainActor @preconcurrency public func setZoomScale(zoom: CoreFoundation.CGFloat)
@@ -77,7 +77,7 @@ public struct MapNavigationNode {
 @objc @_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @_Concurrency.MainActor @preconcurrency public class TJLabsNaviView : UIKit.UIView, UIKit.UICollectionViewDelegate, UIKit.UICollectionViewDataSource, UIKit.UICollectionViewDelegateFlowLayout, UIKit.UIScrollViewDelegate {
   @_Concurrency.MainActor @preconcurrency weak public var delegate: (any TJLabsMap.TJLabsNaviViewDelegate)?
   @objc deinit
-  @_Concurrency.MainActor @preconcurrency public func initialize(region: Swift.String, sectorId: Swift.Int, landmarkTh: Swift.Float = -90)
+  @_Concurrency.MainActor @preconcurrency public func initialize(cloud: Swift.String, region: Swift.String, sectorId: Swift.Int, landmarkTh: Swift.Float = -90)
   @_Concurrency.MainActor @preconcurrency public func configureFrame(to matchView: UIKit.UIView)
   @_Concurrency.MainActor @preconcurrency public func setDebugOption(flag: Swift.Bool)
   @_Concurrency.MainActor @preconcurrency public func setPointOffset(offset: CoreFoundation.CGFloat)

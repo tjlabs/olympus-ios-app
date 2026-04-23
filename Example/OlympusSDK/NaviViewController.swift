@@ -264,7 +264,7 @@ class NaviViewController: UIViewController, NavigationManagerDelegate, TJLabsNav
     }
     
     func setupNaviView() {
-        naviView.initialize(region: self.region, sectorId: self.sectorId)
+        naviView.initialize(cloud: "GCP", region: self.region, sectorId: self.sectorId)
         naviView.configureFrame(to: mainView)
         naviView.setPointOffset(offset: 200)
         naviView.setZoomAndMarkerScale(zoom: 2.0)

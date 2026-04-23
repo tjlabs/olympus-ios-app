@@ -11,6 +11,7 @@ class TJLabsIndoorMapView: UIView, TJLabsMapViewDelegate {
     
     private var didSetupLayout = false
     
+    var cloud: String?
     var region: String?
     var sectorId: Int?
     
@@ -73,8 +74,8 @@ class TJLabsIndoorMapView: UIView, TJLabsMapViewDelegate {
     }
     
     private func setupMapView() {
-        guard let region = self.region, let sectorId = self.sectorId else { return }
-        mapView.initialize(region: region, sectorId: sectorId, showUnits: true)
+        guard let cloud = self.cloud, let region = self.region, let sectorId = self.sectorId else { return }
+        mapView.initialize(cloud: cloud, region: region, sectorId: sectorId, showUnits: true)
         mapView.configureFrame(to: self.containerView)
         mapView.setZoomScale(zoom: 2.0)
         mapView.delegate = self

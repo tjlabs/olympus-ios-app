@@ -5,6 +5,7 @@ import Then
 import OlympusSDK
 
 class IndoorViewController: UIViewController {
+    var cloud: String = JupiterCloud.AWS.rawValue
     var region: String = JupiterRegion.KOREA.rawValue
     var sectorId: Int = 20
     var userId: String = ""
@@ -43,7 +44,7 @@ class IndoorViewController: UIViewController {
     
     func setupIndoorView() {
         indoorView.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
-        indoorView.initialize(region: self.region, sectorId: self.sectorId, userId: self.userId)
+        indoorView.initialize(cloud: self.cloud, region: self.region, sectorId: self.sectorId, userId: self.userId)
         indoorView.configureFrame(to: mainView)
         mainView.addSubview(indoorView)
     }

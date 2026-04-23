@@ -100,6 +100,7 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
     }
     
     // MARK: - variables
+    var cloud: String?
     var region: String?
     var sectorId: Int?
     var userId: String?
@@ -155,12 +156,13 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
     
     var parkingGuideView: TJLabsIndoorParkingGuideView?
     
-    public func initialize(region: String, sectorId: Int, userId: String) {
+    public func initialize(cloud: String = JupiterCloud.AWS.rawValue, region: String, sectorId: Int, userId: String) {
+        self.cloud = cloud
         self.region = region
         self.sectorId = sectorId
         self.userId = userId
         TJLabsResourceManager.shared.delegate = self
-        TJLabsResourceManager.shared.loadResources(region: region, sectorId: sectorId, completion: { isSuccess in
+        TJLabsResourceManager.shared.loadResources(cloud: cloud, region: region, sectorId: sectorId, completion: { isSuccess in
             let msg = isSuccess ? "success" : "fail"
             JupiterLogger.i(tag: "TJLabsIndoorView", message: "initialize " + msg)
             self.isResourceLoaded = isSuccess

@@ -3,6 +3,11 @@ import Foundation
 import TJLabsCommon
 import TJLabsResource
 
+public enum JupiterCloud: String {
+    case AWS = "AWS"
+    case GCP = "GCP"
+}
+
 public enum JupiterRegion: String {
     case KOREA = "KOREA"
     case US_EAST = "US_EAST"
@@ -100,7 +105,7 @@ public struct Position: Codable {
 public struct LLH: Codable {
     public var lat: Double
     public var lon: Double
-    public var heading: Double
+    public var azimuth: Double
 }
 
 // MARK: - JupiterDebugResult
@@ -185,7 +190,7 @@ public struct SelectedSearch {
     public let head: ixyhs
     public var headResult: FineLocationTrackingOutput
     
-    public let loss: Float
+    public var loss: Float
 }
 
 public struct CandidateResult {

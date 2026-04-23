@@ -31,20 +31,33 @@ public class JupiterNetworkConstants {
     private(set) static var CALC_URL = HTTP_PREFIX + REGION_PREFIX + "calc" + JUPITER_SUFFIX
     private(set) static var CLIENT_URL = HTTP_PREFIX + REGION_PREFIX + "client" + JUPITER_SUFFIX
     
-    public static func setServerURL(region: String) {
-        switch region {
-        case JupiterRegion.KOREA.rawValue:
-            REGION_PREFIX = "ap-northeast-2."
-            REGION_NAME = "Korea"
-        case JupiterRegion.KOREA.rawValue:
-            REGION_PREFIX = "ca-central-1."
-            REGION_NAME = "Canada"
-        case JupiterRegion.KOREA.rawValue:
-            REGION_PREFIX = "us-east-1."
-            REGION_NAME = "US"
-        default:
-            REGION_PREFIX = "ap-northeast-2."
-            REGION_NAME = "Korea"
+    public static func setServerURL(cloud: String = JupiterCloud.AWS.rawValue, region: String) {
+        if cloud == JupiterCloud.GCP.rawValue {
+            // GCP
+            switch region {
+            case JupiterRegion.KOREA.rawValue:
+                REGION_PREFIX = "asia-northeast3."
+                REGION_NAME = "Korea"
+            default:
+                REGION_PREFIX = "asia-northeast3."
+                REGION_NAME = "Korea"
+            }
+        } else if cloud == JupiterCloud.AWS.rawValue {
+            // AWS
+            switch region {
+            case JupiterRegion.KOREA.rawValue:
+                REGION_PREFIX = "ap-northeast-2."
+                REGION_NAME = "Korea"
+            case JupiterRegion.KOREA.rawValue:
+                REGION_PREFIX = "ca-central-1."
+                REGION_NAME = "Canada"
+            case JupiterRegion.KOREA.rawValue:
+                REGION_PREFIX = "us-east-1."
+                REGION_NAME = "US"
+            default:
+                REGION_PREFIX = "ap-northeast-2."
+                REGION_NAME = "Korea"
+            }
         }
         
         USER_URL = HTTP_PREFIX + REGION_PREFIX + "user" + JUPITER_SUFFIX
@@ -53,6 +66,9 @@ public class JupiterNetworkConstants {
         REC_URL = HTTP_PREFIX + REGION_PREFIX + "rec" + JUPITER_SUFFIX
         CALC_URL = HTTP_PREFIX + REGION_PREFIX + "calc" + JUPITER_SUFFIX
         CLIENT_URL = HTTP_PREFIX + REGION_PREFIX + "client" + JUPITER_SUFFIX
+        
+        JupiterLogger.i(tag: "JupiterNetworkConstants", message: "(setServerURL) : USER_URL= \(USER_URL)")
+        JupiterLogger.i(tag: "JupiterNetworkConstants", message: "(setServerURL) : CALC_URL= \(CALC_URL)")
     }
     
     public static func getUserBaseURL() -> String {

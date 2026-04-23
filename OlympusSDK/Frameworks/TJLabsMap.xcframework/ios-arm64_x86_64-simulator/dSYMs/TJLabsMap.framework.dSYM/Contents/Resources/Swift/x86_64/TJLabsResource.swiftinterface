@@ -48,6 +48,17 @@ public enum ResourceError {
     get
   }
 }
+public enum ResourceCloud : Swift.String {
+  case AWS
+  case GCP
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init?(rawValue: Swift.String)
+  #endif
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
 public enum ResourceRegion : Swift.String {
   case KOREA
   case CANADA
@@ -404,7 +415,7 @@ public class TJLabsResourceManager {
   public static let shared: TJLabsResource.TJLabsResourceManager
   weak public var delegate: (any TJLabsResource.TJLabsResourceManagerDelegate)?
   public init()
-  public func loadResources(region: Swift.String, sectorId: Swift.Int, landmarkTh: Swift.Float = -90, forceUpdate: Swift.Bool = false, completion: @escaping (Swift.Bool) -> Swift.Void)
+  public func loadResources(cloud: Swift.String, region: Swift.String, sectorId: Swift.Int, landmarkTh: Swift.Float = -90, forceUpdate: Swift.Bool = false, completion: @escaping (Swift.Bool) -> Swift.Void)
   public func isDebug() -> Swift.Bool
   #if compiler(>=5.3) && $NonescapableTypes
   public func loadSectorBundle(region: Swift.String, sectorId: Swift.Int, forceUpdate: Swift.Bool = false, completion: @escaping (TJLabsResource.BundleOutput?) -> Swift.Void)
@@ -458,7 +469,7 @@ public class TJLabsResourceManager {
   @objc deinit
 }
 @_hasMissingDesignatedInitializers public class TJLabsResourceNetworkConstants {
-  public static func setServerURL(region: Swift.String)
+  public static func setServerURL(cloud: Swift.String, region: Swift.String)
   public static func getUserBaseURL() -> Swift.String
   public static func getUserSectorVersion() -> Swift.String
   public static func getUserSectorURL() -> Swift.String
@@ -494,6 +505,9 @@ public class TJLabsResourceManager {
 }
 extension TJLabsResource.ResourceError : Swift.Equatable {}
 extension TJLabsResource.ResourceError : Swift.Hashable {}
+extension TJLabsResource.ResourceCloud : Swift.Equatable {}
+extension TJLabsResource.ResourceCloud : Swift.Hashable {}
+extension TJLabsResource.ResourceCloud : Swift.RawRepresentable {}
 extension TJLabsResource.ResourceRegion : Swift.Equatable {}
 extension TJLabsResource.ResourceRegion : Swift.Hashable {}
 extension TJLabsResource.ResourceRegion : Swift.RawRepresentable {}

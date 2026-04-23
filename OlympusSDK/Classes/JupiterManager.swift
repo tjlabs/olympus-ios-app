@@ -58,7 +58,8 @@ public class JupiterManager: JupiterCalcManagerDelegate {
     
     var id: String = ""
     var sectorId: Int = 0
-    var region: JupiterRegion = .KOREA
+    var cloud: String = ""
+    var region: String = ""
     var deviceModel: String
     var deviceIdentifier: String
     var deviceOsVersion: Int
@@ -75,8 +76,10 @@ public class JupiterManager: JupiterCalcManagerDelegate {
     // MARK: - JupiterResult Timer
     var outputTimer: DispatchSourceTimer?
     
-    public init(id: String, region: String = JupiterRegion.KOREA.rawValue, sectorId: Int, debugOption: Bool = false) {
+    public init(id: String, cloud: String, region: String = JupiterRegion.KOREA.rawValue, sectorId: Int, debugOption: Bool = false) {
         self.id = id
+        self.cloud = cloud
+        self.region = region
         self.sectorId = sectorId
         
         self.deviceIdentifier = UIDevice.modelIdentifier
@@ -85,7 +88,7 @@ public class JupiterManager: JupiterCalcManagerDelegate {
         let arr = deviceOs.components(separatedBy: ".")
         self.deviceOsVersion = Int(arr[0]) ?? 0
         
-        initialize(region: region, sectorId: sectorId, debugOption: debugOption)
+        initialize(cloud: cloud, region: region, sectorId: sectorId, debugOption: debugOption)
     }
     
     deinit {
@@ -94,8 +97,8 @@ public class JupiterManager: JupiterCalcManagerDelegate {
     }
 
     // MARK: - Start & Stop Jupiter Service
-    func initialize(region: String, sectorId: Int, debugOption: Bool) {
-        JupiterNetworkConstants.setServerURL(region: region)
+    func initialize(cloud: String, region: String, sectorId: Int, debugOption: Bool) {
+        JupiterNetworkConstants.setServerURL(cloud: cloud, region: region)
         let (isNetworkAvailable, _) = JupiterNetworkManager.shared.isConnectedToInternet()
         let (isIdAvailable, _) = checkIdIsAvailable(id: id)
         
@@ -131,15 +134,15 @@ public class JupiterManager: JupiterCalcManagerDelegate {
         ]
         
         performTasksWithCounter(tasks: tasks, onComplete: { [self] in
-            jupiterCalcManager = JupiterCalcManager(region: region, id: self.id, sectorId: sectorId)
+            jupiterCalcManager = JupiterCalcManager(cloud: cloud, region: region, id: self.id, sectorId: sectorId)
             jupiterCalcManager?.initialize(completion: { [self] isSuccess, msg in
                 if isSuccess {
                     // File Save Setting
-                    if debugOption {
-                        self.uploadSimulationFiles()
-                        JupiterFileManager.shared.setDebugOption(flag: debugOption)
-                        JupiterFileManager.shared.createFiles(id: self.id, os: "iOS")
-                    }
+//                    if debugOption {
+//                        self.uploadSimulationFiles()
+//                        JupiterFileManager.shared.setDebugOption(flag: debugOption)
+//                        JupiterFileManager.shared.createFiles(id: self.id, os: "iOS")
+//                    }
                     jupiterCalcManager?.debugOption = debugOption
                     jupiterCalcManager?.delegate = self
                     

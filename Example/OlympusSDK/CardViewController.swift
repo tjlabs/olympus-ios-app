@@ -38,7 +38,7 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
     }
     
     func onJupiterResult(_ result: OlympusSDK.JupiterResult) {
-//        print("(onJupiterResult) -> index:\(result.index) , xyh:[\(result.x),\(result.y),\(result.absolute_heading)] , llh:\(result.llh)")
+        print("(onJupiterResult) -> index:\(result.index) , xyh:[\(result.jupiter_pos.x),\(result.jupiter_pos.y),\(result.jupiter_pos.heading)] , llh:\(result.llh)")
         let building = result.building_name
         let level = result.level_name
         let x = result.jupiter_pos.x
@@ -111,11 +111,11 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
 //    var sector_id: Int = 14 // DS
 //    var mode: String = "pdr"
     
-    var sector_id: Int = 6
-    var mode: String = "auto"
-    
-//    var sector_id: Int = 20  // Convensia
+//    var sector_id: Int = 6
 //    var mode: String = "auto"
+    
+    var sector_id: Int = 20  // Convensia
+    var mode: String = "auto"
     
 //    var sector_id: Int = 2
 //    var mode: String = "pdr"
@@ -149,17 +149,17 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
         headingImage = headingImage?.resize(newWidth: 20)
         let uniqueId = makeUniqueId(uuid: self.userId)
         
-        serviceManager = NavigationManager(id: uniqueId, sectorId: self.sector_id, debugOption: true)
+        serviceManager = NavigationManager(id: uniqueId, cloud: "AWS", sectorId: self.sector_id, debugOption: true)
         serviceManager?.delegate = self
 
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_01_0317.csv", sensorFileName: "sensor_coex_01_0317.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_02_0310.csv", sensorFileName: "sensor_coex_02_0310.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_03_0303.csv", sensorFileName: "sensor_coex_03_0303.csv")
-//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_01_0224.csv", sensorFileName: "sensor_coex_01_0224.csv")
-        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_test6_0129.csv", sensorFileName: "sensor_coex_test6_0129.csv")
+//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_03_0224.csv", sensorFileName: "sensor_coex_03_0224.csv")
+//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_test6_0129.csv", sensorFileName: "sensor_coex_test6_0129.csv")
         
-//        serviceManager?.setNaviDestination(dest: Point(level_id: 53, x: 335, y: 0))
-//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
+        serviceManager?.setNaviDestination(dest: Point(level_id: 53, x: 335, y: 0))
+        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test02_ent2.csv", sensorFileName: "sensor_251013_songdo_test02_ent2.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test05_ent3.csv", sensorFileName: "sensor_251013_songdo_test05_ent3.csv")
         
