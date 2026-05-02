@@ -111,11 +111,11 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
 //    var sector_id: Int = 14 // DS
 //    var mode: String = "pdr"
     
-//    var sector_id: Int = 6
-//    var mode: String = "auto"
-    
-    var sector_id: Int = 20  // Convensia
+    var sector_id: Int = 6
     var mode: String = "auto"
+    
+//    var sector_id: Int = 20  // Convensia
+//    var mode: String = "auto"
     
 //    var sector_id: Int = 2
 //    var mode: String = "pdr"
@@ -149,35 +149,30 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
         headingImage = headingImage?.resize(newWidth: 20)
         let uniqueId = makeUniqueId(uuid: self.userId)
         
-        serviceManager = NavigationManager(id: uniqueId, cloud: "AWS", sectorId: self.sector_id, debugOption: true)
+        // Ent-1
+//        serviceManager?.setNaviDestination(dest: Point(level_id: 350, x: 55, y: 0))
+        
+        // Ent-2
+//        serviceManager?.setNaviDestination(dest: Point(level_id: 52, x: 184, y: 0))
+        
+        
+        serviceManager = NavigationManager(id: uniqueId, cloud: "GCP", sectorId: self.sector_id, debugOption: true)
         serviceManager?.delegate = self
-
+        
+//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_04_01_1007.csv", sensorFileName: "sensor_coex_04_01_1007.csv")
+//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_test6_0129.csv", sensorFileName: "sensor_coex_test6_0129.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_01_0317.csv", sensorFileName: "sensor_coex_01_0317.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_02_0310.csv", sensorFileName: "sensor_coex_02_0310.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_03_0303.csv", sensorFileName: "sensor_coex_03_0303.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_03_0224.csv", sensorFileName: "sensor_coex_03_0224.csv")
-//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_test6_0129.csv", sensorFileName: "sensor_coex_test6_0129.csv")
         
-        serviceManager?.setNaviDestination(dest: Point(level_id: 53, x: 335, y: 0))
-        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
+//        serviceManager?.setNaviDestination(dest: Point(level_id: 53, x: 335, y: 0))
+//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test02_ent2.csv", sensorFileName: "sensor_251013_songdo_test02_ent2.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test05_ent3.csv", sensorFileName: "sensor_251013_songdo_test05_ent3.csv")
         
 //        serviceManager?.setSimulationMode(flag: true, rfdFileName: "260407_songdo_test5_rfd.json", uvdFileName: "260407_songdo_test5_uvd.json", eventFileName: "260407_songdo_test5_event.json")
 //        serviceManager?.setSimulationMode(flag: true, rfdFileName: "Rfd1.json", uvdFileName: "Uvd1.json", eventFileName: "Event1.json")
-        
-        // service
-//        serviceManager.addObserver(self)
-//        serviceManager.setDebugOption(flag: true)
-//        serviceManager.startService(user_id: uniqueId, region: self.region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
-//        serviceManager.startService(user_id: uniqueId, region: "Korea", sector_id: 16, service: "FLT", mode: "pdr", completion: { [self] isStart, returnedString in
-//            if (isStart) {
-//                serviceState = true
-//                self.startTimer()
-//            } else {
-//                print(returnedString)
-//            }
-//        })
     }
     
     override func viewWillDisappear(_ animated: Bool) {

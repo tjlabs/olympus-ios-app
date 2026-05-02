@@ -88,6 +88,7 @@ public struct SectorBundle : Swift.Codable {
   public let id: Swift.Int
   public let name: Swift.String
   public let debug: Swift.Bool
+  public let operatingSystem: Swift.String
   public let defaultPosition: TJLabsResource.DefaultPosition?
   public let wgs84Transform: TJLabsResource.WGS84Transform?
   public let buildings: [TJLabsResource.Building]
@@ -136,7 +137,6 @@ public struct Building : Swift.Codable {
 public struct Level : Swift.Codable {
   public let id: Swift.Int
   public let name: Swift.String
-  public let operatingSystem: Swift.String
   public let mapImage: TJLabsResource.MapImage
   public let geofence: TJLabsResource.GeofenceData
   public let entrances: [TJLabsResource.Entrance]

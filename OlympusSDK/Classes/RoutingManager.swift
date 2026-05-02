@@ -183,17 +183,19 @@ class RoutingManager {
     }
     
     // MARK: - Request
-    func requestRouting(type: DirRqType, start: RoutingStart, end: Point, waypoints: [Point] = [], completion: @escaping (RoutingResult?) -> Void) {
+    func requestRouting(mode: UserMode, type: DirRqType, start: RoutingStart, end: Point, waypoints: [Point] = [], completion: @escaping (RoutingResult?) -> Void) {
         let from: Origin = Origin(level_id: start.level_id, x: start.x, y: start.y, absolute_heading: start.absolute_heading)
         let to: Point = Point(level_id: end.level_id, x: end.x, y: end.y)
         
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-        let input = DirectionsRequest(tenant_user_name: self.id, mobile_time: currentTime, request_type: type.rawValue, is_vehicle: true, origin: from, destination: to, waypoints: waypoints)
+        let isVehicle = mode == .MODE_PEDESTRIAN ? false : true
+        let input = DirectionsRequest(tenant_user_name: self.id, mobile_time: currentTime, request_type: type.rawValue, is_vehicle: isVehicle, origin: from, destination: to, waypoints: waypoints)
         JupiterLogger.e(tag: "RoutingManager", message: "(requestRouting) : input= \(input)")
         let successRange = 200..<300
         NavigationNetworkManager.shared.postCalcDirs(url: NavigationNetworkConstants.getCalcDirsURL(), input: input, completion: { [self] statusCode, returnedString, inputDirs in
             if successRange.contains(statusCode)  {
                 if let decoded = decodeCalcDirs(from: returnedString) {
+                    self.naviDestination = end
                     completion(RoutingResult(code: statusCode, routes: decoded.routes))
                 } else {
                     JupiterLogger.e(tag: "RoutingManager", message: "(requestRouting) : fail decoding")
@@ -266,8 +268,8 @@ class RoutingManager {
         
         JupiterLogger.e(tag: "RoutingManager", message: "(requestRouting) start:\(start) -> end:\(end)")
         
-        generateNavigationRoute(bOrder: buildingOrder, lOrder: levelOrder, nodeOrder: nodeOrder, coordOrder: order) // display
         generateNavigationRoute(bOrder: buildingOrder, lOrder: levelOrder, nodeOrder: nodeOrder, order: order)
+        generateNavigationRoute(bOrder: buildingOrder, lOrder: levelOrder, nodeOrder: nodeOrder, coordOrder: order) // display
         let sectionMap = makeSectionMap(routes: self.routes)
         self.routeSectionData = sectionMap
         delegate?.isNavigationRouteChanged()

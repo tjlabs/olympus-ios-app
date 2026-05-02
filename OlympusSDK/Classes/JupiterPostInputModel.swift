@@ -27,7 +27,7 @@ struct MobileReport: Encodable {
     let code: Int
 }
 
-struct S3Input: Codable {
+struct StorageInput: Codable {
     let file_name: String
     let content_type: String
 }

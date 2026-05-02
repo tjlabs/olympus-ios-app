@@ -138,11 +138,11 @@ public class JupiterManager: JupiterCalcManagerDelegate {
             jupiterCalcManager?.initialize(completion: { [self] isSuccess, msg in
                 if isSuccess {
                     // File Save Setting
-//                    if debugOption {
-//                        self.uploadSimulationFiles()
-//                        JupiterFileManager.shared.setDebugOption(flag: debugOption)
-//                        JupiterFileManager.shared.createFiles(id: self.id, os: "iOS")
-//                    }
+                    if debugOption {
+                        self.uploadSimulationFiles()
+                        JupiterFileManager.shared.setDebugOption(flag: debugOption)
+                        JupiterFileManager.shared.createFiles(id: self.id, os: "iOS")
+                    }
                     jupiterCalcManager?.debugOption = debugOption
                     jupiterCalcManager?.delegate = self
                     
@@ -187,37 +187,46 @@ public class JupiterManager: JupiterCalcManagerDelegate {
         let rfdFile = fileInfos.rfdFiles
         let uvdFile = fileInfos.uvdFiles
         let eventFile = fileInfos.eventFiles
-        
+
+        let filePrefix = "\(self.sectorId)/iOS"
+        let normalizedFilePrefix = filePrefix.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+
         for r in rfdFile {
-            JupiterFileUploader.shared.requestS3FileURL(fileName: r.name, completion: { output in
-                if let s3Output = output {
-                    let presigned_url = s3Output.presigned_url
-                    JupiterLogger.i(tag: "JupiterManager", message: "uploadSimulationFiles rfd : \(r.name)")
-                    JupiterFileUploader.shared.uploadFileToS3(s3Path: presigned_url, filePath: r.path, completion: { isSuccess in
+            let storageFileName = "\(normalizedFilePrefix)/\(r.name)"
+            JupiterFileUploader.shared.requestStorageFileURL(fileName: storageFileName, completion: { output in
+                if let storageOutput = output {
+                    let presigned_url = storageOutput.presigned_url
+                    JupiterLogger.i(tag: "JupiterManager", message: "uploadSimulationFiles rfd presigned_url : \(presigned_url)")
+                    JupiterLogger.i(tag: "JupiterManager", message: "uploadSimulationFiles rfd : \(storageFileName)")
+                    JupiterFileUploader.shared.uploadFileToStorage(storagePath: presigned_url, filePath: r.path, completion: { isSuccess in
                         if isSuccess { JupiterFileManager.shared.deleteSimulationFile(at: r.path) }
                     })
                 }
             })
         }
-        
+
         for u in uvdFile {
-            JupiterFileUploader.shared.requestS3FileURL(fileName: u.name, completion: { output in
-                if let s3Output = output {
-                    let presigned_url = s3Output.presigned_url
-                    JupiterLogger.i(tag: "JupiterManager", message: "uploadSimulationFiles uvd : \(u.name)")
-                    JupiterFileUploader.shared.uploadFileToS3(s3Path: presigned_url, filePath: u.path, completion: { isSuccess in
+            let storageFileName = "\(normalizedFilePrefix)/\(u.name)"
+            JupiterFileUploader.shared.requestStorageFileURL(fileName: storageFileName, completion: { output in
+                if let storageOutput = output {
+                    let presigned_url = storageOutput.presigned_url
+                    JupiterLogger.i(tag: "JupiterManager", message: "uploadSimulationFiles uvd presigned_url : \(presigned_url)")
+                    JupiterLogger.i(tag: "JupiterManager", message: "uploadSimulationFiles uvd : \(storageFileName)")
+                    JupiterFileUploader.shared.uploadFileToStorage(storagePath: presigned_url, filePath: u.path, completion: { isSuccess in
                         if isSuccess { JupiterFileManager.shared.deleteSimulationFile(at: u.path) }
                     })
                 }
             })
         }
-        
+
         for e in eventFile {
-            JupiterFileUploader.shared.requestS3FileURL(fileName: e.name, completion: { output in
-                if let s3Output = output {
-                    let presigned_url = s3Output.presigned_url
-                    JupiterLogger.i(tag: "JupiterManager", message: "uploadSimulationFiles event : \(e.name)")
-                    JupiterFileUploader.shared.uploadFileToS3(s3Path: presigned_url, filePath: e.path, completion: { isSuccess in
+            let storageFileName = "\(normalizedFilePrefix)/\(e.name)"
+            JupiterFileUploader.shared.requestStorageFileURL(fileName: storageFileName, completion: { output in
+                if let storageOutput = output {
+                    let presigned_url = storageOutput.presigned_url
+                    JupiterLogger.i(tag: "JupiterManager", message: "uploadSimulationFiles event presigned_url : \(presigned_url)")
+                    JupiterLogger.i(tag: "JupiterManager", message: "uploadSimulationFiles event : \(storageFileName)")
+                    JupiterFileUploader.shared.uploadFileToStorage(storagePath: presigned_url, filePath: e.path, completion: { isSuccess in
                         if isSuccess { JupiterFileManager.shared.deleteSimulationFile(at: e.path) }
                     })
                 }

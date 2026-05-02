@@ -229,7 +229,7 @@ class JupiterNetworkManager {
         }
     }
     
-    func postS3(url: String, input: S3Input, completion: @escaping (Int, String, S3Input) -> Void) {
+    func postStorage(url: String, input: StorageInput, completion: @escaping (Int, String, StorageInput) -> Void) {
         guard let body = encodeJson(input) else {
             DispatchQueue.main.async { completion(406, "Invalid URL or failed to encode JSON", input) }
             return

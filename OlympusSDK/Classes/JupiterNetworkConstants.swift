@@ -12,7 +12,7 @@ public class JupiterNetworkConstants {
     static let REC_UVD_SERVER_VERSION = "2025-04-02"
     static let REC_MOBILE_RESULT_SERVER_VERSION = "2026-04-09"
     static let REC_MOBILE_REPORT_SERVER_VERSION = "2025-04-02"
-    static let REC_S3_SERVER_VERSION = "2026-04-02"
+    static let REC_FILE_UPLOAD_SERVER_VERSION = "2026-04-29"
     
     static let CALC_OPE_SERVER_VERSION = "1994-07-29" // 있다고 가정
     static let CALC_DIRECTIONS_SERVER_VERSION = "2026-04-13"
@@ -107,8 +107,8 @@ public class JupiterNetworkConstants {
         return REC_MOBILE_RESULT_SERVER_VERSION
     }
     
-    public static func getRecS3ServerVersion() -> String {
-        return REC_S3_SERVER_VERSION
+    public static func getRecFileUploadServerVersion() -> String {
+        return REC_FILE_UPLOAD_SERVER_VERSION
     }
     
     public static func getUserLoginURL() -> String {
@@ -135,8 +135,8 @@ public class JupiterNetworkConstants {
         return REC_URL + "/" + REC_MOBILE_REPORT_SERVER_VERSION + "/mobile-report"
     }
     
-    public static func getRecS3URL() -> String {
-        return REC_URL + "/" + REC_S3_SERVER_VERSION + "/s3"
+    public static func getRecFileUploadURL() -> String {
+        return REC_URL + "/" + REC_FILE_UPLOAD_SERVER_VERSION + "/storage"
     }
     
     public static func getCalcOpeURL() -> String {

@@ -27,7 +27,7 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         }
         if let origin = routingManager?.getEntRoutingOrigin(key: key, level_id: level_id), let to = self.naviDestination {
             let from: RoutingStart = RoutingStart(level_id: origin.level_id, x: origin.x, y: origin.y, absolute_heading: origin.absolute_heading)
-            routingManager?.requestRouting(type: .INITIAL, start: from, end: to, completion: { [self] routingResult in
+            routingManager?.requestRouting(mode: UserMode.MODE_VEHICLE, type: .INITIAL, start: from, end: to, completion: { [self] routingResult in
                 if let result = routingResult {
                     JupiterLogger.i(tag: "NavigationManager", message: "(requestRouting) routingResult= \(result)")
                     routingManager?.setRoutingRoutes(routes: result.routes)
@@ -147,7 +147,9 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         if phase == .TRACKING, let xyh = xyh {
             self.jupiterPhase = phase
             self.trackingIndex = index
-            routingManager?.setStartPointInNaviRoute(xyh: xyh)
+            if hasNaviRoute {
+                routingManager?.setStartPointInNaviRoute(xyh: xyh)
+            }
         }
     }
     
@@ -161,7 +163,7 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         guard let curLevelId = routingManager?.getLevelIdWithName(levelName: curResult.level_name) else { return }
         let from = RoutingStart(level_id: curLevelId, x: Int(curResult.jupiter_pos.x), y: Int(curResult.jupiter_pos.y), absolute_heading: Int(curResult.jupiter_pos.heading))
         guard let to = self.naviDestination else { return }
-        routingManager?.requestRouting(type: .REROUTE, start: from, end: to, completion: { [self] routingResult in
+        routingManager?.requestRouting(mode: UserMode.MODE_VEHICLE , type: .REROUTE, start: from, end: to, completion: { [self] routingResult in
             if let result = routingResult {
                 JupiterLogger.i(tag: "NavigationManager", message: "(requestRouting) routingResult= \(result)")
                 routingManager?.setRoutingRoutes(routes: result.routes)
@@ -237,7 +239,10 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         self.region = region
         self.sectorId = sectorId
         self.jupiterManager = JupiterManager(id: id, cloud: cloud, region: region, sectorId: sectorId, debugOption: debugOption)
+        self.routingManager = RoutingManager(id: id, sectorId: sectorId)
+        
         self.jupiterManager?.delegate = self
+        self.routingManager?.delegate = self
     }
     
     deinit {
@@ -253,14 +258,10 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     
     public func startService(mode: UserMode) {
         NavigationNetworkConstants.setServerURL(cloud: cloud, region: region)
-        self.routingManager = RoutingManager(id: id, sectorId: sectorId)
-        self.routingManager?.delegate = self
+        
+        
         jupiterManager?.startJupiter(mode: mode)
     }
-    
-//    public func startService(region: String = JupiterRegion.KOREA.rawValue, sectorId: Int, mode: UserMode, debugOption: Bool = false) {
-//        jupiterManager?.startJupiter(region: region, sectorId: sectorId, mode: mode, debugOption: debugOption)
-//    }
     
     public func stopService(completion: @escaping (Bool, String) -> Void) {
         jupiterManager?.stopJupiter(completion: completion)
@@ -281,8 +282,15 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         return jupiterDebugResult
     }
     
-    public func requestRouting(start: RoutingStart, end: Point, waypoints: [Point] = [], completion: @escaping (RoutingResult?) -> Void) {
-        routingManager?.requestRouting(type: .INITIAL, start: start, end: end, waypoints: waypoints, completion: completion)
+    public func requestRouting(mode: UserMode, start: RoutingStart, end: Point, waypoints: [Point] = [], completion: @escaping (RoutingResult?) -> Void) {
+        routingManager?.requestRouting(mode: mode, type: .INITIAL, start: start, end: end, waypoints: waypoints, completion: { result in
+            if let routingResult = result {
+                self.naviMode = true
+                self.naviDestination = end
+                self.routingManager?.setRoutingRoutes(routes: routingResult.routes)
+            }
+            completion(result)
+        })
     }
     
     //MARK: - Simulation Mode
