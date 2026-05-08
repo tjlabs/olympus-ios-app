@@ -17,37 +17,48 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     var sensorLineCount: Int = 0
     
     func tracking(input: FineLocationTrackingResult) {
-        for observer in observers {
-            let result = input
-            observer.update(result: result)
-            
-            if (self.isSaveMobileResult) {
-                let stateValue = result.in_out_state.rawValue
-                let mobileTime = result.mobile_time
-                let data = MobileResult(user_id: self.user_id, mobile_time: mobileTime, sector_id: self.sector_id, building_name: result.building_name, level_name: result.level_name, scc: result.scc, x: result.x, y: result.y, latitude: result.llh?.lat, longitude: result.llh?.lon, in_out_state: stateValue, absolute_heading: result.absolute_heading, phase: result.phase, calculated_time: result.calculated_time, index: result.index, velocity: result.velocity, ble_only_position: result.ble_only_position, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation: self.scCompensation, is_indoor: result.isIndoor)
-                inputMobileResult.append(data)
-                if (inputMobileResult.count >= OlympusConstants.MR_INPUT_NUM) {
-                    OlympusNetworkManager.shared.postMobileResult(url: REC_RESULT_URL, input: inputMobileResult, completion: { statusCode, returnedStrig in
-                        if (statusCode != 200) {
-                            let localTime = getLocalTimeString()
-                            let log: String = localTime + " , (Olympus) Error \(statusCode) : \(returnedStrig)"
-                            print(log)
-                        }
-                    })
-                    inputMobileResult = []
+        let result = input
+        let observers = observerSnapshot()
+        if !observers.isEmpty {
+            DispatchQueue.main.async {
+                for observer in observers {
+                    observer.update(result: result)
                 }
+            }
+        }
+
+        if (self.isSaveMobileResult) {
+            let stateValue = result.in_out_state.rawValue
+            let mobileTime = result.mobile_time
+            let data = MobileResult(user_id: self.user_id, mobile_time: mobileTime, sector_id: self.sector_id, building_name: result.building_name, level_name: result.level_name, scc: result.scc, x: result.x, y: result.y, latitude: result.llh?.lat, longitude: result.llh?.lon, in_out_state: stateValue, absolute_heading: result.absolute_heading, phase: result.phase, calculated_time: result.calculated_time, index: result.index, velocity: result.velocity, ble_only_position: result.ble_only_position, normalization_scale: OlympusConstants.NORMALIZATION_SCALE, device_min_rss: Int(OlympusConstants.DEVICE_MIN_RSSI), sc_compensation: self.scCompensation, is_indoor: result.isIndoor)
+            inputMobileResult.append(data)
+            if (inputMobileResult.count >= OlympusConstants.MR_INPUT_NUM) {
+                OlympusNetworkManager.shared.postMobileResult(url: REC_RESULT_URL, input: inputMobileResult, completion: { statusCode, returnedStrig in
+                    if (statusCode != 200) {
+                        let localTime = getLocalTimeString()
+                        let log: String = localTime + " , (Olympus) Error \(statusCode) : \(returnedStrig)"
+                        print(log)
+                    }
+                })
+                inputMobileResult = []
             }
         }
     }
     
     func reporting(input: Int) {
-        for observer in observers {
-            if (input != -2 || input != -1) {
-                self.pastReportTime = getCurrentTimeInMillisecondsDouble()
-                self.pastReportFlag = input
-            }
-            self.postReport(report: input)
-            if input < 9 {
+        let observers = observerSnapshot()
+        if (input != -2 && input != -1) {
+            self.pastReportTime = getCurrentTimeInMillisecondsDouble()
+            self.pastReportFlag = input
+        }
+        self.postReport(report: input)
+
+        guard input < 9, !observers.isEmpty else {
+            return
+        }
+
+        DispatchQueue.main.async {
+            for observer in observers {
                 observer.report(flag: input)
             }
         }
@@ -639,7 +650,6 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
             return
         }
         
-        temporalResultQueue = DispatchQueue(label: "tjlabs.temporal.queue.\(UUID().uuidString)", qos: .utility)
         stopTimer()
         OlympusBluetoothManager.shared.stopScan()
 
@@ -926,8 +936,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
         
         if (self.userVelocityTimer == nil) {
-            let queueUVD = DispatchQueue(label: Bundle.main.bundleIdentifier! + ".userVelocityTimer")
-            self.userVelocityTimer = DispatchSource.makeTimerSource(queue: queueUVD)
+            self.userVelocityTimer = DispatchSource.makeTimerSource(queue: temporalResultQueue)
             self.userVelocityTimer!.schedule(deadline: .now(), repeating: OlympusConstants.UVD_INTERVAL)
             
             self.userVelocityTimer!.setEventHandler { [weak self] in
@@ -939,8 +948,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         
         
         if (self.outputTimer == nil) {
-            let queue = DispatchQueue(label: Bundle.main.bundleIdentifier! + ".updateTimer")
-            self.outputTimer = DispatchSource.makeTimerSource(queue: queue)
+            self.outputTimer = DispatchSource.makeTimerSource(queue: temporalResultQueue)
             self.outputTimer!.schedule(deadline: .now(), repeating: OlympusConstants.OUTPUT_INTERVAL)
             self.outputTimer!.setEventHandler { [weak self] in
                 guard let self = self else { return }
@@ -951,8 +959,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         
         
         if (self.osrTimer == nil) {
-            let queueOSR = DispatchQueue(label: Bundle.main.bundleIdentifier! + ".osrTimer")
-            self.osrTimer = DispatchSource.makeTimerSource(queue: queueOSR)
+            self.osrTimer = DispatchSource.makeTimerSource(queue: temporalResultQueue)
             self.osrTimer!.schedule(deadline: .now(), repeating: OlympusConstants.OSR_INTERVAL)
             self.osrTimer!.setEventHandler { [weak self] in
                 guard let self = self else { return }
@@ -2718,8 +2725,8 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
                     let snapshotUnitDRInfoBuffer = self.unitDRInfoBuffer
                     let linkInfo = KF.getLinkInfoSnapshot()
                     
-                    let snapshotLinkDirections = linkInfo.coord
-                    let snapshotLinkCoord = linkInfo.directions
+                    let snapshotLinkCoord = linkInfo.coord
+                    let snapshotLinkDirections = linkInfo.directions
                     
                     let snapshotAmbiguitySolvedIndex = self.ambiguitySolvedIndex
                     let snapshotRunMode = self.runMode
@@ -2976,6 +2983,11 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
     }
     
     private func setTemporalResult(coord: [Double]) {
+        guard coord.count >= 2 else {
+            print("🚨 Invalid coord in setTemporalResult: \(coord)")
+            return
+        }
+
         self.temporalResult.x = coord[0]
         self.temporalResult.y = coord[1]
         
@@ -3596,12 +3608,14 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
 
         self.backgroundTaskIdentifier = UIApplication.shared.beginBackgroundTask(withName: "BackgroundOutputTimer") {
-            UIApplication.shared.endBackgroundTask(self.backgroundTaskIdentifier!)
-            self.backgroundTaskIdentifier = .invalid
+            if let taskIdentifier = self.backgroundTaskIdentifier, taskIdentifier != .invalid {
+                UIApplication.shared.endBackgroundTask(taskIdentifier)
+                self.backgroundTaskIdentifier = .invalid
+            }
         }
             
         if (self.backgroundUpTimer == nil) {
-            self.backgroundUpTimer = DispatchSource.makeTimerSource(queue: DispatchQueue.global(qos: .background))
+            self.backgroundUpTimer = DispatchSource.makeTimerSource(queue: temporalResultQueue)
             self.backgroundUpTimer!.schedule(deadline: .now(), repeating: OlympusConstants.OUTPUT_INTERVAL)
             self.backgroundUpTimer!.setEventHandler { [weak self] in
                 guard let self = self else { return }
@@ -3611,7 +3625,7 @@ public class OlympusServiceManager: Observation, StateTrackingObserver, Building
         }
             
         if (self.backgroundUvTimer == nil) {
-            self.backgroundUvTimer = DispatchSource.makeTimerSource(queue: DispatchQueue.global(qos: .background))
+            self.backgroundUvTimer = DispatchSource.makeTimerSource(queue: temporalResultQueue)
             self.backgroundUvTimer!.schedule(deadline: .now(), repeating: OlympusConstants.UVD_INTERVAL)
             self.backgroundUvTimer!.setEventHandler { [weak self] in
                 guard let self = self else { return }

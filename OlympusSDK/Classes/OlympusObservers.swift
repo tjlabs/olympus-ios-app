@@ -1,3 +1,5 @@
+import Foundation
+
 let START_FLAG: Int = -2
 let BLACK_LIST_FLAG: Int = -1
 let OUTDOOR_FLAG: Int = 0
@@ -33,11 +35,24 @@ public protocol Observer: class {
 }
 
 public class Observation: Observable {
+    private let observerLock = NSLock()
     var observers = [Observer]()
+
     public func addObserver(_ observer: Observer) {
+        observerLock.lock()
+        defer { observerLock.unlock() }
         observers.append(observer)
     }
+
     public func removeObserver(_ observer: Observer) {
+        observerLock.lock()
+        defer { observerLock.unlock() }
         observers = observers.filter({ $0 !== observer })
+    }
+
+    func observerSnapshot() -> [Observer] {
+        observerLock.lock()
+        defer { observerLock.unlock() }
+        return observers
     }
 }

@@ -328,6 +328,9 @@ func checkForTrajMatching(index: Int,
                           linkCoord: [Double],
                           linkDirections: [Double],
                           mode: String) -> (BadCaseType, [[Double]])? {
+    guard linkCoord.count >= 2 else {
+        return nil
+    }
     
     let indexStandard: Int = mode == OlympusConstants.MODE_DR ? 20 : 8
     let pathType: Int = mode == OlympusConstants.MODE_DR ? 1 : 0
@@ -482,66 +485,60 @@ func checkForTrajMatching(index: Int,
                     let alignedTraj = applyAlignment(to: unitDRInfoList, using: aligned.alignTransform)
                     let alignedHeading = alignedTraj.h
                     
-                    let group = DispatchGroup()
-                    let queue = DispatchQueue(label: "traj.match.queue", attributes: .concurrent)
-
                     var minDist: Double = .infinity
                     var bestXYHS: [Double] = []
                     var bestNodeNumber: Int?
-
-                    let lock = NSLock()
                     
                     for node in nodes {
-                        group.enter()
-                        queue.async {
-                            defer { group.leave() }
+                        guard alignedTraj.x.indices.contains(idx),
+                              alignedTraj.y.indices.contains(idx),
+                              alignedHeading.indices.contains(idx),
+                              let shiftedEndX = alignedTraj.x.last,
+                              let shiftedEndY = alignedTraj.y.last,
+                              let shiftedEndHeading = alignedHeading.last,
+                              node.nodeCoord.count >= 2 else {
+                            print("🚨 Invalid aligned trajectory or node data in checkForTrajMatching")
+                            continue
+                        }
 
-                            // Index bounds check for alignedTraj and heading
-                            guard alignedTraj.x.indices.contains(idx),
-                                  alignedTraj.y.indices.contains(idx),
-                                  alignedHeading.indices.contains(idx) else {
-                                print("🚨 Index out of bounds in alignedTraj or heading")
-                                return
-                            }
+                        let nodeCoord = node.nodeCoord
+                        let offsetX = nodeCoord[0] - alignedTraj.x[idx]
+                        let offsetY = nodeCoord[1] - alignedTraj.y[idx]
 
-                            let nodeCoord = node.nodeCoord
-                            let offsetX = nodeCoord[0] - alignedTraj.x[idx]
-                            let offsetY = nodeCoord[1] - alignedTraj.y[idx]
+                        let shiftedX = alignedTraj.x.map { $0 + offsetX }
+                        let shiftedY = alignedTraj.y.map { $0 + offsetY }
 
-                            let shiftedX = alignedTraj.x.map { $0 + offsetX }
-                            let shiftedY = alignedTraj.y.map { $0 + offsetY }
+                        guard !shiftedX.isEmpty, !shiftedY.isEmpty else {
+                            continue
+                        }
 
-                            let pmResult = OlympusPathMatchingCalculator.shared.pathMatching(
-                                building: fltResult.building_name,
-                                level: fltResult.level_name,
-                                x: shiftedX.last!,
-                                y: shiftedY.last!,
-                                heading: alignedHeading.last!,
-                                HEADING_RANGE: OlympusConstants.HEADING_RANGE,
-                                isUseHeading: true,
-                                pathType: pathType,
-                                PADDING_VALUES: OlympusConstants.PADDING_VALUES
-                            )
+                        let pmResult = OlympusPathMatchingCalculator.shared.pathMatching(
+                            building: fltResult.building_name,
+                            level: fltResult.level_name,
+                            x: shiftedEndX + offsetX,
+                            y: shiftedEndY + offsetY,
+                            heading: shiftedEndHeading,
+                            HEADING_RANGE: OlympusConstants.HEADING_RANGE,
+                            isUseHeading: true,
+                            pathType: pathType,
+                            PADDING_VALUES: OlympusConstants.PADDING_VALUES
+                        )
 
-                            guard pmResult.isSuccess, pmResult.xyhs.count >= 2 else {
-                                print("🚨 Invalid pmResult"); return
-                            }
-                            let dx = linkCoord[0] - pmResult.xyhs[0]
-                            let dy = linkCoord[1] - pmResult.xyhs[1]
-                            let dist = sqrt(dx*dx + dy*dy)
+                        guard pmResult.isSuccess, pmResult.xyhs.count >= 2 else {
+                            print("🚨 Invalid pmResult")
+                            continue
+                        }
+                        let dx = linkCoord[0] - pmResult.xyhs[0]
+                        let dy = linkCoord[1] - pmResult.xyhs[1]
+                        let dist = sqrt(dx*dx + dy*dy)
 
-                            lock.lock()
-                            let localCopy = pmResult.xyhs
-                            if dist < minDist {
-                                minDist = dist
-                                bestXYHS = localCopy
-                                bestNodeNumber = node.nodeNumber
-                            }
-                            lock.unlock()
+                        if dist < minDist {
+                            minDist = dist
+                            bestXYHS = pmResult.xyhs
+                            bestNodeNumber = node.nodeNumber
                         }
                     }
 
-                    group.wait()
                     user_xyh = bestXYHS
                     
                     var points = [[Double]]()
