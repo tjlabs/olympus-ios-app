@@ -136,9 +136,9 @@ class CardViewController: UIViewController, Observer {
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_03_0930.csv", sensorFileName: "sensor_coex_03_0930.csv")
         
         // 12-31 Simulation
-//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_01_03_1007.csv", sensorFileName: "sensor_coex_01_03_1007.csv")
+        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_01_03_1007.csv", sensorFileName: "sensor_coex_01_03_1007.csv")
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_02_02_1007.csv", sensorFileName: "sensor_coex_02_02_1007.csv")
-        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
+//        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_05_04_1007.csv", sensorFileName: "sensor_coex_05_04_1007.csv")
         
         
 //        serviceManager.setSimulationMode(flag: true, bleFileName: "ble_coex_dr_03_1030.csv", sensorFileName: "sensor_coex_dr_03_1030.csv")

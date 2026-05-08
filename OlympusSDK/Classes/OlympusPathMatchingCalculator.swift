@@ -6,6 +6,7 @@ enum FindNodeType {
 
 public class OlympusPathMatchingCalculator {
     static var shared = OlympusPathMatchingCalculator()
+    private let stateLock = NSRecursiveLock()
     
     private var sector_id: Int = -1
     public var PpURL = [String: String]()
@@ -47,115 +48,128 @@ public class OlympusPathMatchingCalculator {
     init() {
         
     }
+
+    private func withStateLock<T>(_ body: () -> T) -> T {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        return body()
+    }
+
+    private func setPathPixelData(key: String, parsed: ([Int], [Int], [[Double]], [Double], [String])) {
+        withStateLock {
+            (PpType[key], PpNode[key], PpCoord[key], PpMagScale[key], PpHeading[key]) = parsed
+            PpIsLoaded[key] = true
+        }
+        NotificationCenter.default.post(name: .sectorPathPixelUpdated, object: nil, userInfo: ["pathPixelKey": key])
+    }
+
+    private func markPathPixelLoadFailed(key: String) {
+        withStateLock {
+            PpIsLoaded[key] = false
+        }
+    }
     
     public func initialize() {
-        self.passedNode = -1
-        self.passedNodeMatchedIndex = -1
-        self.passedNodeCoord = [0, 0]
-        self.passedNodeHeadings = [Double]()
-        self.currentPassedNodeInfo = PassedNodeInfo(nodeNumber: -1, nodeCoord: [], nodeHeadings: [], matchedIndex: -1, userHeading: 0)
-        self.passedNodeInfoBuffer = [PassedNodeInfo]()
-        self.passedNodeInfoBufferForMulti = [PassedNodeInfo]()
-        self.isNeedClearBuffer = false
-        self.anchorNode = PassedNodeInfo(nodeNumber: -1, nodeCoord: [], nodeHeadings: [], matchedIndex: -1, userHeading: 0)
-        self.anchorSection = -1
-        self.unitDRInfoBuffer = [UnitDRInfo]()
-        self.isNeedClearUVDBuffer = false
-        self.distFromNode = -1
-        self.buildingLevelChangedCoord = [Double]()
-        
-        self.linkCoord = [0, 0]
-        self.linkDirections = [Double]()
-        self.isInNode = false
+        withStateLock {
+            self.passedNode = -1
+            self.passedNodeMatchedIndex = -1
+            self.passedNodeCoord = [0, 0]
+            self.passedNodeHeadings = [Double]()
+            self.currentPassedNodeInfo = PassedNodeInfo(nodeNumber: -1, nodeCoord: [], nodeHeadings: [], matchedIndex: -1, userHeading: 0)
+            self.passedNodeInfoBuffer = [PassedNodeInfo]()
+            self.passedNodeInfoBufferForMulti = [PassedNodeInfo]()
+            self.isNeedClearBuffer = false
+            self.anchorNode = PassedNodeInfo(nodeNumber: -1, nodeCoord: [], nodeHeadings: [], matchedIndex: -1, userHeading: 0)
+            self.anchorSection = -1
+            self.unitDRInfoBuffer = [UnitDRInfo]()
+            self.isNeedClearUVDBuffer = false
+            self.distFromNode = -1
+            self.buildingLevelChangedCoord = [Double]()
+            
+            self.linkCoord = [0, 0]
+            self.linkDirections = [Double]()
+            self.isInNode = false
+        }
     }
     
     public func initPassedNodeInfo() {
-        self.passedNode = -1
-        self.passedNodeMatchedIndex = -1
-        self.passedNodeCoord = [0, 0]
-        self.passedNodeHeadings = [Double]()
-        self.currentPassedNodeInfo = PassedNodeInfo(nodeNumber: -1, nodeCoord: [], nodeHeadings: [], matchedIndex: -1, userHeading: 0)
-        self.passedNodeInfoBuffer = [PassedNodeInfo]()
-        self.passedNodeInfoBufferForMulti = [PassedNodeInfo]()
-        self.isNeedClearBuffer = false
-        self.anchorNode = PassedNodeInfo(nodeNumber: -1, nodeCoord: [], nodeHeadings: [], matchedIndex: -1, userHeading: 0)
-        self.anchorSection = -1
-        self.unitDRInfoBuffer = [UnitDRInfo]()
-        self.isNeedClearUVDBuffer = false
-        self.distFromNode = -1
-        
-        self.linkCoord = [0, 0]
-        self.linkDirections = [Double]()
-        self.isInNode = false
+        withStateLock {
+            self.passedNode = -1
+            self.passedNodeMatchedIndex = -1
+            self.passedNodeCoord = [0, 0]
+            self.passedNodeHeadings = [Double]()
+            self.currentPassedNodeInfo = PassedNodeInfo(nodeNumber: -1, nodeCoord: [], nodeHeadings: [], matchedIndex: -1, userHeading: 0)
+            self.passedNodeInfoBuffer = [PassedNodeInfo]()
+            self.passedNodeInfoBufferForMulti = [PassedNodeInfo]()
+            self.isNeedClearBuffer = false
+            self.anchorNode = PassedNodeInfo(nodeNumber: -1, nodeCoord: [], nodeHeadings: [], matchedIndex: -1, userHeading: 0)
+            self.anchorSection = -1
+            self.unitDRInfoBuffer = [UnitDRInfo]()
+            self.isNeedClearUVDBuffer = false
+            self.distFromNode = -1
+            
+            self.linkCoord = [0, 0]
+            self.linkDirections = [Double]()
+            self.isInNode = false
+        }
     }
     
     public func setSectorID(sector_id: Int) {
-        self.sector_id = sector_id
+        withStateLock {
+            self.sector_id = sector_id
+        }
     }
     
     public func parseRoad(data: String) -> ([Int], [Int], [[Double]], [Double], [String] ) {
         var roadType = [Int]()
         var roadNode = [Int]()
-        var road = [[Double]]()
         var roadScale = [Double]()
         var roadHeading = [String]()
-        
         var roadX = [Double]()
         var roadY = [Double]()
-        
-        let roadString = data.components(separatedBy: .newlines)
-        for i in 0..<roadString.count {
-            if (roadString[i] != "") {
-                let lineString = roadString[i]
-                let lineData = roadString[i].components(separatedBy: ",")
-                
-                let typeString = lineData[0]
-                let nodeString = lineData[1]
-                let xString = lineData[2]
-                let yString = lineData[3]
-                let scaleString = lineData[4]
-                
-                if !xString.isEmpty && !yString.isEmpty {
-                    roadType.append(Int(Double(lineData[0])!))
-                    roadNode.append(Int(Double(lineData[1])!))
-                    roadX.append(Double(lineData[2])!)
-                    roadY.append(Double(lineData[3])!)
-                    roadScale.append(Double(lineData[4])!)
-                    
-                    let pattern = "\\[[^\\]]+\\]"
-                    guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else {
-                        print("Invalid regular expression pattern")
-                        exit(1)
-                    }
-                    let matches = regex.matches(in: lineString, options: [], range: NSRange(location: 0, length: lineString.utf16.count))
-                    let matchedStrings = matches.map { match -> String in
-                        let range = Range(match.range, in: lineString)!
-                        return String(lineString[range])
-                    }
-                    
-                    var headingValues = ""
-                    if (!matchedStrings.isEmpty) {
-                        let headingListString = matchedStrings[0]
-                        let headingArray = headingListString
-                            .replacingOccurrences(of: "[", with: "")
-                            .replacingOccurrences(of: "]", with: "")
-                            .components(separatedBy: ",")
-                            .compactMap { Double($0.trimmingCharacters(in: .whitespaces)) }
-                        
-                        for j in 0..<headingArray.count {
-                            headingValues.append(String(headingArray[j]))
-                            if (j < (headingArray.count-1)) {
-                                headingValues.append(",")
-                            }
-                        }
-                    }
-                    roadHeading.append(headingValues)
-                }
+
+        let pattern = "\\[[^\\]]+\\]"
+        let regex = try? NSRegularExpression(pattern: pattern, options: [])
+
+        for lineString in data.components(separatedBy: .newlines) where !lineString.isEmpty {
+            let lineData = lineString.components(separatedBy: ",")
+            guard lineData.count >= 5,
+                  let typeValue = Double(lineData[0]),
+                  let nodeValue = Double(lineData[1]),
+                  let xValue = Double(lineData[2]),
+                  let yValue = Double(lineData[3]),
+                  let scaleValue = Double(lineData[4]) else {
+                print("🚨 Skipping malformed path-pixel row: \(lineString)")
+                continue
             }
+
+            roadType.append(Int(typeValue))
+            roadNode.append(Int(nodeValue))
+            roadX.append(xValue)
+            roadY.append(yValue)
+            roadScale.append(scaleValue)
+
+            var headingValues = ""
+            if let regex,
+               let match = regex.firstMatch(in: lineString, options: [], range: NSRange(location: 0, length: lineString.utf16.count)),
+               let range = Range(match.range, in: lineString) {
+                let headingArray = lineString[range]
+                    .replacingOccurrences(of: "[", with: "")
+                    .replacingOccurrences(of: "]", with: "")
+                    .components(separatedBy: ",")
+                    .compactMap { Double($0.trimmingCharacters(in: .whitespaces)) }
+
+                headingValues = headingArray.map { String($0) }.joined(separator: ",")
+            }
+
+            roadHeading.append(headingValues)
         }
-        road = [roadX, roadY]
-        self.PpMinMax = [roadX.min() ?? 0, roadY.min() ?? 0, roadX.max() ?? 0, roadY.max() ?? 0]
-        
+
+        let road = [roadX, roadY]
+        withStateLock {
+            self.PpMinMax = [roadX.min() ?? 0, roadY.min() ?? 0, roadX.max() ?? 0, roadY.max() ?? 0]
+        }
+
         return (roadType, roadNode, road, roadScale, roadHeading)
     }
     
@@ -218,21 +232,28 @@ public class OlympusPathMatchingCalculator {
                     } else {
                         // 첫 시작과 동일하게 다운로드 받아오기
                         let ppUrl: String = value
-                        let urlComponents = URLComponents(string: ppUrl)
-                        OlympusFileDownloader.shared.downloadCSVFile(from: (urlComponents?.url)!, fname: key, completion: { [self] url, error in
+                        guard let downloadURL = URLComponents(string: ppUrl)?.url else {
+                            markPathPixelLoadFailed(key: key)
+                            print("🚨 Invalid path-pixel URL: \(ppUrl)")
+                            continue
+                        }
+                        OlympusFileDownloader.shared.downloadCSVFile(from: downloadURL, fname: key, completion: { [self] url, error in
                             if error == nil {
+                                guard let fileURL = url else {
+                                    markPathPixelLoadFailed(key: key)
+                                    return
+                                }
                                 do {
-                                    let contents = try String(contentsOf: url!)
-                                    ( PpType[key], PpNode[key],PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
-                                    NotificationCenter.default.post(name: .sectorPathPixelUpdated, object: nil, userInfo: ["pathPixelKey": key])
+                                    let contents = try String(contentsOf: fileURL)
+                                    let parsed = parseRoad(data: contents)
+                                    setPathPixelData(key: key, parsed: parsed)
                                     savePathPixelURL(key: key, ppURL: value)
-                                    PpIsLoaded[key] = true
                                 } catch {
-                                    PpIsLoaded[key] = false
+                                    markPathPixelLoadFailed(key: key)
                                     print("Error reading file:", error.localizedDescription)
                                 }
                             } else {
-                                PpIsLoaded[key] = false
+                                markPathPixelLoadFailed(key: key)
                             }
                         })
                     }
@@ -240,21 +261,28 @@ public class OlympusPathMatchingCalculator {
                     // 만약 버전이 다르면 다운로드 받아오기
                     // 첫 시작과 동일하게 다운로드 받아오기
                     let ppUrl: String = value
-                    let urlComponents = URLComponents(string: ppUrl)
-                    OlympusFileDownloader.shared.downloadCSVFile(from: (urlComponents?.url)!, fname: key, completion: { [self] url, error in
+                    guard let downloadURL = URLComponents(string: ppUrl)?.url else {
+                        markPathPixelLoadFailed(key: key)
+                        print("🚨 Invalid path-pixel URL: \(ppUrl)")
+                        continue
+                    }
+                    OlympusFileDownloader.shared.downloadCSVFile(from: downloadURL, fname: key, completion: { [self] url, error in
                         if error == nil {
+                            guard let fileURL = url else {
+                                markPathPixelLoadFailed(key: key)
+                                return
+                            }
                             do {
-                                let contents = try String(contentsOf: url!)
-                                ( PpType[key], PpNode[key], PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
-                                NotificationCenter.default.post(name: .sectorPathPixelUpdated, object: nil, userInfo: ["pathPixelKey": key])
+                                let contents = try String(contentsOf: fileURL)
+                                let parsed = parseRoad(data: contents)
+                                setPathPixelData(key: key, parsed: parsed)
                                 savePathPixelURL(key: key, ppURL: value)
-                                PpIsLoaded[key] = true
                             } catch {
-                                PpIsLoaded[key] = false
+                                markPathPixelLoadFailed(key: key)
                                 print("Error reading file:", error.localizedDescription)
                             }
                         } else {
-                            PpIsLoaded[key] = false
+                            markPathPixelLoadFailed(key: key)
                         }
                     })
                 }
@@ -262,23 +290,30 @@ public class OlympusPathMatchingCalculator {
                 // 첫 시작이면 다운로드 받아오기
                 if (!value.isEmpty) {
                     let ppUrl: String = value
-                    let urlComponents = URLComponents(string: ppUrl)
-                    OlympusFileDownloader.shared.downloadCSVFile(from: (urlComponents?.url)!, fname: key, completion: { [self] url, error in
+                    guard let downloadURL = URLComponents(string: ppUrl)?.url else {
+                        markPathPixelLoadFailed(key: key)
+                        print("🚨 Invalid path-pixel URL: \(ppUrl)")
+                        continue
+                    }
+                    OlympusFileDownloader.shared.downloadCSVFile(from: downloadURL, fname: key, completion: { [self] url, error in
                         if error == nil {
+                            guard let fileURL = url else {
+                                markPathPixelLoadFailed(key: key)
+                                return
+                            }
                             do {
-                                let contents = try String(contentsOf: url!)
+                                let contents = try String(contentsOf: fileURL)
                                 print(key)
-                                ( PpType[key], PpNode[key], PpCoord[key], PpMagScale[key], PpHeading[key] ) = parseRoad(data: contents)
-                                NotificationCenter.default.post(name: .sectorPathPixelUpdated, object: nil, userInfo: ["pathPixelKey": key])
+                                let parsed = parseRoad(data: contents)
+                                setPathPixelData(key: key, parsed: parsed)
                                 savePathPixelURL(key: key, ppURL: value)
-                                savePathPixelLocalUrl(key: key, url: url)
-                                PpIsLoaded[key] = true
+                                savePathPixelLocalUrl(key: key, url: fileURL)
                             } catch {
-                                PpIsLoaded[key] = false
+                                markPathPixelLoadFailed(key: key)
                                 print("Error reading file:", error.localizedDescription)
                             }
                         } else {
-                            PpIsLoaded[key] = false
+                            markPathPixelLoadFailed(key: key)
                         }
                     })
                 }
@@ -287,6 +322,9 @@ public class OlympusPathMatchingCalculator {
     }
     
     func pathMatching(building: String, level: String, x: Double, y: Double, heading: Double, HEADING_RANGE: Double, isUseHeading: Bool, pathType: Int, PADDING_VALUES: [Double]) -> PathMatchingResult {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+
         var isSuccess = false
         var xyhs: [Double] = [x, y, heading, 1.0]
         var bestHeading = heading
@@ -422,6 +460,9 @@ public class OlympusPathMatchingCalculator {
 
     
     public func checkInEntranceMatchingArea(x: Double, y: Double, building: String, level: String) -> (Bool, [Double]) {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+
         var area = [Double]()
         
         let buildingName = building
@@ -452,6 +493,9 @@ public class OlympusPathMatchingCalculator {
     }
     
     public func getPathMatchingHeadings(building: String, level: String, x: Double, y: Double, PADDING_VALUE: Double, mode: String) -> [Double] {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+
         var headings: [Double] = []
         let levelCopy: String = removeLevelDirectionString(levelName: level)
         let key: String = "\(self.sector_id)_\(building)_\(levelCopy)"
@@ -517,6 +561,9 @@ public class OlympusPathMatchingCalculator {
     }
     
     public func updateNodeAndLinkInfo(uvdIndex: Int, currentResult: FineLocationTrackingFromServer, currentResultHeading: Double, pastResult: FineLocationTrackingFromServer, pastResultHeading: Double, pathType: Int, updateType: UpdateNodeLinkType, jumpedNodes: [PassedNodeInfo]) {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+
         let diffX = abs(currentResult.x - pastResult.x)
         let diffY = abs(currentResult.y - pastResult.y)
         let diffH = abs(currentResultHeading - pastResultHeading)
@@ -800,6 +847,9 @@ public class OlympusPathMatchingCalculator {
     }
     
     private func controlPassedNodeInfo(passedNodeInfo: PassedNodeInfo) {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+
         if (self.passedNodeInfoBuffer.count > 1) {
             let currentNode = passedNodeInfo.nodeNumber
             let pastNode = passedNodeInfoBuffer[passedNodeInfoBuffer.count-1].nodeNumber
@@ -841,6 +891,9 @@ public class OlympusPathMatchingCalculator {
     }
     
     private func controlPassedNodeInfoForMulti(passedNodeInfo: PassedNodeInfo) {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+
         if (self.passedNodeInfoBufferForMulti.count > 1) {
             let currentNode = passedNodeInfo.nodeNumber
             let pastNode = passedNodeInfoBufferForMulti[passedNodeInfoBufferForMulti.count-1].nodeNumber
@@ -856,10 +909,15 @@ public class OlympusPathMatchingCalculator {
     }
     
     public func getPassedNodeInfoBuffer() -> [PassedNodeInfo] {
+        stateLock.lock()
+        defer { stateLock.unlock() }
         return self.passedNodeInfoBuffer
     }
     
     public func getPaddingValues(mode: String, isPhaseBreak: Bool, PADDING_VALUE: Double) -> [Double] {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+
         var paddingValues: [Double] = [0, 0, 0, 0]
         
         if (isPhaseBreak) {
@@ -931,6 +989,9 @@ public class OlympusPathMatchingCalculator {
     }
     
     public func checkIsInMapEnd(resultStandard: FineLocationTrackingFromServer, tuResult: FineLocationTrackingFromServer, pathType: Int) -> Bool {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+
         var isInMapEnd: Bool = false
         let modeInput = pathType == 1 ? OlympusConstants.MODE_DR : OlympusConstants.MODE_PDR
         let coordHeadings = getPathMatchingHeadings(building: resultStandard.building_name, level: resultStandard.level_name, x: resultStandard.x, y: resultStandard.y, PADDING_VALUE: 0.0, mode: modeInput)
@@ -1036,6 +1097,9 @@ public class OlympusPathMatchingCalculator {
     }
     
     public func updateAnchorNodeAfterPathTrajMatching(nodeInfo: PassedNodeInfo, sectionNumber: Int) {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+
         self.anchorNode = nodeInfo
         self.anchorSection = sectionNumber
         self.isNeedClearBuffer = true
@@ -1044,6 +1108,9 @@ public class OlympusPathMatchingCalculator {
     
     
     public func updateAnchorNode(fltResult: FineLocationTrackingFromServer, pathType: Int, sectionNumber: Int) {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+
         let anchorNode = findAnchorNode(fltResult: fltResult, pathType: pathType)
         if anchorNode.nodeNumber != -1 {
             if anchorNode.nodeNumber == self.anchorNode.nodeNumber {
@@ -1058,6 +1125,9 @@ public class OlympusPathMatchingCalculator {
     }
     
     public func updateAnchorNodeAfterRecovery(badCaseNodeInfo: NodeCandidateInfo, nodeNumber: Int) {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+
         let nodeCandidatesInfo = badCaseNodeInfo.nodeCandidatesInfo
         for item in nodeCandidatesInfo {
             if item.nodeNumber == nodeNumber {
@@ -1067,6 +1137,9 @@ public class OlympusPathMatchingCalculator {
     }
     
     public func getCurrentAnchorNodeInfo() -> PassedNodeInfo {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+
         if self.anchorNode.nodeCoord.isEmpty {
             self.anchorNode.nodeCoord = self.buildingLevelChangedCoord
         }
@@ -1074,10 +1147,15 @@ public class OlympusPathMatchingCalculator {
     }
     
     public func setBuildingLevelChangedCoord(coord: [Double]) {
+        stateLock.lock()
+        defer { stateLock.unlock() }
         self.buildingLevelChangedCoord = coord
     }
     
     public func controlUVDforAccBias(unitDRInfo: UnitDRInfo) {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+
         self.unitDRInfoBuffer.append(unitDRInfo)
 
         if (isNeedClearUVDBuffer) {
@@ -1105,6 +1183,8 @@ public class OlympusPathMatchingCalculator {
     }
     
     public func getUnitDRInfoBuffer() -> [UnitDRInfo] {
+        stateLock.lock()
+        defer { stateLock.unlock() }
         return self.unitDRInfoBuffer
     }
     
@@ -1131,6 +1211,9 @@ public class OlympusPathMatchingCalculator {
     }
     
     public func getAnchorNodeCandidatesForGoodCase(fltResult: FineLocationTrackingFromServer, pathType: Int) -> NodeCandidateInfo {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+
         var goodCaseNodeInfo = NodeCandidateInfo(isPhaseBreak: false, nodeCandidatesInfo: [])
         var nodeCandidatesInfo = [PassedNodeInfo]()
         
@@ -1241,6 +1324,10 @@ public class OlympusPathMatchingCalculator {
     }
     
     func findNodesUsingCandidateDirections(fltResult: FineLocationTrackingFromServer, originCoord: [Double], candidateDirections: [Double], pathType: Int, type: FindNodeType) -> [PassedNodeInfo] {
+        guard originCoord.count >= 2 else {
+            return []
+        }
+
         let PIXEL_LENGTH = type == .NORMAL ? OlympusConstants.PIXEL_LENGTH_TO_FIND_NODE*2 : OlympusConstants.PIXEL_LENGTH_TO_FIND_NODE*4
         let PIXELS_TO_CHECK = Int(PIXEL_LENGTH)
         
@@ -1282,6 +1369,10 @@ public class OlympusPathMatchingCalculator {
     }
     
     public func findPropagatedPoints(fltResult: FineLocationTrackingFromServer, originCoord: [Double], candidateDirections: [Double], majorHeading: Double, length: Double, pathType: Int) -> [[Double]] {
+        guard originCoord.count >= 2 else {
+            return []
+        }
+
         var allPoints = [[Double]]()
         var validPoints = [[Double]]()
         
@@ -1488,6 +1579,9 @@ public class OlympusPathMatchingCalculator {
     }
     
     public func getMultipleAnchorNodeCandidates(fltResult: FineLocationTrackingFromServer, pathType: Int, maskBuffer: [UserMask]) -> NodeCandidateInfo {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+
         var multipleNodeInfo = NodeCandidateInfo(isPhaseBreak: false, nodeCandidatesInfo: [])
         
         let anchorNodeInfo = self.anchorNode
@@ -1633,6 +1727,9 @@ public class OlympusPathMatchingCalculator {
 
     
     public func getPreviousPassedNode(nodeCandidateInfo: NodeCandidateInfo) -> PassedNodeInfo {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+
         let nodeInfoBuffer = self.passedNodeInfoBufferForMulti
         
         let nodeNumbers = nodeInfoBuffer.map { $0.nodeNumber }
@@ -1778,6 +1875,9 @@ public class OlympusPathMatchingCalculator {
     }
     
     private func checkPathPixelHasCoords(fltResult: FineLocationTrackingFromServer, coordToCheck: [Double]) -> Bool {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+
         let building = fltResult.building_name
         let level = fltResult.level_name
         let levelCopy: String = removeLevelDirectionString(levelName: level)
@@ -1804,6 +1904,9 @@ public class OlympusPathMatchingCalculator {
     }
     
     private func checkPathPixelHasCoordsWithPadding(fltResult: FineLocationTrackingFromServer, coordToCheck: [Double], paddingValue: Double) -> (Bool, [Double], [Double]) {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+
         let building = fltResult.building_name
         let level = fltResult.level_name
         let levelCopy: String = removeLevelDirectionString(levelName: level)
@@ -1846,6 +1949,9 @@ public class OlympusPathMatchingCalculator {
     }
     
     func getMatchedNodeWithCoord(fltResult: FineLocationTrackingFromServer, originCoord: [Double], coordToCheck: [Double], pathType: Int, PADDING_VALUES: [Double]) -> (Bool, Int, [Double]) {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+
         let building = fltResult.building_name
         let level = fltResult.level_name
         let levelCopy: String = removeLevelDirectionString(levelName: level)
@@ -2144,6 +2250,9 @@ public class OlympusPathMatchingCalculator {
     }
     
     func getOpeCandidateNodes(preResult: FineLocationTrackingFromServer, curResult: FineLocationTrackingFromServer, linkDir: [Double], pathType: Int) -> [PassedNodeInfo] {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+
         var nodeList = [PassedNodeInfo]()
         
         let result = curResult
