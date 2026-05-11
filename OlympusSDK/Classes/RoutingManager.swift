@@ -28,6 +28,13 @@ protocol RoutingManagerDelegate: AnyObject {
 }
 
 class RoutingManager {
+    private struct SectionLevelRun {
+        let section: Int
+        let levelId: Int
+        let start: (x: Float, y: Float)
+        let end: (x: Float, y: Float)
+    }
+
     private var id: String = ""
     private var sectorId: Int = 0
     
@@ -47,6 +54,7 @@ class RoutingManager {
     
     private var routesForDisplay = [(String, String, Int, Float, Float)]()
     private var waypointsForDisplay = [[Double]]()
+    private var levelRoutes = [NavigationLevelRoute]()
     
     weak var delegate: RoutingManagerDelegate?
     
@@ -61,6 +69,7 @@ class RoutingManager {
     deinit { }
     
     func setBuildingsData(buildingsData: [BuildingData]) {
+        JupiterLogger.i(tag: "RoutingManager", message: "setBuildingsData : buildingsData= \(buildingsData)")
         let buildingLevelData = makeBuildingLevelInfo(buildingsData: buildingsData)
         buildingsAndLevelsMap = buildingLevelData
         makeBuildingIdMap(buildingsData: buildingsData)
@@ -217,7 +226,10 @@ class RoutingManager {
         let start = route.origin
         guard let start_building_id = getBuildingIdHasLevelId(level_id: start.level_id),
               let start_building_name = getBuildingNameWithId(building_id: start_building_id),
-              let start_level_name = getLevelNameWithId(level_id: start.level_id) else { return }
+              let start_level_name = getLevelNameWithId(level_id: start.level_id) else {
+            JupiterLogger.e(tag: "RoutingManager", message: "find start fail wiht \(start)")
+            return
+        }
         buildingOrder.append(start_building_name)
         levelOrder.append(start_level_name)
         nodeOrder.append(-1)
@@ -236,7 +248,10 @@ class RoutingManager {
                 JupiterLogger.e(tag: "RoutingManager", message: "return second")
                 return
             }
-            guard let matchedNode = nodeData[n.number] else { return }
+            guard let matchedNode = nodeData[n.number] else {
+                JupiterLogger.e(tag: "RoutingManager", message: "matchedNode fail with \(n.number)")
+                return
+            }
             if self.routeNodeData.isEmpty {
                 self.routeNodeData = nodeData
             }
@@ -269,6 +284,7 @@ class RoutingManager {
         generateNavigationRoute(bOrder: buildingOrder, lOrder: levelOrder, nodeOrder: nodeOrder, order: order)
         let sectionMap = makeSectionMap(routes: self.routes)
         self.routeSectionData = sectionMap
+        self.levelRoutes = makeLevelRoutes(routes: self.routes)
         delegate?.isNavigationRouteChanged()
     }
     
@@ -281,6 +297,7 @@ class RoutingManager {
         self.isRequesting = false
         
         self.routesForDisplay = [(String, String, Int, Float, Float)]()
+        self.levelRoutes = [NavigationLevelRoute]()
 //        self.waypointsForDisplay = [[Double]]()
     }
     
@@ -445,6 +462,84 @@ class RoutingManager {
         map[curSection] = (start: start, end: end)
         return map
     }
+
+    private func makeLevelRoutes(routes: [RoutingRoute]) -> [NavigationLevelRoute] {
+        let runs = makeSectionLevelRuns(routes: routes)
+        guard !runs.isEmpty else { return [] }
+
+        var groupedRoutes = [NavigationLevelRoute]()
+        var currentLevelId = runs[0].levelId
+        var currentPoints = [NavigationRoutePoint]()
+
+        for index in 0..<runs.count {
+            let run = runs[index]
+            JupiterLogger.i(tag: "RoutingManager", message: "(makeLevelRoutes) index: \(index), run: \(run)")
+            if run.levelId != currentLevelId {
+                groupedRoutes.append(NavigationLevelRoute(levelId: currentLevelId, points: currentPoints))
+                currentLevelId = run.levelId
+                currentPoints = [NavigationRoutePoint]()
+            }
+
+            let startType: NavigationRoutePointType = index == 0 ? .ORIGIN : .NORMAL
+            currentPoints.append(NavigationRoutePoint(pointId: run.section,
+                                                      x: run.start.x,
+                                                      y: run.start.y,
+                                                      pointType: startType))
+
+            let endType: NavigationRoutePointType
+            if index == runs.count - 1 {
+                endType = .DESTINATION
+            } else if runs[index + 1].levelId != run.levelId {
+                endType = .VERTICAL
+            } else {
+                endType = .NORMAL
+            }
+
+            currentPoints.append(NavigationRoutePoint(pointId: run.section,
+                                                      x: run.end.x,
+                                                      y: run.end.y,
+                                                      pointType: endType))
+        }
+
+        groupedRoutes.append(NavigationLevelRoute(levelId: currentLevelId, points: currentPoints))
+        return groupedRoutes
+    }
+
+    private func makeSectionLevelRuns(routes: [RoutingRoute]) -> [SectionLevelRun] {
+        guard let first = routes.first else { return [] }
+        guard let firstLevelId = getLevelIdWithName(levelName: first.level) else { return [] }
+
+        var runs = [SectionLevelRun]()
+        var runSection = first.section
+        var runLevel = first.level
+        var runLevelId = firstLevelId
+        var runStart: XY = (first.x, first.y)
+        var runEnd: XY = (first.x, first.y)
+
+        for route in routes.dropFirst() {
+            let isBoundary = route.section != runSection || route.level != runLevel
+            if isBoundary {
+                runs.append(SectionLevelRun(section: runSection,
+                                            levelId: runLevelId,
+                                            start: runStart,
+                                            end: runEnd))
+                guard let nextLevelId = getLevelIdWithName(levelName: route.level) else { return runs }
+                runSection = route.section
+                runLevel = route.level
+                runLevelId = nextLevelId
+                runStart = (route.x, route.y)
+                runEnd = (route.x, route.y)
+            } else {
+                runEnd = (route.x, route.y)
+            }
+        }
+
+        runs.append(SectionLevelRun(section: runSection,
+                                    levelId: runLevelId,
+                                    start: runStart,
+                                    end: runEnd))
+        return runs
+    }
     
     func findSectionContaining(x: Float, y: Float, threshold: Float = 1.0) -> Int? {
         func pointToSegmentDistance(
@@ -519,6 +614,10 @@ class RoutingManager {
     func getNaviRoutesForDisplay() -> [(String, String, Int, Float, Float)] {
         return self.routesForDisplay
     }
+
+    func getLevelRoutes() -> [NavigationLevelRoute] {
+        return self.levelRoutes
+    }
     
     func setStartPointInNaviRoute(xyh: [Float]?) {
         guard let xyh = xyh else {
@@ -548,8 +647,8 @@ class RoutingManager {
             let dist = sqrt(dx * dx + dy * dy)
 
             guard dist < maxPosDiff else { continue }
-            let hDiff = headingDelta(resultH, rh)
-            guard hDiff <= maxHeadingDiff else { continue }
+//            let hDiff = headingDelta(resultH, rh)
+//            guard hDiff <= maxHeadingDiff else { continue }
 
             if dist < bestDist {
                 bestDist = dist
@@ -557,7 +656,10 @@ class RoutingManager {
             }
         }
         guard matchedIndex >= 0 else {
-            JupiterLogger.i(tag: "RoutingManager", message: "(setStartPointInNaviRoute) : cannot find matchedIndex")
+            JupiterLogger.i(tag: "RoutingManager", message: "(setStartPointInNaviRoute) : cannot find matchedIndex // bestDist = \(bestDist)")
+            for r in self.routes {
+                JupiterLogger.i(tag: "RoutingManager", message: "(setStartPointInNaviRoute) section=\(r.section), xyh=[\(r.x), \(r.y), \(r.heading)]")
+            }
             delegate?.isUserGuidanceOut()
             return
         }

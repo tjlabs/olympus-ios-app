@@ -105,8 +105,9 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     }
     
     public func onInitSuccess(_ isSuccess: Bool, _ code: InitErrorCode?) {
+        JupiterLogger.i(tag: "NavigationManager", message: "onInitSuccess : isSuccess= \(isSuccess), code= \(code)")
         if isSuccess, let blData = jupiterManager?.getBuildingsData() {
-            JupiterLogger.i(tag: "NavigationManager", message: "onJupiterSuccess : buildingsData= \(blData)")
+            JupiterLogger.i(tag: "NavigationManager", message: "onInitSuccess : buildingsData= \(blData)")
             routingManager?.setBuildingsData(buildingsData: blData)
         }
         delegate?.onInitSuccess(isSuccess, code)
@@ -176,6 +177,7 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
             hasNaviRoute = true
             if let naviRouteForDisplay = routingManager?.getNaviRoutesForDisplay() {
                 JupiterLogger.i(tag: "NavigationManager", message: "(getNaviRoutesForDisplay) naviRouteForDisplay= \(naviRouteForDisplay)")
+                JupiterLogger.i(tag: "NavigationManager", message: "(getNaviRoutesForDisplay) levelRoutes= \(routingManager?.getLevelRoutes())")
                 JupiterLogger.i(tag: "NavigationManager", message: "(isNavigationRouteChanged) navigation route changed")
                 delegate?.isNavigationRouteChanged(naviRouteForDisplay)
                 naviRouteChanged = true
@@ -235,6 +237,9 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         self.sectorId = sectorId
         self.jupiterManager = JupiterManager(id: id, region: region, sectorId: sectorId, debugOption: debugOption)
         self.jupiterManager?.delegate = self
+        
+        self.routingManager = RoutingManager(id: id, sectorId: sectorId)
+        self.routingManager?.delegate = self
     }
     
     deinit {
@@ -250,8 +255,6 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     
     public func startService(mode: UserMode) {
         NavigationNetworkConstants.setServerURL(region: region)
-        self.routingManager = RoutingManager(id: id, sectorId: sectorId)
-        self.routingManager?.delegate = self
         jupiterManager?.startJupiter(mode: mode)
     }
     
@@ -280,6 +283,10 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     
     public func requestRouting(start: RoutingStart, end: Point, waypoints: [Point] = [], completion: @escaping (RoutingResult?) -> Void) {
         routingManager?.requestRouting(type: .INITIAL, start: start, end: end, waypoints: waypoints, completion: completion)
+    }
+
+    public func getLevelRoutes() -> [NavigationLevelRoute] {
+        return routingManager?.getLevelRoutes() ?? []
     }
     
     //MARK: - Simulation Mode

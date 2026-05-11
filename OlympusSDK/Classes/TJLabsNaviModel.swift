@@ -5,6 +5,37 @@ public struct NavigationResult {
     
 }
 
+public enum NavigationRoutePointType: String, Codable {
+    case ORIGIN
+    case NORMAL
+    case VERTICAL
+    case DESTINATION
+}
+
+public struct NavigationRoutePoint: Codable {
+    public let pointId: Int
+    public let x: Float
+    public let y: Float
+    public let pointType: NavigationRoutePointType
+
+    public init(pointId: Int, x: Float, y: Float, pointType: NavigationRoutePointType) {
+        self.pointId = pointId
+        self.x = x
+        self.y = y
+        self.pointType = pointType
+    }
+}
+
+public struct NavigationLevelRoute: Codable {
+    public let levelId: Int
+    public let points: [NavigationRoutePoint]
+
+    public init(levelId: Int, points: [NavigationRoutePoint]) {
+        self.levelId = levelId
+        self.points = points
+    }
+}
+
 enum IndoorResultMode {
     case NAVI, CALC, NONE
 }

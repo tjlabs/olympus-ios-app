@@ -284,7 +284,9 @@ public class JupiterManager: JupiterCalcManagerDelegate {
     
     // MARK: - Bridging
     func getBuildingsData() -> [BuildingData]? {
-        return jupiterCalcManager?.getBuildingsData()
+        let buildingsData = jupiterCalcManager?.buildingsData
+        JupiterLogger.i(tag: "JupiterManager", message: "getBuildingsData : buildingsData= \(buildingsData)")
+        return buildingsData
     }
     
     func getMatchedLevelId(key: String) -> Int? {
