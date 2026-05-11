@@ -141,9 +141,9 @@ public class JupiterManager: JupiterCalcManagerDelegate {
                 if isSuccess {
                     // File Save Setting
                     if debugOption {
-                        self.uploadSimulationFiles()
-                        JupiterFileManager.shared.setDebugOption(flag: debugOption)
-                        JupiterFileManager.shared.createFiles(id: self.id, os: "iOS")
+//                        self.uploadSimulationFiles()
+//                        JupiterFileManager.shared.setDebugOption(flag: debugOption)
+//                        JupiterFileManager.shared.createFiles(id: self.id, os: "iOS")
                     }
                     jupiterCalcManager?.debugOption = debugOption
                     jupiterCalcManager?.delegate = self
@@ -161,7 +161,7 @@ public class JupiterManager: JupiterCalcManagerDelegate {
     }
     
     public func startJupiter(mode: UserMode) {
-        if isInitService {
+        if !isInitService {
             delegate?.onJupiterSuccess(false, .NOT_INITIALIZED)
             return
         }

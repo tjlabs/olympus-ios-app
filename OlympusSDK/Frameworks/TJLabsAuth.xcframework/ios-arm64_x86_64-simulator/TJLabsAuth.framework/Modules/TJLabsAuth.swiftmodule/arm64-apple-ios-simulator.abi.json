@@ -13,6 +13,219 @@
       },
       {
         "kind": "TypeDecl",
+        "name": "AuthCloud",
+        "printedName": "AuthCloud",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "AWS",
+            "printedName": "AWS",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(TJLabsAuth.AuthCloud.Type) -> TJLabsAuth.AuthCloud",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "AuthCloud",
+                    "printedName": "TJLabsAuth.AuthCloud",
+                    "usr": "s:10TJLabsAuth0B5CloudO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "TJLabsAuth.AuthCloud.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "AuthCloud",
+                        "printedName": "TJLabsAuth.AuthCloud",
+                        "usr": "s:10TJLabsAuth0B5CloudO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:10TJLabsAuth0B5CloudO3AWSyA2CmF",
+            "mangledName": "$s10TJLabsAuth0B5CloudO3AWSyA2CmF",
+            "moduleName": "TJLabsAuth"
+          },
+          {
+            "kind": "Var",
+            "name": "GCP",
+            "printedName": "GCP",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(TJLabsAuth.AuthCloud.Type) -> TJLabsAuth.AuthCloud",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "AuthCloud",
+                    "printedName": "TJLabsAuth.AuthCloud",
+                    "usr": "s:10TJLabsAuth0B5CloudO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "TJLabsAuth.AuthCloud.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "AuthCloud",
+                        "printedName": "TJLabsAuth.AuthCloud",
+                        "usr": "s:10TJLabsAuth0B5CloudO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:10TJLabsAuth0B5CloudO3GCPyA2CmF",
+            "mangledName": "$s10TJLabsAuth0B5CloudO3GCPyA2CmF",
+            "moduleName": "TJLabsAuth"
+          },
+          {
+            "kind": "Constructor",
+            "name": "init",
+            "printedName": "init(rawValue:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "TJLabsAuth.AuthCloud?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "AuthCloud",
+                    "printedName": "TJLabsAuth.AuthCloud",
+                    "usr": "s:10TJLabsAuth0B5CloudO"
+                  }
+                ],
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Constructor",
+            "usr": "s:10TJLabsAuth0B5CloudO8rawValueACSgSS_tcfc",
+            "mangledName": "$s10TJLabsAuth0B5CloudO8rawValueACSgSS_tcfc",
+            "moduleName": "TJLabsAuth",
+            "implicit": true,
+            "init_kind": "Designated"
+          },
+          {
+            "kind": "Var",
+            "name": "rawValue",
+            "printedName": "rawValue",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:10TJLabsAuth0B5CloudO8rawValueSSvp",
+            "mangledName": "$s10TJLabsAuth0B5CloudO8rawValueSSvp",
+            "moduleName": "TJLabsAuth",
+            "implicit": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:10TJLabsAuth0B5CloudO8rawValueSSvg",
+                "mangledName": "$s10TJLabsAuth0B5CloudO8rawValueSSvg",
+                "moduleName": "TJLabsAuth",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          }
+        ],
+        "declKind": "Enum",
+        "usr": "s:10TJLabsAuth0B5CloudO",
+        "mangledName": "$s10TJLabsAuth0B5CloudO",
+        "moduleName": "TJLabsAuth",
+        "declAttributes": [
+          "AccessControl"
+        ],
+        "enumRawTypeName": "String",
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP",
+            "mangledName": "$ss8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP",
+            "mangledName": "$ss9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ",
+            "mangledName": "$sSQ"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH",
+            "mangledName": "$sSH"
+          },
+          {
+            "kind": "Conformance",
+            "name": "RawRepresentable",
+            "printedName": "RawRepresentable",
+            "children": [
+              {
+                "kind": "TypeWitness",
+                "name": "RawValue",
+                "printedName": "RawValue",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ]
+              }
+            ],
+            "usr": "s:SY",
+            "mangledName": "$sSY"
+          }
+        ]
+      },
+      {
+        "kind": "TypeDecl",
         "name": "AuthRegion",
         "printedName": "AuthRegion",
         "children": [
@@ -125,6 +338,43 @@
             "declKind": "EnumElement",
             "usr": "s:10TJLabsAuth0B6RegionO6CANADAyA2CmF",
             "mangledName": "$s10TJLabsAuth0B6RegionO6CANADAyA2CmF",
+            "moduleName": "TJLabsAuth"
+          },
+          {
+            "kind": "Var",
+            "name": "SAUDI",
+            "printedName": "SAUDI",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(TJLabsAuth.AuthRegion.Type) -> TJLabsAuth.AuthRegion",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "AuthRegion",
+                    "printedName": "TJLabsAuth.AuthRegion",
+                    "usr": "s:10TJLabsAuth0B6RegionO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "TJLabsAuth.AuthRegion.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "AuthRegion",
+                        "printedName": "TJLabsAuth.AuthRegion",
+                        "usr": "s:10TJLabsAuth0B6RegionO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:10TJLabsAuth0B6RegionO5SAUDIyA2CmF",
+            "mangledName": "$s10TJLabsAuth0B6RegionO5SAUDIyA2CmF",
             "moduleName": "TJLabsAuth"
           },
           {
@@ -985,6 +1235,48 @@
           },
           {
             "kind": "Function",
+            "name": "set",
+            "printedName": "set(customerKey:clientMeta:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "TJLabsAuth.ClientMeta?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "ClientMeta",
+                    "printedName": "TJLabsAuth.ClientMeta",
+                    "usr": "s:10TJLabsAuth10ClientMetaV"
+                  }
+                ],
+                "hasDefaultArg": true,
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:10TJLabsAuth12SecretConfigO3set11customerKey10clientMetaySS_AA06ClientI0VSgtFZ",
+            "mangledName": "$s10TJLabsAuth12SecretConfigO3set11customerKey10clientMetaySS_AA06ClientI0VSgtFZ",
+            "moduleName": "TJLabsAuth",
+            "static": true,
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
             "name": "configureFromEmbeddedPlist",
             "printedName": "configureFromEmbeddedPlist()",
             "children": [
@@ -997,6 +1289,33 @@
             "declKind": "Func",
             "usr": "s:10TJLabsAuth12SecretConfigO26configureFromEmbeddedPlistyyFZ",
             "mangledName": "$s10TJLabsAuth12SecretConfigO26configureFromEmbeddedPlistyyFZ",
+            "moduleName": "TJLabsAuth",
+            "static": true,
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "configureFromEmbeddedPlist",
+            "printedName": "configureFromEmbeddedPlist(customerKey:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:10TJLabsAuth12SecretConfigO26configureFromEmbeddedPlist11customerKeyySS_tFZ",
+            "mangledName": "$s10TJLabsAuth12SecretConfigO26configureFromEmbeddedPlist11customerKeyySS_tFZ",
             "moduleName": "TJLabsAuth",
             "static": true,
             "declAttributes": [
@@ -1186,7 +1505,7 @@
           {
             "kind": "Function",
             "name": "setServerURL",
-            "printedName": "setServerURL(region:serverType:)",
+            "printedName": "setServerURL(cloud:region:serverType:)",
             "children": [
               {
                 "kind": "TypeNominal",
@@ -1204,11 +1523,17 @@
                 "name": "String",
                 "printedName": "Swift.String",
                 "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
               }
             ],
             "declKind": "Func",
-            "usr": "s:10TJLabsAuth0aB9ConstantsC12setServerURL6region10serverTypeySS_SStFZ",
-            "mangledName": "$s10TJLabsAuth0aB9ConstantsC12setServerURL6region10serverTypeySS_SStFZ",
+            "usr": "s:10TJLabsAuth0aB9ConstantsC12setServerURL5cloud6region10serverTypeySS_S2StFZ",
+            "mangledName": "$s10TJLabsAuth0aB9ConstantsC12setServerURL5cloud6region10serverTypeySS_S2StFZ",
             "moduleName": "TJLabsAuth",
             "static": true,
             "declAttributes": [
@@ -1515,6 +1840,47 @@
           },
           {
             "kind": "Function",
+            "name": "setClientConfigKey",
+            "printedName": "setClientConfigKey(_:clientMeta:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "TJLabsAuth.ClientMeta?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "ClientMeta",
+                    "printedName": "TJLabsAuth.ClientMeta",
+                    "usr": "s:10TJLabsAuth10ClientMetaV"
+                  }
+                ],
+                "hasDefaultArg": true,
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:10TJLabsAuth0aB7ManagerC18setClientConfigKey_10clientMetaySS_AA0eI0VSgtF",
+            "mangledName": "$s10TJLabsAuth0aB7ManagerC18setClientConfigKey_10clientMetaySS_AA0eI0VSgtF",
+            "moduleName": "TJLabsAuth",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
             "name": "auth",
             "printedName": "auth(accessKey:secretAccessKey:completion:)",
             "children": [
@@ -1637,23 +2003,44 @@
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsAuth-sdk-ios\/TJLabsAuth\/AuthModel.swift",
       "kind": "StringLiteral",
-      "offset": 70,
+      "offset": 67,
+      "length": 5,
+      "value": "\"AWS\""
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsAuth-sdk-ios\/TJLabsAuth\/AuthModel.swift",
+      "kind": "StringLiteral",
+      "offset": 88,
+      "length": 5,
+      "value": "\"GCP\""
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsAuth-sdk-ios\/TJLabsAuth\/AuthModel.swift",
+      "kind": "StringLiteral",
+      "offset": 148,
       "length": 7,
       "value": "\"KOREA\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsAuth-sdk-ios\/TJLabsAuth\/AuthModel.swift",
       "kind": "StringLiteral",
-      "offset": 97,
+      "offset": 175,
       "length": 9,
       "value": "\"US_EAST\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsAuth-sdk-ios\/TJLabsAuth\/AuthModel.swift",
       "kind": "StringLiteral",
-      "offset": 125,
+      "offset": 203,
       "length": 8,
       "value": "\"CANADA\""
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsAuth-sdk-ios\/TJLabsAuth\/AuthModel.swift",
+      "kind": "StringLiteral",
+      "offset": 229,
+      "length": 7,
+      "value": "\"SAUDI\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsAuth-sdk-ios\/TJLabsAuth\/SecretConfig.swift",
@@ -1672,7 +2059,7 @@
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsAuth-sdk-ios\/TJLabsAuth\/SecretConfig.swift",
       "kind": "BooleanLiteral",
-      "offset": 259,
+      "offset": 309,
       "length": 5,
       "value": "false"
     },
@@ -1833,14 +2220,14 @@
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsAuth-sdk-ios\/TJLabsAuth\/TJLabsAuthManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 4859,
+      "offset": 5032,
       "length": 2,
       "value": "60"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsAuth-sdk-ios\/TJLabsAuth\/TJLabsAuthManager.swift",
       "kind": "StringLiteral",
-      "offset": 5649,
+      "offset": 5822,
       "length": 6,
       "value": "\"POST\""
     }

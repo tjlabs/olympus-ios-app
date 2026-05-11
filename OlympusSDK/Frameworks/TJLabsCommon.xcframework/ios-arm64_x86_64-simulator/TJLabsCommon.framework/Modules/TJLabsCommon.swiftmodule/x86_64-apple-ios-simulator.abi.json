@@ -2275,6 +2275,60 @@
           {
             "kind": "Function",
             "name": "loadFilesForSimulation",
+            "printedName": "loadFilesForSimulation(rfdFile:eventFile:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Tuple",
+                "printedName": "(rfdTimeOffset: Swift.Int, rfdList: [TJLabsCommon.ReceivedForce])",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[TJLabsCommon.ReceivedForce]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ReceivedForce",
+                        "printedName": "TJLabsCommon.ReceivedForce",
+                        "usr": "s:12TJLabsCommon13ReceivedForceV"
+                      }
+                    ],
+                    "usr": "s:Sa"
+                  }
+                ]
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:12TJLabsCommon18JupiterFileManagerC22loadFilesForSimulation03rfdD005eventD0Si0J10TimeOffset_SayAA13ReceivedForceVG0J4ListtSS_SStF",
+            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC22loadFilesForSimulation03rfdD005eventD0Si0J10TimeOffset_SayAA13ReceivedForceVG0J4ListtSS_SStF",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "loadFilesForSimulation",
             "printedName": "loadFilesForSimulation(rfdFile:uvdFile:eventFile:)",
             "children": [
               {
@@ -2805,6 +2859,44 @@
             "declKind": "Func",
             "usr": "s:12TJLabsCommon16JupiterSimulatorC23getSimulationSensorDataAA0gH0VyF",
             "mangledName": "$s12TJLabsCommon16JupiterSimulatorC23getSimulationSensorDataAA0gH0VyF",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "setSimulationMode",
+            "printedName": "setSimulationMode(flag:rfdFileName:eventFileName:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:12TJLabsCommon16JupiterSimulatorC17setSimulationMode4flag11rfdFileName05eventjK0ySb_S2StF",
+            "mangledName": "$s12TJLabsCommon16JupiterSimulatorC17setSimulationMode4flag11rfdFileName05eventjK0ySb_S2StF",
             "moduleName": "TJLabsCommon",
             "declAttributes": [
               "AccessControl"
@@ -12653,56 +12745,56 @@
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDModel.swift",
       "kind": "IntegerLiteral",
-      "offset": 876,
+      "offset": 937,
       "length": 3,
       "value": "100"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDModel.swift",
       "kind": "IntegerLiteral",
-      "offset": 914,
+      "offset": 975,
       "length": 3,
       "value": "101"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDModel.swift",
       "kind": "IntegerLiteral",
-      "offset": 969,
+      "offset": 1030,
       "length": 3,
       "value": "110"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDModel.swift",
       "kind": "IntegerLiteral",
-      "offset": 1008,
+      "offset": 1069,
       "length": 3,
       "value": "111"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDModel.swift",
       "kind": "IntegerLiteral",
-      "offset": 1059,
+      "offset": 1120,
       "length": 3,
       "value": "120"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDModel.swift",
       "kind": "IntegerLiteral",
-      "offset": 1093,
+      "offset": 1154,
       "length": 3,
       "value": "121"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDModel.swift",
       "kind": "IntegerLiteral",
-      "offset": 1120,
+      "offset": 1181,
       "length": 3,
       "value": "122"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/RFD\/RFDModel.swift",
       "kind": "IntegerLiteral",
-      "offset": 1201,
+      "offset": 1262,
       "length": 3,
       "value": "130"
     },

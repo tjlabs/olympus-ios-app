@@ -133,14 +133,14 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     // MARK: - Functions
     func initialize(completion: @escaping (Bool, String) -> Void) {
-        tjlabsResourceManager.loadResources(region: region, sectorId: sectorId, landmarkTh: -92, forceUpdate: true, completion: { isSuccess in
+        tjlabsResourceManager.loadResources(cloud: "AWS", region: region, sectorId: sectorId, landmarkTh: -92, forceUpdate: true, completion: { isSuccess in
             let msg: String = isSuccess ? "JupiterCalcManager start success" : "JupiterCalcManager initialize failed"
             completion(isSuccess, msg)
         })
     }
     
     func start(completion: @escaping (Bool, String) -> Void) {
-        tjlabsResourceManager.loadResources(region: region, sectorId: sectorId, landmarkTh: -92, forceUpdate: true, completion: { isSuccess in
+        tjlabsResourceManager.loadResources(cloud: "AWS", region: region, sectorId: sectorId, landmarkTh: -92, forceUpdate: true, completion: { isSuccess in
             let msg: String = isSuccess ? "JupiterCalcManager start success" : "JupiterCalcManager start failed"
             completion(isSuccess, msg)
         })
@@ -565,7 +565,42 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                     var wardArea: [EntWardArea]?
                     if innermostWard.name.contains("46E") {
                         // Convensia Ent1
+//                        wardArea = [
+//                            EntWardArea(x: 35, y: 199, heading: [0]),
+//                            EntWardArea(x: 36, y: 199, heading: [0]),
+//                            EntWardArea(x: 37, y: 199, heading: [0]),
+//                            EntWardArea(x: 38, y: 199, heading: [0]),
+//                            EntWardArea(x: 39, y: 199, heading: [0]),
+//                            EntWardArea(x: 40, y: 199, heading: [0]),
+//                            EntWardArea(x: 41, y: 199, heading: [0]),
+//                            EntWardArea(x: 42, y: 199, heading: [0]),
+//                            EntWardArea(x: 43, y: 199, heading: [0]),
+//                            EntWardArea(x: 44, y: 199, heading: [0]),
+//                            EntWardArea(x: 45, y: 199, heading: [0]),
+//                            EntWardArea(x: 46, y: 199, heading: [0]),
+//                            EntWardArea(x: 47, y: 199, heading: [0]),
+//                            EntWardArea(x: 48, y: 199, heading: [0]),
+//                            EntWardArea(x: 49, y: 199, heading: [0, 315]),
+//                            EntWardArea(x: 50, y: 199, heading: [0, 315]),
+//                            EntWardArea(x: 51, y: 199, heading: [0, 315]),
+//                            EntWardArea(x: 52, y: 199, heading: [0, 315, 270]),
+//                            EntWardArea(x: 52, y: 198, heading: [315, 270]),
+//                            EntWardArea(x: 52, y: 197, heading: [315, 270]),
+//                            EntWardArea(x: 52, y: 196, heading: [315, 270]),
+//                            EntWardArea(x: 52, y: 195, heading: [315, 270]),
+//                            EntWardArea(x: 52, y: 194, heading: [315, 270]),
+//                            EntWardArea(x: 52, y: 193, heading: [270]),
+//                            EntWardArea(x: 52, y: 192, heading: [270]),
+//                            EntWardArea(x: 52, y: 191, heading: [270]),
+//                            EntWardArea(x: 52, y: 190, heading: [270]),
+//                            EntWardArea(x: 52, y: 189, heading: [270])
+//                        ]
                         wardArea = [
+                            EntWardArea(x: 30, y: 199, heading: [0]),
+                            EntWardArea(x: 31, y: 199, heading: [0]),
+                            EntWardArea(x: 32, y: 199, heading: [0]),
+                            EntWardArea(x: 33, y: 199, heading: [0]),
+                            EntWardArea(x: 34, y: 199, heading: [0]),
                             EntWardArea(x: 35, y: 199, heading: [0]),
                             EntWardArea(x: 36, y: 199, heading: [0]),
                             EntWardArea(x: 37, y: 199, heading: [0]),
@@ -579,21 +614,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                             EntWardArea(x: 45, y: 199, heading: [0]),
                             EntWardArea(x: 46, y: 199, heading: [0]),
                             EntWardArea(x: 47, y: 199, heading: [0]),
-                            EntWardArea(x: 48, y: 199, heading: [0]),
-                            EntWardArea(x: 49, y: 199, heading: [0, 315]),
-                            EntWardArea(x: 50, y: 199, heading: [0, 315]),
-                            EntWardArea(x: 51, y: 199, heading: [0, 315]),
-                            EntWardArea(x: 52, y: 199, heading: [0, 315, 270]),
-                            EntWardArea(x: 52, y: 198, heading: [315, 270]),
-                            EntWardArea(x: 52, y: 197, heading: [315, 270]),
-                            EntWardArea(x: 52, y: 196, heading: [315, 270]),
-                            EntWardArea(x: 52, y: 195, heading: [315, 270]),
-                            EntWardArea(x: 52, y: 194, heading: [315, 270]),
-                            EntWardArea(x: 52, y: 193, heading: [270]),
-                            EntWardArea(x: 52, y: 192, heading: [270]),
-                            EntWardArea(x: 52, y: 191, heading: [270]),
-                            EntWardArea(x: 52, y: 190, heading: [270]),
-                            EntWardArea(x: 52, y: 189, heading: [270])
+                            EntWardArea(x: 48, y: 199, heading: [0])
                         ]
                     } else if innermostWard.name.contains("114") {
                         // Convensia Ent2

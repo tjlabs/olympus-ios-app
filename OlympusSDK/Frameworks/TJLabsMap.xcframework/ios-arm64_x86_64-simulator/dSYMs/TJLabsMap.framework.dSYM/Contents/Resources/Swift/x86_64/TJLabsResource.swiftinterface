@@ -1,6 +1,6 @@
 // swift-interface-format-version: 1.0
 // swift-compiler-version: Apple Swift version 6.2 effective-5.10 (swiftlang-6.2.0.19.9 clang-1700.3.19.1)
-// swift-module-flags: -target x86_64-apple-ios15.6-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name TJLabsResource
+// swift-module-flags: -target x86_64-apple-ios16.6-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name TJLabsResource
 // swift-module-flags-ignorable:  -formal-cxx-interoperability-mode=off -interface-compiler-version 6.2
 import Foundation
 import Swift
@@ -48,10 +48,22 @@ public enum ResourceError {
     get
   }
 }
+public enum ResourceCloud : Swift.String {
+  case AWS
+  case GCP
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init?(rawValue: Swift.String)
+  #endif
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
 public enum ResourceRegion : Swift.String {
   case KOREA
   case CANADA
   case US_EAST
+  case SAUDI
   #if compiler(>=5.3) && $NonescapableTypes
   public init?(rawValue: Swift.String)
   #endif
@@ -77,6 +89,7 @@ public struct SectorBundle : Swift.Codable {
   public let id: Swift.Int
   public let name: Swift.String
   public let debug: Swift.Bool
+  public let operatingSystem: Swift.String
   public let defaultPosition: TJLabsResource.DefaultPosition?
   public let wgs84Transform: TJLabsResource.WGS84Transform?
   public let buildings: [TJLabsResource.Building]
@@ -125,7 +138,6 @@ public struct Building : Swift.Codable {
 public struct Level : Swift.Codable {
   public let id: Swift.Int
   public let name: Swift.String
-  public let operatingSystem: Swift.String
   public let mapImage: TJLabsResource.MapImage
   public let geofence: TJLabsResource.GeofenceData
   public let entrances: [TJLabsResource.Entrance]
@@ -404,7 +416,7 @@ public class TJLabsResourceManager {
   public static let shared: TJLabsResource.TJLabsResourceManager
   weak public var delegate: (any TJLabsResource.TJLabsResourceManagerDelegate)?
   public init()
-  public func loadResources(region: Swift.String, sectorId: Swift.Int, landmarkTh: Swift.Float = -90, forceUpdate: Swift.Bool = false, completion: @escaping (Swift.Bool) -> Swift.Void)
+  public func loadResources(cloud: Swift.String, region: Swift.String, sectorId: Swift.Int, landmarkTh: Swift.Float = -90, forceUpdate: Swift.Bool = false, completion: @escaping (Swift.Bool) -> Swift.Void)
   public func isDebug() -> Swift.Bool
   #if compiler(>=5.3) && $NonescapableTypes
   public func loadSectorBundle(region: Swift.String, sectorId: Swift.Int, forceUpdate: Swift.Bool = false, completion: @escaping (TJLabsResource.BundleOutput?) -> Swift.Void)
@@ -458,42 +470,20 @@ public class TJLabsResourceManager {
   @objc deinit
 }
 @_hasMissingDesignatedInitializers public class TJLabsResourceNetworkConstants {
-  public static func setServerURL(region: Swift.String)
+  public static func setServerURL(cloud: Swift.String, region: Swift.String)
+  public static func setOnpremiseURL(sectorBundleURL: Swift.String)
   public static func getUserBaseURL() -> Swift.String
   public static func getUserSectorVersion() -> Swift.String
   public static func getUserSectorURL() -> Swift.String
-  public static func getUserScaleVersion() -> Swift.String
-  public static func getUserScaleURL() -> Swift.String
-  public static func getUserPathPixelVersion() -> Swift.String
-  public static func getUserPathPixelURL() -> Swift.String
-  public static func getUserLevelUnitsVersion() -> Swift.String
-  public static func getUserLevelUnitsURL() -> Swift.String
-  public static func getUserGeoVersion() -> Swift.String
-  public static func getUserGeoURL() -> Swift.String
-  public static func getUserEntrancesVersion() -> Swift.String
-  public static func getUserEntrancesURL() -> Swift.String
-  public static func getUserLevelWardsVersion() -> Swift.String
-  public static func getUserLevelWardsURL() -> Swift.String
-  public static func getUserGraphNodesVersion() -> Swift.String
-  public static func getUserGraphNodesURL() -> Swift.String
-  public static func getUserGraphLinksVersion() -> Swift.String
-  public static func getUserGraphLinksURL() -> Swift.String
-  public static func getUserGraphLinkFeaturesVersion() -> Swift.String
-  public static func getUserGraphLinkFeaturesURL() -> Swift.String
-  public static func getUserGraphLinkGroupsVersion() -> Swift.String
-  public static func getUserGraphLinkGroupsURL() -> Swift.String
-  public static func getUserGraphPathsVersion() -> Swift.String
-  public static func getUserGraphPathsURL() -> Swift.String
-  public static func getUserMapsLandmarkVersion() -> Swift.String
-  public static func getUserMapsLandmarkURL() -> Swift.String
-  public static func getUserAffineVersion() -> Swift.String
-  public static func getUserAffineURL() -> Swift.String
   public static func getUserSectorBundleVersion() -> Swift.String
   public static func getUserSectorBundleURL() -> Swift.String
   @objc deinit
 }
 extension TJLabsResource.ResourceError : Swift.Equatable {}
 extension TJLabsResource.ResourceError : Swift.Hashable {}
+extension TJLabsResource.ResourceCloud : Swift.Equatable {}
+extension TJLabsResource.ResourceCloud : Swift.Hashable {}
+extension TJLabsResource.ResourceCloud : Swift.RawRepresentable {}
 extension TJLabsResource.ResourceRegion : Swift.Equatable {}
 extension TJLabsResource.ResourceRegion : Swift.Hashable {}
 extension TJLabsResource.ResourceRegion : Swift.RawRepresentable {}

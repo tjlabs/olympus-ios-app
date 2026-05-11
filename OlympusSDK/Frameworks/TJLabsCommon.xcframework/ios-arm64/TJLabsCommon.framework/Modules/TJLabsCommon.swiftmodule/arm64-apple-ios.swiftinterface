@@ -94,6 +94,7 @@ public struct SimulatedUserVelocity {
   public func deleteSimulationFile(at path: Swift.String) -> Swift.Bool
   public func saveFilesForSimulation(completion: @escaping (Swift.Bool) -> Swift.Void)
   public func loadFilesForSimulationLegacy(bleFile: Swift.String, sensorFile: Swift.String) -> ([[Swift.String : Swift.Double]], [TJLabsCommon.SensorData])
+  public func loadFilesForSimulation(rfdFile: Swift.String, eventFile: Swift.String) -> (rfdTimeOffset: Swift.Int, rfdList: [TJLabsCommon.ReceivedForce])
   public func loadFilesForSimulation(rfdFile: Swift.String, uvdFile: Swift.String, eventFile: Swift.String) -> (rfdTimeOffset: Swift.Int, rfdList: [TJLabsCommon.ReceivedForce], uvdTimeOffset: Swift.Int, uvdList: [TJLabsCommon.SimulatedUserVelocity])
   public func writeEvent(event: TJLabsCommon.JupiterEvent)
   public func writeRFD(rfd: TJLabsCommon.ReceivedForce)
@@ -107,6 +108,7 @@ public struct SimulatedUserVelocity {
   public func setSimulationModeLegacy(flag: Swift.Bool, bleFileName: Swift.String, sensorFileName: Swift.String)
   public func getSimulationBleData() -> [Swift.String : Swift.Double]
   public func getSimulationSensorData() -> TJLabsCommon.SensorData
+  public func setSimulationMode(flag: Swift.Bool, rfdFileName: Swift.String, eventFileName: Swift.String)
   public func setSimulationMode(flag: Swift.Bool, rfdFileName: Swift.String, uvdFileName: Swift.String, eventFileName: Swift.String)
   public func getRfdForSimulation() -> (rfdTimeOffset: Swift.Int, simulationRfd: [TJLabsCommon.ReceivedForce])
   public func getUvdForSimulation() -> (uvdTimeOffset: Swift.Int, simulationUvd: [TJLabsCommon.SimulatedUserVelocity])
