@@ -35,6 +35,7 @@ class KalmanFilter {
     var stackManager: StackManager?
     var tuResult: FineLocationTrackingOutput?
     private var paddings: [Float] = [1, 1, 1, 1]
+    private var pathMatchingAxisConstraint: PathMatchingAxisConstraint?
     
     private var tuResultBuffer = [ixyhs]()
     private var usedUvdIndex: Int = 0
@@ -95,86 +96,6 @@ class KalmanFilter {
         return nil
     }
     
-//    func editTuResultBuffer(
-//        sectorId: Int,
-//        mode: UserMode,
-//        from: Int,
-//        shifteTraj: [RecoveryTrajectory]? = nil,
-//        indexAndNaviRouteResultBuffer: [(Int, NavigationRoute)]? = nil,
-//        curResult: FineLocationTrackingOutput,
-//        paddings: [Float]
-//    ) {
-//        if let shifteTraj = shifteTraj {
-//            let trajByIndex = Dictionary(uniqueKeysWithValues: shifteTraj.map { ($0.index, $0) })
-//
-//            let building = curResult.building_name
-//            let level = curResult.level_name
-//            
-//            var preResult = tuResultBuffer[tuResultBuffer.count-1]
-//            tuResultBuffer = tuResultBuffer.map { result in
-//                guard result.index >= from else { return result }
-//                guard let traj = trajByIndex[result.index] else { return result }
-//                
-//                var newResult = result
-//                if result.index == from {
-//                    guard let pm = PathMatcher.shared.pathMatching(
-//                        sectorId: sectorId,
-//                        building: building,
-//                        level: level,
-//                        x: traj.x, y: traj.y, heading: traj.heading,
-//                        isUseHeading: true,
-//                        mode: mode,
-//                        paddingValues: paddings
-//                    ) else { return result }
-//                    
-//                    newResult.x = pm.x
-//                    newResult.y = pm.y
-//                    newResult.heading = pm.heading
-//                } else {
-//                    let preIndex = result.index - 1
-//                    guard let preTraj = trajByIndex[preIndex] else { return result }
-//                    let dx = traj.x - preTraj.x
-//                    let dy = traj.y - preTraj.y
-//                    
-//                    let newX = preResult.x + dx
-//                    let newY = preResult.y + dy
-//                    
-//                    guard let pm = PathMatcher.shared.pathMatching(
-//                        sectorId: sectorId,
-//                        building: curResult.building_name,
-//                        level: curResult.level_name,
-//                        x: newX, y: newY, heading: traj.heading,
-//                        isUseHeading: true,
-//                        mode: mode,
-//                        paddingValues: paddings
-//                    ) else { return result }
-//                    
-//                    newResult.x = pm.x
-//                    newResult.y = pm.y
-//                    newResult.heading = pm.heading
-//                }
-//                preResult = newResult
-//
-//                return newResult
-//            }
-//        } else if let indexAndNaviRouteResultBuffer = indexAndNaviRouteResultBuffer {
-//            let routeByIndex: [Int: NavigationRoute] =
-//                Dictionary(uniqueKeysWithValues: indexAndNaviRouteResultBuffer.map { ($0.0, $0.1) })
-//            tuResultBuffer = tuResultBuffer.map { result in
-//                guard let route = routeByIndex[result.index] else {
-//                    return result
-//                }
-//
-//                var newResult = result
-//                newResult.x = route.x
-//                newResult.y = route.y
-//                newResult.heading = route.heading
-//
-//                return newResult
-//            }
-//        }
-//    }
-    
     func editTuResultBuffer(
         sectorId: Int,
         mode: UserMode,
@@ -182,7 +103,8 @@ class KalmanFilter {
         shifteTraj: [CandidateTrajectory]? = nil,
         stackEditInfoBuffer: [StackEditInfo]? = nil,
         curResult: FineLocationTrackingOutput,
-        paddings: [Float]
+        paddings: [Float],
+        axisConstraint: PathMatchingAxisConstraint? = nil
     ) {
         if let shifteTraj = shifteTraj {
             let trajByIndex = Dictionary(uniqueKeysWithValues: shifteTraj.map { ($0.index, $0) })
@@ -204,7 +126,8 @@ class KalmanFilter {
                         x: traj.x, y: traj.y, heading: traj.heading,
                         isUseHeading: true,
                         mode: mode,
-                        paddingValues: paddings
+                        paddingValues: paddings,
+                        axisConstraint: axisConstraint
                     ) else { return result }
                     
                     newResult.x = pm.x
@@ -226,7 +149,8 @@ class KalmanFilter {
                         x: newX, y: newY, heading: traj.heading,
                         isUseHeading: true,
                         mode: mode,
-                        paddingValues: paddings
+                        paddingValues: paddings,
+                        axisConstraint: axisConstraint
                     ) else { return result }
                     
                     newResult.x = pm.x
@@ -655,9 +579,9 @@ class KalmanFilter {
         let drBufferStraightResults = stackManager.isDrBufferStraightCircularStd(numIndex: DR_HEADING_CORR_NUM_IDX, condition: 2.5)
         let isDrStraight = nextTuResult.level_name == "B0" ? false : (drBufferStraightResults.0 && !isInNode)
         
-        if let pmResults = PathMatcher.shared.pathMatching(sectorId: sectorId, building: nextTuResult.building_name, level: nextTuResult.level_name, x: nextTuResult.x, y: nextTuResult.y, heading: nextTuResult.absolute_heading, isUseHeading: true, mode: .MODE_VEHICLE, paddingValues: paddingValues) {
+        if let pmResults = PathMatcher.shared.pathMatching(sectorId: sectorId, building: nextTuResult.building_name, level: nextTuResult.level_name, x: nextTuResult.x, y: nextTuResult.y, heading: nextTuResult.absolute_heading, headingRange: 10, isUseHeading: true, mode: .MODE_VEHICLE, paddingValues: paddingValues) {
             nextTuResult.absolute_heading = isDrStraight ? Float(TJLabsUtilFunctions.shared.compensateDegree(Double(pmResults.heading))) : Float(TJLabsUtilFunctions.shared.compensateDegree(Double(nextTuResult.absolute_heading)))
-            JupiterLogger.i(tag: "KalmanFilter", message: "(timeUpdate) - pmResults :[\(nextTuResult.x),\(nextTuResult.y),\(nextTuResult.absolute_heading)]")
+            JupiterLogger.i(tag: "KalmanFilter", message: "(timeUpdate) - pmResults : xyh= [\(pmResults.x),\(pmResults.y),\(pmResults.heading)], headingFail= \(pmResults.headingFail)")
         } else {
             if let pmResultsWithoutHeading = PathMatcher.shared.pathMatching(sectorId: sectorId, building: nextTuResult.building_name, level: nextTuResult.level_name, x: nextTuResult.x, y: nextTuResult.y, heading: nextTuResult.absolute_heading, isUseHeading: false, mode: .MODE_VEHICLE, paddingValues: paddingValues) {
                 
@@ -683,7 +607,34 @@ class KalmanFilter {
         JupiterLogger.i(tag: "KalmanFilter", message: "(updateLimitationResult) - limitationResult: \(limitationResult)")
         
         let scale: Float = uturnLink ? 0.5 : 1
-        if (limitationResult.limitType == .Y_LIMIT) {
+        if limitationResult.limitType == .AXIS_LIMIT, limitationResult.limitValues.count >= 4 {
+            let anchorX = limitationResult.limitValues[0]
+            let anchorY = limitationResult.limitValues[1]
+            let axisHeading = limitationResult.limitValues[2]
+            let lateralLimit = limitationResult.limitValues[3]
+
+            let constrained = constrainToAxisCorridor(
+                x: nextTuResult.x,
+                y: nextTuResult.y,
+                anchorX: anchorX,
+                anchorY: anchorY,
+                axisHeading: axisHeading,
+                lateralLimit: lateralLimit
+            )
+            updatedTuResult.x = constrained.x
+            updatedTuResult.y = constrained.y
+            pathMatchingAxisConstraint = PathMatchingAxisConstraint(
+                heading: axisHeading,
+                longitudinalLimit: 40 * scale,
+                lateralLimit: lateralLimit
+            )
+            paddings = PathMatcher.shared.getAxisAlignedPadding(
+                axisHeading: axisHeading,
+                longitudinalLimit: 40 * scale,
+                lateralLimit: lateralLimit
+            )
+        } else if (limitationResult.limitType == .Y_LIMIT) {
+            pathMatchingAxisConstraint = nil
             if (nextTuResult.y < limitationResult.limitValues[0]) {
                 updatedTuResult.y = limitationResult.limitValues[0]
             } else if (nextTuResult.y > limitationResult.limitValues[1]) {
@@ -691,6 +642,7 @@ class KalmanFilter {
             }
             paddings = [40*scale, 0.4, 40*scale, 0.4]
         } else if (limitationResult.limitType == .X_LIMIT) {
+            pathMatchingAxisConstraint = nil
             if (nextTuResult.x < limitationResult.limitValues[0]) {
                 updatedTuResult.x = limitationResult.limitValues[0]
             } else if (nextTuResult.x > limitationResult.limitValues[1]) {
@@ -698,6 +650,7 @@ class KalmanFilter {
             }
             paddings = [0.4, 40*scale, 0.4, 40*scale]
         } else if limitationResult.limitType == .SMALL_LIMIT {
+            pathMatchingAxisConstraint = nil
             if nextTuResult.x < nextTuResult.x - limitationResult.limitValues[0] {
                 updatedTuResult.x = nextTuResult.x - limitationResult.limitValues[0]
             } else if nextTuResult.x > nextTuResult.x + limitationResult.limitValues[0] {
@@ -711,13 +664,38 @@ class KalmanFilter {
             }
             paddings = JupiterMode.PADDING_VALUES_SMALL
         } else {
+            pathMatchingAxisConstraint = nil
             paddings = JupiterMode.PADDING_VALUES_SMALL
         }
         return updatedTuResult
     }
+
+    private func constrainToAxisCorridor(x: Float, y: Float, anchorX: Float, anchorY: Float, axisHeading: Float, lateralLimit: Float) -> (x: Float, y: Float) {
+        let rad = Double(axisHeading) * Double.pi / 180.0
+        let ux = Float(cos(rad))
+        let uy = Float(sin(rad))
+        let nx = -uy
+        let ny = ux
+
+        let dx = x - anchorX
+        let dy = y - anchorY
+
+        let alongTrack = dx * ux + dy * uy
+        let crossTrack = dx * nx + dy * ny
+        let clampedCrossTrack = max(-lateralLimit, min(lateralLimit, crossTrack))
+
+        let constrainedX = anchorX + alongTrack * ux + clampedCrossTrack * nx
+        let constrainedY = anchorY + alongTrack * uy + clampedCrossTrack * ny
+
+        return (constrainedX, constrainedY)
+    }
     
     func getPaddings() -> [Float] {
         return self.paddings
+    }
+
+    func getPathMatchingAxisConstraint() -> PathMatchingAxisConstraint? {
+        return self.pathMatchingAxisConstraint
     }
     
     func measurementUpdate(sectorId: Int, resultForCorrection: FineLocationTrackingOutput, mode: UserMode) -> FineLocationTrackingOutput? {

@@ -87,6 +87,28 @@ public struct CandidateTrajectory: Codable {
     public var heading: Float
 }
 
+public struct JupiterNaviResult: Codable {
+    public let building: String
+    public let level: String
+    public let section: Int
+    public let passedPointId: Int
+    public var x: Float
+    public var y: Float
+    public var heading: Float
+    public var llh: LLH?
+
+    public init(building: String, level: String, section: Int, passedPointId: Int, x: Float, y: Float, heading: Float, llh: LLH?) {
+        self.building = building
+        self.level = level
+        self.section = section
+        self.passedPointId = passedPointId
+        self.x = x
+        self.y = y
+        self.heading = heading
+        self.llh = llh
+    }
+}
+
 public struct LossPointResult: Codable {
     let index: Int
     let traj: [Float]
@@ -114,7 +136,13 @@ struct EntWardArea {
 }
 
 enum LimitationType {
-    case X_LIMIT, Y_LIMIT, SMALL_LIMIT, NO_LIMIT
+    case X_LIMIT, Y_LIMIT, SMALL_LIMIT, NO_LIMIT, AXIS_LIMIT
+}
+
+struct PathMatchingAxisConstraint {
+    let heading: Float
+    let longitudinalLimit: Float
+    let lateralLimit: Float
 }
 
 public struct NaviCorrectionInfo {

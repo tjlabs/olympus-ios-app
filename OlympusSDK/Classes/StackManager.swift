@@ -142,7 +142,8 @@ class StackManager {
         from: Int,
         shifteTraj: [CandidateTrajectory]? = nil,
         stackEditInfoBuffer: [StackEditInfo]? = nil,
-        paddings: [Float]
+        paddings: [Float],
+        axisConstraint: PathMatchingAxisConstraint? = nil
     ) {
         if let shifteTraj = shifteTraj {
             let trajByIndex = Dictionary(uniqueKeysWithValues: shifteTraj.map { ($0.index, $0) })
@@ -161,7 +162,8 @@ class StackManager {
                         x: traj.x, y: traj.y, heading: traj.heading,
                         isUseHeading: true,
                         mode: mode,
-                        paddingValues: paddings
+                        paddingValues: paddings,
+                        axisConstraint: axisConstraint
                     ) else { return result }
                     
                     newResult.x = pm.x
@@ -183,7 +185,8 @@ class StackManager {
                         x: newX, y: newY, heading: traj.heading,
                         isUseHeading: true,
                         mode: mode,
-                        paddingValues: paddings
+                        paddingValues: paddings,
+                        axisConstraint: axisConstraint
                     ) else { return result }
                     
                     newResult.x = pm.x
@@ -245,7 +248,8 @@ class StackManager {
         from: Int,
         shifteTraj: [CandidateTrajectory]? = nil,
         stackEditInfoBuffer: [StackEditInfo]? = nil,
-        paddings: [Float]
+        paddings: [Float],
+        axisConstraint: PathMatchingAxisConstraint? = nil
     ) -> FineLocationTrackingOutput {
         if let shifteTraj = shifteTraj {
             let trajByIndex = Dictionary(uniqueKeysWithValues: shifteTraj.map { ($0.index, $0) })
@@ -264,7 +268,8 @@ class StackManager {
                         x: traj.x, y: traj.y, heading: traj.heading,
                         isUseHeading: true,
                         mode: mode,
-                        paddingValues: paddings
+                        paddingValues: paddings,
+                        axisConstraint: axisConstraint
                     ) else { return result }
                     
                     newResult.x = pm.x
@@ -286,7 +291,8 @@ class StackManager {
                         x: newX, y: newY, heading: traj.heading,
                         isUseHeading: true,
                         mode: mode,
-                        paddingValues: paddings
+                        paddingValues: paddings,
+                        axisConstraint: axisConstraint
                     ) else { return result }
                     
                     newResult.x = pm.x

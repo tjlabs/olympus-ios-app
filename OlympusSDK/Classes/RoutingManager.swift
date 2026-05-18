@@ -10,6 +10,7 @@ public struct RoutingRoute: Codable {
     public var x: Float
     public var y: Float
     public var heading: Float
+    public var passedPointId: Int = 1
     public var passable: Bool = true
 }
 
@@ -29,6 +30,8 @@ protocol RoutingManagerDelegate: AnyObject {
 
 class RoutingManager {
     private struct SectionLevelRun {
+        let building: String
+        let level: String
         let section: Int
         let levelId: Int
         let start: (x: Float, y: Float)
@@ -284,7 +287,7 @@ class RoutingManager {
         generateNavigationRoute(bOrder: buildingOrder, lOrder: levelOrder, nodeOrder: nodeOrder, order: order)
         let sectionMap = makeSectionMap(routes: self.routes)
         self.routeSectionData = sectionMap
-        self.levelRoutes = makeLevelRoutes(routes: self.routes)
+        self.levelRoutes = makeLevelRoutes(routes: &self.routes)
         delegate?.isNavigationRouteChanged()
     }
     
@@ -463,13 +466,16 @@ class RoutingManager {
         return map
     }
 
-    private func makeLevelRoutes(routes: [RoutingRoute]) -> [NavigationLevelRoute] {
+    private func makeLevelRoutes(routes: inout [RoutingRoute]) -> [NavigationLevelRoute] {
         let runs = makeSectionLevelRuns(routes: routes)
         guard !runs.isEmpty else { return [] }
 
         var groupedRoutes = [NavigationLevelRoute]()
         var currentLevelId = runs[0].levelId
         var currentPoints = [NavigationRoutePoint]()
+        var nextPointId = 1
+        var runStartPointIds = [Int]()
+        var runEndPointIds = [Int]()
 
         for index in 0..<runs.count {
             let run = runs[index]
@@ -481,10 +487,13 @@ class RoutingManager {
             }
 
             let startType: NavigationRoutePointType = index == 0 ? .ORIGIN : .NORMAL
-            currentPoints.append(NavigationRoutePoint(pointId: run.section,
+            let startPointId = nextPointId
+            runStartPointIds.append(startPointId)
+            currentPoints.append(NavigationRoutePoint(pointId: startPointId,
                                                       x: run.start.x,
                                                       y: run.start.y,
                                                       pointType: startType))
+            nextPointId += 1
 
             let endType: NavigationRoutePointType
             if index == runs.count - 1 {
@@ -495,10 +504,34 @@ class RoutingManager {
                 endType = .NORMAL
             }
 
-            currentPoints.append(NavigationRoutePoint(pointId: run.section,
+            currentPoints.append(NavigationRoutePoint(pointId: nextPointId,
                                                       x: run.end.x,
                                                       y: run.end.y,
                                                       pointType: endType))
+            runEndPointIds.append(nextPointId)
+            nextPointId += 1
+        }
+
+        var runIndex = 0
+        for index in routes.indices {
+            while runIndex + 1 < runs.count {
+                let currentRun = runs[runIndex]
+                let route = routes[index]
+                if route.building == currentRun.building && route.level == currentRun.level && route.section == currentRun.section {
+                    break
+                }
+                runIndex += 1
+            }
+
+            let isLastPointInRun: Bool
+            if index + 1 >= routes.count {
+                isLastPointInRun = true
+            } else {
+                let nextRoute = routes[index + 1]
+                let currentRun = runs[runIndex]
+                isLastPointInRun = nextRoute.building != currentRun.building || nextRoute.level != currentRun.level || nextRoute.section != currentRun.section
+            }
+            routes[index].passedPointId = isLastPointInRun ? runEndPointIds[runIndex] : runStartPointIds[runIndex]
         }
 
         groupedRoutes.append(NavigationLevelRoute(levelId: currentLevelId, points: currentPoints))
@@ -510,6 +543,7 @@ class RoutingManager {
         guard let firstLevelId = getLevelIdWithName(levelName: first.level) else { return [] }
 
         var runs = [SectionLevelRun]()
+        var runBuilding = first.building
         var runSection = first.section
         var runLevel = first.level
         var runLevelId = firstLevelId
@@ -517,13 +551,16 @@ class RoutingManager {
         var runEnd: XY = (first.x, first.y)
 
         for route in routes.dropFirst() {
-            let isBoundary = route.section != runSection || route.level != runLevel
+            let isBoundary = route.section != runSection || route.level != runLevel || route.building != runBuilding
             if isBoundary {
-                runs.append(SectionLevelRun(section: runSection,
+                runs.append(SectionLevelRun(building: runBuilding,
+                                            level: runLevel,
+                                            section: runSection,
                                             levelId: runLevelId,
                                             start: runStart,
                                             end: runEnd))
                 guard let nextLevelId = getLevelIdWithName(levelName: route.level) else { return runs }
+                runBuilding = route.building
                 runSection = route.section
                 runLevel = route.level
                 runLevelId = nextLevelId
@@ -534,7 +571,9 @@ class RoutingManager {
             }
         }
 
-        runs.append(SectionLevelRun(section: runSection,
+        runs.append(SectionLevelRun(building: runBuilding,
+                                    level: runLevel,
+                                    section: runSection,
                                     levelId: runLevelId,
                                     start: runStart,
                                     end: runEnd))
@@ -617,6 +656,57 @@ class RoutingManager {
 
     func getLevelRoutes() -> [NavigationLevelRoute] {
         return self.levelRoutes
+    }
+
+    func getPassedPointId(building: String, level: String, x: Float, y: Float) -> Int? {
+        guard let nearestIndex = findNearestRouteIndex(section: nil, building: building, level: level, x: x, y: y) else {
+            return nil
+        }
+        return routes[nearestIndex].passedPointId
+    }
+
+    func getRemainingDistance(building: String, level: String, x: Float, y: Float) -> Float? {
+        guard !routes.isEmpty else { return nil }
+        guard let nearestIndex = findNearestRouteIndex(section: nil, building: building, level: level, x: x, y: y) else {
+            return nil
+        }
+
+        var remainingDistance = distanceBetween(x1: x, y1: y, x2: routes[nearestIndex].x, y2: routes[nearestIndex].y)
+        if nearestIndex >= routes.count - 1 {
+            return remainingDistance
+        }
+
+        for index in nearestIndex..<(routes.count - 1) {
+            let current = routes[index]
+            let next = routes[index + 1]
+            remainingDistance += distanceBetween(x1: current.x, y1: current.y, x2: next.x, y2: next.y)
+        }
+
+        return remainingDistance
+    }
+
+    func clearNavigationSession() {
+        clearRoutes()
+        naviDestination = nil
+        waypointsForDisplay = []
+    }
+
+    func isRouteBackward(_ route: RoutingRoute, comparedTo currentResult: JupiterNaviResult) -> Bool? {
+        guard let candidateProgress = getRouteProgress(section: route.section,
+                                                      building: route.building,
+                                                      level: route.level,
+                                                      x: route.x,
+                                                      y: route.y),
+              let currentProgress = getRouteProgress(section: currentResult.section,
+                                                     building: currentResult.building,
+                                                     level: currentResult.level,
+                                                     x: currentResult.x,
+                                                     y: currentResult.y) else {
+            return nil
+        }
+
+        let progressEpsilon: Float = 0.25
+        return candidateProgress + progressEpsilon < currentProgress
     }
     
     func setStartPointInNaviRoute(xyh: [Float]?) {
@@ -779,6 +869,51 @@ class RoutingManager {
         var d = a - b
         d = fmod(d + 540.0, 360.0) - 180.0
         return abs(d)
+    }
+
+    private func distanceBetween(x1: Float, y1: Float, x2: Float, y2: Float) -> Float {
+        let dx = x2 - x1
+        let dy = y2 - y1
+        return sqrt(dx * dx + dy * dy)
+    }
+
+    private func getRouteProgress(section: Int, building: String, level: String, x: Float, y: Float) -> Float? {
+        let nearestIndex = findNearestRouteIndex(section: section, building: building, level: level, x: x, y: y)
+        return nearestIndex.map { Float($0) }
+    }
+
+    private func findNearestRouteIndex(section: Int?, building: String, level: String, x: Float, y: Float) -> Int? {
+        let levelScopedRoutes = routes.enumerated().filter { _, route in
+            route.building == building && route.level == level
+        }
+        let fullyScopedRoutes = levelScopedRoutes.filter { _, route in
+            guard let section else { return true }
+            return route.section == section
+        }
+
+        let candidates: [(offset: Int, element: RoutingRoute)]
+        if !fullyScopedRoutes.isEmpty {
+            candidates = fullyScopedRoutes
+        } else if !levelScopedRoutes.isEmpty {
+            candidates = levelScopedRoutes
+        } else {
+            candidates = routes.enumerated().map { $0 }
+        }
+
+        var nearestIndex: Int?
+        var bestDistance = Float.greatestFiniteMagnitude
+
+        for (index, route) in candidates {
+            let dx = route.x - x
+            let dy = route.y - y
+            let distance = sqrt(dx * dx + dy * dy)
+            if distance < bestDistance {
+                bestDistance = distance
+                nearestIndex = index
+            }
+        }
+
+        return nearestIndex
     }
     
     // MARK: - Decoding

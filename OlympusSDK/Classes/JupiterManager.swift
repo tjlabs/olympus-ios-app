@@ -75,7 +75,7 @@ public class JupiterManager: JupiterCalcManagerDelegate {
     // MARK: - JupiterResult Timer
     var outputTimer: DispatchSourceTimer?
     
-    public init(id: String, region: String = JupiterRegion.KOREA.rawValue, sectorId: Int, debugOption: Bool = false) {
+    public init(id: String, cloud: String, region: String = JupiterRegion.KOREA.rawValue, sectorId: Int, debugOption: Bool = false) {
         self.id = id
         self.sectorId = sectorId
         
@@ -85,7 +85,7 @@ public class JupiterManager: JupiterCalcManagerDelegate {
         let arr = deviceOs.components(separatedBy: ".")
         self.deviceOsVersion = Int(arr[0]) ?? 0
         
-        initialize(region: region, sectorId: sectorId, debugOption: debugOption)
+        initialize(cloud: cloud, region: region, sectorId: sectorId, debugOption: debugOption)
     }
     
     deinit {
@@ -94,8 +94,8 @@ public class JupiterManager: JupiterCalcManagerDelegate {
     }
 
     // MARK: - Start & Stop Jupiter Service
-    func initialize(region: String, sectorId: Int, debugOption: Bool) {
-        JupiterNetworkConstants.setServerURL(region: region)
+    func initialize(cloud: String, region: String, sectorId: Int, debugOption: Bool) {
+        JupiterNetworkConstants.setServerURL(cloud: cloud, region: region)
         let (isNetworkAvailable, _) = JupiterNetworkManager.shared.isConnectedToInternet()
         let (isIdAvailable, _) = checkIdIsAvailable(id: id)
         
@@ -111,11 +111,6 @@ public class JupiterManager: JupiterCalcManagerDelegate {
         
         if !isIdAvailable {
             delegate?.onInitSuccess(false, .INVALID_ID)
-            return
-        }
-        
-        if isInitService {
-            delegate?.onInitSuccess(false, .DUPLICATED_SERVICE)
             return
         }
         
@@ -151,7 +146,7 @@ public class JupiterManager: JupiterCalcManagerDelegate {
                     isInitService = true
                     delegate?.onInitSuccess(true, nil)
                 } else {
-                    delegate?.onInitSuccess(false, .CALC_INIT_FAIL)
+                    delegate?.onInitSuccess(false, .LOAD_RESOURCE_FAIL)
                 }
             })
         }, onError: { msg in
@@ -170,6 +165,15 @@ public class JupiterManager: JupiterCalcManagerDelegate {
             delegate?.onJupiterSuccess(false, .DUPLICATED_SERVICE)
             return
         }
+
+        guard let jupiterCalcManager else {
+            delegate?.onJupiterSuccess(false, .NOT_INITIALIZED)
+            return
+        }
+
+        jupiterCalcManager.delegate = self
+        jupiterCalcManager.resetRuntimeState()
+
         startGenerator(mode: mode, completion: { [self] isSuccess, msg in
             if isSuccess {
                 isStartJupiter = true
@@ -191,11 +195,11 @@ public class JupiterManager: JupiterCalcManagerDelegate {
         let eventFile = fileInfos.eventFiles
         
         for r in rfdFile {
-            JupiterFileUploader.shared.requestS3FileURL(fileName: r.name, completion: { output in
+            JupiterFileUploader.shared.requestStorageFileURL(fileName: r.name, completion: { output in
                 if let s3Output = output {
                     let presigned_url = s3Output.presigned_url
                     JupiterLogger.i(tag: "JupiterManager", message: "uploadSimulationFiles rfd : \(r.name)")
-                    JupiterFileUploader.shared.uploadFileToS3(s3Path: presigned_url, filePath: r.path, completion: { isSuccess in
+                    JupiterFileUploader.shared.uploadFileToStorage(s3Path: presigned_url, filePath: r.path, completion: { isSuccess in
                         if isSuccess { JupiterFileManager.shared.deleteSimulationFile(at: r.path) }
                     })
                 }
@@ -203,11 +207,11 @@ public class JupiterManager: JupiterCalcManagerDelegate {
         }
         
         for u in uvdFile {
-            JupiterFileUploader.shared.requestS3FileURL(fileName: u.name, completion: { output in
+            JupiterFileUploader.shared.requestStorageFileURL(fileName: u.name, completion: { output in
                 if let s3Output = output {
                     let presigned_url = s3Output.presigned_url
                     JupiterLogger.i(tag: "JupiterManager", message: "uploadSimulationFiles uvd : \(u.name)")
-                    JupiterFileUploader.shared.uploadFileToS3(s3Path: presigned_url, filePath: u.path, completion: { isSuccess in
+                    JupiterFileUploader.shared.uploadFileToStorage(s3Path: presigned_url, filePath: u.path, completion: { isSuccess in
                         if isSuccess { JupiterFileManager.shared.deleteSimulationFile(at: u.path) }
                     })
                 }
@@ -215,11 +219,11 @@ public class JupiterManager: JupiterCalcManagerDelegate {
         }
         
         for e in eventFile {
-            JupiterFileUploader.shared.requestS3FileURL(fileName: e.name, completion: { output in
+            JupiterFileUploader.shared.requestStorageFileURL(fileName: e.name, completion: { output in
                 if let s3Output = output {
                     let presigned_url = s3Output.presigned_url
                     JupiterLogger.i(tag: "JupiterManager", message: "uploadSimulationFiles event : \(e.name)")
-                    JupiterFileUploader.shared.uploadFileToS3(s3Path: presigned_url, filePath: e.path, completion: { isSuccess in
+                    JupiterFileUploader.shared.uploadFileToStorage(s3Path: presigned_url, filePath: e.path, completion: { isSuccess in
                         if isSuccess { JupiterFileManager.shared.deleteSimulationFile(at: e.path) }
                     })
                 }
@@ -261,8 +265,7 @@ public class JupiterManager: JupiterCalcManagerDelegate {
         if isStartJupiter {
             stopTimer()
             stopGenerator()
-            jupiterCalcManager?.delegate = nil
-            jupiterCalcManager = nil
+            jupiterCalcManager?.resetRuntimeState()
             isStartJupiter = false
             completion(true, "Jupiter stopped")
         } else {
@@ -271,7 +274,12 @@ public class JupiterManager: JupiterCalcManagerDelegate {
     }
     
     private func startGenerator(mode: UserMode, completion: @escaping (Bool, String) -> Void) {
-        jupiterCalcManager?.startGenerator(mode: mode, completion: { isSuccess, message in
+        guard let jupiterCalcManager else {
+            completion(false, "JupiterCalcManager is nil")
+            return
+        }
+
+        jupiterCalcManager.startGenerator(mode: mode, completion: { isSuccess, message in
             completion(isSuccess, message)
         })
     }

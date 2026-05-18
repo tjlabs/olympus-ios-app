@@ -21,10 +21,10 @@ public class JupiterFileUploader: NSObject, URLSessionTaskDelegate {
         return JupiterFileManager.shared.getSimulationFilesInExports()
     }
     
-    func requestS3FileURL(fileName: String, completion: @escaping (S3Output?) -> Void) {
+    func requestStorageFileURL(fileName: String, completion: @escaping (S3Output?) -> Void) {
         let successRange = 200..<300
         let input = S3Input(file_name: fileName, content_type: "application/json")
-        JupiterNetworkManager.shared.postS3(url: JupiterNetworkConstants.getRecS3URL(), input: input, completion: { [self] statusCode, returnedString, s3Input in
+        JupiterNetworkManager.shared.postS3(url: JupiterNetworkConstants.getRecFileUploadURL(), input: input, completion: { [self] statusCode, returnedString, s3Input in
             if successRange.contains(statusCode) {
                 guard let s3Output = decodeS3Output(from: returnedString) else {
                     completion(nil)
@@ -38,7 +38,7 @@ public class JupiterFileUploader: NSObject, URLSessionTaskDelegate {
         })
     }
     
-    func uploadFileToS3(s3Path: String, filePath: String, completion: ((Bool) -> Void)? = nil) {
+    func uploadFileToStorage(s3Path: String, filePath: String, completion: ((Bool) -> Void)? = nil) {
         guard let uploadURL = URL(string: s3Path) else {
             JupiterLogger.e(tag: "JupiterFileUploader", message: "uploadFileToS3 : invalid s3Path = \(s3Path)")
             completion?(false)

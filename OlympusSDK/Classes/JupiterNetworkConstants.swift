@@ -12,9 +12,8 @@ public class JupiterNetworkConstants {
     static let REC_UVD_SERVER_VERSION = "2025-04-02"
     static let REC_MOBILE_RESULT_SERVER_VERSION = "2026-04-09"
     static let REC_MOBILE_REPORT_SERVER_VERSION = "2025-04-02"
-    static let REC_S3_SERVER_VERSION = "2026-04-02"
+    static let REC_FILE_UPLOAD_SERVER_VERSION = "2026-04-29"
     
-    static let CALC_OPE_SERVER_VERSION = "1994-07-29" // 있다고 가정
     static let CALC_DIRECTIONS_SERVER_VERSION = "2026-04-13"
     
     static let OPERATING_SYSTEM: String = "iOS"
@@ -31,20 +30,30 @@ public class JupiterNetworkConstants {
     private(set) static var CALC_URL = HTTP_PREFIX + REGION_PREFIX + "calc" + JUPITER_SUFFIX
     private(set) static var CLIENT_URL = HTTP_PREFIX + REGION_PREFIX + "client" + JUPITER_SUFFIX
     
-    public static func setServerURL(region: String) {
-        switch region {
-        case JupiterRegion.KOREA.rawValue:
-            REGION_PREFIX = "ap-northeast-2."
-            REGION_NAME = "Korea"
-        case JupiterRegion.KOREA.rawValue:
-            REGION_PREFIX = "ca-central-1."
-            REGION_NAME = "Canada"
-        case JupiterRegion.KOREA.rawValue:
-            REGION_PREFIX = "us-east-1."
-            REGION_NAME = "US"
-        default:
-            REGION_PREFIX = "ap-northeast-2."
-            REGION_NAME = "Korea"
+    public static func setServerURL(cloud: String, region: String) {
+        REGION_NAME = region
+        if cloud == JupiterCloud.GCP.rawValue {
+            // GCP
+            switch region {
+            case JupiterRegion.KOREA.rawValue:
+                REGION_PREFIX = "asia-northeast3."
+            case JupiterRegion.SAUDI.rawValue:
+                REGION_PREFIX = "me-central2."
+            default:
+                REGION_PREFIX = "asia-northeast3."
+            }
+        } else if cloud == JupiterCloud.AWS.rawValue {
+            // AWS
+            switch region {
+            case JupiterRegion.KOREA.rawValue:
+                REGION_PREFIX = "ap-northeast-2."
+            case JupiterRegion.KOREA.rawValue:
+                REGION_PREFIX = "ca-central-1."
+            case JupiterRegion.KOREA.rawValue:
+                REGION_PREFIX = "us-east-1."
+            default:
+                REGION_PREFIX = "ap-northeast-2."
+            }
         }
         
         USER_URL = HTTP_PREFIX + REGION_PREFIX + "user" + JUPITER_SUFFIX
@@ -91,8 +100,8 @@ public class JupiterNetworkConstants {
         return REC_MOBILE_RESULT_SERVER_VERSION
     }
     
-    public static func getRecS3ServerVersion() -> String {
-        return REC_S3_SERVER_VERSION
+    public static func getRecFileUploadServerVersion() -> String {
+        return REC_FILE_UPLOAD_SERVER_VERSION
     }
     
     public static func getUserLoginURL() -> String {
@@ -119,19 +128,15 @@ public class JupiterNetworkConstants {
         return REC_URL + "/" + REC_MOBILE_REPORT_SERVER_VERSION + "/mobile-report"
     }
     
-    public static func getRecS3URL() -> String {
-        return REC_URL + "/" + REC_S3_SERVER_VERSION + "/s3"
+    public static func getRecFileUploadURL() -> String {
+        return REC_URL + "/" + REC_FILE_UPLOAD_SERVER_VERSION + "/storage"
     }
     
-    public static func getCalcOpeURL() -> String {
-        return CALC_URL + "/" + CALC_OPE_SERVER_VERSION + "/ope"
+    public static func getCalcDirsServerVersion() -> String {
+        return CALC_DIRECTIONS_SERVER_VERSION
     }
     
     public static func getCalcDirsURL() -> String {
         return CALC_URL + "/" + CALC_DIRECTIONS_SERVER_VERSION + "/directions"
-    }
-    
-    public static func getClientBlacklistURL() -> String {
-        return CLIENT_URL + "/black"
     }
 }

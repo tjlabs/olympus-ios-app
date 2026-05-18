@@ -74,7 +74,7 @@ class PathMatcher {
         return self.entranceArea[key]
     }
     
-    func pathMatching(sectorId: Int, building: String, level: String, x: Float, y: Float, heading: Float, headingRange: Float = 46, isUseHeading: Bool, mode: UserMode, paddingValues: [Float]) -> ixyhs? {
+    func pathMatching(sectorId: Int, building: String, level: String, x: Float, y: Float, heading: Float, headingRange: Float = 46, isUseHeading: Bool, mode: UserMode, paddingValues: [Float], axisConstraint: PathMatchingAxisConstraint? = nil) -> ixyhs? {
         var ixyhs = ixyhs(x: x, y: y, heading: heading, scale: 1.0)
         var bestHeading = heading
         
@@ -84,7 +84,7 @@ class PathMatcher {
         let key = "\(sectorId)_\(building)_\(levelName)"
         
         guard let pathPixelData = checkIsAvailablePathPixelData(key: key) else { return nil }
-
+        
         let mainRoad = pathPixelData.road
         let mainMagScale = pathPixelData.roadScale
         let mainHeading = pathPixelData.roadHeading
@@ -100,12 +100,14 @@ class PathMatcher {
             var yMin = y - paddingValues[1]
             var yMax = y + paddingValues[3]
             
+            var effectiveAxisConstraint = axisConstraint
             if paddingValues[0] != 0 || paddingValues[1] != 0 || paddingValues[2] != 0 || paddingValues[3] != 0 {
                 if let pathMatchingArea = self.checkInEntranceMatchingArea(sectorId: sectorId, building: building, level: level, x: x, y: y) {
                     xMin = pathMatchingArea[0]
                     yMin = pathMatchingArea[1]
                     xMax = pathMatchingArea[2]
                     yMax = pathMatchingArea[3]
+                    effectiveAxisConstraint = nil
                 }
             }
             
@@ -114,6 +116,10 @@ class PathMatcher {
                 let yPath = roadY[i]
                 
                 if xPath >= xMin && xPath <= xMax, yPath >= yMin && yPath <= yMax {
+                    if let effectiveAxisConstraint,
+                       !isInsideAxisConstraint(centerX: x, centerY: y, targetX: xPath, targetY: yPath, axisConstraint: effectiveAxisConstraint) {
+                        continue
+                    }
                     let distance = sqrt(pow(x - xPath, 2) + pow(y - yPath, 2))
                     let magScale = mainMagScale[i]
                     var idsh: [Float] = [Float(i), distance, magScale, heading]
@@ -162,7 +168,8 @@ class PathMatcher {
         headingRange: Float = 46,
         isUseHeading: Bool,
         mode: UserMode,
-        paddingValues: [Float]
+        paddingValues: [Float],
+        axisConstraint: PathMatchingAxisConstraint? = nil
     ) -> PathMatchingResult? {
         var ixyhs = ixyhs(x: x, y: y, heading: heading, scale: 1.0)
         var bestHeading = heading
@@ -189,12 +196,14 @@ class PathMatcher {
             var yMin = y - paddingValues[1]
             var yMax = y + paddingValues[3]
 
+            var effectiveAxisConstraint = axisConstraint
             if paddingValues[0] != 0 || paddingValues[1] != 0 || paddingValues[2] != 0 || paddingValues[3] != 0 {
                 if let pathMatchingArea = self.checkInEntranceMatchingArea(sectorId: sectorId, building: building, level: level, x: x, y: y) {
                     xMin = pathMatchingArea[0]
                     yMin = pathMatchingArea[1]
                     xMax = pathMatchingArea[2]
                     yMax = pathMatchingArea[3]
+                    effectiveAxisConstraint = nil
                 }
             }
 
@@ -203,6 +212,10 @@ class PathMatcher {
                 let yPath = roadY[i]
 
                 if xPath >= xMin && xPath <= xMax, yPath >= yMin && yPath <= yMax {
+                    if let effectiveAxisConstraint,
+                       !isInsideAxisConstraint(centerX: x, centerY: y, targetX: xPath, targetY: yPath, axisConstraint: effectiveAxisConstraint) {
+                        continue
+                    }
                     let distance = sqrt(pow(x - xPath, 2) + pow(y - yPath, 2))
                     let magScale = mainMagScale[i]
                     var idsh: [Float] = [Float(i), distance, magScale, heading]
@@ -478,28 +491,26 @@ class PathMatcher {
     func getTimeUpdateLimitation(level: String) -> (limitType: LimitationType, limitValues: [Float]) {
         var limitType: LimitationType = .NO_LIMIT
         var limitValues: [Float] = [0, 0]
-        let LIMIT: Float = 0.4
+        let AXIS_ALIGNED_LIMIT: Float = 0.4
+        let RELAXED_LIMIT: Float = 0.8
         
         if (level == "B0" || self.isInNode) {
             return (limitType, limitValues)
         }
         JupiterLogger.i(tag: "PathMatcher", message: "(getTimeUpdateLimitation) - curPassedLinkInfo: \(curPassedLinkInfo)")
         guard let curLink = self.curPassedLinkInfo else { return (limitType, limitValues) }
+        guard curLink.user_coord.count >= 2 else { return (limitType, limitValues) }
         let coordX = curLink.user_coord[0]
         let coordY = curLink.user_coord[1]
-        
-        let directions = curLink.included_heading
-        
-        if (directions.contains(0) && directions.contains(180)) {
-            limitType = .Y_LIMIT
-            limitValues = [coordY - LIMIT, coordY + LIMIT]
-        } else if (directions.contains(90) && directions.contains(270)) {
-            limitType = .X_LIMIT
-            limitValues = [coordX - LIMIT, coordX + LIMIT]
-        } else {
-            limitType = .SMALL_LIMIT
-            limitValues = [0.8, 0.8]
-        }
+
+        let axisHeading = getAxisHeading(link: curLink)
+        let lateralLimit = getAxisLateralLimit(
+            axisHeading: axisHeading,
+            axisAlignedLimit: AXIS_ALIGNED_LIMIT,
+            relaxedLimit: RELAXED_LIMIT
+        )
+        limitType = .AXIS_LIMIT
+        limitValues = [coordX, coordY, axisHeading, lateralLimit]
         
         return (limitType, limitValues)
     }
@@ -533,6 +544,85 @@ class PathMatcher {
         }
         
         return paddings
+    }
+
+    func getLimitationRangeWithLink(link: LinkData, longitudinalLimit: Float = 40, lateralLimit: Float = 0.4) -> [Float] {
+        guard let axisHeading = getAxisHeading(link: link) else { return JupiterMode.PADDING_VALUES_SMALL }
+        return getAxisAlignedPadding(axisHeading: axisHeading, longitudinalLimit: longitudinalLimit, lateralLimit: lateralLimit)
+    }
+
+    func getAxisConstraintWithLink(link: LinkData, longitudinalLimit: Float = 40, lateralLimit: Float = 0.4) -> PathMatchingAxisConstraint? {
+        guard let axisHeading = getAxisHeading(link: link) else { return nil }
+        return PathMatchingAxisConstraint(heading: axisHeading, longitudinalLimit: longitudinalLimit, lateralLimit: lateralLimit)
+    }
+
+    func getAxisAlignedPadding(axisHeading: Float, longitudinalLimit: Float, lateralLimit: Float) -> [Float] {
+        let rad = Double(axisHeading) * Double.pi / 180.0
+        let ux = abs(Float(cos(rad)))
+        let uy = abs(Float(sin(rad)))
+        let nx = abs(-Float(sin(rad)))
+        let ny = abs(Float(cos(rad)))
+
+        let xPadding = longitudinalLimit * ux + lateralLimit * nx
+        let yPadding = longitudinalLimit * uy + lateralLimit * ny
+
+        return [xPadding, yPadding, xPadding, yPadding]
+    }
+
+    func getDirectionalPadding(axisHeading: Float, longitudinalLimit: Float, lateralLimit: Float) -> [Float] {
+        let rad = Double(axisHeading) * Double.pi / 180.0
+        let ux = Float(cos(rad))
+        let uy = Float(sin(rad))
+        let lateralX = lateralLimit * abs(-uy)
+        let lateralY = lateralLimit * abs(ux)
+
+        let leftPadding = max(0, -longitudinalLimit * ux) + lateralX
+        let downPadding = max(0, -longitudinalLimit * uy) + lateralY
+        let rightPadding = max(0, longitudinalLimit * ux) + lateralX
+        let upPadding = max(0, longitudinalLimit * uy) + lateralY
+
+        return [leftPadding, downPadding, rightPadding, upPadding]
+    }
+
+    private func getAxisHeading(link: PassedLinkInfo) -> Float {
+        if !link.included_heading.isEmpty {
+            return link.matched_heading
+        }
+        return link.user_heading
+    }
+
+    private func getAxisHeading(link: LinkData) -> Float? {
+        if let heading = link.included_heading.first {
+            return heading
+        }
+        return nil
+    }
+
+    private func getAxisLateralLimit(axisHeading: Float, axisAlignedRange: Float = 0.5, axisAlignedLimit: Float = 0.4, relaxedLimit: Float = 0.8) -> Float {
+        let normalizedHeading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(axisHeading)))
+        let axisAlignedHeadings: [Float] = [0, 90, 180, 270]
+        let isAxisAligned = axisAlignedHeadings.contains {
+            circularDiffDeg(Double(normalizedHeading), Double($0)) <= Double(axisAlignedRange)
+        }
+
+        return isAxisAligned ? axisAlignedLimit : relaxedLimit
+    }
+
+    private func isInsideAxisConstraint(centerX: Float, centerY: Float, targetX: Float, targetY: Float, axisConstraint: PathMatchingAxisConstraint) -> Bool {
+        let rad = Double(axisConstraint.heading) * Double.pi / 180.0
+        let ux = Float(cos(rad))
+        let uy = Float(sin(rad))
+        let nx = -uy
+        let ny = ux
+
+        let dx = targetX - centerX
+        let dy = targetY - centerY
+        let alongTrack = dx * ux + dy * uy
+        let crossTrack = dx * nx + dy * ny
+        JupiterLogger.i(tag: "PathMatcher", message: "(isInsideAxisConstraint) - centerXY: [\(centerX),\(centerY)], targetXY: [\(targetX),\(targetY)]")
+        JupiterLogger.i(tag: "PathMatcher", message: "(isInsideAxisConstraint) - alongTrack: \(alongTrack), longitudinalLimit: \(axisConstraint.longitudinalLimit)")
+        JupiterLogger.i(tag: "PathMatcher", message: "(isInsideAxisConstraint) - crossTrack: \(crossTrack), lateralLimit: \(axisConstraint.lateralLimit)")
+        return abs(alongTrack) <= axisConstraint.longitudinalLimit && abs(crossTrack) <= axisConstraint.lateralLimit
     }
     
     // MARK: - Node & Link
@@ -747,24 +837,11 @@ class PathMatcher {
     }
     
     func calculatePaddingByHeading(oppositeHeading: Float, length: Double) -> [Float] {
-        var paddingValues = [Float] (repeating: 20, count: 4)
         let lengthFloat = Float(length)
-        if (oppositeHeading == 0) {
-            paddingValues = [0, lengthFloat, 1, 1]
-        } else if (oppositeHeading == 90) {
-            paddingValues = [1, 1, 0, lengthFloat]
-        } else if (oppositeHeading == 180) {
-            paddingValues = [lengthFloat, 0, 1, 1]
-        } else if (oppositeHeading == 270) {
-            paddingValues = [1, 1, lengthFloat, 0]
-        } else {
-            paddingValues = [lengthFloat, lengthFloat, lengthFloat, lengthFloat]
-        }
-        
-        return paddingValues
+        return getDirectionalPadding(axisHeading: oppositeHeading, longitudinalLimit: lengthFloat, lateralLimit: 1)
     }
     
-    func updateNodeAndLinkInfo(sectorId: Int, uvdIndex: Int, curResult: FineLocationTrackingOutput, jumpInfo: JumpInfo?, isInLevelChangeArea: Bool = false, pLinkCutIndex: Int? = nil) {
+    func updateNodeAndLinkInfo(sectorId: Int, uvdIndex: Int, curResult: FineLocationTrackingOutput, jumpInfo: JumpInfo?, isInLevelChangeArea: Bool = false, checkOption: Bool = false, pLinkCutIndex: Int? = nil) {
         let checkAll = jumpInfo != nil || isInLevelChangeArea ? true : false
         let x = curResult.x
         let y = curResult.y
@@ -835,7 +912,7 @@ class PathMatcher {
 
         
         var candidateLinkNums: [Int]
-        if checkAll {
+        if checkAll || checkOption {
             candidateLinkNums = Array(linkData.keys)
         } else if curPassedNodeInfo.number != -1, let curNd = nodeData[curPassedNodeInfo.number] {
             candidateLinkNums = curNd.connected_links
@@ -1032,7 +1109,7 @@ class PathMatcher {
             }
         }
 
-        guard let node = bestNode, bestDist <= acceptDist else { return nil }
+        guard let node = bestNode, bestDist < acceptDist else { return nil }
         return node
     }
     

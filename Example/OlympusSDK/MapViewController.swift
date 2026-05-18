@@ -131,7 +131,7 @@ class MapViewController: UIViewController {
     }
     
     func setupMapView() {
-        mapView.initialize(region: self.region, sectorId: self.sectorId)
+        mapView.initialize(cloud: "AWS", region: self.region, sectorId: self.sectorId)
         mapView.configureFrame(to: mainView)
         mapView.setZoomScale(zoom: 2.0)
         mainView.addSubview(mapView)

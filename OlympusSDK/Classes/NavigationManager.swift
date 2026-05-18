@@ -9,6 +9,7 @@ public protocol NavigationManagerDelegate: AnyObject {
     func onJupiterReport(_ code: JupiterServiceCode, _ msg: String)
     func isJupiterInOutStateChanged(_ state: InOutState)
     
+    func isUserArrived()
     func isUserGuidanceOut()
     func isNavigationRouteChanged(_ routes: [(String, String, Int, Float, Float)])
     func isNavigationRouteFailed()
@@ -58,6 +59,8 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         
         let estimatedNaviCase = followingResult.naviCase
         curNaviCase = estimatedNaviCase
+        self.curRoutingRouteResult = naviRouteResult
+        updateCurJupiterNaviResult(routingRoute: naviRouteResult, jupiterResult: jupiterResult)
         if curNaviCase == .CASE_3 && !guidanceOutReported {
             guidanceOutReported = true
             self.isUserGuidanceOut()
@@ -119,19 +122,49 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     }
     
     public func onJupiterResult(_ result: JupiterResult) {
-        self.jupiterResult = result
+        var copied = result
         if resultMode == .NAVI {
-            var copied = result
-            if let routingRoute = self.curRoutingRouteResult {
+            if let jupiterNaviResult = self.curJupiterNaviResult {
+                copied.building_name = jupiterNaviResult.building
+                copied.level_name = jupiterNaviResult.level
+                copied.jupiter_pos.x = jupiterNaviResult.x
+                copied.jupiter_pos.y = jupiterNaviResult.y
+                copied.jupiter_pos.heading = jupiterNaviResult.heading
+                copied.llh = makeLLH(x: jupiterNaviResult.x, y: jupiterNaviResult.y, heading: jupiterNaviResult.heading) ?? jupiterNaviResult.llh
+            } else if let routingRoute = self.curRoutingRouteResult {
                 copied.building_name = routingRoute.building
                 copied.level_name = routingRoute.level
                 copied.jupiter_pos.x = routingRoute.x
                 copied.jupiter_pos.y = routingRoute.y
                 copied.jupiter_pos.heading = routingRoute.heading
+                copied.llh = makeLLH(x: routingRoute.x, y: routingRoute.y, heading: routingRoute.heading) ?? result.llh
             }
-            delegate?.onJupiterResult(copied)
+        }
+
+        let hasGuidanceRoute = !(routingManager?.getRoutingRoutes().isEmpty ?? true)
+        if hasGuidanceRoute {
+            if resultMode == .NAVI, isHoldingNaviPositionOnBackwardJump, let jupiterNaviResult = curJupiterNaviResult {
+                copied.passed_point_id = jupiterNaviResult.passedPointId
+            } else {
+                copied.passed_point_id = routingManager?.getPassedPointId(building: copied.building_name,
+                                                                         level: copied.level_name,
+                                                                         x: copied.jupiter_pos.x,
+                                                                         y: copied.jupiter_pos.y) ?? copied.passed_point_id
+            }
         } else {
-            delegate?.onJupiterResult(result)
+            copied.passed_point_id = nil
+        }
+        
+        let shouldNotifyArrival = hasGuidanceRoute && isUserArrived(building: copied.building_name,
+                                                                    level: copied.level_name,
+                                                                    x: copied.jupiter_pos.x,
+                                                                    y: copied.jupiter_pos.y)
+
+        self.jupiterResult = copied
+        delegate?.onJupiterResult(copied)
+        if shouldNotifyArrival {
+            finishNavigation()
+            delegate?.isUserArrived()
         }
     }
     
@@ -148,16 +181,21 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         if phase == .TRACKING, let xyh = xyh {
             self.jupiterPhase = phase
             self.trackingIndex = index
-            routingManager?.setStartPointInNaviRoute(xyh: xyh)
+            if hasNaviRoute {
+                routingManager?.setStartPointInNaviRoute(xyh: xyh)
+            }
         }
     }
     
     // MARK: - Navigation
     func isUserGuidanceOut() {
         JupiterLogger.i(tag: "NavigationManager", message: "(isUserGuidanceOut) user guidance out")
-        delegate?.isUserGuidanceOut()
         hasNaviRoute = false
+        curRoutingRouteResult = nil
+        curJupiterNaviResult = nil
         routingManager?.clearRoutes()
+        self.jupiterResult?.passed_point_id = nil
+        delegate?.isUserGuidanceOut()
         guard let curResult = self.jupiterResult else { return }
         guard let curLevelId = routingManager?.getLevelIdWithName(levelName: curResult.level_name) else { return }
         let from = RoutingStart(level_id: curLevelId, x: Int(curResult.jupiter_pos.x), y: Int(curResult.jupiter_pos.y), absolute_heading: Int(curResult.jupiter_pos.heading))
@@ -175,15 +213,12 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     func isNavigationRouteChanged() {
         if !hasNaviRoute {
             hasNaviRoute = true
+            curRoutingRouteResult = nil
+            curJupiterNaviResult = nil
             if let naviRouteForDisplay = routingManager?.getNaviRoutesForDisplay() {
-                JupiterLogger.i(tag: "NavigationManager", message: "(getNaviRoutesForDisplay) naviRouteForDisplay= \(naviRouteForDisplay)")
-                JupiterLogger.i(tag: "NavigationManager", message: "(getNaviRoutesForDisplay) levelRoutes= \(routingManager?.getLevelRoutes())")
-                JupiterLogger.i(tag: "NavigationManager", message: "(isNavigationRouteChanged) navigation route changed")
                 delegate?.isNavigationRouteChanged(naviRouteForDisplay)
                 naviRouteChanged = true
                 curNaviCase = .CASE_1
-            } else {
-                JupiterLogger.i(tag: "NavigationManager", message: "(getNaviRoutesForDisplay) naviRouteForDisplay is empty")
             }
         }
     }
@@ -213,8 +248,12 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     // MARK: - Navigation
     private var naviMode: Bool = false
     private var naviDestination: Point?
+    private var isVehicle: Bool = false
     var curRoutingRouteResult: RoutingRoute?
+    var curJupiterNaviResult: JupiterNaviResult?
     var guidanceOutReported: Bool = false
+    private var isHoldingNaviPositionOnBackwardJump: Bool = false
+    private var waypoints: [[Double]] = []
     
     // MARK: - Routing
     private var hasNaviRoute: Bool = false
@@ -232,10 +271,10 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     private var recentLandmarkPeaks: [PeakData]?
     
     // MARK: - init & deinit
-    public init(id: String, region: String = JupiterRegion.KOREA.rawValue, sectorId: Int, debugOption: Bool = false) {
+    public init(id: String, cloud: String = JupiterCloud.AWS.rawValue, region: String = JupiterRegion.KOREA.rawValue, sectorId: Int, debugOption: Bool = false) {
         self.id = id
         self.sectorId = sectorId
-        self.jupiterManager = JupiterManager(id: id, region: region, sectorId: sectorId, debugOption: debugOption)
+        self.jupiterManager = JupiterManager(id: id, cloud: cloud, region: region, sectorId: sectorId, debugOption: debugOption)
         self.jupiterManager?.delegate = self
         
         self.routingManager = RoutingManager(id: id, sectorId: sectorId)
@@ -307,6 +346,75 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         guard let jupiterResult = jupiterResult else { return nil }
         if uvd.index <= trackingIndex { return nil }
         return routingManager?.calcNaviRouteResult(uvd: uvd, jupiterResult: jupiterResult)
+    }
+
+    private func makeLLH(x: Float, y: Float, heading: Float) -> LLH? {
+        guard let affineParam = AffineConverter.shared.getAffineParam(sectorId: sectorId) else { return nil }
+        let converted = AffineConverter.shared.convertPpToLLH(x: Double(x), y: Double(y), heading: Double(heading), param: affineParam)
+        return LLH(lat: converted.lat, lon: converted.lon, heading: converted.heading)
+    }
+    
+    private func isUserArrived(building: String, level: String, x: Float, y: Float) -> Bool {
+        guard naviMode, hasNaviRoute else { return false }
+        guard let remainingDistance = routingManager?.getRemainingDistance(building: building,
+                                                                          level: level,
+                                                                          x: x,
+                                                                          y: y) else { return false }
+        return remainingDistance <= 10.0
+    }
+
+    private func finishNavigation() {
+        naviMode = false
+        naviDestination = nil
+        isVehicle = false
+        curRoutingRouteResult = nil
+        curJupiterNaviResult = nil
+        guidanceOutReported = false
+        isHoldingNaviPositionOnBackwardJump = false
+        hasNaviRoute = false
+        naviRouteChanged = false
+        feedbackIndex = 0
+        feedbackCount = 0
+        curNaviCase = .NONE
+        sectionCorrectionIndex = 0
+        resultMode = .NONE
+        waypoints = []
+        routingManager?.clearNavigationSession()
+    }
+    
+    public func cancelNavigation() {
+        self.finishNavigation()
+    }
+
+    private func updateCurJupiterNaviResult(routingRoute: RoutingRoute, jupiterResult: JupiterResult?) {
+        let nextResult = JupiterNaviResult(building: routingRoute.building,
+                                           level: routingRoute.level,
+                                           section: routingRoute.section,
+                                           passedPointId: routingRoute.passedPointId,
+                                           x: routingRoute.x,
+                                           y: routingRoute.y,
+                                           heading: routingRoute.heading,
+                                           llh: makeLLH(x: routingRoute.x, y: routingRoute.y, heading: routingRoute.heading) ?? jupiterResult?.llh)
+
+        guard let currentResult = curJupiterNaviResult else {
+            isHoldingNaviPositionOnBackwardJump = false
+            curJupiterNaviResult = nextResult
+            return
+        }
+
+        guard let isBackwardJump = routingManager?.isRouteBackward(routingRoute, comparedTo: currentResult) else {
+            isHoldingNaviPositionOnBackwardJump = false
+            curJupiterNaviResult = nextResult
+            return
+        }
+
+        if isBackwardJump {
+            isHoldingNaviPositionOnBackwardJump = true
+            return
+        }
+
+        isHoldingNaviPositionOnBackwardJump = false
+        curJupiterNaviResult = nextResult
     }
     
     private func determineIndoorResultMode(resultMode: IndoorResultMode, naviCase: NaviCase) -> IndoorResultMode {

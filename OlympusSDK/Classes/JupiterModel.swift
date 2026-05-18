@@ -3,11 +3,18 @@ import Foundation
 import TJLabsCommon
 import TJLabsResource
 
+public enum JupiterCloud: String {
+    case AWS = "AWS"
+    case GCP = "GCP"
+}
+
 public enum JupiterRegion: String {
     case KOREA = "KOREA"
     case US_EAST = "US_EAST"
     case CANADA = "CANADA"
+    case SAUDI = "SAUDI"
 }
+
 
 protocol JupiterCalcManagerDelegate: AnyObject {
     func onRfdResult(receivedForce: ReceivedForce)
@@ -50,11 +57,9 @@ public protocol JupiterManagerDelegate: AnyObject {
 public enum InitErrorCode: Int {
     case NOT_AUTHORIZED = 0
     case INVALID_ID = 1
-    case INVALID_MODE = 2
-    case NETWORK_DISCONNECT = 3
-    case DUPLICATED_SERVICE = 4
-    case LOGIN_FAIL = 5
-    case CALC_INIT_FAIL = 6
+    case NETWORK_DISCONNECT = 2
+    case LOGIN_FAIL = 3
+    case LOAD_RESOURCE_FAIL = 4
 }
 
 public enum JupiterErrorCode: Int {
@@ -86,11 +91,27 @@ public struct JupiterResult: Codable {
     public var level_name: String
     public var jupiter_pos: Position
     public var navi_pos: Position?
+    public var passed_point_id: Int?
     public var llh: LLH?
     public var velocity: Float
     public var is_vehicle: Bool
     public var is_indoor: Bool
     public var validity_flag: Int
+
+    public init(mobile_time: Int, index: Int, building_name: String, level_name: String, jupiter_pos: Position, navi_pos: Position? = nil, passed_point_id: Int? = nil, llh: LLH? = nil, velocity: Float, is_vehicle: Bool, is_indoor: Bool, validity_flag: Int) {
+        self.mobile_time = mobile_time
+        self.index = index
+        self.building_name = building_name
+        self.level_name = level_name
+        self.jupiter_pos = jupiter_pos
+        self.navi_pos = navi_pos
+        self.passed_point_id = passed_point_id
+        self.llh = llh
+        self.velocity = velocity
+        self.is_vehicle = is_vehicle
+        self.is_indoor = is_indoor
+        self.validity_flag = validity_flag
+    }
 }
 
 public struct Position: Codable {

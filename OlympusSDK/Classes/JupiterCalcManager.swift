@@ -192,8 +192,75 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     }
     
     func stopGenerator() {
+        rfdGenerator?.delegate = nil
         rfdGenerator?.stopRfdGeneration()
+        uvdGenerator?.delegate = nil
         uvdGenerator?.stopUvdGeneration()
+        rfdGenerator = nil
+        uvdGenerator = nil
+    }
+
+    func resetRuntimeState() {
+        JupiterStates.resetAll(isStopService: true)
+
+        uvdStopTimestamp = 0
+        rfdEmptyMillis = 0
+        pressure = 0
+
+        curRfd = ReceivedForce(tenant_user_name: "", mobile_time: 0, rfs: [String: Double](), pressure: 0)
+        curUvd = UserVelocity(tenant_user_name: "", mobile_time: 0, index: 0, length: 0, heading: 0, looking: false)
+        pastUvd = UserVelocity(tenant_user_name: "", mobile_time: 0, index: 0, length: 0, heading: 0, looking: false)
+        curVelocity = 0
+        curUserMode = "AUTO"
+        curUserModeEnum = .MODE_AUTO
+
+        peakDetector = PeakDetector()
+        if let entManager {
+            peakDetector.setInnerWardIds(ids: entManager.getEntInnermostWardIds())
+        }
+
+        wardAvgManager = WardAveragingManager(bufferSize: AVG_BUFFER_SIZE)
+        stackManager = StackManager()
+        kalmanFilter = KalmanFilter(stackManager: stackManager)
+        sectionController = SectionController()
+        buildingLevelChanger = BuildingLevelChanger(sectorId: sectorId)
+        buildingLevelChanger?.delegate = self
+        landmarkTagger = LandmarkTagger(sectorId: sectorId)
+        solutionEstimator = SolutionEstimator(sectorId: sectorId)
+        stateManager?.delegate = nil
+        stateManager = JupiterStateManager()
+        stateManager?.delegate = self
+
+        searcingId = ""
+        searchingIndex = 0
+        correctionId = ""
+        correctionIndex = 0
+        uvdIndexWhenCorrection = 0
+        paddingValues = JupiterMode.PADDING_VALUES_MEDIUM
+        preFixed = nil
+        recoveryIndex = 0
+        recentUserPeakIndex = 0
+        recentLandmarkPeaks = nil
+        feedbackIndex = 0
+        pathMatchingCondition = PathMatchingCondition()
+        report = -1
+
+        jupiterPhase = .NONE
+        curResult = nil
+        preResult = nil
+        curPathMatchingResult = nil
+        prePathMatchingResult = nil
+
+        debug_calc_xyh = [0, 0, 0]
+        debug_tu_xyh = [0, 0, 0]
+        debug_landmark = nil
+        debug_best_landmark = nil
+        debug_recon_raw_traj = nil
+        debug_recon_corr_traj = nil
+        debug_selected_search = nil
+        debug_selected_cand = nil
+        debug_ratio = nil
+        debug_navi_xyh = [0, 0, 0]
     }
     
     func getJupiterResult() -> JupiterResult? {
@@ -220,6 +287,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                           level_name: levelName,
                                           jupiter_pos: Position(x: x, y: y, heading: absoluteHeading),
                                           navi_pos: nil,
+                                          passed_point_id: nil,
                                           llh: llh,
                                           velocity: curVelocity,
                                           is_vehicle: is_vehicle,
@@ -415,11 +483,21 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         // Bad Case 확인
         let travelingLinkDist = PathMatcher.shared.getCurPassedLinksDist()
         if stackManager.checkIsBadCase(jupiterPhase: jupiterPhase, uvdIndexWhenCorrection: self.uvdIndexWhenCorrection, travelingLinkDist: travelingLinkDist) && !uturnLink {
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: entered, index=\(userVelocity.index), phase=\(jupiterPhase), travelingLinkDist=\(travelingLinkDist)")
             let userPeakAndLinksBuffer = stackManager.getUserPeakAndLinksBuffer()
-            if userPeakAndLinksBuffer.count < 2 { return }
+            if userPeakAndLinksBuffer.count < 2 {
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: return - peaks are not sufficient, count=\(userPeakAndLinksBuffer.count)")
+                return
+            }
             JupiterResultState.isInRecoveryProcess = true
-            guard let recentAndOld = getRecentAndOlderUserPeak(userPeakAndLinksBuffer: userPeakAndLinksBuffer) else { return }
-            guard let solutionEstimator = self.solutionEstimator else { return }
+            guard let recentAndOld = getRecentAndOlderUserPeak(userPeakAndLinksBuffer: userPeakAndLinksBuffer) else {
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: return - getRecentAndOlderUserPeak returned nil")
+                return
+            }
+            guard let solutionEstimator = self.solutionEstimator else {
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: return - solutionEstimator is nil")
+                return
+            }
             let recentUserPeak = recentAndOld.recent.0
             let olderUserPeak = recentAndOld.old.0
             
@@ -471,8 +549,11 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                 if let matchedLink = PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId, result: curPathMatchingResult!, checkAll: true) {
                                     let jumpInfo = JumpInfo(link_number: matchedLink.number, jumped_nodes: [])
                                     PathMatcher.shared.updateNodeAndLinkInfo(sectorId: sectorId, uvdIndex: curIndex, curResult: curPathMatchingResult!, jumpInfo: jumpInfo)
+                                } else {
+                                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: recovery succeeded but matchedLink is nil")
                                 }
                             } else {
+                                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: recovery pathMatching failed, using raw recoveryCoord=\(recoveryCoord)")
                                 kalmanFilter?.updateTuPosition(coord: recoveryCoord)
                                 var copiedResult = bestResult.headResult
                                 copiedResult.x = recoveryCoord[0]
@@ -481,18 +562,28 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                 self.curResult? = copiedResult
                                 PathMatcher.shared.initPassedLinkInfo()
                             }
+                        } else {
+                            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: calculateBadCaseResult returned nil")
                         }
                     } else {
                         JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: cannot find major direction")
                     }
+                } else {
+                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: landmark matching failed, olderPeak=\(olderUserPeak.peak_index), recentPeak=\(recentUserPeak.peak_index)")
                 }
+            } else {
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: kalmanFilter tuResult is nil")
             }
             JupiterResultState.isInRecoveryProcess = false
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: exited recovery block")
         }
         
         if jupiterPhase == .TRACKING {
             let indexForEdit = max(correctionIndex, feedbackIndex)
-            guard let trackingFeedback = delegate?.provideTrackingCorrection(mode: mode, userVelocity: userVelocity, peakIndex: curPeak?.peak_index, recentLandmarkPeaks: recentLandmarkPeaks, travelingLinkDist: travelingLinkDist, indexForEdit: indexForEdit, curPmResult: curPathMatchingResult) else { return }
+            guard let trackingFeedback = delegate?.provideTrackingCorrection(mode: mode, userVelocity: userVelocity, peakIndex: curPeak?.peak_index, recentLandmarkPeaks: recentLandmarkPeaks, travelingLinkDist: travelingLinkDist, indexForEdit: indexForEdit, curPmResult: curPathMatchingResult) else {
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) return - provideTrackingCorrection returned nil, indexForEdit=\(indexForEdit), curPmResultExists=\(curPathMatchingResult != nil)")
+                return
+            }
             let naviCorrectionInfo = trackingFeedback.0
             let stackEditInfoBuffer = trackingFeedback.1
             let paddings = JupiterMode.PADDING_VALUES_MEDIUM
@@ -523,11 +614,12 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
 //            self.stackEditInfoBuffer = nil
         }
         
-        updateDebugTuResult()
+//        updateDebugTuResult()
     }
     
     private func updateDebugTuResult() {
         if let tuResult = kalmanFilter?.getTuResult() {
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(updateDebugTuResult) - tuResult: [\(tuResult.x), \(tuResult.y), \(tuResult.absolute_heading)]")
             self.debug_tu_xyh = [tuResult.x, tuResult.y, tuResult.absolute_heading]
         }
     }
@@ -1157,6 +1249,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     private func calcIndoorResult(mode: UserMode, uvd: UserVelocity, olderPeakIndex: Int?, jumpInfo: JumpInfo?, uturnLink: Bool = false) {
         let (tuResult, isDidPathTrajMatching) = updateResultFromTimeUpdate(mode: mode, uvd: uvd, pastUvd: pastUvd, pathMatchingCondition: self.pathMatchingCondition, uturnLink: uturnLink)
         guard var tuResult = tuResult else { return }
+        updateDebugTuResult()
         guard let curResult = self.curResult else { return }
         let pathMatchingArea = PathMatcher.shared.checkInEntranceMatchingArea(sectorId: sectorId, building: tuResult.building_name, level: tuResult.level_name, x: tuResult.x, y: tuResult.y)
         
@@ -1324,6 +1417,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                         let headResult = trackingResult.headResult
                         var trackingCoord = [Float]()
                         var paddings = JupiterMode.PADDING_VALUES_LARGE
+                        var axisConstraint: PathMatchingAxisConstraint?
 
                         if isDrStraight.0 {
                             let key = "\(sectorId)_\(curResult.building_name)_\(curResult.level_name)"
@@ -1334,8 +1428,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                 let linkNums = bestCand.matched_links
                                 if linkNums.count == 1 {
                                     if let matchedLink = linkData[linkNums[0]] {
-                                        let limitType = PathMatcher.shared.getLimitationTypeWithLink(link: matchedLink)
-                                        paddings = PathMatcher.shared.getLimitationRangeWithType(limitType: limitType)
+                                        paddings = PathMatcher.shared.getLimitationRangeWithLink(link: matchedLink)
+                                        axisConstraint = PathMatcher.shared.getAxisConstraintWithLink(link: matchedLink)
                                     }
                                 } else {
                                     let limitType: LimitationType = .SMALL_LIMIT
@@ -1358,20 +1452,23 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                                          mode: mode,
                                                          from: userPeak.peak_index,
                                                          shifteTraj: trackingResult.traj,
-                                                         paddings: paddings)
+                                                         paddings: paddings,
+                                                         axisConstraint: axisConstraint)
 
                         let updatedCurPmResult = stackManager.editCurPmResultBuffer(sectorId: sectorId,
                                                                                     mode: mode,
                                                                                     from: recentUserPeak.peak_index,
                                                                                     shifteTraj: trackingResult.traj,
-                                                                                    paddings: paddings)
+                                                                                    paddings: paddings,
+                                                                                    axisConstraint: axisConstraint)
 
                         kalmanFilter.editTuResultBuffer(sectorId: sectorId,
                                                         mode: mode,
                                                         from: userPeak.peak_index,
                                                         shifteTraj: trackingResult.traj,
                                                         curResult: curResult,
-                                                        paddings: paddings)
+                                                        paddings: paddings,
+                                                        axisConstraint: axisConstraint)
 
                         trackingCoord = [updatedCurPmResult.x, updatedCurPmResult.y, updatedCurPmResult.absolute_heading]
                         
@@ -1390,7 +1487,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                                                          heading: trackingCoord[2],
                                                                          isUseHeading: true,
                                                                          mode: mode,
-                                                                         paddingValues: paddings) {
+                                                                         paddingValues: paddings,
+                                                                         axisConstraint: axisConstraint) {
                             curPathMatchingResult = headResult
                             curPathMatchingResult?.x = pmResult.x
                             curPathMatchingResult?.y = pmResult.y
@@ -1465,14 +1563,17 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             }
         } else {
             // DR
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - pathMatchingType= \(pathMatchingType)")
             isUseHeading = !JupiterResultState.isVenus
+            var axisConstraint: PathMatchingAxisConstraint?
             if let kf = kalmanFilter, pathMatchingType == .NARROW {
                 self.paddingValues = kf.getPaddings()
+                axisConstraint = kf.getPathMatchingAxisConstraint()
             }
             
             let paddings = (!isPdrMode && levelName == "B0") ? JupiterMode.PADDING_VALUES_MEDIUM : self.paddingValues
             JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - result: paddings \(paddings)")
-            if let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, headingRange: headingRange, isUseHeading: isUseHeading, mode: .MODE_VEHICLE, paddingValues: paddings) {
+            if let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: buildingName, level: levelName, x: result.x, y: result.y, heading: result.absolute_heading, headingRange: headingRange, isUseHeading: isUseHeading, mode: .MODE_VEHICLE, paddingValues: paddings, axisConstraint: levelName == "B0" ? nil : axisConstraint) {
                 result.x = pmResult.x
                 result.y = pmResult.y
                 result.absolute_heading = pmResult.heading
@@ -1484,35 +1585,54 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             }
         }
         
-        if mustInSameLink && levelName != "B0", let curLinkInfo = PathMatcher.shared.getCurPassedLinkInfo() {
-            let userCoord = curLinkInfo.user_coord
-            let linkDirs = curLinkInfo.included_heading
-            if (userCoord.count == 2 && linkDirs.count == 2) {
-                let MARGIN: Float = 30
-                if (linkDirs.contains(0) && linkDirs.contains(180)) {
-                    // 이전 y축 값과 현재 y값은 같아야 함
-                    let diffHeading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(abs(result.absolute_heading) - linkDirs[0])))
-                    if !((diffHeading > 90-MARGIN && diffHeading <= 90+MARGIN) || (diffHeading > 270-MARGIN && diffHeading <= 270+MARGIN)) {
-                        result.y = userCoord[1]
-                    }
-                    
-                } else if (linkDirs.contains(90) && linkDirs.contains(270)) {
-                    // 이전 x축 값과 현재 x축 값은 같아야 함
-                    let diffHeading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(abs(result.absolute_heading) - linkDirs[0])))
-                    if !((diffHeading > 90-MARGIN && diffHeading <= 90+MARGIN) || (diffHeading > 270-MARGIN && diffHeading <= 270+MARGIN)) {
-                        result.x = userCoord[0]
-                    }
-                }
-            }
-        }
-        
         if isUseHeading && phase == .TRACKING, let curResult = self.curResult {
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - tu correction (1): curResult xy= [\(result.x), \(result.y)]")
             let diffX = result.x - curResult.x
             let diffY = result.y - curResult.y
             let diffNorm = sqrt(diffX*diffX + diffY*diffY)
             if diffNorm >= 2 {
                 kalmanFilter?.updateTuPosition(coord: [result.x, result.y])
+                let isInLevelChangeArea = buildingLevelChanger!.checkInLevelChangeArea(sectorId: sectorId, building: buildingName, level: levelName, x: result.x, y: result.y, mode: mode)
+                PathMatcher.shared.updateNodeAndLinkInfo(sectorId: sectorId, uvdIndex: curIndex, curResult: result, jumpInfo: jumpInfo, isInLevelChangeArea: isInLevelChangeArea, checkOption: true)
             }
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - tu correction (1): diffNorm= \(diffNorm), xyh= [\(result.x), \(result.y), \(result.absolute_heading)]")
+        }
+        
+        if mustInSameLink && levelName != "B0", let curLinkInfo = PathMatcher.shared.getCurPassedLinkInfo() {
+            let userCoord = curLinkInfo.user_coord
+            let linkDirs = curLinkInfo.included_heading
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - curLinkInfo: userCoord= \(userCoord), linkDirs= \(linkDirs)")
+            if (userCoord.count == 2 && linkDirs.count == 2) {
+                let MARGIN: Float = 30
+                
+                let linkDir = Float(linkDirs[0])
+                let constrained = constrainToLinkAxis(
+                    resultX: input.x,
+                    resultY: input.y,
+                    baseX: result.x,
+                    baseY: result.y,
+                    linkDirDegree: linkDir
+                )
+                
+                result.x = constrained.x
+                result.y = constrained.y
+            }
+        } else {
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - mustInSameLink: \(mustInSameLink), curLinkInfo: \(PathMatcher.shared.getCurPassedLinkInfo())")
+        }
+        
+        JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - result (after link corr): \(result.building_name), \(result.level_name), [\(result.x),\(result.y),\(result.absolute_heading)]")
+        
+        if isUseHeading && phase == .TRACKING, let curResult = self.curResult {
+//            let diffX = result.x - curResult.x
+//            let diffY = result.y - curResult.y
+//            let diffNorm = sqrt(diffX*diffX + diffY*diffY)
+//            JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - tu correction: diffNorm= \(diffNorm), xy= [\(result.x), \(result.y)]")
+//            if diffNorm >= 2 {
+//                kalmanFilter?.updateTuPosition(coord: [result.x, result.y])
+//            }
+            kalmanFilter?.updateTuPosition(coord: [result.x, result.y])
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - tu correction (2): xyh= [\(result.x), \(result.y), \(result.absolute_heading)]")
         }
         
         if KalmanState.isKalmanFilterRunning {
@@ -1521,6 +1641,30 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         }
         
         return result
+    }
+    
+    func constrainToLinkAxis(
+        resultX: Float,
+        resultY: Float,
+        baseX: Float,
+        baseY: Float,
+        linkDirDegree: Float
+    ) -> (x: Float, y: Float) {
+        
+        let rad = Double(linkDirDegree) * Double.pi / 180.0
+        
+        let ux = Float(cos(rad))
+        let uy = Float(sin(rad))
+        
+        let dx = resultX - baseX
+        let dy = resultY - baseY
+        
+        let projected = dx * ux + dy * uy
+        
+        let constrainedX = baseX + projected * ux
+        let constrainedY = baseY + projected * uy
+        
+        return (constrainedX, constrainedY)
     }
     
     private func calcJumpedNodes(from: FineLocationTrackingOutput?,

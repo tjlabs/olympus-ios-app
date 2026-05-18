@@ -4,8 +4,7 @@ import TJLabsResource
 import TJLabsMap
 
 class TJLabsIndoorNaviView: UIView, TJLabsNaviViewDelegate, NavigationManagerDelegate {
-    
-    
+
     var parkingGuideStart: (() -> Void)?
     var parkingGuideFinish: (() -> Void)?
     
@@ -60,6 +59,10 @@ class TJLabsIndoorNaviView: UIView, TJLabsNaviViewDelegate, NavigationManagerDel
     
     func isJupiterInOutStateChanged(_ state: InOutState) {
         JupiterLogger.i(tag: "TJLabsIndoorNaviView", message: "(isJupiterInOutStateChanged) : state= \(state)")
+    }
+    
+    func isUserArrived() {
+        // TODP
     }
     
     func isUserGuidanceOut() {

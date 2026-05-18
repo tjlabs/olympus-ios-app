@@ -6,6 +6,10 @@ import TJLabsCommon
 import TJLabsResource
 
 class CardViewController: UIViewController, NavigationManagerDelegate {
+    func isUserArrived() {
+        // TODO
+    }
+    
     
     func isUserGuidanceOut() {
         //TODO
@@ -24,13 +28,14 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
     }
     
     func onInitSuccess(_ isSuccess: Bool, _ code: OlympusSDK.InitErrorCode?) {
+        print("(CardVC) onInitSuccess -> isSuccess:\(isSuccess), code:\(code)")
         if isSuccess {
             serviceManager?.startService(mode: .MODE_AUTO)
         }
     }
     
     func onJupiterSuccess(_ isSuccess: Bool, _ code: OlympusSDK.JupiterErrorCode?) {
-        // TODO
+        print("(CardVC) onJupiterSuccess -> isSuccess:\(isSuccess), code:\(code)")
     }
     
     func onJupiterReport(_ code: OlympusSDK.JupiterServiceCode, _ msg: String) {
@@ -148,21 +153,14 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
         
         headingImage = headingImage?.resize(newWidth: 20)
         let uniqueId = makeUniqueId(uuid: self.userId)
-        
-        serviceManager = NavigationManager(id: uniqueId, sectorId: self.sector_id, debugOption: true)
+    
+        serviceManager = NavigationManager(id: uniqueId, cloud: JupiterCloud.GCP.rawValue, sectorId: self.sector_id, debugOption: false)
         serviceManager?.delegate = self
-
-//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_01_0317.csv", sensorFileName: "sensor_coex_01_0317.csv")
-//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_02_0310.csv", sensorFileName: "sensor_coex_02_0310.csv")
-//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_03_0303.csv", sensorFileName: "sensor_coex_03_0303.csv")
-//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_02_0224.csv", sensorFileName: "sensor_coex_02_0224.csv")
         
-//        serviceManager?.setNaviDestination(dest: Point(level_id: 53, x: 335, y: 0))
-//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
-//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test02_ent2.csv", sensorFileName: "sensor_251013_songdo_test02_ent2.csv")
-//        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test05_ent3.csv", sensorFileName: "sensor_251013_songdo_test05_ent3.csv")
         
-        serviceManager?.setSimulationMode(flag: true, rfdFileName: "260407_songdo_test5_rfd.json", uvdFileName: "260407_songdo_test5_uvd.json", eventFileName: "260407_songdo_test5_event.json")
+        serviceManager?.setNaviDestination(dest: Point(level_id: 52, x: 335, y: 0))
+//        serviceManager?.setSimulationMode(flag: true, rfdFileName: "260428_songdo_test3_rfd.json", uvdFileName: "260428_songdo_test3_uvd.json", eventFileName: "260428_songdo_test3_event.json")
+        serviceManager?.setSimulationMode(flag: true, rfdFileName: "260512_songdo_test2_rfd.json", uvdFileName: "260512_songdo_test2_uvd.json", eventFileName: "260512_songdo_test2_event.json")
         
         // service
 //        serviceManager.addObserver(self)
@@ -179,6 +177,7 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
     }
     
     override func viewWillDisappear(_ animated: Bool) {
+        
     }
 
     private func setupLayout() {

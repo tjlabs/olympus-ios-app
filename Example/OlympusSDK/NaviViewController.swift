@@ -9,6 +9,8 @@ import TJLabsMap
 
 
 class NaviViewController: UIViewController, NavigationManagerDelegate, TJLabsNaviViewDelegate {
+    
+    
     func onNavigationRoute(_ view: TJLabsMap.TJLabsNaviView, routes: [(String, String, Int, Float, Float)]) {
         print("(NaviVC) onNavigationRoute : route len= \(routes.count)")
         self.isNaviRouteLoaded = true
@@ -68,6 +70,10 @@ class NaviViewController: UIViewController, NavigationManagerDelegate, TJLabsNav
     
     func isJupiterInOutStateChanged(_ state: InOutState) {
         print("(NaviVC) isJupiterInOutStateChanged : state= \(state)")
+    }
+    
+    func isUserArrived() {
+        print("(NaviVC) isUserArrived")
     }
     
     func isUserGuidanceOut() {
@@ -264,7 +270,7 @@ class NaviViewController: UIViewController, NavigationManagerDelegate, TJLabsNav
     }
     
     func setupNaviView() {
-        naviView.initialize(region: self.region, sectorId: self.sectorId)
+        naviView.initialize(cloud: "AWS", region: self.region, sectorId: self.sectorId)
         naviView.configureFrame(to: mainView)
         naviView.setPointOffset(offset: 200)
         naviView.setZoomAndMarkerScale(zoom: 2.0)
