@@ -4,10 +4,6 @@
 <dict>
 	<key>files</key>
 	<dict>
-		<key>6_bl_tag.json</key>
-		<data>
-		lcnid6ZZOJzeQnGp0qIppJ3yUgY=
-		</data>
 		<key>Headers/TJLabsResource.h</key>
 		<data>
 		gRDIHuLWtPfy+Y4ixRILV8PONac=
@@ -18,11 +14,11 @@
 		</data>
 		<key>Modules/TJLabsResource.swiftmodule/arm64-apple-ios.abi.json</key>
 		<data>
-		Uo4V1/LmfiSkQJyPL5MoKywl5yE=
+		yEBHbqK9856zi3l7gIcCsjuDSJU=
 		</data>
 		<key>Modules/TJLabsResource.swiftmodule/arm64-apple-ios.private.swiftinterface</key>
 		<data>
-		d8CDjOntWe3y9BsLi7ogd1kW6ys=
+		DdAI3H3jroBWzE1oCYaOZ0r4e+4=
 		</data>
 		<key>Modules/TJLabsResource.swiftmodule/arm64-apple-ios.swiftdoc</key>
 		<data>
@@ -30,11 +26,11 @@
 		</data>
 		<key>Modules/TJLabsResource.swiftmodule/arm64-apple-ios.swiftinterface</key>
 		<data>
-		d8CDjOntWe3y9BsLi7ogd1kW6ys=
+		DdAI3H3jroBWzE1oCYaOZ0r4e+4=
 		</data>
 		<key>Modules/TJLabsResource.swiftmodule/arm64-apple-ios.swiftmodule</key>
 		<data>
-		7oTkC6QlN2iPayblCO6Ftj2EJ40=
+		7YWSySRuTlZW3k/h/tmlyDrOBX8=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -43,13 +39,6 @@
 	</dict>
 	<key>files2</key>
 	<dict>
-		<key>6_bl_tag.json</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			mo6EQho8AoBnAJv8zD6KevejiRxvBbJX6JXO6s0X5Lk=
-			</data>
-		</dict>
 		<key>Headers/TJLabsResource.h</key>
 		<dict>
 			<key>hash2</key>
@@ -61,14 +50,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			YunLrp3+o6gOq7RtYC065VR6iLxz247TYf/C3bGxu7c=
+			1TbT4PSP0Io6dbwxK/2IhsYk+qgYKpgraSqm0jCeOzY=
 			</data>
 		</dict>
 		<key>Modules/TJLabsResource.swiftmodule/arm64-apple-ios.private.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			o6/JXXuCP9pRxvUbP3YYmeW+8nfn6VYC9G2afHxB/RI=
+			yfcLwS6qUVwcKcyB3iE1gEog7lhoiH7i22L0R3eZdU8=
 			</data>
 		</dict>
 		<key>Modules/TJLabsResource.swiftmodule/arm64-apple-ios.swiftdoc</key>
@@ -82,14 +71,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			o6/JXXuCP9pRxvUbP3YYmeW+8nfn6VYC9G2afHxB/RI=
+			yfcLwS6qUVwcKcyB3iE1gEog7lhoiH7i22L0R3eZdU8=
 			</data>
 		</dict>
 		<key>Modules/TJLabsResource.swiftmodule/arm64-apple-ios.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			C0HKUpQH5rJURxIkfpGWLCeHsq9eRXjhxNnYeoW0POU=
+			2lJDRqIEQFvwnf3p8DIIrXAKksklh1pf9tH+6NsSySg=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>

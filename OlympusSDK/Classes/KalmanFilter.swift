@@ -603,15 +603,13 @@ class KalmanFilter {
     
     private func updateLimitationResult(nextTuResult: FineLocationTrackingOutput, uturnLink: Bool) -> FineLocationTrackingOutput {
         var updatedTuResult = nextTuResult
-        let limitationResult = PathMatcher.shared.getTimeUpdateLimitation(level: nextTuResult.level_name)
-        JupiterLogger.i(tag: "KalmanFilter", message: "(updateLimitationResult) - limitationResult: \(limitationResult)")
-        
-        let scale: Float = uturnLink ? 0.5 : 1
-        if limitationResult.limitType == .AXIS_LIMIT, limitationResult.limitValues.count >= 4 {
-            let anchorX = limitationResult.limitValues[0]
-            let anchorY = limitationResult.limitValues[1]
-            let axisHeading = limitationResult.limitValues[2]
-            let lateralLimit = limitationResult.limitValues[3]
+        if let limitationResult = PathMatcher.shared.getTimeUpdateLimitation(level: nextTuResult.level_name), limitationResult.count >= 4 {
+            JupiterLogger.i(tag: "KalmanFilter", message: "(updateLimitationResult) - limitationResult: \(limitationResult)")
+            let scale: Float = uturnLink ? 0.5 : 1
+            let anchorX = limitationResult[0]
+            let anchorY = limitationResult[1]
+            let axisHeading = limitationResult[2]
+            let lateralLimit = limitationResult[3]
 
             let constrained = constrainToAxisCorridor(
                 x: nextTuResult.x,
@@ -633,40 +631,11 @@ class KalmanFilter {
                 longitudinalLimit: 40 * scale,
                 lateralLimit: lateralLimit
             )
-        } else if (limitationResult.limitType == .Y_LIMIT) {
-            pathMatchingAxisConstraint = nil
-            if (nextTuResult.y < limitationResult.limitValues[0]) {
-                updatedTuResult.y = limitationResult.limitValues[0]
-            } else if (nextTuResult.y > limitationResult.limitValues[1]) {
-                updatedTuResult.y = limitationResult.limitValues[1]
-            }
-            paddings = [40*scale, 0.4, 40*scale, 0.4]
-        } else if (limitationResult.limitType == .X_LIMIT) {
-            pathMatchingAxisConstraint = nil
-            if (nextTuResult.x < limitationResult.limitValues[0]) {
-                updatedTuResult.x = limitationResult.limitValues[0]
-            } else if (nextTuResult.x > limitationResult.limitValues[1]) {
-                updatedTuResult.x = limitationResult.limitValues[1]
-            }
-            paddings = [0.4, 40*scale, 0.4, 40*scale]
-        } else if limitationResult.limitType == .SMALL_LIMIT {
-            pathMatchingAxisConstraint = nil
-            if nextTuResult.x < nextTuResult.x - limitationResult.limitValues[0] {
-                updatedTuResult.x = nextTuResult.x - limitationResult.limitValues[0]
-            } else if nextTuResult.x > nextTuResult.x + limitationResult.limitValues[0] {
-                updatedTuResult.x = nextTuResult.x + limitationResult.limitValues[0]
-            }
-            
-            if nextTuResult.y < nextTuResult.y - limitationResult.limitValues[1] {
-                updatedTuResult.y = nextTuResult.y - limitationResult.limitValues[1]
-            } else if nextTuResult.y > nextTuResult.y + limitationResult.limitValues[1] {
-                updatedTuResult.y = nextTuResult.y + limitationResult.limitValues[1]
-            }
-            paddings = JupiterMode.PADDING_VALUES_SMALL
         } else {
             pathMatchingAxisConstraint = nil
             paddings = JupiterMode.PADDING_VALUES_SMALL
         }
+        
         return updatedTuResult
     }
 

@@ -38,6 +38,7 @@ class RoutingManager {
         let end: (x: Float, y: Float)
     }
 
+    private var tenant_user_name: String = ""
     private var id: String = ""
     private var sectorId: Int = 0
     
@@ -54,6 +55,7 @@ class RoutingManager {
     private var routeIndex: Int?
     private var curRoute: RoutingRoute?
     private var isRequesting: Bool = false
+    private var graphMode: UserMode = .MODE_PEDESTRIAN
     
     private var routesForDisplay = [(String, String, Int, Float, Float)]()
     private var waypointsForDisplay = [[Double]]()
@@ -70,6 +72,10 @@ class RoutingManager {
     }
     
     deinit { }
+    
+    func setTenantUserName(name: String) {
+        self.tenant_user_name = name
+    }
     
     func setBuildingsData(buildingsData: [BuildingData]) {
         JupiterLogger.i(tag: "RoutingManager", message: "setBuildingsData : buildingsData= \(buildingsData)")
@@ -168,6 +174,10 @@ class RoutingManager {
         JupiterLogger.i(tag: "RoutingManager", message: "(setNaviDestination) : dest= \(dest)")
     }
     
+    func setGraphMode(_ mode: UserMode) {
+        self.graphMode = mode
+    }
+    
     func getEntRoutingOrigin(key: String, level_id: Int) -> Origin? {
         var origin: Origin?
         if key.contains("6_COEX") {
@@ -205,7 +215,7 @@ class RoutingManager {
         NavigationNetworkManager.shared.postCalcDirs(url: NavigationNetworkConstants.getCalcDirsURL(), input: input, completion: { [self] statusCode, returnedString, inputDirs in
             if successRange.contains(statusCode)  {
                 if let decoded = decodeCalcDirs(from: returnedString) {
-                    completion(RoutingResult(code: statusCode, routes: decoded.routes))
+                    completion(RoutingResult(code: statusCode, request_id: decoded.request_id, routes: decoded.routes))
                 } else {
                     JupiterLogger.e(tag: "RoutingManager", message: "(requestRouting) : fail decoding")
                     completion(nil)
@@ -246,8 +256,10 @@ class RoutingManager {
                 JupiterLogger.e(tag: "RoutingManager", message: "return first")
                 return
             }
-            let key = "\(sectorId)_\(node_building_name)_\(node_level_name)"
-            guard let nodeData = PathMatcher.shared.nodeData[key] else {
+            guard let nodeData = PathMatcher.shared.getNodeData(sectorId: sectorId,
+                                                                building: node_building_name,
+                                                                level: node_level_name,
+            mode: graphMode) else {
                 JupiterLogger.e(tag: "RoutingManager", message: "return second")
                 return
             }

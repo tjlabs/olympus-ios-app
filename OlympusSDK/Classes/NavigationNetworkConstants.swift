@@ -5,7 +5,7 @@ public class NavigationNetworkConstants {
     static let TIMEOUT_VALUE_PUT: TimeInterval = 5.0
     static let TIMEOUT_VALUE_POST: TimeInterval = 5.0
 
-    static let CALC_DIRECTIONS_SERVER_VERSION = "2026-04-13"
+    static let CALC_DIRECTIONS_SERVER_VERSION = "2026-05-18"
     
     static let OPERATING_SYSTEM: String = "iOS"
     private static let HTTP_PREFIX = "https://"

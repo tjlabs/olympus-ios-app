@@ -142,10 +142,15 @@ public struct Level : Swift.Codable {
   public let geofence: TJLabsResource.GeofenceData
   public let entrances: [TJLabsResource.Entrance]
   public let units: [TJLabsResource.UnitData]
-  public let graph: TJLabsResource.Graph
+  public let graphs: [TJLabsResource.Graph]
   public let wards: [TJLabsResource.Ward]
-  public func encode(to encoder: any Swift.Encoder) throws
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var graph: TJLabsResource.Graph? {
+    get
+  }
+  #endif
   public init(from decoder: any Swift.Decoder) throws
+  public func encode(to encoder: any Swift.Encoder) throws
 }
 public struct BuildingData : Swift.Codable {
   public let id: Swift.Int
@@ -253,13 +258,14 @@ public enum Category : Swift.String, Swift.Codable {
   }
 }
 public struct Graph : Swift.Codable {
+  public let isVehicle: Swift.Bool
   public let nodes: [TJLabsResource.GraphNode]
   public let links: [TJLabsResource.GraphLink]
   public let linkFeatures: [TJLabsResource.LinkFeature]
   public let linkGroups: [TJLabsResource.GraphLinkGroup]
   public let path: TJLabsResource.PathInfo
-  public func encode(to encoder: any Swift.Encoder) throws
   public init(from decoder: any Swift.Decoder) throws
+  public func encode(to encoder: any Swift.Encoder) throws
 }
 public struct NodeData {
   public let number: Swift.Int
@@ -408,7 +414,7 @@ public struct PeakData : Swift.Codable {
 @_hasMissingDesignatedInitializers public class TJLabsFileDownloader {
   public static let shared: TJLabsResource.TJLabsFileDownloader
   #if compiler(>=5.3) && $NonescapableTypes
-  public func downloadCSVFile(from url: Foundation.URL, fname: Swift.String, completion: @escaping (Foundation.URL?, (any Swift.Error)?) -> Swift.Void)
+  public func downloadCSVFile(from url: Foundation.URL, fname: Swift.String, forceUpdate: Swift.Bool = false, completion: @escaping (Foundation.URL?, (any Swift.Error)?) -> Swift.Void)
   #endif
   @objc deinit
 }

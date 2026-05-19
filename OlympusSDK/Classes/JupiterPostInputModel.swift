@@ -3,7 +3,8 @@ import Foundation
 import TJLabsCommon
 
 public struct LoginInput: Codable {
-    public var name: String = ""
+    public var tenant_user_name: String
+    public var external_name: String?
 }
 
 // MARK: - MobileResult & Report

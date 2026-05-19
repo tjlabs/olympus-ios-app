@@ -56,6 +56,7 @@ public class JupiterManager: JupiterCalcManagerDelegate {
     
     public static let sdkVersion: String = "2.0.0"
     
+    var tenantUserName: String = ""
     var id: String = ""
     var sectorId: Int = 0
     var region: JupiterRegion = .KOREA
@@ -114,7 +115,8 @@ public class JupiterManager: JupiterCalcManagerDelegate {
             return
         }
         
-        let loginInput = LoginInput(name: self.id)
+        self.tenantUserName = TJLabsAuthManager.shared.getTenantUserName()
+        let loginInput = LoginInput(tenant_user_name: self.tenantUserName, external_name: self.id)
         let tasks: [(_ group: DispatchGroup, _ reportError: @escaping (String) -> Void) -> Void] = [
             { group, reportError in
                 group.enter()

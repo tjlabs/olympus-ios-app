@@ -1,4 +1,5 @@
 import Foundation
+import TJLabsAuth
 import TJLabsCommon
 import TJLabsResource
 
@@ -111,6 +112,8 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         JupiterLogger.i(tag: "NavigationManager", message: "onInitSuccess : isSuccess= \(isSuccess), code= \(code)")
         if isSuccess, let blData = jupiterManager?.getBuildingsData() {
             JupiterLogger.i(tag: "NavigationManager", message: "onInitSuccess : buildingsData= \(blData)")
+            self.tenant_user_name = TJLabsAuthManager.shared.getTenantUserName()
+            routingManager?.setTenantUserName(name: self.tenant_user_name)
             routingManager?.setBuildingsData(buildingsData: blData)
         }
         delegate?.onInitSuccess(isSuccess, code)
@@ -235,8 +238,10 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         }
     }
     
-    private var region: String = ""
     private var id: String = ""
+    private var tenant_user_name: String = ""
+    private var cloud: String = ""
+    private var region: String = ""
     private var sectorId: Int = 0
     public weak var delegate: NavigationManagerDelegate?
     
@@ -273,6 +278,8 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     // MARK: - init & deinit
     public init(id: String, cloud: String = JupiterCloud.AWS.rawValue, region: String = JupiterRegion.KOREA.rawValue, sectorId: Int, debugOption: Bool = false) {
         self.id = id
+        self.cloud = cloud
+        self.region = region
         self.sectorId = sectorId
         self.jupiterManager = JupiterManager(id: id, cloud: cloud, region: region, sectorId: sectorId, debugOption: debugOption)
         self.jupiterManager?.delegate = self
@@ -294,6 +301,8 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     
     public func startService(mode: UserMode) {
         NavigationNetworkConstants.setServerURL(region: region)
+        PathMatcher.shared.setGraphMode(mode)
+        routingManager?.setGraphMode(mode)
         jupiterManager?.startJupiter(mode: mode)
     }
     

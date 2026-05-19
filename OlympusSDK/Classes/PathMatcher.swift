@@ -7,6 +7,7 @@ class PathMatcher {
     init() { }
     
     func initialize() {
+        self.currentGraphMode = .MODE_AUTO
         self.anchorNode = PassedNodeInfo(number: -1, coord: [], headings: [], matched_index: -1, user_heading: 0)
         self.anchorSection = -1
         
@@ -29,6 +30,56 @@ class PathMatcher {
     var linkGroupLenData = [String: [Int: Float]]()
     var entranceMatchingArea = [String: [[Float]]]()
     var entranceArea = [String: [[Float]]]()
+    private var currentGraphMode: UserMode = .MODE_PEDESTRIAN
+
+    func setGraphMode(_ mode: UserMode) {
+        self.currentGraphMode = mode
+    }
+
+    private func normalizeLevelName(_ level: String) -> String {
+        TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: level)
+    }
+
+    private func makeBaseKey(sectorId: Int, building: String, level: String) -> String {
+        let levelName = normalizeLevelName(level)
+        return "\(sectorId)_\(building)_\(levelName)"
+    }
+
+    private func makeGraphKey(sectorId: Int, building: String, level: String, mode: UserMode?) -> String {
+        let resolvedMode = mode ?? currentGraphMode
+        let suffix = resolvedMode == .MODE_VEHICLE ? "_DR" : "_PDR"
+        return "\(makeBaseKey(sectorId: sectorId, building: building, level: level))\(suffix)"
+    }
+
+    func getNodeData(sectorId: Int, building: String, level: String, mode: UserMode? = nil) -> [Int: NodeData]? {
+        let key = makeGraphKey(sectorId: sectorId, building: building, level: level, mode: mode)
+        if let data = nodeData[key] {
+            return data
+        }
+        guard mode == nil else { return nil }
+        let fallbackMode: UserMode = currentGraphMode == .MODE_VEHICLE ? .MODE_PEDESTRIAN : .MODE_VEHICLE
+        let fallbackKey = makeGraphKey(sectorId: sectorId, building: building, level: level, mode: fallbackMode)
+        return nodeData[fallbackKey]
+    }
+
+    func getLinkData(sectorId: Int, building: String, level: String, mode: UserMode? = nil) -> [Int: LinkData]? {
+        let key = makeGraphKey(sectorId: sectorId, building: building, level: level, mode: mode)
+        if let data = linkData[key] {
+            return data
+        }
+        guard mode == nil else { return nil }
+        let fallbackMode: UserMode = currentGraphMode == .MODE_VEHICLE ? .MODE_PEDESTRIAN : .MODE_VEHICLE
+        let fallbackKey = makeGraphKey(sectorId: sectorId, building: building, level: level, mode: fallbackMode)
+        return linkData[fallbackKey]
+    }
+
+    func getNodeData(sectorId: Int, result: FineLocationTrackingOutput, mode: UserMode? = nil) -> [Int: NodeData]? {
+        return getNodeData(sectorId: sectorId, building: result.building_name, level: result.level_name, mode: mode)
+    }
+
+    func getLinkData(sectorId: Int, result: FineLocationTrackingOutput, mode: UserMode? = nil) -> [Int: LinkData]? {
+        return getLinkData(sectorId: sectorId, building: result.building_name, level: result.level_name, mode: mode)
+    }
     
     func setPathPixelData(key: String, data: PathPixelData) {
         self.pathPixelData[key] = data
@@ -75,13 +126,13 @@ class PathMatcher {
     }
     
     func pathMatching(sectorId: Int, building: String, level: String, x: Float, y: Float, heading: Float, headingRange: Float = 46, isUseHeading: Bool, mode: UserMode, paddingValues: [Float], axisConstraint: PathMatchingAxisConstraint? = nil) -> ixyhs? {
+        setGraphMode(mode)
         var ixyhs = ixyhs(x: x, y: y, heading: heading, scale: 1.0)
         var bestHeading = heading
         
         guard !building.isEmpty, !level.isEmpty else { return nil }
         
-        let levelName = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: level)
-        let key = "\(sectorId)_\(building)_\(levelName)"
+        let key = makeGraphKey(sectorId: sectorId, building: building, level: level, mode: mode)
         
         guard let pathPixelData = checkIsAvailablePathPixelData(key: key) else { return nil }
         
@@ -171,13 +222,13 @@ class PathMatcher {
         paddingValues: [Float],
         axisConstraint: PathMatchingAxisConstraint? = nil
     ) -> PathMatchingResult? {
+        setGraphMode(mode)
         var ixyhs = ixyhs(x: x, y: y, heading: heading, scale: 1.0)
         var bestHeading = heading
 
         guard !building.isEmpty, !level.isEmpty else { return nil }
 
-        let levelName = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: level)
-        let key = "\(sectorId)_\(building)_\(levelName)"
+        let key = makeGraphKey(sectorId: sectorId, building: building, level: level, mode: mode)
 
         guard let pathPixelData = checkIsAvailablePathPixelData(key: key) else { return nil }
 
@@ -305,28 +356,19 @@ class PathMatcher {
         return headings
     }
     
-    func getMatchedNodeWithCoord(sectorId: Int, fltResult: FineLocationTrackingOutput, originCoord: [Float], coordToCheck: [Float], paddingValues: [Float]) -> (Int, [Float])? {
+    func getMatchedNodeWithCoord(sectorId: Int, fltResult: FineLocationTrackingOutput, originCoord: [Float], coordToCheck: [Float], paddingValues: [Float], mode: UserMode? = nil) -> (Int, [Float])? {
         let building = fltResult.building_name
         let level = fltResult.level_name
-        let levelName = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: fltResult.level_name)
         let x = coordToCheck[0]
         let y = coordToCheck[1]
-
-        let key: String = "\(sectorId)_\(building)_\(levelName)"
 
         var matchedNode: Int = -1
         var matchedNodeHeadings = [Float]()
 
         if (!(building.isEmpty) && !(level.isEmpty)) {
-            guard checkIsAvailablePathPixelData(key: key) != nil else { return nil }
-            guard let nodeData = self.nodeData[key] else { return nil }
-
-            let userHeading = Double(TJLabsUtilFunctions.shared.compensateDegree(Double(fltResult.absolute_heading)))
-
-            func circularDiff(_ a: Double, _ b: Double) -> Double {
-                let d = abs(a - b).truncatingRemainder(dividingBy: 360.0)
-                return min(d, 360.0 - d)
-            }
+            let graphKey = makeGraphKey(sectorId: sectorId, building: building, level: level, mode: mode)
+            guard checkIsAvailablePathPixelData(key: graphKey) != nil else { return nil }
+            guard let nodeData = getNodeData(sectorId: sectorId, building: building, level: level, mode: mode) else { return nil }
 
             for (nodeId, value) in nodeData {
                 let nodeCoord = value.coords
@@ -385,12 +427,11 @@ class PathMatcher {
         return nil
     }
     
-    func checkIsInMapEnd(sectorId: Int, tuResult: FineLocationTrackingOutput) -> Bool {
-        let key = "\(sectorId)_\(tuResult.building_name)_\(tuResult.level_name)"
+    func checkIsInMapEnd(sectorId: Int, tuResult: FineLocationTrackingOutput, mode: UserMode? = nil) -> Bool {
         if !isInNode { return false }
         let curNode = self.curPassedNodeInfo
         if curNode.number == -1 { return false }
-        guard let nodeData = nodeData[key] else { return false }
+        guard let nodeData = getNodeData(sectorId: sectorId, result: tuResult, mode: mode) else { return false }
         guard let matchedNode = nodeData[curNode.number] else { return false }
         
         let curHeading = tuResult.absolute_heading
@@ -488,31 +529,30 @@ class PathMatcher {
         }
     }
     
-    func getTimeUpdateLimitation(level: String) -> (limitType: LimitationType, limitValues: [Float]) {
-        var limitType: LimitationType = .NO_LIMIT
-        var limitValues: [Float] = [0, 0]
+    func getTimeUpdateLimitation(level: String) -> [Float]? {
+        var limitValues: [Float] = [0, 0, 0, 0]
         let AXIS_ALIGNED_LIMIT: Float = 0.4
         let RELAXED_LIMIT: Float = 0.8
         
         if (level == "B0" || self.isInNode) {
-            return (limitType, limitValues)
+            return nil
         }
+        
         JupiterLogger.i(tag: "PathMatcher", message: "(getTimeUpdateLimitation) - curPassedLinkInfo: \(curPassedLinkInfo)")
-        guard let curLink = self.curPassedLinkInfo else { return (limitType, limitValues) }
-        guard curLink.user_coord.count >= 2 else { return (limitType, limitValues) }
+        guard let curLink = self.curPassedLinkInfo else { return nil }
+        guard curLink.user_coord.count >= 2 else { return nil }
         let coordX = curLink.user_coord[0]
         let coordY = curLink.user_coord[1]
-
+        
         let axisHeading = getAxisHeading(link: curLink)
         let lateralLimit = getAxisLateralLimit(
             axisHeading: axisHeading,
             axisAlignedLimit: AXIS_ALIGNED_LIMIT,
             relaxedLimit: RELAXED_LIMIT
         )
-        limitType = .AXIS_LIMIT
         limitValues = [coordX, coordY, axisHeading, lateralLimit]
         
-        return (limitType, limitValues)
+        return limitValues
     }
     
     func getLimitationTypeWithLink(link: LinkData) -> LimitationType {
@@ -649,8 +689,8 @@ class PathMatcher {
     }
     
     func updateAnchorNode(sectorId: Int, fltResult: FineLocationTrackingOutput, mode: UserMode, sectionNumber: Int) {
-        let pathType = mode == .MODE_PEDESTRIAN ? 0 : 1
-        let anchorNode = findAnchorNode(sectorId: sectorId, fltResult: fltResult, pathType: pathType)
+        setGraphMode(mode)
+        let anchorNode = findAnchorNode(sectorId: sectorId, fltResult: fltResult, mode: mode)
         if anchorNode.number != -1 {
             if anchorNode.number == self.anchorNode.number {
                 anchorSection = sectionNumber
@@ -663,7 +703,7 @@ class PathMatcher {
         JupiterLogger.i(tag: "PathMatcher", message: "(updateAnchorNode) - level: \(fltResult.level_name), x: \(fltResult.x), y: \(fltResult.y), h: \(fltResult.absolute_heading) // anchorNode: \(anchorNode)")
     }
 
-    func findAnchorNode(sectorId: Int, fltResult: FineLocationTrackingOutput, pathType: Int) -> PassedNodeInfo {
+    func findAnchorNode(sectorId: Int, fltResult: FineLocationTrackingOutput, mode: UserMode? = nil) -> PassedNodeInfo {
         let startNodeHeading = self.curPassedNodeInfo.headings
         let nodeInfoBuffer = passedNodeInfoBuffer
         
@@ -672,7 +712,7 @@ class PathMatcher {
         if let passedLink = getCurPassedLinkInfo() {
             curLink = passedLink
         } else {
-            guard let matchedLink = getLinkInfoWithResult(sectorId: sectorId, result: fltResult, checkAll: true) else { return resultPassedNodeInfo }
+            guard let matchedLink = getLinkInfoWithResult(sectorId: sectorId, result: fltResult, checkAll: true, mode: mode) else { return resultPassedNodeInfo }
             let close = closestHeading(to: fltResult.absolute_heading, candidates: matchedLink.included_heading)
             let op = oppositeOf(close.0)
             let opClose = closestHeading(to: op, candidates: matchedLink.included_heading)
@@ -733,7 +773,7 @@ class PathMatcher {
             for _ in 0..<PIXELS_TO_CHECK {
                 x += cos(directionRad)
                 y += sin(directionRad)
-                guard let matchedNodeResult = getMatchedNodeWithCoord(sectorId: sectorId, fltResult: fltResult, originCoord: startCoord, coordToCheck: [x, y], paddingValues: paddingValues) else { break }
+                guard let matchedNodeResult = getMatchedNodeWithCoord(sectorId: sectorId, fltResult: fltResult, originCoord: startCoord, coordToCheck: [x, y], paddingValues: paddingValues, mode: mode) else { break }
                 candidateNodeNumbers.append(matchedNodeResult.0)
             }
             for nodeNumber in candidateNodeNumbers.reversed() {
@@ -841,7 +881,7 @@ class PathMatcher {
         return getDirectionalPadding(axisHeading: oppositeHeading, longitudinalLimit: lengthFloat, lateralLimit: 1)
     }
     
-    func updateNodeAndLinkInfo(sectorId: Int, uvdIndex: Int, curResult: FineLocationTrackingOutput, jumpInfo: JumpInfo?, isInLevelChangeArea: Bool = false, checkOption: Bool = false, pLinkCutIndex: Int? = nil) {
+    func updateNodeAndLinkInfo(sectorId: Int, uvdIndex: Int, curResult: FineLocationTrackingOutput, jumpInfo: JumpInfo?, mode: UserMode? = nil, isInLevelChangeArea: Bool = false, checkOption: Bool = false, pLinkCutIndex: Int? = nil) {
         let checkAll = jumpInfo != nil || isInLevelChangeArea ? true : false
         let x = curResult.x
         let y = curResult.y
@@ -849,12 +889,14 @@ class PathMatcher {
         let level = curResult.level_name
         let heading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(curResult.absolute_heading)))
         if building.isEmpty || level.isEmpty { return }
-        
-        let levelName = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: level)
-        let key = "\(sectorId)_\(building)_\(levelName)"
 
-        guard let nodeData = self.nodeData[key] else { return }
-        guard let linkData = self.linkData[key] else { return }
+        if let mode {
+            setGraphMode(mode)
+        }
+
+        let key = makeGraphKey(sectorId: sectorId, building: building, level: level, mode: mode)
+        guard let nodeData = getNodeData(sectorId: sectorId, building: building, level: level, mode: mode) else { return }
+        guard let linkData = getLinkData(sectorId: sectorId, building: building, level: level, mode: mode) else { return }
 
         let correctedX = round(x)
         let correctedY = round(y)
@@ -1001,7 +1043,7 @@ class PathMatcher {
         }
     }
     
-    func editPassingLinkBuffer(from: Int, sectorId: Int, curPmResultBuffer: [FineLocationTrackingOutput]) {
+    func editPassingLinkBuffer(from: Int, sectorId: Int, curPmResultBuffer: [FineLocationTrackingOutput], mode: UserMode? = nil) {
         var pmByIndex: [Int: FineLocationTrackingOutput] = [:]
         pmByIndex.reserveCapacity(curPmResultBuffer.count)
         for pm in curPmResultBuffer {
@@ -1014,7 +1056,7 @@ class PathMatcher {
         for pLink in passingLinkBuffer {
             if pLink.uvd_index >= from {
                 if let matchedResult = pmByIndex[pLink.uvd_index],
-                   let matchedLink = getLinkInfoWithResult(sectorId: sectorId, result: matchedResult, checkAll: true) {
+                   let matchedLink = getLinkInfoWithResult(sectorId: sectorId, result: matchedResult, checkAll: true, mode: mode) {
                     let newLink = PassingLink(uvd_index: from, link_number: matchedLink.number, link_group_number: matchedLink.group_number)
                     newBuffer.append(newLink)
                 } else {
@@ -1042,16 +1084,13 @@ class PathMatcher {
         }
     }
     
-    private func updatePassedNodeInJump(sectorId: Int, curResult: FineLocationTrackingOutput, linkNum: Int) {
+    private func updatePassedNodeInJump(sectorId: Int, curResult: FineLocationTrackingOutput, linkNum: Int, mode: UserMode? = nil) {
         let building = curResult.building_name
         let level = curResult.level_name
         guard !building.isEmpty, !level.isEmpty else { return }
-        
-        let levelName = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: level)
-        let key = "\(sectorId)_\(building)_\(levelName)"
-        
-        guard let nodeData = self.nodeData[key] else { return }
-        guard let linkData = self.linkData[key] else { return }
+
+        guard let nodeData = getNodeData(sectorId: sectorId, building: building, level: level, mode: mode) else { return }
+        guard let linkData = getLinkData(sectorId: sectorId, building: building, level: level, mode: mode) else { return }
         guard let jumpedLink = linkData[linkNum] else { return }
         
 //        jumpedLink.
@@ -1063,14 +1102,13 @@ class PathMatcher {
     func getNodeInfoWithResult(sectorId: Int,
                                result: FineLocationTrackingOutput,
                                checkAll: Bool = false,
-                               acceptDist: Float = 5) -> NodeData? {
+                               acceptDist: Float = 5,
+                               mode: UserMode? = nil) -> NodeData? {
         let building = result.building_name
         let level = result.level_name
         guard !building.isEmpty, !level.isEmpty else { return nil }
 
-        let levelName = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: level)
-        let key = "\(sectorId)_\(building)_\(levelName)"
-        guard let nodeData = self.nodeData[key] else { return nil }
+        guard let nodeData = getNodeData(sectorId: sectorId, building: building, level: level, mode: mode) else { return nil }
 
         let correctedX = round(result.x)
         let correctedY = round(result.y)
@@ -1113,16 +1151,13 @@ class PathMatcher {
         return node
     }
     
-    func getLinkInfoWithResult(sectorId: Int, result: FineLocationTrackingOutput, checkAll: Bool = false, acceptDist: Float = 5) -> LinkData? {
+    func getLinkInfoWithResult(sectorId: Int, result: FineLocationTrackingOutput, checkAll: Bool = false, acceptDist: Float = 5, mode: UserMode? = nil) -> LinkData? {
         let building = result.building_name
         let level = result.level_name
         guard !building.isEmpty, !level.isEmpty else { return nil }
 
-        let levelName = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: level)
-        let key = "\(sectorId)_\(building)_\(levelName)"
-
-        guard let nodeData = self.nodeData[key] else { return nil }
-        guard let linkData = self.linkData[key] else { return nil }
+        guard let nodeData = getNodeData(sectorId: sectorId, building: building, level: level, mode: mode) else { return nil }
+        guard let linkData = getLinkData(sectorId: sectorId, building: building, level: level, mode: mode) else { return nil }
         
         let correctedX = round(result.x)
         let correctedY = round(result.y)
@@ -1164,16 +1199,14 @@ class PathMatcher {
     func getLinkInfosWithResult(sectorId: Int,
                                 result: FineLocationTrackingOutput,
                                 checkAll: Bool = false,
-                                acceptDist: Float = 5) -> [LinkData]? {
+                                acceptDist: Float = 5,
+                                mode: UserMode? = nil) -> [LinkData]? {
         let building = result.building_name
         let level = result.level_name
         guard !building.isEmpty, !level.isEmpty else { return nil }
 
-        let levelName = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: level)
-        let key = "\(sectorId)_\(building)_\(levelName)"
-
-        guard let nodeData = self.nodeData[key] else { return nil }
-        guard let linkData = self.linkData[key] else { return nil }
+        guard let nodeData = getNodeData(sectorId: sectorId, building: building, level: level, mode: mode) else { return nil }
+        guard let linkData = getLinkData(sectorId: sectorId, building: building, level: level, mode: mode) else { return nil }
 
         let correctedX = round(result.x)
         let correctedY = round(result.y)
@@ -1195,7 +1228,8 @@ class PathMatcher {
         guard let one = getLinkInfoWithResult(sectorId: sectorId,
                                               result: result,
                                               checkAll: checkAll,
-                                              acceptDist: acceptDist) else {
+                                              acceptDist: acceptDist,
+                                              mode: mode) else {
             return nil
         }
         return [one]

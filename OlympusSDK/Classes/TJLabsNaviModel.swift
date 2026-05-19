@@ -44,6 +44,7 @@ public struct Route: Codable {
     let origin: Origin
     let destination: Point
     let nodes: [RouteNode]
+    let distance: Int
 }
 
 public struct RouteNode: Codable {
@@ -55,7 +56,9 @@ public struct RouteNode: Codable {
 }
 
 struct DirectionsResponse: Codable {
+    let request_id: String
     let routes: [Route]
+    let total_distance: Int
 }
 
 
@@ -112,6 +115,7 @@ public struct RoutingStart: Codable {
 
 public struct RoutingResult: Codable {
     public let code: Int
+    public let request_id: String
     public let routes: [Route]
 }
 

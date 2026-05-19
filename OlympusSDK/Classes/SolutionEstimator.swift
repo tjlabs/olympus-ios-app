@@ -282,14 +282,21 @@ class SolutionEstimator {
                                       maxGroupSwitchLimit: Int = 2) -> [CandidateResult] {
         
         guard userPeakAndLinksBuffer.count >= 2 else { return [] }
-        let key = "\(sectorId)_\(curPmResult.building_name)_\(curPmResult.level_name)"
-        guard let nodeData = PathMatcher.shared.nodeData[key], let linkData = PathMatcher.shared.linkData[key] else { return [] }
+        guard let nodeData = PathMatcher.shared.getNodeData(sectorId: sectorId,
+                                                            building: curPmResult.building_name,
+                                                            level: curPmResult.level_name,
+                                                            mode: mode),
+              let linkData = PathMatcher.shared.getLinkData(sectorId: sectorId,
+                                                            building: curPmResult.building_name,
+                                                            level: curPmResult.level_name,
+                                                            mode: mode) else { return [] }
         
         var resultList = [CandidateResult]()
         guard let curPmLinks: [LinkData] = PathMatcher.shared.getLinkInfosWithResult(sectorId: sectorId,
                                                                                      result: curPmResult,
                                                                                      checkAll: true,
-                                                                                     acceptDist: 15) else { return [] }
+                                                                                     acceptDist: 15,
+                                                                                     mode: mode) else { return [] }
         let isBadCase: Bool = tuResultWhenRecentPeak == nil ? true : false
         let curLinkNums: [Int] = curPmLinks.map{$0.number}
         let curLinkGroupNums: [Int] = curPmLinks.map{ $0.group_number }
@@ -476,8 +483,14 @@ class SolutionEstimator {
                                                 mode: UserMode) -> [LossPointResult]? {
         
         if shiftedTraj.isEmpty || targetIndices.isEmpty { return nil }
-        let key = "\(sectorId)_\(curPmResult.building_name)_\(curPmResult.level_name)"
-        guard let nodeData = PathMatcher.shared.nodeData[key], let linkData = PathMatcher.shared.linkData[key] else { return nil }
+        guard let nodeData = PathMatcher.shared.getNodeData(sectorId: sectorId,
+                                                            building: curPmResult.building_name,
+                                                            level: curPmResult.level_name,
+                                                            mode: mode),
+              let linkData = PathMatcher.shared.getLinkData(sectorId: sectorId,
+                                                            building: curPmResult.building_name,
+                                                            level: curPmResult.level_name,
+                                                            mode: mode) else { return nil }
         
         var lossPointResults = [LossPointResult]()
         
@@ -498,7 +511,7 @@ class SolutionEstimator {
             var newResult = curPmResult
             newResult.x = pm.xyhs.x
             newResult.y = pm.xyhs.y
-            guard let matchedLinks = PathMatcher.shared.getLinkInfosWithResult(sectorId: sectorId, result: newResult, checkAll: true) else { return nil }
+            guard let matchedLinks = PathMatcher.shared.getLinkInfosWithResult(sectorId: sectorId, result: newResult, checkAll: true, mode: mode) else { return nil }
             if let _pre = preLinks, let _preIxyhs = preIxyhs {
                 let curLinkGroupNums = Set(matchedLinks.map{$0.group_number})
                 let preLinkGroupNums = Set(_pre.map{$0.group_number})

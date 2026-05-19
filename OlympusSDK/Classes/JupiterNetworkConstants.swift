@@ -5,7 +5,7 @@ public class JupiterNetworkConstants {
     static let TIMEOUT_VALUE_PUT: TimeInterval = 5.0
     static let TIMEOUT_VALUE_POST: TimeInterval = 5.0
     
-    static let USER_LOGIN_SERVER_VERSION = "2026-04-07"
+    static let USER_LOGIN_SERVER_VERSION = "2026-05-18"
     static let USER_RC_SERVER_VERSION = "2024-06-12"
     
     static let REC_RFD_SERVER_VERSION = "2025-04-02"
