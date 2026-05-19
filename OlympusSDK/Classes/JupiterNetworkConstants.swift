@@ -14,7 +14,7 @@ public class JupiterNetworkConstants {
     static let REC_MOBILE_REPORT_SERVER_VERSION = "2025-04-02"
     static let REC_FILE_UPLOAD_SERVER_VERSION = "2026-04-29"
     
-    static let CALC_DIRECTIONS_SERVER_VERSION = "2026-04-13"
+    static let CALC_DIRECTIONS_SERVER_VERSION = "2026-05-18"
     
     static let OPERATING_SYSTEM: String = "iOS"
     private static let HTTP_PREFIX = "https://"

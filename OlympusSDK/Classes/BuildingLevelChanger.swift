@@ -66,6 +66,9 @@ class BuildingLevelChanger {
             buildingIdMap[b.name] = b.id
             buildingNameMap[b.id] = b.name
         }
+        
+        JupiterLogger.i(tag: "BuildingLevelChanger", message: "makeBuildingIdMap : buildingIdMap= \(buildingIdMap)")
+        JupiterLogger.i(tag: "BuildingLevelChanger", message: "makeBuildingIdMap : buildingNameMap= \(buildingNameMap)")
     }
     
     func makeLevelIdMap(buildingsData: [BuildingData]) {
@@ -82,6 +85,10 @@ class BuildingLevelChanger {
                 levelToBuildingIdMap[l.id] = b.id
             }
         }
+        
+        JupiterLogger.i(tag: "BuildingLevelChanger", message: "makeLevelIdMap : levelIdMap= \(levelIdMap)")
+        JupiterLogger.i(tag: "BuildingLevelChanger", message: "makeLevelIdMap : levelNameMap= \(levelNameMap)")
+        JupiterLogger.i(tag: "BuildingLevelChanger", message: "makeLevelIdMap : levelToBuildingIdMap= \(levelToBuildingIdMap)")
     }
     
     func getBuildingIdWithName(buildingName: String) -> Int? {
@@ -97,6 +104,8 @@ class BuildingLevelChanger {
     }
     
     func getLevelIdWithName(levelName: String) -> Int? {
+        JupiterLogger.i(tag: "BuildingLevelChanger", message: "(getLevelIdWithName) : levelName=\(levelName)")
+        JupiterLogger.i(tag: "BuildingLevelChanger", message: "(getLevelIdWithName) : levelIdMap=\(levelIdMap)")
         return self.levelIdMap[levelName]
     }
     

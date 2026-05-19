@@ -159,14 +159,16 @@ class EntranceManager {
     
     func getEntTrackEndLevel() -> String? {
         guard let curEntKey = self.curEntKey else { return nil }
-
+        
         if let entRouteData = entRouteMap[curEntKey] {
             let entRouteLevel = entRouteData.routeLevel
             if !entRouteLevel.isEmpty {
                 let levelName = entRouteLevel[entRouteLevel.count-1]
+                JupiterLogger.i(tag: "EntranceManager", message: "(getEntTrackEndLevel) : levelName= \(levelName)")
                 return levelName
             }
         }
+        
         return nil
     }
     

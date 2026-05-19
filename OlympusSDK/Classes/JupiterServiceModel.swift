@@ -92,16 +92,18 @@ public struct JupiterNaviResult: Codable {
     public let level: String
     public let section: Int
     public let passedPointId: Int
+    public let remainingDistance: Int
     public var x: Float
     public var y: Float
     public var heading: Float
     public var llh: LLH?
 
-    public init(building: String, level: String, section: Int, passedPointId: Int, x: Float, y: Float, heading: Float, llh: LLH?) {
+    public init(building: String, level: String, section: Int, passedPointId: Int, remainingDistance: Int, x: Float, y: Float, heading: Float, llh: LLH?) {
         self.building = building
         self.level = level
         self.section = section
         self.passedPointId = passedPointId
+        self.remainingDistance = remainingDistance
         self.x = x
         self.y = y
         self.heading = heading

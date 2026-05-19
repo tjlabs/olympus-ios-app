@@ -92,13 +92,14 @@ public struct JupiterResult: Codable {
     public var jupiter_pos: Position
     public var navi_pos: Position?
     public var passed_point_id: Int?
+    public var remaining_distance: Int?
     public var llh: LLH?
     public var velocity: Float
     public var is_vehicle: Bool
     public var is_indoor: Bool
     public var validity_flag: Int
 
-    public init(mobile_time: Int, index: Int, building_name: String, level_name: String, jupiter_pos: Position, navi_pos: Position? = nil, passed_point_id: Int? = nil, llh: LLH? = nil, velocity: Float, is_vehicle: Bool, is_indoor: Bool, validity_flag: Int) {
+    public init(mobile_time: Int, index: Int, building_name: String, level_name: String, jupiter_pos: Position, navi_pos: Position? = nil, passed_point_id: Int? = nil, remaining_distance: Int? = nil, llh: LLH? = nil, velocity: Float, is_vehicle: Bool, is_indoor: Bool, validity_flag: Int) {
         self.mobile_time = mobile_time
         self.index = index
         self.building_name = building_name
@@ -106,6 +107,7 @@ public struct JupiterResult: Codable {
         self.jupiter_pos = jupiter_pos
         self.navi_pos = navi_pos
         self.passed_point_id = passed_point_id
+        self.remaining_distance = remaining_distance
         self.llh = llh
         self.velocity = velocity
         self.is_vehicle = is_vehicle

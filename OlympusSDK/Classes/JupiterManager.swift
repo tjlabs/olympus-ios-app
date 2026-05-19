@@ -406,7 +406,7 @@ public class JupiterManager: JupiterCalcManagerDelegate {
             phase = 0
         }
             
-        let mobileResult = MobileResult(tenant_user_name: self.id,
+        let mobileResult = MobileResult(tenant_user_name: self.tenantUserName,
                                         is_vehicle: is_vehicle,
                                         mobile_time: currentTime,
                                         index: jupiterResult.index,

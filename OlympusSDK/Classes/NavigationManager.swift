@@ -13,7 +13,7 @@ public protocol NavigationManagerDelegate: AnyObject {
     func isUserArrived()
     func isUserGuidanceOut()
     func isNavigationRouteChanged(_ routes: [(String, String, Int, Float, Float)])
-    func isNavigationRouteFailed()
+    func isNavigationRouteFailed(_ reason: NavigationRouteFailureReason)
     func isWaypointChanged(_ waypoints: [[Double]])
 }
 
@@ -27,14 +27,18 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
             JupiterLogger.i(tag: "NavigationManager", message: "(onEntering) do not request routing when naviMode \(naviMode)")
             return
         }
+        
         if let origin = routingManager?.getEntRoutingOrigin(key: key, level_id: level_id), let to = self.naviDestination {
             let from: RoutingStart = RoutingStart(level_id: origin.level_id, x: origin.x, y: origin.y, absolute_heading: origin.absolute_heading)
-            routingManager?.requestRouting(type: .INITIAL, start: from, end: to, completion: { [self] routingResult in
+            routingManager?.requestRouting(type: .INITIAL, start: from, end: to, is_vehicle: true, completion: { [self] routingResult, failureReason in
                 if let result = routingResult {
                     JupiterLogger.i(tag: "NavigationManager", message: "(requestRouting) routingResult= \(result)")
+                    updateRouteInfo(requestId: result.request_id, totalDistance: result.total_distance)
                     routingManager?.setRoutingRoutes(routes: result.routes)
                 } else {
-                    JupiterLogger.i(tag: "NavigationManager", message: "(requestRouting) routingResult is nil")
+                    JupiterLogger.i(tag: "NavigationManager", message: "(requestRouting) routingResult is nil, failureReason=\(failureReason?.rawValue ?? "nil")")
+                    resetRouteInfo()
+                    handleRoutingFailure(failureReason)
                 }
             })
         }
@@ -147,6 +151,10 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         let hasGuidanceRoute = !(routingManager?.getRoutingRoutes().isEmpty ?? true)
         if hasGuidanceRoute {
             if resultMode == .NAVI, isHoldingNaviPositionOnBackwardJump, let jupiterNaviResult = curJupiterNaviResult {
+                JupiterLogger.i(
+                    tag: "NavigationManager",
+                    message: "(onJupiterResult) holding NAVI position on backward jump: raw=[\(result.building_name), \(result.level_name), x:\(result.jupiter_pos.x), y:\(result.jupiter_pos.y), h:\(result.jupiter_pos.heading)] -> held=[\(jupiterNaviResult.building), \(jupiterNaviResult.level), x:\(jupiterNaviResult.x), y:\(jupiterNaviResult.y), h:\(jupiterNaviResult.heading)]"
+                )
                 copied.passed_point_id = jupiterNaviResult.passedPointId
             } else {
                 copied.passed_point_id = routingManager?.getPassedPointId(building: copied.building_name,
@@ -154,8 +162,17 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
                                                                          x: copied.jupiter_pos.x,
                                                                          y: copied.jupiter_pos.y) ?? copied.passed_point_id
             }
+
+            let displayedRemainingDistance = calculateRemainingDistance(building: copied.building_name,
+                                                                       level: copied.level_name,
+                                                                       x: copied.jupiter_pos.x,
+                                                                       y: copied.jupiter_pos.y)
+            remainingDistance = displayedRemainingDistance ?? 0
+            copied.remaining_distance = displayedRemainingDistance
         } else {
             copied.passed_point_id = nil
+            copied.remaining_distance = nil
+            remainingDistance = 0
         }
         
         let shouldNotifyArrival = hasGuidanceRoute && isUserArrived(building: copied.building_name,
@@ -196,19 +213,24 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         hasNaviRoute = false
         curRoutingRouteResult = nil
         curJupiterNaviResult = nil
+        resetRouteInfo()
         routingManager?.clearRoutes()
         self.jupiterResult?.passed_point_id = nil
+        self.jupiterResult?.remaining_distance = nil
         delegate?.isUserGuidanceOut()
         guard let curResult = self.jupiterResult else { return }
         guard let curLevelId = routingManager?.getLevelIdWithName(levelName: curResult.level_name) else { return }
         let from = RoutingStart(level_id: curLevelId, x: Int(curResult.jupiter_pos.x), y: Int(curResult.jupiter_pos.y), absolute_heading: Int(curResult.jupiter_pos.heading))
         guard let to = self.naviDestination else { return }
-        routingManager?.requestRouting(type: .REROUTE, start: from, end: to, completion: { [self] routingResult in
+        routingManager?.requestRouting(type: .REROUTE, start: from, end: to, is_vehicle: true, completion: { [self] routingResult, failureReason in
             if let result = routingResult {
                 JupiterLogger.i(tag: "NavigationManager", message: "(requestRouting) routingResult= \(result)")
+                updateRouteInfo(requestId: result.request_id, totalDistance: result.total_distance)
                 routingManager?.setRoutingRoutes(routes: result.routes)
             } else {
                 JupiterLogger.i(tag: "NavigationManager", message: "(requestRouting) routingResult is nil")
+                resetRouteInfo()
+                handleRoutingFailure(failureReason)
             }
         })
     }
@@ -226,9 +248,9 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         }
     }
     
-    func isNavigationRouteFailed() {
+    func isNavigationRouteFailed(_ reason: NavigationRouteFailureReason) {
         JupiterLogger.i(tag: "NavigationManager", message: "(isNavigationRouteFailed) navigation route failed")
-        delegate?.isNavigationRouteFailed()
+        delegate?.isNavigationRouteFailed(reason)
     }
     
     func isWaypointsChanged() {
@@ -267,6 +289,10 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     private var feedbackCount: Int = 0
     private var curNaviCase: NaviCase = .NONE
     private var sectionCorrectionIndex: Int = 0
+    private var requestId: String = ""
+    private var totalDistance: Int = 0
+    private var remainingDistance: Int = 0
+    private var reason: NavigationRouteFailureReason?
     
     // MARK: - Variables
     private var jupiterResult: JupiterResult?
@@ -300,7 +326,6 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     }
     
     public func startService(mode: UserMode) {
-        NavigationNetworkConstants.setServerURL(region: region)
         PathMatcher.shared.setGraphMode(mode)
         routingManager?.setGraphMode(mode)
         jupiterManager?.startJupiter(mode: mode)
@@ -329,10 +354,35 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         return jupiterDebugResult
     }
     
-    public func requestRouting(start: RoutingStart, end: Point, waypoints: [Point] = [], completion: @escaping (RoutingResult?) -> Void) {
-        routingManager?.requestRouting(type: .INITIAL, start: start, end: end, waypoints: waypoints, completion: completion)
+    public func requestRouting(start: RoutingStart, end: Point, waypoints: [Point] = [], is_vehicle: Bool, completion: @escaping (RoutingResult?, [NavigationLevelRoute]) -> Void) {
+        requestRouting(start: start, end: end, waypoints: waypoints, is_vehicle: is_vehicle, completion: { result, levelRoutes, _ in
+            completion(result, levelRoutes)
+        })
     }
 
+    public func requestRouting(start: RoutingStart, end: Point, waypoints: [Point] = [], is_vehicle: Bool, completion: @escaping (RoutingResult?, [NavigationLevelRoute], NavigationRouteFailureReason?) -> Void) {
+        guard let routingManager else {
+            completion(nil, [], nil)
+            return
+        }
+        
+        self.isVehicle = is_vehicle
+        routingManager.requestRouting(type: .INITIAL, start: start, end: end, waypoints: waypoints, is_vehicle: is_vehicle, completion: { result, failureReason in
+            var levelRoutes = [NavigationLevelRoute]()
+            if let routingResult = result {
+                self.naviMode = true
+                self.naviDestination = end
+                self.routingManager?.setRoutingRoutes(routes: routingResult.routes)
+                levelRoutes = self.routingManager?.getLevelRoutes() ?? []
+            }
+            completion(result, levelRoutes, failureReason)
+        })
+    }
+    
+    public func getRoutingInfo() -> (requestId: String, totalDistance: Int, routes: [NavigationLevelRoute], reason: NavigationRouteFailureReason?) {
+        return (requestId, totalDistance, routingManager?.getLevelRoutes() ?? [], reason)
+    }
+    
     public func getLevelRoutes() -> [NavigationLevelRoute] {
         return routingManager?.getLevelRoutes() ?? []
     }
@@ -362,14 +412,62 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         let converted = AffineConverter.shared.convertPpToLLH(x: Double(x), y: Double(y), heading: Double(heading), param: affineParam)
         return LLH(lat: converted.lat, lon: converted.lon, heading: converted.heading)
     }
+
+    private func updateRouteInfo(requestId: String, totalDistance: Int) {
+        self.requestId = requestId
+        self.totalDistance = max(totalDistance, 0)
+        self.remainingDistance = max(totalDistance, 0)
+    }
+
+    private func resetRouteInfo() {
+        requestId = ""
+        totalDistance = 0
+        remainingDistance = 0
+    }
+
+    private func calculateRemainingDistance(building: String, level: String, x: Float, y: Float) -> Int? {
+        guard totalDistance > 0 else {
+            if let routeRemainingDistance = routingManager?.getRemainingDistance(building: building, level: level, x: x, y: y) {
+                return max(Int(routeRemainingDistance.rounded()), 0)
+            }
+            return nil
+        }
+
+        guard let traveledDistance = routingManager?.getTraveledDistance(building: building,
+                                                                         level: level,
+                                                                         x: x,
+                                                                         y: y) else {
+            if let routeRemainingDistance = routingManager?.getRemainingDistance(building: building, level: level, x: x, y: y) {
+                return max(Int(routeRemainingDistance.rounded()), 0)
+            }
+            return nil
+        }
+
+        let clampedTraveledDistance = min(max(Int(traveledDistance.rounded()), 0), totalDistance)
+        return max(totalDistance - clampedTraveledDistance, 0)
+    }
     
     private func isUserArrived(building: String, level: String, x: Float, y: Float) -> Bool {
         guard naviMode, hasNaviRoute else { return false }
-        guard let remainingDistance = routingManager?.getRemainingDistance(building: building,
-                                                                          level: level,
-                                                                          x: x,
-                                                                          y: y) else { return false }
-        return remainingDistance <= 10.0
+        guard let remainingDistance = calculateRemainingDistance(building: building,
+                                                                level: level,
+                                                                x: x,
+                                                                y: y) else { return false }
+        return remainingDistance <= 10
+    }
+    
+    private func handleRoutingFailure(_ failureReason: NavigationRouteFailureReason?) {
+        guard let failureReason else { return }
+
+        self.reason = failureReason
+        if failureReason == .tooClose {
+            JupiterLogger.i(tag: "NavigationManager", message: "(handleRoutingFailure) report failure and cancel navigation because destination is within 10m")
+            isNavigationRouteFailed(failureReason)
+            cancelNavigation()
+            return
+        }
+
+        isNavigationRouteFailed(failureReason)
     }
 
     private func finishNavigation() {
@@ -386,6 +484,7 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         feedbackCount = 0
         curNaviCase = .NONE
         sectionCorrectionIndex = 0
+        resetRouteInfo()
         resultMode = .NONE
         waypoints = []
         routingManager?.clearNavigationSession()
@@ -396,10 +495,15 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     }
 
     private func updateCurJupiterNaviResult(routingRoute: RoutingRoute, jupiterResult: JupiterResult?) {
+        let nextRemainingDistance = calculateRemainingDistance(building: routingRoute.building,
+                                                               level: routingRoute.level,
+                                                               x: routingRoute.x,
+                                                               y: routingRoute.y) ?? remainingDistance
         let nextResult = JupiterNaviResult(building: routingRoute.building,
                                            level: routingRoute.level,
                                            section: routingRoute.section,
                                            passedPointId: routingRoute.passedPointId,
+                                           remainingDistance: nextRemainingDistance,
                                            x: routingRoute.x,
                                            y: routingRoute.y,
                                            heading: routingRoute.heading,
@@ -412,16 +516,31 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         }
 
         guard let isBackwardJump = routingManager?.isRouteBackward(routingRoute, comparedTo: currentResult) else {
+            if isHoldingNaviPositionOnBackwardJump {
+                JupiterLogger.i(
+                    tag: "NavigationManager",
+                    message: "(updateCurJupiterNaviResult) release hold: backward jump check unavailable, fallback to new NAVI result [\(nextResult.building), \(nextResult.level), section:\(nextResult.section), x:\(nextResult.x), y:\(nextResult.y), h:\(nextResult.heading)]"
+                )
+            }
             isHoldingNaviPositionOnBackwardJump = false
             curJupiterNaviResult = nextResult
             return
         }
 
         if isBackwardJump {
+            JupiterLogger.i(
+                tag: "NavigationManager", message: "(updateCurJupiterNaviResult) backward jump detected: currentHoldBase=[\(currentResult.building), \(currentResult.level), section:\(currentResult.section), x:\(currentResult.x), y:\(currentResult.y), h:\(currentResult.heading)] candidate=[\(nextResult.building), \(nextResult.level), section:\(nextResult.section), x:\(nextResult.x), y:\(nextResult.y), h:\(nextResult.heading)] rawJupiter=[\(jupiterResult?.building_name ?? "nil"), \(jupiterResult?.level_name ?? "nil"), x:\(jupiterResult?.jupiter_pos.x ?? -1), y:\(jupiterResult?.jupiter_pos.y ?? -1), h:\(jupiterResult?.jupiter_pos.heading ?? -1)]"
+            )
             isHoldingNaviPositionOnBackwardJump = true
             return
         }
 
+        if isHoldingNaviPositionOnBackwardJump {
+            JupiterLogger.i(
+                tag: "NavigationManager",
+                message: "(updateCurJupiterNaviResult) release hold: candidate caught up to held position/current progress [\(nextResult.building), \(nextResult.level), section:\(nextResult.section), x:\(nextResult.x), y:\(nextResult.y), h:\(nextResult.heading)]"
+            )
+        }
         isHoldingNaviPositionOnBackwardJump = false
         curJupiterNaviResult = nextResult
     }

@@ -24,11 +24,13 @@ protocol RoutingManagerDelegate: AnyObject {
     func isUserGuidanceOut()
     // 사용자의 navigation route가 변경된 경우
     func isNavigationRouteChanged()
-    func isNavigationRouteFailed()
+    func isNavigationRouteFailed(_ reason: NavigationRouteFailureReason)
     func isWaypointsChanged()
 }
 
 class RoutingManager {
+    private let minimumRoutingDistance: Float = 10.0
+    
     private struct SectionLevelRun {
         let building: String
         let level: String
@@ -111,9 +113,9 @@ class RoutingManager {
                 levelToBuildingIdMap[l.id] = b.id
             }
         }
-        JupiterLogger.i(tag: "RoutingManager", message: "makeBuildingIdMap : levelIdMap= \(levelIdMap)")
-        JupiterLogger.i(tag: "RoutingManager", message: "makeBuildingIdMap : levelNameMap= \(levelNameMap)")
-        JupiterLogger.i(tag: "RoutingManager", message: "makeBuildingIdMap : levelToBuildingIdMap= \(levelToBuildingIdMap)")
+        JupiterLogger.i(tag: "RoutingManager", message: "makeLevelIdMap : levelIdMap= \(levelIdMap)")
+        JupiterLogger.i(tag: "RoutingManager", message: "makeLevelIdMap : levelNameMap= \(levelNameMap)")
+        JupiterLogger.i(tag: "RoutingManager", message: "makeLevelIdMap : levelToBuildingIdMap= \(levelToBuildingIdMap)")
     }
     
     func getBuildingIdWithName(buildingName: String) -> Int? {
@@ -205,24 +207,32 @@ class RoutingManager {
     }
     
     // MARK: - Request
-    func requestRouting(type: DirRqType, start: RoutingStart, end: Point, waypoints: [Point] = [], completion: @escaping (RoutingResult?) -> Void) {
+    func requestRouting(type: DirRqType, start: RoutingStart, end: Point, waypoints: [Point] = [], is_vehicle: Bool, completion: @escaping (RoutingResult?, NavigationRouteFailureReason?) -> Void) {
+        if let failureReason = getRoutingFailureReason(start: start, end: end, waypoints: waypoints) {
+            JupiterLogger.i(tag: "RoutingManager", message: "(requestRouting) : route request rejected (\(failureReason.rawValue)), start=\(start), end=\(end)")
+            completion(nil, failureReason)
+            return
+        }
+
         let from: Origin = Origin(level_id: start.level_id, x: start.x, y: start.y, absolute_heading: start.absolute_heading)
         let to: Point = Point(level_id: end.level_id, x: end.x, y: end.y)
         
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-        let input = DirectionsRequest(tenant_user_name: self.id, mobile_time: currentTime, request_type: type, is_vehicle: true, origin: from, destination: to, waypoints: waypoints)
+        let input = DirectionsRequest(tenant_user_name: self.tenant_user_name, mobile_time: currentTime, request_type: type, is_vehicle: is_vehicle, origin: from, destination: to, waypoints: waypoints)
+        JupiterLogger.e(tag: "RoutingManager", message: "(requestRouting) : url= \(JupiterNetworkConstants.getCalcDirsURL()), input= \(input)")
         let successRange = 200..<300
-        NavigationNetworkManager.shared.postCalcDirs(url: NavigationNetworkConstants.getCalcDirsURL(), input: input, completion: { [self] statusCode, returnedString, inputDirs in
+        JupiterNetworkManager.shared.postCalcDirs(url: JupiterNetworkConstants.getCalcDirsURL(), input: input, completion: { [self] statusCode, returnedString, inputDirs in
             if successRange.contains(statusCode)  {
                 if let decoded = decodeCalcDirs(from: returnedString) {
-                    completion(RoutingResult(code: statusCode, request_id: decoded.request_id, routes: decoded.routes))
+                    self.naviDestination = end
+                    completion(RoutingResult(code: statusCode, request_id: decoded.request_id, routes: decoded.routes, total_distance: decoded.total_distance), nil)
                 } else {
                     JupiterLogger.e(tag: "RoutingManager", message: "(requestRouting) : fail decoding")
-                    completion(nil)
+                    completion(nil, .serverResponse)
                 }
             } else {
                 JupiterLogger.e(tag: "RoutingManager", message: "(requestRouting) : \(statusCode) error")
-                completion(nil)
+                completion(nil, .serverResponse)
             }
         })
     }
@@ -321,7 +331,7 @@ class RoutingManager {
         // Build a dense polyline by walking each segment with step=1.0 (same unit as x/y).
         // Output routes as [[x, y, headingDeg]] where headingDeg is 0~360 from +X axis (atan2(dy, dx)).
         guard order.count >= 2 else {
-            delegate?.isNavigationRouteFailed()
+            delegate?.isNavigationRouteFailed(.serverResponse)
             return
         }
         
@@ -677,24 +687,18 @@ class RoutingManager {
         return routes[nearestIndex].passedPointId
     }
 
-    func getRemainingDistance(building: String, level: String, x: Float, y: Float) -> Float? {
-        guard !routes.isEmpty else { return nil }
-        guard let nearestIndex = findNearestRouteIndex(section: nil, building: building, level: level, x: x, y: y) else {
+    func getTraveledDistance(building: String, level: String, x: Float, y: Float) -> Float? {
+        guard let progress = getRouteDistanceProgress(section: nil, building: building, level: level, x: x, y: y) else {
             return nil
         }
+        return progress.traveled
+    }
 
-        var remainingDistance = distanceBetween(x1: x, y1: y, x2: routes[nearestIndex].x, y2: routes[nearestIndex].y)
-        if nearestIndex >= routes.count - 1 {
-            return remainingDistance
+    func getRemainingDistance(building: String, level: String, x: Float, y: Float) -> Float? {
+        guard let progress = getRouteDistanceProgress(section: nil, building: building, level: level, x: x, y: y) else {
+            return nil
         }
-
-        for index in nearestIndex..<(routes.count - 1) {
-            let current = routes[index]
-            let next = routes[index + 1]
-            remainingDistance += distanceBetween(x1: current.x, y1: current.y, x2: next.x, y2: next.y)
-        }
-
-        return remainingDistance
+        return progress.remaining
     }
 
     func clearNavigationSession() {
@@ -887,6 +891,44 @@ class RoutingManager {
         let dx = x2 - x1
         let dy = y2 - y1
         return sqrt(dx * dx + dy * dy)
+    }
+    
+    private func getRoutingFailureReason(start: RoutingStart, end: Point, waypoints: [Point]) -> NavigationRouteFailureReason? {
+        guard waypoints.isEmpty else { return nil }
+        guard start.level_id == end.level_id else { return nil }
+
+        let straightDistance = distanceBetween(x1: Float(start.x), y1: Float(start.y), x2: Float(end.x), y2: Float(end.y))
+        return straightDistance <= minimumRoutingDistance ? .tooClose : nil
+    }
+
+    private func getRouteDistanceProgress(section: Int?, building: String, level: String, x: Float, y: Float) -> (traveled: Float, remaining: Float)? {
+        guard !routes.isEmpty else { return nil }
+        guard let nearestIndex = findNearestRouteIndex(section: section, building: building, level: level, x: x, y: y) else {
+            return nil
+        }
+
+        let nearestRoute = routes[nearestIndex]
+        let offsetDistance = distanceBetween(x1: x, y1: y, x2: nearestRoute.x, y2: nearestRoute.y)
+
+        var traveledDistance: Float = offsetDistance
+        if nearestIndex > 0 {
+            for index in 0..<nearestIndex {
+                let current = routes[index]
+                let next = routes[index + 1]
+                traveledDistance += distanceBetween(x1: current.x, y1: current.y, x2: next.x, y2: next.y)
+            }
+        }
+
+        var remainingDistance: Float = offsetDistance
+        if nearestIndex < routes.count - 1 {
+            for index in nearestIndex..<(routes.count - 1) {
+                let current = routes[index]
+                let next = routes[index + 1]
+                remainingDistance += distanceBetween(x1: current.x, y1: current.y, x2: next.x, y2: next.y)
+            }
+        }
+
+        return (traveledDistance, remainingDistance)
     }
 
     private func getRouteProgress(section: Int, building: String, level: String, x: Float, y: Float) -> Float? {

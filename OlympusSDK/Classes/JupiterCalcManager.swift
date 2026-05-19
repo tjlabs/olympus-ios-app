@@ -214,6 +214,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         curUserMode = "AUTO"
         curUserModeEnum = .MODE_AUTO
 
+        entManager?.toggleToOutdoor()
+        buildingLevelChanger?.toggleToOutdoor()
+
         peakDetector = PeakDetector()
         if let entManager {
             peakDetector.setInnerWardIds(ids: entManager.getEntInnermostWardIds())
@@ -223,9 +226,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         stackManager = StackManager()
         kalmanFilter = KalmanFilter(stackManager: stackManager)
         sectionController = SectionController()
-        buildingLevelChanger = BuildingLevelChanger(sectorId: sectorId)
-        buildingLevelChanger?.delegate = self
-        landmarkTagger = LandmarkTagger(sectorId: sectorId)
         solutionEstimator = SolutionEstimator(sectorId: sectorId)
         stateManager?.delegate = nil
         stateManager = JupiterStateManager()
@@ -635,7 +635,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - entTrackData = \(entTrackData)")
             
             if let blChanger = self.buildingLevelChanger,
-               let start = entManager.getEntInnermostWardCoord(key: entKey) {
+               let _ = entManager.getEntInnermostWardCoord(key: entKey) {
                 if let fromLevel = entManager.getEntTrackEndLevel(),
                    let levelId = blChanger.getLevelIdWithName(levelName: fromLevel) {
                     delegate?.onEntering(userVelocity: uvd, peakIndex: userPeak.peak_index, key: entKey, level_id: levelId)

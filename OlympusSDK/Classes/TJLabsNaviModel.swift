@@ -117,6 +117,12 @@ public struct RoutingResult: Codable {
     public let code: Int
     public let request_id: String
     public let routes: [Route]
+    public let total_distance: Int
+}
+
+public enum NavigationRouteFailureReason: String, Codable {
+    case serverResponse = "server_response"
+    case tooClose = "too_close"
 }
 
 struct NaviDestination: Codable {

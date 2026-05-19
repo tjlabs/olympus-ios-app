@@ -86,7 +86,7 @@ class TJLabsIndoorNaviView: UIView, TJLabsNaviViewDelegate, NavigationManagerDel
         isNaviRouteRendered = false
     }
     
-    func isNavigationRouteFailed() {
+    func isNavigationRouteFailed(_ reason: NavigationRouteFailureReason) {
         // TODO
     }
     

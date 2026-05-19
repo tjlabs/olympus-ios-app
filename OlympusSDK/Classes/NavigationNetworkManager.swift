@@ -118,6 +118,7 @@ class NavigationNetworkManager {
             DispatchQueue.main.async { completion(406, "Invalid URL or failed to encode JSON", input) }
             return
         }
+        JupiterLogger.i(tag: "NavigationManager", message: "(postCalcDirs) url= \(url)")
         JupiterLogger.i(tag: "NavigationManager", message: "(postCalcDirs) input= \(input)")
         makeRequest(url: url, body: body) { request in
             guard let request = request else {
