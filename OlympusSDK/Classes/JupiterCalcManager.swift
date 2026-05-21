@@ -178,14 +178,14 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             return
         }
         
-        JupiterSimulator.shared.isSimulationMode ? rfdGenerator?.generateRfdSimulation() : rfdGenerator?.generateRfd()
+        JupiterReplayer.shared.replayMode ? rfdGenerator?.generateReplayRfd() : rfdGenerator?.generateRfd()
         rfdGenerator?.delegate = self
         rfdGenerator?.pressureProvider = { [self] in
             return self.pressure
         }
 
         uvdGenerator?.setUserMode(mode: mode)
-        JupiterSimulator.shared.isSimulationMode ? uvdGenerator?.generateUvdSimulation() : uvdGenerator?.generateUvd()
+        JupiterReplayer.shared.replayMode ? uvdGenerator?.generateReplayUvd() : uvdGenerator?.generateUvd()
         uvdGenerator?.delegate = self
 
         completion(true, "")
@@ -301,7 +301,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
         guard let curPathMatchingResult = self.curPathMatchingResult else { return nil }
         self.debug_calc_xyh = [curPathMatchingResult.x, curPathMatchingResult.y, curPathMatchingResult.absolute_heading]
-        
+
         let buildingName = curPathMatchingResult.building_name
         let levelName = curPathMatchingResult.level_name
         let x = curPathMatchingResult.x
@@ -580,7 +580,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         
         if jupiterPhase == .TRACKING {
             let indexForEdit = max(correctionIndex, feedbackIndex)
-            guard let trackingFeedback = delegate?.provideTrackingCorrection(mode: mode, userVelocity: userVelocity, peakIndex: curPeak?.peak_index, recentLandmarkPeaks: recentLandmarkPeaks, travelingLinkDist: travelingLinkDist, indexForEdit: indexForEdit, curPmResult: curPathMatchingResult) else {
+            guard let trackingFeedback = delegate?.provideTrackingCorrection(mode: mode, userVelocity: userVelocity, peakIndex: curPeak?.peak_index, recentLandmarkPeaks: recentLandmarkPeaks, travelingLinkDist: travelingLinkDist, indexForEdit: indexForEdit, curPmResult: curPmResult) else {
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) return - provideTrackingCorrection returned nil, indexForEdit=\(indexForEdit), curPmResultExists=\(curPathMatchingResult != nil)")
                 return
             }
@@ -614,7 +614,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
 //            self.stackEditInfoBuffer = nil
         }
         
-//        updateDebugTuResult()
+        updateDebugTuResult()
     }
     
     private func updateDebugTuResult() {

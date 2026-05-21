@@ -17,8 +17,8 @@ public class JupiterFileUploader: NSObject, URLSessionTaskDelegate {
     
     override init() { }
     
-    public func getSimulationFilesInExports() -> (rfdFiles: [(name: String, path: String)], uvdFiles: [(name: String, path: String)], eventFiles: [(name: String, path: String)]) {
-        return JupiterFileManager.shared.getSimulationFilesInExports()
+    public func getReplayFilesInExports() -> (rfdFiles: [(name: String, path: String)], uvdFiles: [(name: String, path: String)], eventFiles: [(name: String, path: String)]) {
+        return JupiterFileManager.shared.getReplayFilesInExports()
     }
     
     func requestStorageFileURL(fileName: String, completion: @escaping (S3Output?) -> Void) {

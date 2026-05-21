@@ -18,6 +18,8 @@ public protocol NavigationManagerDelegate: AnyObject {
 }
 
 public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
+    private let routeChangeWarmupSampleCount: Int = 10
+    
     public func onRfdResult(receivedForce: TJLabsCommon.ReceivedForce) {
         // TODO
     }
@@ -52,7 +54,10 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
                                           indexForEdit: Int,
                                           curPmResult: FineLocationTrackingOutput?) -> (NaviCorrectionInfo, [StackEditInfo])? {
         if !hasNaviRoute { return nil }
-        if naviRouteChanged, let curPmResult = curPmResult { routingManager?.setStartPointInNaviRoute(xyh: [curPmResult.x, curPmResult.y, curPmResult.absolute_heading]) }
+        if naviRouteChanged, let curPmResult = curPmResult {
+            routingManager?.setStartPointInNaviRoute(xyh: [curPmResult.x, curPmResult.y, curPmResult.absolute_heading])
+            naviRouteChanged = false
+        }
         guard let jupiterManager = self.jupiterManager else { return nil }
         guard let naviRouteResult = calcNaviRouteResult(uvd: userVelocity, jupiterResult: jupiterResult) else { return nil }
         self.curRoutingRouteResult = naviRouteResult
@@ -60,6 +65,25 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         let indexAndNaviRouteResultBuffer = stackManager.getIndexAndNaviRouteResultBuffer(size: 10)
         let naviRouteResultBuffer = indexAndNaviRouteResultBuffer.map { $0.1 }
         guard let curPmResultBuffer = jupiterManager.getCurPmResultBuffer(size: 10) else { return nil }
+        
+        if pendingRouteChangeWarmupSamples > 0 {
+            pendingRouteChangeWarmupSamples -= 1
+            self.curRoutingRouteResult = naviRouteResult
+            updateCurJupiterNaviResult(routingRoute: naviRouteResult, jupiterResult: jupiterResult)
+            curNaviCase = .CASE_1
+            resultMode = .NAVI
+            feedbackCount = 0
+
+            JupiterLogger.i(
+                tag: "NavigationManager",
+                message: "(provideTrackingCorrection) skip CASE evaluation during reroute warmup: remaining=\(pendingRouteChangeWarmupSamples), route=[\(naviRouteResult.building), \(naviRouteResult.level), section:\(naviRouteResult.section), x:\(naviRouteResult.x), y:\(naviRouteResult.y), h:\(naviRouteResult.heading)]"
+            )
+
+            if pendingRouteChangeWarmupSamples > 0 {
+                return nil
+            }
+        }
+        
         guard let followingResult = isFollowingNavigationRoute(curNaviCase: curNaviCase, travelingLinkDist: travelingLinkDist, naviRouteResultBuffer: naviRouteResultBuffer, curPmResultBuffer: curPmResultBuffer) else { return nil }
         
         let estimatedNaviCase = followingResult.naviCase
@@ -88,7 +112,15 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         }
         
         JupiterLogger.i(tag: "NavigationManager", message: "(onTracking) isFollowingNavigationRoute: followingResult= \(followingResult) // curNaviCase= \(curNaviCase)")
-        self.resultMode = determineIndoorResultMode(resultMode: resultMode, naviCase: curNaviCase)
+        let previousResultMode = self.resultMode
+        let nextResultMode = determineIndoorResultMode(resultMode: resultMode, naviCase: curNaviCase)
+        if isHoldingNaviPositionOnBackwardJump && nextResultMode != .NAVI {
+            JupiterLogger.i(
+                tag: "NavigationManager",
+                message: "(provideTrackingCorrection) hold active but resultMode resolved to \(nextResultMode) (previous=\(previousResultMode), naviCase=\(curNaviCase), route=[\(naviRouteResult.building), \(naviRouteResult.level), section:\(naviRouteResult.section), x:\(naviRouteResult.x), y:\(naviRouteResult.y), h:\(naviRouteResult.heading)])"
+            )
+        }
+        self.resultMode = nextResultMode
         let canFeedback = feedbackWhenFollowing(naviCase: curNaviCase, naviRouteResultBuffer: naviRouteResultBuffer)
         JupiterLogger.i(tag: "NavigationManager", message: "(onTracking) feedbackWhenFollowing: canFeedback= \(canFeedback)")
         if canFeedback {
@@ -129,6 +161,7 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     }
     
     public func onJupiterResult(_ result: JupiterResult) {
+        self.jupiterResult = result
         var copied = result
         if resultMode == .NAVI {
             if let jupiterNaviResult = self.curJupiterNaviResult {
@@ -146,6 +179,13 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
                 copied.jupiter_pos.heading = routingRoute.heading
                 copied.llh = makeLLH(x: routingRoute.x, y: routingRoute.y, heading: routingRoute.heading) ?? result.llh
             }
+        }
+        
+        if isHoldingNaviPositionOnBackwardJump, resultMode != .NAVI, let jupiterNaviResult = curJupiterNaviResult {
+            JupiterLogger.i(
+                tag: "NavigationManager",
+                message: "(onJupiterResult) hold active but not applied because resultMode=\(resultMode): raw=[\(result.building_name), \(result.level_name), x:\(result.jupiter_pos.x), y:\(result.jupiter_pos.y), h:\(result.jupiter_pos.heading)] held=[\(jupiterNaviResult.building), \(jupiterNaviResult.level), x:\(jupiterNaviResult.x), y:\(jupiterNaviResult.y), h:\(jupiterNaviResult.heading)]"
+            )
         }
 
         let hasGuidanceRoute = !(routingManager?.getRoutingRoutes().isEmpty ?? true)
@@ -180,7 +220,6 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
                                                                     x: copied.jupiter_pos.x,
                                                                     y: copied.jupiter_pos.y)
 
-        self.jupiterResult = copied
         delegate?.onJupiterResult(copied)
         if shouldNotifyArrival {
             finishNavigation()
@@ -243,7 +282,11 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
             if let naviRouteForDisplay = routingManager?.getNaviRoutesForDisplay() {
                 delegate?.isNavigationRouteChanged(naviRouteForDisplay)
                 naviRouteChanged = true
+                pendingRouteChangeWarmupSamples = routeChangeWarmupSampleCount
+                guidanceOutReported = false
+                feedbackCount = 0
                 curNaviCase = .CASE_1
+                resultMode = .NAVI
             }
         }
     }
@@ -285,6 +328,7 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     // MARK: - Routing
     private var hasNaviRoute: Bool = false
     private var naviRouteChanged: Bool = false
+    private var pendingRouteChangeWarmupSamples: Int = 0
     private var feedbackIndex: Int = 0
     private var feedbackCount: Int = 0
     private var curNaviCase: NaviCase = .NONE
@@ -296,6 +340,7 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     
     // MARK: - Variables
     private var jupiterResult: JupiterResult?
+    private var routingResult: JupiterResult?
     private var trackingIndex: Int = 0
     var resultMode: IndoorResultMode = .NONE
     private var jupiterPhase: JupiterPhase = .NONE
@@ -350,7 +395,10 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     }
     
     public func getJupiterDebugResult() -> JupiterDebugResult? {
-        guard let jupiterDebugResult = jupiterManager?.getJupiterDebugResult() else { return nil }
+        guard var jupiterDebugResult = jupiterManager?.getJupiterDebugResult() else { return nil }
+        if let routingResult = self.curRoutingRouteResult {
+            jupiterDebugResult.navi_xyh = [routingResult.x, routingResult.y, routingResult.heading]
+        }
         return jupiterDebugResult
     }
     
@@ -387,17 +435,17 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         return routingManager?.getLevelRoutes() ?? []
     }
     
-    //MARK: - Simulation Mode
-    public func setSimulationMode(flag: Bool, rfdFileName: String, uvdFileName: String, eventFileName: String) {
-        jupiterManager?.setSimulationMode(flag: flag, rfdFileName: rfdFileName, uvdFileName: uvdFileName, eventFileName: eventFileName)
+    //MARK: - Replay Mode
+    public func setReplayMode(flag: Bool, rfdFileName: String, uvdFileName: String, eventFileName: String) {
+        jupiterManager?.setReplayMode(flag: flag, rfdFileName: rfdFileName, uvdFileName: uvdFileName, eventFileName: eventFileName)
     }
     
-    public func setSimulationModeLegacy(flag: Bool, bleFileName: String, sensorFileName: String) {
-        jupiterManager?.setSimulationModeLegacy(flag: flag, bleFileName: bleFileName, sensorFileName: sensorFileName)
+    public func setReplayModeLegacy(flag: Bool, bleFileName: String, sensorFileName: String) {
+        jupiterManager?.setReplayModeLegacy(flag: flag, bleFileName: bleFileName, sensorFileName: sensorFileName)
     }
     
-    public func saveFilesForSimulation(completion: @escaping (Bool) -> Void) {
-        jupiterManager?.saveFilesForSimulation(completion: completion)
+    public func saveFilesForReplay(completion: @escaping (Bool) -> Void) {
+        jupiterManager?.saveFilesForReplay(completion: completion)
     }
     
     // MARK: - Private
@@ -480,6 +528,7 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         isHoldingNaviPositionOnBackwardJump = false
         hasNaviRoute = false
         naviRouteChanged = false
+        pendingRouteChangeWarmupSamples = 0
         feedbackIndex = 0
         feedbackCount = 0
         curNaviCase = .NONE
@@ -585,9 +634,18 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         curPmResultBuffer: [FineLocationTrackingOutput]
     ) -> (naviCase: NaviCase, d: Float, dh: Float)? {
 
-        if curNaviCase == .CASE_3 { return (.CASE_3, 100, 100) }
-        guard naviRouteResultBuffer.count == curPmResultBuffer.count else { return nil }
-        if naviRouteResultBuffer.count < 10 { return (.INIT, 0, 0) }
+        if curNaviCase == .CASE_3 {
+            JupiterLogger.i(tag: "NavigationManager", message: "(isFollowingNavigationRoute) : CASE_3 (sticky) // previous case was CASE_3, awaiting reroute")
+            return (.CASE_3, 100, 100)
+        }
+        guard naviRouteResultBuffer.count == curPmResultBuffer.count else {
+            JupiterLogger.i(tag: "NavigationManager", message: "(isFollowingNavigationRoute) : return nil // buffer size mismatch navi=\(naviRouteResultBuffer.count) pm=\(curPmResultBuffer.count)")
+            return nil
+        }
+        if naviRouteResultBuffer.count < 10 {
+            JupiterLogger.i(tag: "NavigationManager", message: "(isFollowingNavigationRoute) : INIT // insufficient buffer size=\(naviRouteResultBuffer.count) (need >= 10)")
+            return (.INIT, 0, 0)
+        }
 
         let DLOSS_THRESHOLD_15: Float = 15
         let DLOSS_THRESHOLD_45: Float = 45
@@ -598,11 +656,12 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
 
         // 2) 빠른 케이스 결정
         if dAvg <= DLOSS_THRESHOLD_15 {
+            JupiterLogger.i(tag: "NavigationManager", message: "(isFollowingNavigationRoute) : CASE_1 // dAvg=\(dAvg) <= \(DLOSS_THRESHOLD_15) (within tight threshold), dhAvg=\(dhAvg)")
             return (.CASE_1, dAvg, dhAvg)
         }
 
         if dhAvg > DHLOSS_THRESHOLD_45 {
-            JupiterLogger.i(tag: "NavigationManager", message: "(isFollowingNavigationRoute) : CASE_3 // pos & heading error")
+            JupiterLogger.i(tag: "NavigationManager", message: "(isFollowingNavigationRoute) : CASE_3 // dhAvg=\(dhAvg) > \(DHLOSS_THRESHOLD_45) (heading deviation exceeds threshold), dAvg=\(dAvg)")
             return (.CASE_3, dAvg, dhAvg)
         }
 
@@ -619,7 +678,7 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
 
         // 4) "jupiter가 고정인데 navi는 변함" => CASE_2 (기존 로직 유지)
         if isAllSamePmResult && !isAllSameNaviResult {
-            JupiterLogger.i(tag: "NavigationManager", message: "(isFollowingNavigationRoute) : CASE_2 // only pos error jupiter is advanced")
+            JupiterLogger.i(tag: "NavigationManager", message: "(isFollowingNavigationRoute) : CASE_2 // jupiter buffer static while navi advancing (dAvg=\(dAvg), dhAvg=\(dhAvg))")
             return (.CASE_2, dAvg, dhAvg)
         }
 
@@ -639,7 +698,7 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
             return (case23, adaptiveTh, dhOverride)
         }
 
-        JupiterLogger.i(tag: "NavigationManager", message: "(isFollowingNavigationRoute) : CASE_2 or 3 // dSumAvg= \(dAvg)")
+        JupiterLogger.i(tag: "NavigationManager", message: "(isFollowingNavigationRoute) : \(case23) // resolved by decideCase2or3 (dAvg=\(dAvg), dhAvg=\(dhAvg), adaptiveTh=\(adaptiveTh))")
         return (case23, dAvg, dhAvg)
     }
 
@@ -654,16 +713,25 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
 
         var dSum: Float = 0
         var dhSum: Float = 0
+        var sampleLogs: [String] = []
 
         for i in 0..<count {
             let dx = navi[i].x - pm[i].x
             let dy = navi[i].y - pm[i].y
-            dSum += hypotf(dx, dy)
-
-            dhSum += angleDiffDeg(navi[i].heading, pm[i].absolute_heading)
+            let d = hypotf(dx, dy)
+            let dh = angleDiffDeg(navi[i].heading, pm[i].absolute_heading)
+            dSum += d
+            dhSum += dh
+            sampleLogs.append("i=\(i) navi=(x:\(navi[i].x), y:\(navi[i].y), h:\(navi[i].heading)) pm=(x:\(pm[i].x), y:\(pm[i].y), h:\(pm[i].absolute_heading)) d=\(d) dh=\(dh)")
         }
 
-        return (dSum / Float(count), dhSum / Float(count))
+        let dAvg = dSum / Float(count)
+        let dhAvg = dhSum / Float(count)
+
+        JupiterLogger.i(tag: "NavigationManager",
+                        message: "(computeLossAverages) dAvg=\(dAvg) dhAvg=\(dhAvg) count=\(count) // \(sampleLogs.joined(separator: " ; "))")
+
+        return (dAvg, dhAvg)
     }
 
     private func angleDiffDeg(_ a: Float, _ b: Float) -> Float {
@@ -704,11 +772,15 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
                                                 travelingLinkDist: travelingLinkDist,
                                                 shouldCheckEndOfMap: shouldCheckEndOfMap,
                                                 dAvg: dAvg,
-                                                adaptiveTh: &adaptiveTh) else { return (.CASE_3, adaptiveTh, nil) }
-        
+                                                adaptiveTh: &adaptiveTh) else {
+            JupiterLogger.i(tag: "NavigationManager", message: "(decideCase2or3) : CASE_3 // recent landmark data unavailable (cannot evaluate landmark ratio)")
+            return (.CASE_3, adaptiveTh, nil)
+        }
+
         let lmCase = naviCases.landmarkCase
         let distCase = naviCases.distanceCase
         let naviCase: NaviCase = lmCase != .CASE_3 && distCase != .CASE_3 ? .CASE_2 : .CASE_3
+        JupiterLogger.i(tag: "NavigationManager", message: "(decideCase2or3) : \(naviCase) // landmarkCase=\(lmCase), distanceCase=\(distCase), dAvg=\(dAvg), adaptiveTh=\(adaptiveTh) (CASE_3 if either signal is CASE_3)")
         return (naviCase, adaptiveTh, nil)
     }
     
@@ -735,33 +807,30 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         if let distCur = calDistWithRecentPeakLandmarks(fltResult: curPmResult),
            let distNavi = calDistWithRecentPeakLandmarks(fltResult: naviResult) {
             let ratio = distNavi / distCur
-            JupiterLogger.i(tag: "NavigationManager",
-                            message: "isFollowingNavigationRoute: distWithCurPmResult= \(distCur), distWithNaviResult= \(distNavi) // ratio= \(ratio)")
             let ratioTh: Float =  2.5
             if ratio > ratioTh {
                 landmarkCase = .CASE_3
             } else {
                 landmarkCase = .CASE_2
             }
+            JupiterLogger.i(tag: "NavigationManager",
+                            message: "(evaluateNaviCases) landmarkCase=\(landmarkCase) // ratio=\(ratio) (distCur=\(distCur), distNavi=\(distNavi)) vs ratioTh=\(ratioTh)")
         } else {
+            JupiterLogger.i(tag: "NavigationManager", message: "(evaluateNaviCases) landmark evaluation skipped // no recent landmark data")
             return nil
         }
 
-        JupiterLogger.i(tag: "NavigationManager", message: "isFollowingNavigationRoute: shouldCheckEndOfMap= \(shouldCheckEndOfMap)")
-        if (shouldCheckEndOfMap) {
-            updatedAdaptiveTh = max(updatedAdaptiveTh, travelingLinkDist * 0.8)
-        } else {
-            updatedAdaptiveTh = max(updatedAdaptiveTh, travelingLinkDist * 0.5)
-        }
-        JupiterLogger.i(tag: "NavigationManager", message: "isFollowingNavigationRoute: adaptive_th= \(updatedAdaptiveTh)")
-        
+        let linkScale: Float = shouldCheckEndOfMap ? 0.8 : 0.5
+        updatedAdaptiveTh = max(updatedAdaptiveTh, travelingLinkDist * linkScale)
+
         if dAvg > updatedAdaptiveTh {
             distanceCase = .CASE_3
         } else {
             distanceCase = .CASE_2
         }
-        
-        JupiterLogger.i(tag: "NavigationManager", message:"isFollowingNavigationRoute: travelingLinkDist : \(travelingLinkDist) // adaptive_th= \(updatedAdaptiveTh)")
+
+        JupiterLogger.i(tag: "NavigationManager",
+                        message: "(evaluateNaviCases) distanceCase=\(distanceCase) // dAvg=\(dAvg) vs adaptiveTh=\(updatedAdaptiveTh) (base=\(adaptiveTh), travelingLinkDist=\(travelingLinkDist), shouldCheckEndOfMap=\(shouldCheckEndOfMap), linkScale=\(linkScale))")
         return (landmarkCase, distanceCase)
     }
     
