@@ -5,6 +5,10 @@ import TJLabsResource
 import UIKit
 
 public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
+    public func onSimulationData(_ manager: TJLabsResource.TJLabsResourceManager, sectorId: Int, data: [TJLabsResource.SimulationInfo]) {
+        // TODO
+    }
+    
     
     public func onBuildingsData(_ manager: TJLabsResource.TJLabsResourceManager, sectorId: Int, data: [TJLabsResource.BuildingData]) {
         // TODO

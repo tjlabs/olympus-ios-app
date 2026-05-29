@@ -22,6 +22,7 @@ protocol JupiterCalcManagerDelegate: AnyObject {
                     peakIndex: Int?,
                     key: String,
                     level_id: Int)
+    func onSimulationData(_ data: [SimulationInfo])
     func provideTrackingCorrection(mode: UserMode,
                                    userVelocity: UserVelocity,
                                    peakIndex: Int?,
@@ -39,6 +40,7 @@ public protocol JupiterManagerDelegate: AnyObject {
                     peakIndex: Int?,
                     key: String,
                     level_id: Int)
+    func mockTracking(jupiterResult: JupiterResult)
     func provideTrackingCorrection(mode: UserMode,
                                    userVelocity: UserVelocity,
                                    peakIndex: Int?,
@@ -77,6 +79,7 @@ public enum JupiterServiceCode: Int {
     case BLUETOOTH_OFF = 5
     case BLUETOOTH_SCAN_STOP = 6
     case NETWORK_DISCONNECT = 7
+    case GET_FIRST_RESULT = 8
 }
 
 public enum JupiterPhase {
@@ -116,16 +119,56 @@ public struct JupiterResult: Codable {
     }
 }
 
+public struct MockResult: Codable {
+    public var time_ms: Int
+    public var index: Int
+    public var building_name: String
+    public var level_name: String
+    public var jupiter_pos: Position
+    public var navi_pos: Position?
+    public var llh: LLH?
+    public var velocity: Float
+    public var is_vehicle: Bool
+    public var is_indoor: Bool
+    public var validity_flag: Int
+    
+    public init(time_ms: Int, index: Int, building_name: String, level_name: String, jupiter_pos: Position, navi_pos: Position? = nil, llh: LLH? = nil, velocity: Float, is_vehicle: Bool, is_indoor: Bool, validity_flag: Int) {
+        self.time_ms = time_ms
+        self.index = index
+        self.building_name = building_name
+        self.level_name = level_name
+        self.jupiter_pos = jupiter_pos
+        self.navi_pos = navi_pos
+        self.llh = llh
+        self.velocity = velocity
+        self.is_vehicle = is_vehicle
+        self.is_indoor = is_indoor
+        self.validity_flag = validity_flag
+    }
+}
+
 public struct Position: Codable {
     public var x: Float
     public var y: Float
     public var heading: Float
+    
+    public init(x: Float, y: Float, heading: Float) {
+        self.x = x
+        self.y = y
+        self.heading = heading
+    }
 }
 
 public struct LLH: Codable {
     public var lat: Double
     public var lon: Double
-    public var heading: Double
+    public var azimuth: Double
+    
+    public init(lat: Double, lon: Double, azimuth: Double) {
+        self.lat = lat
+        self.lon = lon
+        self.azimuth = azimuth
+    }
 }
 
 // MARK: - JupiterDebugResult

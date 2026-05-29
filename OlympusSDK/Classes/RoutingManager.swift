@@ -219,7 +219,7 @@ class RoutingManager {
         
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
         let input = DirectionsRequest(tenant_user_name: self.tenant_user_name, mobile_time: currentTime, request_type: type, is_vehicle: is_vehicle, origin: from, destination: to, waypoints: waypoints)
-        JupiterLogger.e(tag: "RoutingManager", message: "(requestRouting) : url= \(JupiterNetworkConstants.getCalcDirsURL()), input= \(input)")
+        JupiterLogger.i(tag: "RoutingManager", message: "(requestRouting) : url= \(JupiterNetworkConstants.getCalcDirsURL()), input= \(input)")
         let successRange = 200..<300
         JupiterNetworkManager.shared.postCalcDirs(url: JupiterNetworkConstants.getCalcDirsURL(), input: input, completion: { [self] statusCode, returnedString, inputDirs in
             if successRange.contains(statusCode)  {
@@ -680,13 +680,6 @@ class RoutingManager {
         return self.levelRoutes
     }
 
-    func getPassedPointId(building: String, level: String, x: Float, y: Float) -> Int? {
-        guard let nearestIndex = findNearestRouteIndex(section: nil, building: building, level: level, x: x, y: y) else {
-            return nil
-        }
-        return routes[nearestIndex].passedPointId
-    }
-
     func getTraveledDistance(building: String, level: String, x: Float, y: Float) -> Float? {
         guard let progress = getRouteDistanceProgress(section: nil, building: building, level: level, x: x, y: y) else {
             return nil
@@ -707,24 +700,6 @@ class RoutingManager {
         waypointsForDisplay = []
     }
 
-    func isRouteBackward(_ route: RoutingRoute, comparedTo currentResult: JupiterNaviResult) -> Bool? {
-        guard let candidateProgress = getRouteProgress(section: route.section,
-                                                      building: route.building,
-                                                      level: route.level,
-                                                      x: route.x,
-                                                      y: route.y),
-              let currentProgress = getRouteProgress(section: currentResult.section,
-                                                     building: currentResult.building,
-                                                     level: currentResult.level,
-                                                     x: currentResult.x,
-                                                     y: currentResult.y) else {
-            return nil
-        }
-
-        let progressEpsilon: Float = 0.25
-        return candidateProgress + progressEpsilon < currentProgress
-    }
-    
     func setStartPointInNaviRoute(xyh: [Float]?) {
         guard let xyh = xyh else {
             JupiterLogger.i(tag: "RoutingManager", message: "(setStartPointInNaviRoute) : xyh is nil")
@@ -821,6 +796,53 @@ class RoutingManager {
         }
     }
     
+    func calcNaviRoutResultInMock(jupiterResult: JupiterResult) -> RoutingRoute? {
+        guard let curRoute = curRoute else { return nil }
+        
+        var matchedRoute: RoutingRoute?
+        guard let idx = routeIndex else { return nil }
+        var bestDist: Float = .greatestFiniteMagnitude
+        let maxHeadingDiff: Float = 46.0
+        
+        let newX = jupiterResult.jupiter_pos.x
+        let newY = jupiterResult.jupiter_pos.y
+        let newH = jupiterResult.jupiter_pos.heading
+        
+        for (index, route) in routes.enumerated() {
+            guard index >= idx else { continue }
+            let diffSection = route.section - curRoute.section
+            if diffSection > 1 || diffSection < 0 {
+                continue
+            }
+            
+            let dxr = route.x - newX
+            let dyr = route.y - newY
+            let dist = sqrt(dxr * dxr + dyr * dyr)
+            
+            let hDiff = headingDelta(newH, route.heading)
+            
+            guard hDiff <= maxHeadingDiff else { continue }
+
+            if dist < bestDist {
+                bestDist = dist
+                matchedRoute = route
+            }
+        }
+        if let matchedRoute = matchedRoute {
+            self.curRoute = matchedRoute
+            if !matchedRoute.turnPoint {
+                if matchedRoute.heading == 90 || matchedRoute.heading == 270 {
+                    // X LIMIT
+                    self.curRoute?.y = newY
+                } else if matchedRoute.heading == 0 || matchedRoute.heading == 180 {
+                    // Y LIMIT
+                    self.curRoute?.x = newX
+                }
+            }
+        }
+        return self.curRoute
+    }
+    
     func calcNaviRouteResult(uvd: UserVelocity, jupiterResult: JupiterResult) -> RoutingRoute? {
         guard let curRoute = curRoute else { return nil }
         
@@ -907,6 +929,10 @@ class RoutingManager {
             return nil
         }
 
+        if nearestIndex > routes.count {
+            return nil
+        }
+        
         let nearestRoute = routes[nearestIndex]
         let offsetDistance = distanceBetween(x1: x, y1: y, x2: nearestRoute.x, y2: nearestRoute.y)
 
