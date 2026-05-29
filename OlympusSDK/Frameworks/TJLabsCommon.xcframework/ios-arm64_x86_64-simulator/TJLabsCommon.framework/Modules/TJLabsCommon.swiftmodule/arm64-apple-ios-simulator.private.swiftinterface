@@ -1,6 +1,6 @@
 // swift-interface-format-version: 1.0
 // swift-compiler-version: Apple Swift version 6.2 effective-5.10 (swiftlang-6.2.0.19.9 clang-1700.3.19.1)
-// swift-module-flags: -target arm64-apple-ios15.6-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name TJLabsCommon
+// swift-module-flags: -target arm64-apple-ios15.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name TJLabsCommon
 // swift-module-flags-ignorable:  -formal-cxx-interoperability-mode=off -interface-compiler-version 6.2
 import CoreBluetooth
 import CoreLocation
@@ -88,6 +88,9 @@ public struct ReplayUserVelocity {
   public func initalize()
   public func setDebugOption(flag: Swift.Bool)
   @objc deinit
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func createExportDirectory() -> Foundation.URL?
+  #endif
   public func createFiles(id: Swift.String, os: Swift.String)
   public func getReplayFilesInExports() -> (rfdFiles: [(name: Swift.String, path: Swift.String)], uvdFiles: [(name: Swift.String, path: Swift.String)], eventFiles: [(name: Swift.String, path: Swift.String)])
   @discardableResult
@@ -99,7 +102,9 @@ public struct ReplayUserVelocity {
   public func writeEvent(event: TJLabsCommon.JupiterEvent)
   public func writeRFD(rfd: TJLabsCommon.ReceivedForce)
   public func writeUVD(uvd: TJLabsCommon.UserVelocity, mode: TJLabsCommon.UserMode)
-  public func getServiceStartTime() -> Swift.Int
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func getResultTimeOffset() -> Swift.Int?
+  #endif
 }
 @_hasMissingDesignatedInitializers public class JupiterReplayer {
   public static let shared: TJLabsCommon.JupiterReplayer

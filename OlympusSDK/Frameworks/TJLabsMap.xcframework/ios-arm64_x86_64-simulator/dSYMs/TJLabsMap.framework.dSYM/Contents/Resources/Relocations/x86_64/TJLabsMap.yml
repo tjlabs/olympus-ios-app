@@ -418,16 +418,16 @@ relocations:
   - { offset: 0x8EA58, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap0A10ZoomButtonC5frameACSo6CGRectV_tcfcTo', symObjAddr: 0x650, symBinAddr: 0x21480, symSize: 0x30 }
   - { offset: 0x8EAB7, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap0A10ZoomButtonCfD', symObjAddr: 0x680, symBinAddr: 0x214B0, symSize: 0x30 }
   - { offset: 0x8EBB7, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap0aB7ManagerC6shared_WZ', symObjAddr: 0x0, symBinAddr: 0x21660, symSize: 0xA0 }
-  - { offset: 0x8EBDB, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap0aB7ManagerC6sharedACvpZ', symObjAddr: 0x4240, symBinAddr: 0x31AE8, symSize: 0x0 }
-  - { offset: 0x8EF16, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap0aB7ManagerC6shared_WZ', symObjAddr: 0x0, symBinAddr: 0x21660, symSize: 0xA0 }
-  - { offset: 0x8EF6A, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap0aB7ManagerCMa', symObjAddr: 0xD0, symBinAddr: 0x21730, symSize: 0x20 }
-  - { offset: 0x8EF7E, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap0aB7ManagerCAC0A8Resource0adC8DelegateAAWl', symObjAddr: 0x470, symBinAddr: 0x21A30, symSize: 0x2E }
-  - { offset: 0x8F063, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap0aB7ManagerCfD', symObjAddr: 0xA0, symBinAddr: 0x21700, symSize: 0x30 }
-  - { offset: 0x8F180, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap0aB7ManagerC0A8Resource0adC8DelegateAadEP15onBuildingsData_8sectorId4datayAD0adC0C_SiSayAD08BuildingH0VGtFTW', symObjAddr: 0x100, symBinAddr: 0x21750, symSize: 0x60 }
-  - { offset: 0x8F213, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap0aB7ManagerC0A8Resource0adC8DelegateAadEP17onScaleOffsetData_3key4datayAD0adC0C_SSSaySfGtFTW', symObjAddr: 0x160, symBinAddr: 0x217B0, symSize: 0x80 }
-  - { offset: 0x8F2A3, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap0aB7ManagerC0A8Resource0adC8DelegateAadEP15onPathPixelData_3key4datayAD0adC0C_SSAD0ghI0VtFTW', symObjAddr: 0x1E0, symBinAddr: 0x21830, symSize: 0x80 }
-  - { offset: 0x8F33F, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap0aB7ManagerC0A8Resource0adC8DelegateAadEP11onUnitsData_3key4datayAD0adC0C_SSSayAD04UnitH0VGtFTW', symObjAddr: 0x270, symBinAddr: 0x218B0, symSize: 0x80 }
-  - { offset: 0x8F3E4, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap0aB7ManagerC0A8Resource0adC8DelegateAadEP11onImageData_3key4datayAD0adC0C_SSSo7UIImageCSgtFTW', symObjAddr: 0x320, symBinAddr: 0x21930, symSize: 0x80 }
-  - { offset: 0x8F474, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap0aB7ManagerC0A8Resource0adC8DelegateAadEP7onError_5error3keyyAD0adC0C_AD0dG0OSStFTW', symObjAddr: 0x3D0, symBinAddr: 0x219B0, symSize: 0x80 }
-  - { offset: 0x8F5B5, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap19ResourceBundleClass33_572B0C054790E89B80D1BE89A5A0083FLLCMa', symObjAddr: 0x20, symBinAddr: 0x21A60, symSize: 0x14 }
+  - { offset: 0x8EBDB, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap0aB7ManagerC6sharedACvpZ', symObjAddr: 0x43A8, symBinAddr: 0x31AE8, symSize: 0x0 }
+  - { offset: 0x8EF39, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap0aB7ManagerC6shared_WZ', symObjAddr: 0x0, symBinAddr: 0x21660, symSize: 0xA0 }
+  - { offset: 0x8EF8D, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap0aB7ManagerCMa', symObjAddr: 0xD0, symBinAddr: 0x21730, symSize: 0x20 }
+  - { offset: 0x8EFA1, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap0aB7ManagerCAC0A8Resource0adC8DelegateAAWl', symObjAddr: 0x480, symBinAddr: 0x21A30, symSize: 0x2E }
+  - { offset: 0x8F086, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap0aB7ManagerCfD', symObjAddr: 0xA0, symBinAddr: 0x21700, symSize: 0x30 }
+  - { offset: 0x8F1AA, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap0aB7ManagerC0A8Resource0adC8DelegateAadEP15onBuildingsData_8sectorId4datayAD0adC0C_SiSayAD08BuildingH0VGtFTW', symObjAddr: 0x100, symBinAddr: 0x21750, symSize: 0x60 }
+  - { offset: 0x8F23D, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap0aB7ManagerC0A8Resource0adC8DelegateAadEP17onScaleOffsetData_3key4datayAD0adC0C_SSSaySfGtFTW', symObjAddr: 0x160, symBinAddr: 0x217B0, symSize: 0x80 }
+  - { offset: 0x8F2CD, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap0aB7ManagerC0A8Resource0adC8DelegateAadEP15onPathPixelData_3key4datayAD0adC0C_SSAD0ghI0VtFTW', symObjAddr: 0x1E0, symBinAddr: 0x21830, symSize: 0x80 }
+  - { offset: 0x8F369, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap0aB7ManagerC0A8Resource0adC8DelegateAadEP11onUnitsData_3key4datayAD0adC0C_SSSayAD04UnitH0VGtFTW', symObjAddr: 0x270, symBinAddr: 0x218B0, symSize: 0x80 }
+  - { offset: 0x8F40E, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap0aB7ManagerC0A8Resource0adC8DelegateAadEP11onImageData_3key4datayAD0adC0C_SSSo7UIImageCSgtFTW', symObjAddr: 0x320, symBinAddr: 0x21930, symSize: 0x80 }
+  - { offset: 0x8F49E, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap0aB7ManagerC0A8Resource0adC8DelegateAadEP7onError_5error3keyyAD0adC0C_AD0dG0OSStFTW', symObjAddr: 0x3E0, symBinAddr: 0x219B0, symSize: 0x80 }
+  - { offset: 0x8F5DF, size: 0x8, addend: 0x0, symName: '_$s9TJLabsMap19ResourceBundleClass33_572B0C054790E89B80D1BE89A5A0083FLLCMa', symObjAddr: 0x20, symBinAddr: 0x21A60, symSize: 0x14 }
 ...

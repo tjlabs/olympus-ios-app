@@ -1,6 +1,6 @@
 // swift-interface-format-version: 1.0
 // swift-compiler-version: Apple Swift version 6.2 effective-5.10 (swiftlang-6.2.0.19.9 clang-1700.3.19.1)
-// swift-module-flags: -target arm64-apple-ios16.6-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name TJLabsResource
+// swift-module-flags: -target arm64-apple-ios15.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name TJLabsResource
 // swift-module-flags-ignorable:  -formal-cxx-interoperability-mode=off -interface-compiler-version 6.2
 import Foundation
 import Swift
@@ -26,6 +26,7 @@ public protocol TJLabsResourceManagerDelegate : AnyObject {
   func onWardsData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, data: [TJLabsResource.LevelWard])
   func onAffineParam(_ manager: TJLabsResource.TJLabsResourceManager, data: TJLabsResource.WGS84Transform)
   func onLandmarkData(_ manager: TJLabsResource.TJLabsResourceManager, key: Swift.String, data: [Swift.String : TJLabsResource.LandmarkData])
+  func onSimulationData(_ manager: TJLabsResource.TJLabsResourceManager, sectorId: Swift.Int, data: [TJLabsResource.SimulationInfo])
   func onError(_ manager: TJLabsResource.TJLabsResourceManager, error: TJLabsResource.ResourceError, key: Swift.String)
 }
 public enum ResourceError {
@@ -42,6 +43,7 @@ public enum ResourceError {
   case Wards
   case Affine
   case Landmark
+  case Simulation
   public static func == (a: TJLabsResource.ResourceError, b: TJLabsResource.ResourceError) -> Swift.Bool
   public func hash(into hasher: inout Swift.Hasher)
   public var hashValue: Swift.Int {
@@ -93,6 +95,7 @@ public struct SectorBundle : Swift.Codable {
   public let defaultPosition: TJLabsResource.DefaultPosition?
   public let wgs84Transform: TJLabsResource.WGS84Transform?
   public let buildings: [TJLabsResource.Building]
+  public let simulations: [TJLabsResource.SimulationInfo]
   public func encode(to encoder: any Swift.Encoder) throws
   public init(from decoder: any Swift.Decoder) throws
 }
@@ -151,6 +154,18 @@ public struct Level : Swift.Codable {
   #endif
   public init(from decoder: any Swift.Decoder) throws
   public func encode(to encoder: any Swift.Encoder) throws
+}
+public struct SimulationInfo : Swift.Codable {
+  public let is_vehicle: Swift.Bool
+  public let items: [TJLabsResource.SimulationItem]
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct SimulationItem : Swift.Codable {
+  public let name: Swift.String
+  public let url: Swift.String
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
 }
 public struct BuildingData : Swift.Codable {
   public let id: Swift.Int
