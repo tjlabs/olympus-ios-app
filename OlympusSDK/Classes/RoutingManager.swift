@@ -59,7 +59,7 @@ class RoutingManager {
     private var isRequesting: Bool = false
     private var graphMode: UserMode = .MODE_PEDESTRIAN
     
-    private var routesForDisplay = [(String, String, Int, Float, Float)]()
+    private var routesForDisplay = [(String, String, Float, Float)]()
     private var waypointsForDisplay = [[Double]]()
     private var levelRoutes = [NavigationLevelRoute]()
     
@@ -225,7 +225,8 @@ class RoutingManager {
             if successRange.contains(statusCode)  {
                 if let decoded = decodeCalcDirs(from: returnedString) {
                     self.naviDestination = end
-                    completion(RoutingResult(code: statusCode, request_id: decoded.request_id, routes: decoded.routes, total_distance: decoded.total_distance), nil)
+                    let route = Route(origin: decoded.origin, destination: decoded.destination, waypoints: decoded.waypoints, segments: decoded.segments, distance: decoded.distance)
+                    completion(RoutingResult(code: statusCode, request_id: decoded.request_id, route: route), nil)
                 } else {
                     JupiterLogger.e(tag: "RoutingManager", message: "(requestRouting) : fail decoding")
                     completion(nil, .serverResponse)
@@ -237,16 +238,22 @@ class RoutingManager {
         })
     }
     
-    func setRoutingRoutes(routes: [Route]) {
-        if routes.isEmpty { return }
-        let route = routes[0]
-        
+    func setRoutingRoutes(routes: Route) {
         var buildingOrder = [String]()
         var levelOrder = [String]()
-        var nodeOrder = [Int]()
         var order = [[Float]]()
+        var headingHints = [Float?]()
         
-        let start = route.origin
+        self.routes = [RoutingRoute]()
+        self.routeNodeData = [Int: NodeData]()
+        self.routeSectionData = [Int: SectionRange]()
+        self.routeIndex = nil
+        self.curRoute = nil
+        self.isRequesting = false
+        self.routesForDisplay = [(String, String, Float, Float)]()
+        self.levelRoutes = [NavigationLevelRoute]()
+        
+        let start = routes.origin
         guard let start_building_id = getBuildingIdHasLevelId(level_id: start.level_id),
               let start_building_name = getBuildingNameWithId(building_id: start_building_id),
               let start_level_name = getLevelNameWithId(level_id: start.level_id) else {
@@ -255,42 +262,27 @@ class RoutingManager {
         }
         buildingOrder.append(start_building_name)
         levelOrder.append(start_level_name)
-        nodeOrder.append(-1)
         let startCoord: [Float] = [Float(start.x), Float(start.y)]
         order.append(startCoord)
-        
-        for n in route.nodes {
-            guard let node_building_id = getBuildingIdHasLevelId(level_id: n.level_id),
-                  let node_building_name = getBuildingNameWithId(building_id: node_building_id),
-                  let node_level_name = getLevelNameWithId(level_id: n.level_id) else {
+        headingHints.append(Float(start.absolute_heading))
+
+        for s in routes.segments {
+            guard let seg_building_id = getBuildingIdHasLevelId(level_id: s.level_id),
+                  let seg_building_name = getBuildingNameWithId(building_id: seg_building_id),
+                  let seg_level_name = getLevelNameWithId(level_id: s.level_id) else {
                 JupiterLogger.e(tag: "RoutingManager", message: "return first")
                 return
             }
-            guard let nodeData = PathMatcher.shared.getNodeData(sectorId: sectorId,
-                                                                building: node_building_name,
-                                                                level: node_level_name,
-            mode: graphMode) else {
-                JupiterLogger.e(tag: "RoutingManager", message: "return second")
-                return
+            for guide in s.guides {
+                let coords: [Float] = [Float(guide.x), Float(guide.y)]
+                buildingOrder.append(seg_building_name)
+                levelOrder.append(seg_level_name)
+                order.append(coords)
+                headingHints.append(Float(guide.out_heading))
             }
-            guard let matchedNode = nodeData[n.number] else {
-                JupiterLogger.e(tag: "RoutingManager", message: "matchedNode fail with \(n.number)")
-                return
-            }
-            if self.routeNodeData.isEmpty {
-                self.routeNodeData = nodeData
-            }
-            
-            let coords = matchedNode.coords
-            if coords.count != 2 { continue }
-            
-            buildingOrder.append(node_building_name)
-            levelOrder.append(node_level_name)
-            nodeOrder.append(n.number)
-            order.append(coords)
         }
         
-        let end = route.destination
+        let end = routes.destination
         guard let end_building_id = getBuildingIdHasLevelId(level_id: end.level_id),
               let end_building_name = getBuildingNameWithId(building_id: end_building_id),
               let end_level_name = getLevelNameWithId(level_id: end.level_id) else {
@@ -299,14 +291,20 @@ class RoutingManager {
         }
         buildingOrder.append(end_building_name)
         levelOrder.append(end_level_name)
-        nodeOrder.append(-1)
         let endCoord: [Float] = [Float(end.x), Float(end.y)]
         order.append(endCoord)
+        headingHints.append(nil)
         
         JupiterLogger.e(tag: "RoutingManager", message: "(requestRouting) start:\(start) -> end:\(end)")
         
-        generateNavigationRoute(bOrder: buildingOrder, lOrder: levelOrder, nodeOrder: nodeOrder, coordOrder: order) // display
-        generateNavigationRoute(bOrder: buildingOrder, lOrder: levelOrder, nodeOrder: nodeOrder, order: order)
+        if buildingOrder.count != levelOrder.count || levelOrder.count != order.count || order.count != headingHints.count {
+            JupiterLogger.e(tag: "RoutingManager", message: "(setRoutingRoutes) invalid routing orders count")
+            delegate?.isNavigationRouteFailed(.serverResponse)
+            return
+        }
+        
+        generateNavigationRouteForDisplay(bOrder: buildingOrder, lOrder: levelOrder, coordOrder: order)
+        generateNavigationRoute(bOrder: buildingOrder, lOrder: levelOrder, order: order, headingHints: headingHints)
         let sectionMap = makeSectionMap(routes: self.routes)
         self.routeSectionData = sectionMap
         self.levelRoutes = makeLevelRoutes(routes: &self.routes)
@@ -321,16 +319,22 @@ class RoutingManager {
         self.curRoute = nil
         self.isRequesting = false
         
-        self.routesForDisplay = [(String, String, Int, Float, Float)]()
+        self.routesForDisplay = [(String, String, Float, Float)]()
         self.levelRoutes = [NavigationLevelRoute]()
 //        self.waypointsForDisplay = [[Double]]()
     }
     
-    func generateNavigationRoute(bOrder: [String], lOrder: [String], nodeOrder: [Int], order: [[Float]]) {
+    func generateNavigationRoute(bOrder: [String], lOrder: [String], order: [[Float]], headingHints: [Float?]) {
         // order: [[x,y], [x,y], ...]
         // Build a dense polyline by walking each segment with step=1.0 (same unit as x/y).
         // Output routes as [[x, y, headingDeg]] where headingDeg is 0~360 from +X axis (atan2(dy, dx)).
         guard order.count >= 2 else {
+            delegate?.isNavigationRouteFailed(.serverResponse)
+            return
+        }
+        guard bOrder.count == lOrder.count,
+              lOrder.count == order.count,
+              order.count == headingHints.count else {
             delegate?.isNavigationRouteFailed(.serverResponse)
             return
         }
@@ -346,6 +350,29 @@ class RoutingManager {
         let headingMatchThreshold: Float = 5.0 // degrees
         var curSectionRouteStart = 0
         
+        func finalizeSection(sectionHeading: Float, anchorBuilding: String, anchorLevel: String, anchorCoord: [Float], shouldAdvanceSection: Bool) {
+            let sectionPassable = isSectionPassable(sectionHeading: sectionHeading,
+                                                    building: anchorBuilding,
+                                                    level: anchorLevel,
+                                                    x: anchorCoord[0],
+                                                    y: anchorCoord[1],
+                                                    headingThreshold: headingMatchThreshold)
+            JupiterLogger.i(tag: "RoutingManager", message: "(isSectionPassable) : [prevHeading:\(sectionHeading), building:\(anchorBuilding), level:\(anchorLevel), x:\(anchorCoord[0]), y:\(anchorCoord[1]), headingThreshold:\(headingMatchThreshold)] -> sectionPassable= \(sectionPassable)")
+            for idx in curSectionRouteStart..<denseNaviRoute.count {
+                var data = denseNaviRoute[idx]
+                data.passable = sectionPassable
+                denseNaviRoute[idx] = data
+            }
+            if var last = denseNaviRoute.last {
+                last.turnPoint = true
+                denseNaviRoute[denseNaviRoute.count - 1] = last
+            }
+            curSectionRouteStart = denseNaviRoute.count
+            if shouldAdvanceSection {
+                sectionCount += 1
+            }
+        }
+        
         for i in 0..<(order.count - 1) {
             let building = bOrder[i]
             let level = lOrder[i]
@@ -359,15 +386,29 @@ class RoutingManager {
             let dx = bx - ax
             let dy = by - ay
             let dist = sqrt(dx * dx + dy * dy)
+            
+            var didStartNewSection = false
+            if let prevRoute = denseNaviRoute.last {
+                let isLevelChanged = prevRoute.building != building || prevRoute.level != level
+                if isLevelChanged {
+                    finalizeSection(sectionHeading: prevRoute.heading,
+                                    anchorBuilding: prevRoute.building,
+                                    anchorLevel: prevRoute.level,
+                                    anchorCoord: [ax, ay],
+                                    shouldAdvanceSection: true)
+                    didStartNewSection = true
+                }
+            }
 
             // If the segment is too small, just append the end point with previous heading if possible.
             if dist <= 1e-6 {
-                let fallbackHeading: Float = denseNaviRoute.last?.heading ?? 0.0
+                let fallbackHeading: Float = headingHints[i + 1] ?? headingHints[i] ?? denseNaviRoute.last?.heading ?? 0.0
                 if denseNaviRoute.isEmpty {
                     let naviRoute = RoutingRoute(building: building, level: level, section: sectionCount, turnPoint: false, x: ax, y: ay, heading: fallbackHeading)
                     denseNaviRoute.append(naviRoute)
                 }
-                if let last = denseNaviRoute.last, last.x != bx || last.y != by {
+                if let last = denseNaviRoute.last,
+                   last.x != bx || last.y != by || last.building != building || last.level != level {
                     let naviRoute = RoutingRoute(building: building, level: level, section: sectionCount, turnPoint: false, x: bx, y: by, heading: fallbackHeading)
                     denseNaviRoute.append(naviRoute)
                 }
@@ -380,27 +421,15 @@ class RoutingManager {
             
             // Detect a turn at the shared waypoint between segments.
             // The previous segment's end point is already the last element in `denseNaviRoute`.
-            if !denseNaviRoute.isEmpty {
+            if !didStartNewSection && !denseNaviRoute.isEmpty {
                 let prevHeading = denseNaviRoute[denseNaviRoute.count - 1].heading
                 let dH = headingDelta(prevHeading, headingDeg)
                 if dH > turnHeadingThreshold {
-                    var last = denseNaviRoute[denseNaviRoute.count - 1]
-                    last.turnPoint = true
-                    denseNaviRoute[denseNaviRoute.count - 1] = last
-                    
-                    let curSectionNodeNum: Int = nodeOrder[i]
-                    let sectionPassable = isSectionPassable(sectionHeading: prevHeading,
-                                                            nodeNum: curSectionNodeNum,
-                                                            headingThreshold: headingMatchThreshold)
-                    JupiterLogger.i(tag: "RoutingManager", message: "(isSectionPassable) : [prevHeading:\(prevHeading), curSectionNodeNum:\(curSectionNodeNum), headingThreshold:\(headingMatchThreshold)] -> sectionPassable= \(sectionPassable)")
-                    for idx in curSectionRouteStart..<denseNaviRoute.count {
-                        var data = denseNaviRoute[idx]
-                        data.passable = sectionPassable
-                        denseNaviRoute[idx] = data
-                    }
-                    curSectionRouteStart = denseNaviRoute.count
-
-                    sectionCount += 1
+                    finalizeSection(sectionHeading: prevHeading,
+                                    anchorBuilding: building,
+                                    anchorLevel: level,
+                                    anchorCoord: [ax, ay],
+                                    shouldAdvanceSection: true)
                 }
             }
 
@@ -426,7 +455,8 @@ class RoutingManager {
             }
 
             // Ensure we end exactly at the waypoint.
-            if let last = denseNaviRoute.last, last.x != bx || last.y != by {
+            if let last = denseNaviRoute.last,
+               last.x != bx || last.y != by || last.building != building || last.level != level {
                 let naviRoute = RoutingRoute(building: building, level: level, section: sectionCount, turnPoint: false, x: bx, y: by, heading: headingDeg)
                 denseNaviRoute.append(naviRoute)
             } else {
@@ -441,18 +471,12 @@ class RoutingManager {
         }
         
         if !denseNaviRoute.isEmpty {
-            let lastHeading = denseNaviRoute[denseNaviRoute.count-1].heading
-            let curSectionNodeNum = nodeOrder[nodeOrder.count-1]
-            let sectionPassable = isSectionPassable(sectionHeading: lastHeading, nodeNum: curSectionNodeNum, headingThreshold: headingMatchThreshold)
-            for idx in curSectionRouteStart..<denseNaviRoute.count {
-                var data = denseNaviRoute[idx]
-                data.passable = sectionPassable
-                denseNaviRoute[idx] = data
-            }
-            
-            var lastNaviRoute = denseNaviRoute[denseNaviRoute.count-1]
-            lastNaviRoute.turnPoint = true
-            denseNaviRoute[denseNaviRoute.count-1] = lastNaviRoute
+            let lastRoute = denseNaviRoute[denseNaviRoute.count - 1]
+            finalizeSection(sectionHeading: lastRoute.heading,
+                            anchorBuilding: lastRoute.building,
+                            anchorLevel: lastRoute.level,
+                            anchorCoord: [lastRoute.x, lastRoute.y],
+                            shouldAdvanceSection: false)
         }
         
         self.routes = denseNaviRoute
@@ -647,8 +671,8 @@ class RoutingManager {
         return nil
     }
     
-    private func isSectionPassable(sectionHeading: Float, nodeNum: Int, headingThreshold: Float) -> Bool {
-        guard let node = routeNodeData[nodeNum] else { return true }
+    private func isSectionPassable(sectionHeading: Float, building: String, level: String, x: Float, y: Float, headingThreshold: Float) -> Bool {
+        guard let node = getMatchedNode(building: building, level: level, x: x, y: y) else { return true }
         for dir in node.directions {
             if (dir.is_end && headingDelta(sectionHeading, dir.heading) <= headingThreshold) {
                 return false
@@ -657,22 +681,39 @@ class RoutingManager {
         return true
     }
     
+    private func getMatchedNode(building: String, level: String, x: Float, y: Float) -> NodeData? {
+        guard let nodeData = PathMatcher.shared.getNodeData(sectorId: sectorId,
+                                                            building: building,
+                                                            level: level,
+                                                            mode: graphMode) else {
+            return nil
+        }
+        let tolerance: Float = 0.5
+        for (_, node) in nodeData {
+            guard node.coords.count == 2 else { continue }
+            if abs(node.coords[0] - x) <= tolerance && abs(node.coords[1] - y) <= tolerance {
+                return node
+            }
+        }
+        return nil
+    }
+    
     func getRoutingRoutes() -> [RoutingRoute] {
         return self.routes
     }
     
-    func generateNavigationRoute(bOrder: [String], lOrder: [String], nodeOrder: [Int], coordOrder: [[Float]]) {
-        JupiterLogger.i(tag: "RoutingManager", message: "(generateNavigationRoute) : bOrder.count= \(bOrder.count), lOrder.count= \(lOrder.count), nodeOrder.count= \(nodeOrder.count), coordOrder.count= \(coordOrder.count)")
-        if bOrder.count != lOrder.count || lOrder.count != nodeOrder.count || nodeOrder.count != coordOrder.count { return }
+    func generateNavigationRouteForDisplay(bOrder: [String], lOrder: [String], coordOrder: [[Float]]) {
+        JupiterLogger.i(tag: "RoutingManager", message: "(generateNavigationRouteForDisplay) : bOrder.count= \(bOrder.count), lOrder.count= \(lOrder.count), coordOrder.count= \(coordOrder.count)")
+        if bOrder.count != lOrder.count || lOrder.count != coordOrder.count { return }
         
         for i in 0..<bOrder.count {
-            let route = (bOrder[i], lOrder[i], nodeOrder[i], coordOrder[i][0], coordOrder[i][1])
+            let route = (bOrder[i], lOrder[i], coordOrder[i][0], coordOrder[i][1])
             self.routesForDisplay.append(route)
-            JupiterLogger.i(tag: "RoutingManager", message: "(generateNavigationRoute) routeForDisplay [b:\(route.0), l:\(route.1), node:\(route.2), x:\(route.3), y:\(route.4)]")
+            JupiterLogger.i(tag: "RoutingManager", message: "(generateNavigationRouteForDisplay) routeForDisplay [b:\(route.0), l:\(route.1), x:\(route.2), y:\(route.3)]")
         }
     }
     
-    func getNaviRoutesForDisplay() -> [(String, String, Int, Float, Float)] {
+    func getNaviRoutesForDisplay() -> [(String, String, Float, Float)] {
         return self.routesForDisplay
     }
 

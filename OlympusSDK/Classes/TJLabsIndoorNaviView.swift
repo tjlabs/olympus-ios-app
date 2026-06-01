@@ -79,10 +79,10 @@ class TJLabsIndoorNaviView: UIView, TJLabsNaviViewDelegate, NavigationManagerDel
         }
     }
     
-    func isNavigationRouteChanged(_ routes: [(String, String, Int, Float, Float)]) {
+    func isNavigationRouteChanged(_ routes: [(String, String, Float, Float)]) {
         JupiterLogger.i(tag: "TJLabsIndoorNaviView", message: "route len= \(routes.count)")
         JupiterLogger.i(tag: "TJLabsIndoorNaviView", message: "routes= \(routes)")
-        naviView.setNaviRoutes(routes: routes)
+//        naviView.setNaviRoutes(routes: routes)
         isNaviRouteRendered = false
     }
     

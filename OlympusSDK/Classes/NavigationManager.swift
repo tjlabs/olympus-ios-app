@@ -12,7 +12,7 @@ public protocol NavigationManagerDelegate: AnyObject {
     
     func isUserArrived()
     func isUserGuidanceOut()
-    func isNavigationRouteChanged(_ routes: [(String, String, Int, Float, Float)])
+    func isNavigationRouteChanged(_ routes: [(String, String, Float, Float)])
     func isNavigationRouteFailed(_ reason: NavigationRouteFailureReason)
     func isWaypointChanged(_ waypoints: [[Double]])
 }
@@ -36,8 +36,8 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
             routingManager?.requestRouting(type: .INITIAL, start: from, end: to, is_vehicle: true, completion: { [self] routingResult, failureReason in
                 if let result = routingResult {
                     JupiterLogger.i(tag: "NavigationManager", message: "(requestRouting) routingResult= \(result)")
-                    updateRouteInfo(requestId: result.request_id, totalDistance: result.total_distance)
-                    routingManager?.setRoutingRoutes(routes: result.routes)
+                    updateRouteInfo(requestId: result.request_id, totalDistance: result.route.distance)
+                    routingManager?.setRoutingRoutes(routes: result.route)
                 } else {
                     JupiterLogger.i(tag: "NavigationManager", message: "(requestRouting) routingResult is nil, failureReason=\(failureReason?.rawValue ?? "nil")")
                     resetRouteInfo()
@@ -282,8 +282,8 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         routingManager?.requestRouting(type: .REROUTE, start: from, end: to, is_vehicle: self.isVehicle, completion: { [self] routingResult, failureReason in
             if let result = routingResult {
                 JupiterLogger.i(tag: "NavigationManager", message: "(requestRouting) routingResult= \(result)")
-                updateRouteInfo(requestId: result.request_id, totalDistance: result.total_distance)
-                routingManager?.setRoutingRoutes(routes: result.routes)
+                updateRouteInfo(requestId: result.request_id, totalDistance: result.route.distance)
+                routingManager?.setRoutingRoutes(routes: result.route)
             } else {
                 JupiterLogger.i(tag: "NavigationManager", message: "(requestRouting) routingResult is nil")
                 resetRouteInfo()
@@ -437,7 +437,7 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
             if let routingResult = result {
                 self.naviMode = true
                 self.naviDestination = end
-                self.routingManager?.setRoutingRoutes(routes: routingResult.routes)
+                self.routingManager?.setRoutingRoutes(routes: routingResult.route)
                 levelRoutes = self.routingManager?.getLevelRoutes() ?? []
             }
             completion(result, levelRoutes, failureReason)

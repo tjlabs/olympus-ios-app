@@ -265,4 +265,65 @@ class JupiterNetworkManager {
             self.performRequest(request: request, session: session, input: input, completion: completion)
         }
     }
+    
+    // MARK: - LSE
+//    func postLSE(url: String, input: LocationRequestPayload, completion: @escaping (Int, String, LocationRequestPayload) -> Void) {
+//        guard let clientSecret = Bundle.main.nonEmptyInfoDictionaryValue(forKey: "LSE_CLIENT_SECRET") else {
+//            completion(406, "Missing LSE_CLIENT_SECRET in Info.plist", input)
+//            return
+//        }
+//
+//        guard let body = encodeJson(input) else {
+//            completion(406, "Failed to encode request body", input)
+//            return
+//        }
+//
+//        makeRequest(
+//            url: url,
+//            method: "POST",
+//            body: body,
+//            additionalHeaders: ["x-client-secret": clientSecret]
+//        ) { request in
+//            guard let request = request else {
+//                DispatchQueue.main.async {
+//                    completion(406, "Invalid URL or failed to get token", input)
+//                }
+//                return
+//            }
+//
+//            let session = self.mrSessions[self.mrSessionCount % self.mrSessions.count]
+//            self.mrSessionCount += 1
+//
+//            self.performRequest(request: request, session: session, input: input, completion: completion)
+//        }
+//    }
+//
+//    func postLSEWithoutToken(url: String, input: LocationRequestPayload, completion: @escaping (Int, String, LocationRequestPayload) -> Void) {
+//        guard let clientSecret = Bundle.main.nonEmptyInfoDictionaryValue(forKey: "LSE_CLIENT_SECRET") else {
+//            completion(406, "Missing LSE_CLIENT_SECRET in Info.plist", input)
+//            return
+//        }
+//
+//        guard let requestURL = URL(string: url) else {
+//            completion(406, "Invalid URL", input)
+//            return
+//        }
+//
+//        guard let body = encodeJson(input) else {
+//            completion(406, "Failed to encode request body", input)
+//            return
+//        }
+//
+//        var request = URLRequest(url: requestURL)
+//        request.httpMethod = "POST"
+//        request.httpBody = body
+//        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+//        request.setValue(clientSecret, forHTTPHeaderField: "x-client-secret")
+//        request.setValue("\(body.count)", forHTTPHeaderField: "Content-Length")
+//
+//        let session = self.mrSessions[self.mrSessionCount % self.mrSessions.count]
+//        self.mrSessionCount += 1
+//
+//        self.performRequest(request: request, session: session, input: input, completion: completion)
+//    }
 }

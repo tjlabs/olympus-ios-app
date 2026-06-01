@@ -43,24 +43,40 @@ enum IndoorResultMode {
 public struct Route: Codable {
     let origin: Origin
     let destination: Point
-    let nodes: [RouteNode]
+    let waypoints: [Point]
+    let segments: [RouteSegment]
+//    let nodes: [RouteNode]
     let distance: Int
 }
 
-public struct RouteNode: Codable {
-    let level_id: Int
-    let x: Int
-    let y: Int
-    let number: Int
-    let out_heading: Int?
-}
+//public struct RouteNode: Codable {
+//    let level_id: Int
+//    let x: Int
+//    let y: Int
+//    let number: Int
+//    let out_heading: Int?
+//}
 
 struct DirectionsResponse: Codable {
     let request_id: String
-    let routes: [Route]
-    let total_distance: Int
+    let origin: Origin
+    let destination: Point
+    let waypoints: [Point]
+    let segments: [RouteSegment]
+    let distance: Int
 }
 
+public struct RouteSegment: Codable {
+    let level_id :Int
+    let guides: [RouteGuide]
+    let distance: Int
+}
+
+public struct RouteGuide: Codable {
+    let x: Int
+    let y: Int
+    let out_heading: Int
+}
 
 public struct Point: Codable {
     public let level_id: Int
@@ -116,8 +132,7 @@ public struct RoutingStart: Codable {
 public struct RoutingResult: Codable {
     public let code: Int
     public let request_id: String
-    public let routes: [Route]
-    public let total_distance: Int
+    public let route: Route
 }
 
 public enum NavigationRouteFailureReason: String, Codable {
