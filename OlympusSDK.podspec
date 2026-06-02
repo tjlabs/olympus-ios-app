@@ -18,7 +18,8 @@ TODO: Add long description of the pod here.
   s.static_framework = true
   s.source_files = 'OlympusSDK/Classes/**/*'
   s.resource_bundles = {
-    'OlympusAssets' => ['OlympusSDK/Assets/**/*']
+    'OlympusAssets' => ['OlympusSDK/Assets/**/*'],
+    'OlympusConfiguration' => ['OlympusSDK/Resources/**/*']
   }
   
   s.vendored_frameworks = 'OlympusSDK/Frameworks/*.xcframework'

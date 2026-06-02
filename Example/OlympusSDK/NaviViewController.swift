@@ -89,8 +89,7 @@ class NaviViewController: UIViewController, NavigationManagerDelegate, TJLabsNav
         }
     }
     
-    func isNavigationRouteChanged(_ routes: [(String, String, Int, Float, Float)]) {
-        naviView.setNaviRoutes(routes: routes)
+    func isNavigationRouteChanged(_ routes: [(String, String, Float, Float)]) {
         if isGuidanceOutReported {
             isNaviRouteRendered = false
             isGuidanceOutReported = false
@@ -99,7 +98,7 @@ class NaviViewController: UIViewController, NavigationManagerDelegate, TJLabsNav
         }
     }
     
-    func isNavigationRouteFailed() {
+    func isNavigationRouteFailed(_ reason: OlympusSDK.NavigationRouteFailureReason) {
         // TODO
     }
     
@@ -185,7 +184,7 @@ class NaviViewController: UIViewController, NavigationManagerDelegate, TJLabsNav
         naviView.delegate = self
         
 //        serviceManager?.setNaviDestination(dest: Point(level_id: 52, x: 335, y: 0))
-        serviceManager?.setSimulationMode(flag: true, rfdFileName: "Rfd1.json", uvdFileName: "Uvd1.json", eventFileName: "Event1.json")
+        serviceManager?.setReplayMode(flag: true, rfdFileName: "Rfd1.json", uvdFileName: "Uvd1.json", eventFileName: "Event1.json")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_251013_songdo_test01_ent1.csv", sensorFileName: "sensor_251013_songdo_test01_ent1.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_03_0310.csv", sensorFileName: "sensor_coex_03_0310.csv")
 //        serviceManager?.setSimulationModeLegacy(flag: true, bleFileName: "ble_coex_02_0303.csv", sensorFileName: "sensor_coex_02_0303.csv")
@@ -257,7 +256,7 @@ class NaviViewController: UIViewController, NavigationManagerDelegate, TJLabsNav
             })
         }
         
-        serviceManager?.saveFilesForSimulation(completion: { [self] isSuccess in
+        serviceManager?.saveFilesForReplay(completion: { [self] isSuccess in
             DispatchQueue.main.async { [self] in
                 saveButton.isHidden = true
                 saveButton.isUserInteractionEnabled = true

@@ -355,7 +355,7 @@ public class JupiterManager: JupiterCalcManagerDelegate, MockResultDelegate {
     }
     
     private func makeJupiterCalcManager() -> JupiterCalcManager {
-        let calcManager = JupiterCalcManager(cloud: cloud, region: region, id: id, sectorId: sectorId)
+        let calcManager = JupiterCalcManager(cloud: cloud, region: region, id: id, sectorId: sectorId, tenantUserName: tenantUserName)
         calcManager.debugOption = debugOption
         calcManager.delegate = self
         return calcManager

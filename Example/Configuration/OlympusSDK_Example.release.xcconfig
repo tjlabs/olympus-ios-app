@@ -1,0 +1,6 @@
+#include "../Pods/Target Support Files/Pods-OlympusSDK_Example/Pods-OlympusSDK_Example.release.xcconfig"
+
+TJLABS_AUTH_ACCESS_KEY =
+TJLABS_AUTH_SECRET_ACCESS_KEY =
+
+#include? "ExampleSecrets.local.xcconfig"

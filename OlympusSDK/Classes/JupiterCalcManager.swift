@@ -4,7 +4,8 @@ import simd
 import TJLabsCommon
 import TJLabsResource
 
-class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsResourceManagerDelegate, BuildingLevelChangerDelegate, StateManagerDelegate {
+class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsResourceManagerDelegate, BuildingLevelChangerDelegate, StateManagerDelegate, LSEManagerDelegate {
+    
     // MARK: - Classes
     private var tjlabsResourceManager = TJLabsResourceManager()
     
@@ -18,6 +19,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     private var landmarkTagger: LandmarkTagger?
     private var solutionEstimator: SolutionEstimator?
     private var stateManager: JupiterStateManager?
+    private var lseManager: LSEManager?
     
     // MARK: - Delegate
     weak var delegate: JupiterCalcManagerDelegate?
@@ -27,8 +29,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     var cloud: String = JupiterCloud.AWS.rawValue
     var region: String = JupiterRegion.KOREA.rawValue
     var sectorId: Int = 0
-    
     var os: String = JupiterNetworkConstants.OPERATING_SYSTEM
+    var tenantUserName: String = ""
     
     // MARK: - Generator
     private var rfdGenerator: RFDGenerator?
@@ -93,11 +95,12 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     var debug_navi_xyh: [Float] = [0, 0, 0]
     
     // MARK: - init & deinit
-    init(cloud: String, region: String, id: String, sectorId: Int) {
+    init(cloud: String, region: String, id: String, sectorId: Int, tenantUserName: String) {
         self.id = id
         self.cloud = cloud
         self.region = region
         self.sectorId = sectorId
+        self.tenantUserName = tenantUserName
         
         self.entManager = EntranceManager(sectorId: sectorId)
         self.buildingLevelChanger = BuildingLevelChanger(sectorId: sectorId)
@@ -106,12 +109,14 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         self.landmarkTagger = LandmarkTagger(sectorId: sectorId)
         self.solutionEstimator = SolutionEstimator(sectorId: sectorId)
         self.stateManager = JupiterStateManager()
+        self.lseManager = LSEManager(sectorId: sectorId, resourceManager: self.tjlabsResourceManager)
         
         peakDetector.setInnerWardIds(ids: self.entManager!.getEntInnermostWardIds())
         
         tjlabsResourceManager.delegate = self
         buildingLevelChanger?.delegate = self
         stateManager?.delegate = self
+        lseManager?.delegate = self
     }
     
     deinit {
@@ -191,7 +196,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         uvdGenerator?.setUserMode(mode: mode)
         JupiterReplayer.shared.replayMode ? uvdGenerator?.generateReplayUvd() : uvdGenerator?.generateUvd()
         uvdGenerator?.delegate = self
-
+        
+        lseManager?.startService()
+        
         completion(true, "")
     }
     
@@ -202,6 +209,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         uvdGenerator?.stopUvdGeneration()
         rfdGenerator = nil
         uvdGenerator = nil
+        
+        lseManager?.stopService()
     }
 
     func resetRuntimeState() {
@@ -354,6 +363,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     func onRfdResult(_ generator: TJLabsCommon.RFDGenerator, receivedForce: TJLabsCommon.ReceivedForce) {
         if debugOption { JupiterFileManager.shared.writeRFD(rfd: receivedForce) }
         handleRfd(rfd: receivedForce)
+        lseManager?.onRfdResult(generator, receivedForce: receivedForce)
         delegate?.onRfdResult(receivedForce: receivedForce)
     }
     
@@ -369,10 +379,12 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     func onRfdError(_ generator: TJLabsCommon.RFDGenerator, code: Int, msg: String) {
         JupiterLogger.i(tag: "JupiterCalcManager", message: "(onRfdError): \(code), \(msg)")
+        lseManager?.onRfdError(generator, code: code, msg: msg)
     }
     
     func onRfdEmptyMillis(_ generator: TJLabsCommon.RFDGenerator, time: Double) {
         rfdEmptyMillis = time
+        lseManager?.onRfdEmptyMillis(generator, time: time)
     }
     
     // MARK: - UVDGeneratorDelegate Methods
@@ -482,6 +494,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         
         guard let curPmResult = curPathMatchingResult else { return }
         stackManager.stackCurPmResultBuffer(curPmResult: curPmResult)
+        lseManager?.updateCurPmResult(curPmResult: curPmResult)
         
         // Bad Case 확인
         let travelingLinkDist = PathMatcher.shared.getCurPassedLinksDist()
@@ -631,7 +644,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             guard let entKey = entManager.checkStartEntTrack(wardId: peakId, sec: 3) else { return }
             jupiterPhase = .ENTERING
             delegate?.isJupiterPhaseChanged(index: uvd.index, phase: jupiterPhase, xyh: nil)
-            JupiterResultState.isIndoor = true
+            CallWhenFirstResponse()
             let entTrackData = entKey.split(separator: "_")
             JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - entTrackData = \(entTrackData)")
 
@@ -1035,7 +1048,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                     self.debug_selected_search = selectedSearch
                     self.searchingIndex = userPeak.peak_index
                     self.curResult = bestResult
-                    JupiterResultState.isIndoor = true
+                    self.CallWhenFirstResponse()
                     JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) searchResult= [index:\(bestResult.index), x:\(bestResult.x), y:\(bestResult.y), h:\(bestResult.absolute_heading)]")
                     stackManager.stackSearchResult(searchResult: bestResult)
                     let searchResultBuffer = stackManager.getSearchResultBuffer(size: 2)
@@ -1131,7 +1144,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         guard let fltResult = fltResult else { return }
         curResult = fltResult
         kalmanFilter?.activateKalmanFilter(fltResult: fltResult)
-        JupiterResultState.isIndoor = true
+        CallWhenFirstResponse()
         delegate?.isJupiterPhaseChanged(index: uvd.index, phase: jupiterPhase, xyh: [fltResult.x, fltResult.y, fltResult.absolute_heading])
         JupiterLogger.i(tag: "JupiterCalcManager", message: "(startIndoorTracking) : start indoor tracking at uvd:\(fltResult.index) // phase = \(jupiterPhase)")
         JupiterLogger.i(tag: "JupiterCalcManager", message: "(startIndoorTracking) : start indoor tracking at xyh:[\(fltResult.x), \(fltResult.y), \(fltResult.absolute_heading)]")
@@ -1723,6 +1736,11 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         return freq.max(by: { $0.value < $1.value })?.key
     }
     
+    private func CallWhenFirstResponse() {
+        JupiterResultState.isIndoor = true
+        JupiterResultState.isGetFirstResponse = true
+    }
+    
     func onVelocityResult(_ generator: UVDGenerator, kmPh: Double) {
         curVelocity = Float(kmPh)
     }
@@ -1857,5 +1875,28 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     func onStateReported(_ code: JupiterServiceCode) {
         delegate?.onStateReported(code)
+    }
+    
+    func lseManager(
+        _ manager: LSEManager,
+        didReceiveSingleEpochResult result: LocationSingleEpochResult,
+        requestPayload: LocationRequestPayload,
+        requestContext: LSERequestContext
+    ) {
+        switch (result) {
+        case .success(let success):
+            let x = Float(success.location.x)
+            let y = Float(success.location.y)
+            let h: Float = 0
+            
+        case .noLocation(let noLocation):
+            print("noLocation")
+        case .failure(let failure):
+            print("failure")
+        }
+        JupiterLogger.i(
+            tag: "JupiterCalcManager",
+            message: "(didReceiveSingleEpochResult) result= \(result), requestPayload= \(requestPayload), requestContext= \(requestContext)"
+        )
     }
 }

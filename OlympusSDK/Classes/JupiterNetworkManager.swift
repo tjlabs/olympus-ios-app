@@ -15,6 +15,7 @@ class JupiterNetworkManager {
     private let mrSessions:  [URLSession]
     private let fltSessions: [URLSession]
     private let osrSessions: [URLSession]
+    private let lseSessions: [URLSession]
     
     private var rfdSessionCount = 0
     private var uvdSessionCount = 0
@@ -22,6 +23,7 @@ class JupiterNetworkManager {
     private var mrSessionCount  = 0
     private var fltSessionCount = 0
     private var osrSessionCount = 0
+    private var lseSessionCount = 0
 
     private init() {
         self.rfdSessions = JupiterNetworkManager.createSessionPool()
@@ -30,6 +32,7 @@ class JupiterNetworkManager {
         self.mrSessions  = JupiterNetworkManager.createSessionPool()
         self.fltSessions = JupiterNetworkManager.createSessionPool()
         self.osrSessions = JupiterNetworkManager.createSessionPool()
+        self.lseSessions = JupiterNetworkManager.createSessionPool()
     }
     
     func isConnectedToInternet() -> (Bool, String) {
@@ -66,6 +69,7 @@ class JupiterNetworkManager {
         url: String,
         method: String = "POST",
         body: Data?,
+        additionalHeaders: [String: String] = [:],
         completion: @escaping (URLRequest?) -> Void
     ) {
         guard let url = URL(string: url) else {
@@ -84,6 +88,9 @@ class JupiterNetworkManager {
                 if let body = body {
                     request.setValue("\(body.count)", forHTTPHeaderField: "Content-Length")
                 }
+                additionalHeaders.forEach { header, value in
+                    request.setValue(value, forHTTPHeaderField: header)
+                }
                 completion(request)
 
             case .failure(let error):
@@ -91,6 +98,31 @@ class JupiterNetworkManager {
                 completion(nil)
             }
         }
+    }
+
+    private func makeRequestWithoutAuthorization(
+        url: String,
+        method: String = "POST",
+        body: Data?,
+        additionalHeaders: [String: String] = [:],
+        completion: @escaping (URLRequest?) -> Void
+    ) {
+        guard let url = URL(string: url) else {
+            completion(nil)
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = method
+        request.httpBody = body
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let body = body {
+            request.setValue("\(body.count)", forHTTPHeaderField: "Content-Length")
+        }
+        additionalHeaders.forEach { header, value in
+            request.setValue(value, forHTTPHeaderField: header)
+        }
+        completion(request)
     }
 
     private func performRequest<T>(
@@ -267,63 +299,73 @@ class JupiterNetworkManager {
     }
     
     // MARK: - LSE
-//    func postLSE(url: String, input: LocationRequestPayload, completion: @escaping (Int, String, LocationRequestPayload) -> Void) {
-//        guard let clientSecret = Bundle.main.nonEmptyInfoDictionaryValue(forKey: "LSE_CLIENT_SECRET") else {
-//            completion(406, "Missing LSE_CLIENT_SECRET in Info.plist", input)
-//            return
-//        }
-//
-//        guard let body = encodeJson(input) else {
-//            completion(406, "Failed to encode request body", input)
-//            return
-//        }
-//
-//        makeRequest(
-//            url: url,
-//            method: "POST",
-//            body: body,
-//            additionalHeaders: ["x-client-secret": clientSecret]
-//        ) { request in
-//            guard let request = request else {
-//                DispatchQueue.main.async {
-//                    completion(406, "Invalid URL or failed to get token", input)
-//                }
-//                return
-//            }
-//
-//            let session = self.mrSessions[self.mrSessionCount % self.mrSessions.count]
-//            self.mrSessionCount += 1
-//
-//            self.performRequest(request: request, session: session, input: input, completion: completion)
-//        }
-//    }
-//
-//    func postLSEWithoutToken(url: String, input: LocationRequestPayload, completion: @escaping (Int, String, LocationRequestPayload) -> Void) {
-//        guard let clientSecret = Bundle.main.nonEmptyInfoDictionaryValue(forKey: "LSE_CLIENT_SECRET") else {
-//            completion(406, "Missing LSE_CLIENT_SECRET in Info.plist", input)
-//            return
-//        }
-//
-//        guard let requestURL = URL(string: url) else {
-//            completion(406, "Invalid URL", input)
-//            return
-//        }
-//
-//        guard let body = encodeJson(input) else {
-//            completion(406, "Failed to encode request body", input)
-//            return
-//        }
-//
-//        var request = URLRequest(url: requestURL)
-//        request.httpMethod = "POST"
-//        request.httpBody = body
-//        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-//        request.setValue(clientSecret, forHTTPHeaderField: "x-client-secret")
-//        request.setValue("\(body.count)", forHTTPHeaderField: "Content-Length")
-//
-//        let session = self.mrSessions[self.mrSessionCount % self.mrSessions.count]
-//        self.mrSessionCount += 1
-//
-//        self.performRequest(request: request, session: session, input: input, completion: completion)
-//    }
+    func postLSE(url: String, input: LocationRequestPayload, completion: @escaping (Int, String, LocationRequestPayload) -> Void) {
+        guard let clientSecret = OlympusSecretConfig.shared.lseClientSecret else {
+            DispatchQueue.main.async {
+                completion(406, "Missing LSE_CLIENT_SECRET in OlympusSecretConfig.local.plist", input)
+            }
+            return
+        }
+
+        guard let body = encodeJson(input) else {
+            DispatchQueue.main.async {
+                completion(406, "Failed to encode request body", input)
+            }
+            return
+        }
+
+        makeRequest(
+            url: url,
+            method: "POST",
+            body: body,
+            additionalHeaders: ["x-client-secret": clientSecret]
+        ) { request in
+            guard let request = request else {
+                DispatchQueue.main.async {
+                    completion(406, "Invalid URL or failed to get token", input)
+                }
+                return
+            }
+
+            let session = self.lseSessions[self.lseSessionCount % self.lseSessions.count]
+            self.lseSessionCount += 1
+
+            self.performRequest(request: request, session: session, input: input, completion: completion)
+        }
+    }
+
+    func postLSEWithoutToken(url: String, input: LocationRequestPayload, completion: @escaping (Int, String, LocationRequestPayload) -> Void) {
+        guard let clientSecret = OlympusSecretConfig.shared.lseClientSecret else {
+            DispatchQueue.main.async {
+                completion(406, "Missing LSE_CLIENT_SECRET in OlympusSecretConfig.local.plist", input)
+            }
+            return
+        }
+
+        guard let body = encodeJson(input) else {
+            DispatchQueue.main.async {
+                completion(406, "Failed to encode request body", input)
+            }
+            return
+        }
+
+        makeRequestWithoutAuthorization(
+            url: url,
+            method: "POST",
+            body: body,
+            additionalHeaders: ["x-client-secret": clientSecret]
+        ) { request in
+            guard let request = request else {
+                DispatchQueue.main.async {
+                    completion(406, "Invalid URL", input)
+                }
+                return
+            }
+
+            let session = self.lseSessions[self.lseSessionCount % self.lseSessions.count]
+            self.lseSessionCount += 1
+
+            self.performRequest(request: request, session: session, input: input, completion: completion)
+        }
+    }
 }

@@ -24,6 +24,9 @@
   "resource_bundles": {
     "OlympusAssets": [
       "OlympusSDK/Assets/**/*"
+    ],
+    "OlympusConfiguration": [
+      "OlympusSDK/Resources/**/*"
     ]
   },
   "vendored_frameworks": "OlympusSDK/Frameworks/*.xcframework",

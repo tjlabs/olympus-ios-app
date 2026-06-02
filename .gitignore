@@ -21,6 +21,10 @@ DerivedData
 # Bundler
 .bundle
 
+# Local secrets
+OlympusSDK/Resources/OlympusSecretConfig.local.plist
+Example/Configuration/ExampleSecrets.local.xcconfig
+
 # Add this line if you want to avoid checking in source code from Carthage dependencies.
 # Carthage/Checkouts
 

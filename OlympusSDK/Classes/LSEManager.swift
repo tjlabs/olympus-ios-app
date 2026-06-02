@@ -1,6 +1,7 @@
 
 import Foundation
 import TJLabsCommon
+import TJLabsResource
 
 class LSEManager: RFDGeneratorDelegate {
     weak var delegate: LSEManagerDelegate?
@@ -31,25 +32,21 @@ class LSEManager: RFDGeneratorDelegate {
     var traceId: String?
     var headingOffset: Double = 0
     var userId: String = "LSE"
-    
-    var selectedSector: UserSectorResponse?
-    var selectedBuilding: UserSectorBuilding?
-    
     var sectorId: Int = 0
-    var buildingId: Int = 0
-    
     var mockMode: Bool = false
+    
+    var resourceManager: TJLabsResourceManager?
+    var curPmResult: FineLocationTrackingOutput?
+    
     // MARK: RFD
     var rfdGenerator: RFDGenerator?
     private var rfdEmptyMillis: Double = 0
     private var pressure: Float = 0
     
-    init(selectedSector: UserSectorResponse, selectedBuilding: UserSectorBuilding) {
-        self.selectedSector = selectedSector
-        self.selectedBuilding = selectedBuilding
-        
-        self.sectorId = selectedSector.id
-        self.buildingId = selectedBuilding.id
+    init(sectorId: Int, resourceManager: TJLabsResourceManager) {
+        self.mockMode = JupiterMockManager.shared.mockMode
+        self.sectorId = sectorId
+        self.resourceManager = resourceManager
     }
     
     deinit {
@@ -57,76 +54,40 @@ class LSEManager: RFDGeneratorDelegate {
         clearRfdBuffer()
     }
     
-    private func makeUniqueId(uuid: String) -> String {
-        let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-        let unique_id: String = "\(uuid)_\(currentTime)"
-        
-        return unique_id
-    }
-    
-    func setMockMode(flag: Bool) {
-        self.mockMode = flag
-    }
-    
-    func startGenerator(mode: UserMode, completion: @escaping (Bool, String) -> Void) {
-        let id = makeUniqueId(uuid: self.userId)
-        rfdGenerator = RFDGenerator(userId: id)
-        
-        guard let rfd = rfdGenerator else {
-            completion(false, "rfdGenerator is nil")
-            return
-        }
-        
-        let (isRfdSuccess, rfdMsg) = rfd.checkIsAvailableRfd()
-        guard isRfdSuccess else {
-            completion(false, rfdMsg)
-            return
-        }
-
-        clearRfdBuffer()
-        rfdGenerator?.delegate = self
-        rfdGenerator?.pressureProvider = { [self] in
-            return self.pressure
-        }
-        JupiterReplayer.shared.replayMode ? rfdGenerator?.generateReplayRfd() : rfdGenerator?.generateRfd()
-        
-        JupiterFileManager.shared.setDebugOption(flag: true)
-        JupiterFileManager.shared.createFiles(id: id, os: "iOS")
-        
-        if !simulationMode {
-            let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-            JupiterFileManager.shared.writeEvent(event: JupiterEvent(mobile_time: currentTime, event_code: JupiterServiceCode.SERVICE_SUCCESS.rawValue))
-        }
-
+    func startService() {
         startPostTimer()
-        
-        completion(true, "")
     }
     
-    func stopGenerator() {
+    func stopService() {
         stopPostTimer()
         clearRfdBuffer()
-        rfdGenerator?.delegate = nil
-        rfdGenerator?.stopRfdGeneration()
-        rfdGenerator = nil
+    }
+    
+    func updateCurPmResult(curPmResult: FineLocationTrackingOutput) {
+        self.curPmResult = curPmResult
     }
 
     private func handlePostTimerTick() {
-        guard let payload = makeBufferedPayloadForLastFiveSeconds() else {
+        guard let request = makeBufferedRequestForLastFiveSeconds(curPmResult: self.curPmResult) else {
             return
         }
 
-        JupiterNetworkManager.shared.postLSE(url: JupiterNetworkConstants.getLocationSingleEpochURL(), input: payload) { statusCode, returnedString, requestPayload in
+        JupiterNetworkManager.shared.postLSE(url: JupiterNetworkConstants.getLocationSingleEpochURL(), input: request.payload) { statusCode, returnedString, requestPayload in
             LSELogger.i(
                 tag: "LSEManager",
-                message: "(postLSE) statusCode=\(statusCode), sectorId=\(requestPayload.sector_code), buildingId=\(requestPayload.building_code), response=\(returnedString)"
+                message: "(postLSE) statusCode=\(statusCode), sectorId=\(requestPayload.sector_code), buildingId=\(requestPayload.building_code), requestContext=\(request.context), response=\(returnedString)"
             )
 
             let result = self.makeSingleEpochResult(
                 statusCode: statusCode,
                 returnedString: returnedString
             )
-            self.delegate?.lseManager(self, didReceiveSingleEpochResult: result, requestPayload: requestPayload)
+            self.delegate?.lseManager(
+                self,
+                didReceiveSingleEpochResult: result,
+                requestPayload: requestPayload,
+                requestContext: request.context
+            )
         }
     }
 
@@ -177,7 +138,25 @@ class LSEManager: RFDGeneratorDelegate {
         }
     }
 
-    private func makeBufferedPayloadForLastFiveSeconds() -> LocationRequestPayload? {
+    private func makeBufferedRequestForLastFiveSeconds(curPmResult: FineLocationTrackingOutput?) -> (payload: LocationRequestPayload, context: LSERequestContext)? {
+        guard let curPmResult = curPmResult, let resourceManager = self.resourceManager else { return nil }
+        guard let buildingId = resourceManager.getBuildingId(buildingName: curPmResult.building_name) else { return nil }
+        let levelId = resourceManager.getLevelId(
+            sectorId: self.sectorId,
+            buildingName: curPmResult.building_name,
+            levelName: curPmResult.level_name
+        )
+        let requestContext = LSERequestContext(
+            index: curPmResult.index,
+            buildingName: curPmResult.building_name,
+            buildingId: buildingId,
+            levelName: curPmResult.level_name,
+            levelId: levelId,
+            x: curPmResult.x,
+            y: curPmResult.y
+        )
+        
+        
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
         let windowStart = currentTime - payloadWindowMillis
 
@@ -198,13 +177,14 @@ class LSEManager: RFDGeneratorDelegate {
                 return nil
             }
 
-            return LocationRequestPayload(
+            let payload = LocationRequestPayload(
                 trace_id: self.traceId,
                 sector_code: self.sectorId,
-                building_code: self.buildingId,
+                building_code: buildingId,
                 algorithm_mode: self.algorithmMode,
                 measurements: measurements
             )
+            return (payload: payload, context: requestContext)
         }
     }
 

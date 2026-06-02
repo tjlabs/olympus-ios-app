@@ -39,6 +39,7 @@ class BuildingLevelChanger {
     private var distAfterTagDetection: Float
     private var lastTag: Int
     private var buildingsAndLevels = [String: [String]]()
+    private var prePeak: UserPeak?
     
     func toggleToOutdoor() {
         buildingLevelChangedTime = 0
@@ -360,6 +361,13 @@ class BuildingLevelChanger {
     
     func getMatchedBuildingLevelByUserPeak(userPeak: UserPeak) -> (building: String, level: String)? {
         let userPeakWardId = userPeak.id
+        if let prePeak = self.prePeak {
+            if userPeakWardId == prePeak.id {
+                return nil
+            }
+        }
+        self.prePeak = userPeak
+        
         for (key, value) in levelWardsMap {
             let wardIds = value.map{$0.name}
             if wardIds.contains(userPeakWardId) {
@@ -373,6 +381,7 @@ class BuildingLevelChanger {
     
     func isIndoorLevel(buildingLevelByPeakBuffer: [(String, String)]) -> Bool {
         JupiterLogger.i(tag: "BuildingLevelChanger", message: "(isIndoorLevel) buildingLevelByPeakBuffer: \(buildingLevelByPeakBuffer)")
+        if buildingLevelByPeakBuffer.count < 2 { return false }
         guard let first = buildingLevelByPeakBuffer.first else { return false }
         return first.1 != "B0" && buildingLevelByPeakBuffer.allSatisfy { $0.0 == first.0 && $0.1 == first.1 }
     }

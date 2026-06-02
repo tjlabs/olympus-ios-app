@@ -113,6 +113,16 @@ struct LocationSingleEpochFailure {
     let message: String
 }
 
+struct LSERequestContext {
+    let index: Int
+    let buildingName: String
+    let buildingId: Int
+    let levelName: String
+    let levelId: Int?
+    let x: Float
+    let y: Float
+}
+
 enum LocationSingleEpochResult {
     case success(LocationSingleEpochSuccess)
     case noLocation(LocationSingleEpochNoLocation)
@@ -123,6 +133,7 @@ protocol LSEManagerDelegate: AnyObject {
     func lseManager(
         _ manager: LSEManager,
         didReceiveSingleEpochResult result: LocationSingleEpochResult,
-        requestPayload: LocationRequestPayload
+        requestPayload: LocationRequestPayload,
+        requestContext: LSERequestContext
     )
 }

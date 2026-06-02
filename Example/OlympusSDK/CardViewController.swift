@@ -6,21 +6,36 @@ import TJLabsCommon
 import TJLabsResource
 
 class CardViewController: UIViewController, NavigationManagerDelegate {
+    
     func isUserArrived() {
         // TODO
     }
     
+    private func makeRouteKey(building: String, level: String) -> String {
+        return "\(building)_\(level)"
+    }
     
     func isUserGuidanceOut() {
-        //TODO
+        self.naviRoutesByLevel = [String: [[Float]]]()
     }
     
-    func isNavigationRouteChanged(_ routes: [(String, String, Int, Float, Float)]) {
-        //TODO
+    func isNavigationRouteChanged(_ routes: [(String, String, Float, Float)]) {
+        var nextRoutesByLevel = [String: [[Float]]]()
+        for r in routes {
+            let building = r.0
+            let level = r.1
+            let x = r.2
+            let y = r.3
+
+            let key = makeRouteKey(building: building, level: level)
+            nextRoutesByLevel[key, default: []].append([x, y])
+        }
+
+        self.naviRoutesByLevel = nextRoutesByLevel
     }
     
-    func isNavigationRouteFailed() {
-        //TODO
+    func isNavigationRouteFailed(_ reason: OlympusSDK.NavigationRouteFailureReason) {
+        self.naviRoutesByLevel = [String: [[Float]]]()
     }
     
     func isWaypointChanged(_ waypoints: [[Double]]) {
@@ -117,7 +132,7 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
 //    var mode: String = "pdr"
     
 //    var sector_id: Int = 6
-//    var mode: String = "auto"
+//    var mode: String = "dr"
     
     var sector_id: Int = 20  // Convensia
     var mode: String = "auto"
@@ -146,6 +161,8 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
     var isSafeDriving: Bool = false
     
     var serviceState: Bool = false
+    var naviRoutesByLevel = [String: [[Float]]]()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupLayout()
@@ -154,16 +171,23 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
         headingImage = headingImage?.resize(newWidth: 20)
         let uniqueId = makeUniqueId(uuid: self.userId)
     
-        serviceManager = NavigationManager(id: uniqueId, cloud: JupiterCloud.GCP.rawValue, sectorId: self.sector_id, debugOption: false)
+        serviceManager = NavigationManager(id: uniqueId, cloud: JupiterCloud.AWS.rawValue, sectorId: self.sector_id, debugOption: false)
         serviceManager?.delegate = self
         
-        
-        serviceManager?.setNaviDestination(dest: Point(level_id: 52, x: 335, y: 0))
+        serviceManager?.setMockMode(mode: .VEHICLE_OUTDOOR_PARKING, completion: { isSuccess in
+            
+        })
+//        serviceManager?.setNaviDestination(dest: Point(level_id: 52, x: 335, y: 0))
+//        serviceManager?.setNaviDestination(dest: Point(level_id: 52, x: 145, y: 196))
+//        serviceManager?.setReplayModeLegacy(flag: true, bleFileName: "ble_coex_01_0310.csv", sensorFileName: "sensor_coex_01_0310.csv")
 //        serviceManager?.setSimulationMode(flag: true, rfdFileName: "260428_songdo_test3_rfd.json", uvdFileName: "260428_songdo_test3_uvd.json", eventFileName: "260428_songdo_test3_event.json")
-        serviceManager?.setSimulationMode(flag: true, rfdFileName: "260512_songdo_test2_rfd.json", uvdFileName: "260512_songdo_test2_uvd.json", eventFileName: "260512_songdo_test2_event.json")
+        serviceManager?.setReplayMode(flag: true, rfdFileName: "260522_songdo_test11_rfd.json",
+                                      uvdFileName: "260522_songdo_test11_uvd.json",
+                                      eventFileName: "260522_songdo_test11_event.json")
         
         // service
 //        serviceManager.addObserver(self)
+//        serviceManager.setDebugOption(flag: true)
 //        serviceManager.setDebugOption(flag: true)
 //        serviceManager.startService(user_id: uniqueId, region: self.region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
 //        serviceManager.startService(user_id: uniqueId, region: "Korea", sector_id: 16, service: "FLT", mode: "pdr", completion: { [self] isStart, returnedString in
@@ -216,7 +240,7 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
             })
         }
         
-        serviceManager?.saveFilesForSimulation(completion: { [self] isSuccess in
+        serviceManager?.saveFilesForReplay(completion: { [self] isSuccess in
             DispatchQueue.main.async { [self] in
                 saveButton.isHidden = true
                 saveButton.isUserInteractionEnabled = true
@@ -741,18 +765,11 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
             pastBuilding = currentBuilding
             pastLevel = currentLevel
             
-            let key = "\(currentBuilding)_\(currentLevel)"
+            let key = makeRouteKey(building: currentBuilding, level: currentLevel)
             let condition: ((String, [[Double]])) -> Bool = { $0.0.contains(key) }
             let pathPixel: [[Double]] = PathPixel[key] ?? [[Double]]()
             
-            var naviRoute = [[Float]]()
-//            if let navi_route = debugResult.navi_route {
-//                for route in navi_route {
-//                    if route.building  == currentBuilding && route.level == currentLevel {
-//                        naviRoute.append([route.x, route.y])
-//                    }
-//                }
-//            }
+            let naviRoute = naviRoutesByLevel[key] ?? []
             
             if (PathPixel.contains(where: condition)) {
                 if (pathPixel.isEmpty) {

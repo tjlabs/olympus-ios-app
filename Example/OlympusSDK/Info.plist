@@ -30,6 +30,10 @@
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
+	<key>TJLABS_AUTH_ACCESS_KEY</key>
+	<string>$(TJLABS_AUTH_ACCESS_KEY)</string>
+	<key>TJLABS_AUTH_SECRET_ACCESS_KEY</key>
+	<string>$(TJLABS_AUTH_SECRET_ACCESS_KEY)</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

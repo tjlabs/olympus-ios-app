@@ -3,6 +3,10 @@ import OlympusSDK
 import TJLabsAuth
 
 class LoginViewController: UIViewController, UITextFieldDelegate {
+    private enum ConfigKeys {
+        static let accessKey = "TJLABS_AUTH_ACCESS_KEY"
+        static let secretAccessKey = "TJLABS_AUTH_SECRET_ACCESS_KEY"
+    }
 
     @IBOutlet weak var idTextField: UITextField!
     @IBOutlet weak var saveIdButton: UIButton!
@@ -29,7 +33,16 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         setLocaleInfo()
         let clientMeta = self.makeClientMeta()
         SecretConfig.set(clientMeta: clientMeta)
-        TJLabsAuthManager.shared.auth(accessKey: "AK_-xVNF3MeRzQMhBIVLU5GQ", secretAccessKey: "SK1nVeBlJldifxC7z8vD8ZeercMgrSqmzNzz5RItSrDaM", completion: { [self] statusCode, success in
+        TJLabsAuthConstants.setServerURL(cloud: "GCP", region: AuthRegion.KOREA.rawValue, serverType: "jupiter")
+        guard
+            let accessKey = nonEmptyInfoValue(forKey: ConfigKeys.accessKey),
+            let secretAccessKey = nonEmptyInfoValue(forKey: ConfigKeys.secretAccessKey)
+        else {
+            print("(LoginVC) Missing TJLabs auth config in Info.plist")
+            return
+        }
+
+        TJLabsAuthManager.shared.auth(accessKey: accessKey, secretAccessKey: secretAccessKey, completion: { [self] statusCode, success in
             print("(TJLabsAuthManager) TJLabsAuth : \(statusCode), \(success)")
         })
         
@@ -67,6 +80,19 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         )
         
         return clientMeta
+    }
+
+    private func nonEmptyInfoValue(forKey key: String) -> String? {
+        guard let rawValue = Bundle.main.object(forInfoDictionaryKey: key) as? String else {
+            return nil
+        }
+
+        let trimmedValue = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedValue.isEmpty else {
+            return nil
+        }
+
+        return trimmedValue
     }
 
     override func didReceiveMemoryWarning() {
@@ -158,8 +184,8 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         NetworkManager.shared.postUserLogin(url: USER_LOGIN_URL, input: loginInfo, completion: { statusCode, returnedString in
             if (statusCode == 200) {
 //                print(getLocalTimeString() + " , (InnerLabs) Success : User Login")
-                self.goToRoutingViewController(region: "Korea", userId: self.userId)
-//                self.goToCardViewController(region: "Korea", userId: self.userId)
+//                self.goToRoutingViewController(region: "Korea", userId: self.userId)
+                self.goToCardViewController(region: "Korea", userId: self.userId)
 //                self.goToMapViewController(userId: self.userId)
 //                self.goToMapScaleViewController(userId: self.userId)
             } else {
