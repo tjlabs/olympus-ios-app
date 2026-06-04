@@ -241,50 +241,52 @@ public class JupiterManager: JupiterCalcManagerDelegate, MockResultDelegate {
     
     private func uploadReplayFiles() {
         let fileInfos = JupiterFileUploader.shared.getReplayFilesInExports()
-        JupiterLogger.i(tag: "JupiterManager", message: "uploadReplayFiles : fileInfos= \(fileInfos)")
         let rfdFile = fileInfos.rfdFiles
         let uvdFile = fileInfos.uvdFiles
         let eventFile = fileInfos.eventFiles
+        
         let filePrefix = "\(self.sectorId)/iOS"
         let normalizedFilePrefix = filePrefix.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
         
         for r in rfdFile {
-            let storageFileName = "\(normalizedFilePrefix)/\(r.name)"
-            JupiterFileUploader.shared.requestStorageFileURL(fileName: storageFileName, completion: { output in
-                if let s3Output = output {
-                    let presigned_url = s3Output.presigned_url
-                    JupiterLogger.i(tag: "JupiterManager", message: "uploadReplayFiles rfd : \(r.name)")
-                    JupiterFileUploader.shared.uploadFileToStorage(s3Path: presigned_url, filePath: r.path, completion: { isSuccess in
-                        if isSuccess { JupiterFileManager.shared.deleteReplayFile(at: r.path) }
-                    })
-                }
-            })
+            uploadReplayFileIfNeeded(name: r.name, path: r.path, normalizedFilePrefix: normalizedFilePrefix)
         }
-        
+
         for u in uvdFile {
-            let storageFileName = "\(normalizedFilePrefix)/\(u.name)"
-            JupiterFileUploader.shared.requestStorageFileURL(fileName: storageFileName, completion: { output in
-                if let s3Output = output {
-                    let presigned_url = s3Output.presigned_url
-                    JupiterLogger.i(tag: "JupiterManager", message: "uploadReplayFiles uvd : \(u.name)")
-                    JupiterFileUploader.shared.uploadFileToStorage(s3Path: presigned_url, filePath: u.path, completion: { isSuccess in
-                        if isSuccess { JupiterFileManager.shared.deleteReplayFile(at: u.path) }
-                    })
-                }
-            })
+            uploadReplayFileIfNeeded(name: u.name, path: u.path, normalizedFilePrefix: normalizedFilePrefix)
+        }
+
+        for e in eventFile {
+            uploadReplayFileIfNeeded(name: e.name, path: e.path, normalizedFilePrefix: normalizedFilePrefix)
+        }
+    }
+
+    private func uploadReplayFileIfNeeded(name: String, path: String, normalizedFilePrefix: String) {
+        guard !isReplayFileEmpty(at: path) else {
+            JupiterLogger.i(tag: "JupiterManager", message: "(uploadReplayFiles) delete empty replay file: \(path)")
+            _ = JupiterFileManager.shared.deleteReplayFile(at: path)
+            return
         }
         
-        for e in eventFile {
-            let storageFileName = "\(normalizedFilePrefix)/\(e.name)"
-            JupiterFileUploader.shared.requestStorageFileURL(fileName: storageFileName, completion: { output in
-                if let s3Output = output {
-                    let presigned_url = s3Output.presigned_url
-                    JupiterLogger.i(tag: "JupiterManager", message: "uploadReplayFiles event : \(e.name)")
-                    JupiterFileUploader.shared.uploadFileToStorage(s3Path: presigned_url, filePath: e.path, completion: { isSuccess in
-                        if isSuccess { JupiterFileManager.shared.deleteReplayFile(at: e.path) }
-                    })
-                }
-            })
+        let storageFileName = "\(normalizedFilePrefix)/\(name)"
+        JupiterFileUploader.shared.requestStorageFileURL(fileName: storageFileName, completion: { output in
+            if let storageOutput = output {
+                let presigned_url = storageOutput.presigned_url
+                JupiterFileUploader.shared.uploadFileToStorage(storagePath: presigned_url, filePath: path, completion: { isSuccess in
+                    if isSuccess { JupiterFileManager.shared.deleteReplayFile(at: path) }
+                })
+            }
+        })
+    }
+
+    private func isReplayFileEmpty(at path: String) -> Bool {
+        do {
+            let attributes = try FileManager.default.attributesOfItem(atPath: path)
+            let fileSize = (attributes[.size] as? NSNumber)?.int64Value ?? 0
+            return fileSize == 0
+        } catch {
+            JupiterLogger.e(tag: "JupiterManager", message: "(uploadReplayFiles) failed to read file attributes: \(path), error: \(error)")
+            return false
         }
     }
     
@@ -512,6 +514,8 @@ public class JupiterManager: JupiterCalcManagerDelegate, MockResultDelegate {
                                                         validity_flag: mockResult.validity_flag,
                                                         calc_xyh: [mockResult.jupiter_pos.x, mockResult.jupiter_pos.y, mockResult.jupiter_pos.heading],
                                                         tu_xyh: [mockResult.jupiter_pos.x, mockResult.jupiter_pos.y, mockResult.jupiter_pos.heading],
+                                                        lse_rep_xyh: nil,
+                                                        ent_compensated_traj: nil,
                                                         navi_xyh: [mockResult.jupiter_pos.x, mockResult.jupiter_pos.y, mockResult.jupiter_pos.heading])
             return jupiterDebugResult
         } else {

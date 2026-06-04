@@ -73,10 +73,10 @@ class LSEManager: RFDGeneratorDelegate {
         }
 
         JupiterNetworkManager.shared.postLSE(url: JupiterNetworkConstants.getLocationSingleEpochURL(), input: request.payload) { statusCode, returnedString, requestPayload in
-            LSELogger.i(
-                tag: "LSEManager",
-                message: "(postLSE) statusCode=\(statusCode), sectorId=\(requestPayload.sector_code), buildingId=\(requestPayload.building_code), requestContext=\(request.context), response=\(returnedString)"
-            )
+//            LSELogger.i(
+//                tag: "LSEManager",
+//                message: "(postLSE) statusCode=\(statusCode), sectorId=\(requestPayload.sector_code), buildingId=\(requestPayload.building_code), requestContext=\(request.context), response=\(returnedString)"
+//            )
 
             let result = self.makeSingleEpochResult(
                 statusCode: statusCode,

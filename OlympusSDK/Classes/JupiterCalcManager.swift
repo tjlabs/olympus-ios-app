@@ -48,6 +48,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     // MARK: - Constants
     private let AVG_BUFFER_SIZE = 2
+    private let LSE_RESULT_BUFFER_SIZE = 5
+    private let LSE_REPRESENTATIVE_CLUSTER_SIZE = 3
+    private let LSE_HEADING_MIN_DISTANCE: Float = 1.0
     
     // MARK: - Searching
     private var searcingId: String = ""
@@ -77,7 +80,11 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     var curResult: FineLocationTrackingOutput?
     var preResult: FineLocationTrackingOutput?
     var curPathMatchingResult: FineLocationTrackingOutput?
-    var prePathMatchingResult: FineLocationTrackingOutput?
+    var curLSEResult: FineLocationTrackingOutput?
+    var curPathMatchingLSEResult: FineLocationTrackingOutput?
+    var lseResultBuffer = [FineLocationTrackingOutput]()
+    var curRepresentativeLSEResult: FineLocationTrackingOutput?
+    var curPathMatchingRepresentativeLSEResult: FineLocationTrackingOutput?
     var buildingsData: [BuildingData]?
     
     // MARK: - Debuging
@@ -87,6 +94,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     var debug_tu_xyh: [Float] = [0, 0, 0]
     var debug_landmark: LandmarkData?
     var debug_best_landmark: PeakData?
+    var debug_lse_rep_xyh: [Float]?
+    var debug_ent_compensated_traj: [[Double]]?
     var debug_recon_raw_traj: [[Double]]?
     var debug_recon_corr_traj: [FineLocationTrackingOutput]?
     var debug_selected_search: SelectedSearch?
@@ -262,12 +271,18 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         curResult = nil
         preResult = nil
         curPathMatchingResult = nil
-        prePathMatchingResult = nil
-
+        curLSEResult = nil
+        curPathMatchingLSEResult = nil
+        lseResultBuffer.removeAll()
+        curRepresentativeLSEResult = nil
+        curPathMatchingRepresentativeLSEResult = nil
+        
         debug_calc_xyh = [0, 0, 0]
         debug_tu_xyh = [0, 0, 0]
         debug_landmark = nil
         debug_best_landmark = nil
+        debug_lse_rep_xyh = nil
+        debug_ent_compensated_traj = nil
         debug_recon_raw_traj = nil
         debug_recon_corr_traj = nil
         debug_selected_search = nil
@@ -278,7 +293,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     func getJupiterResult() -> JupiterResult? {
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-        guard let curPathMatchingResult = self.curPathMatchingResult else { return nil }
+        let is_vehicle = curUserModeEnum == .MODE_VEHICLE
+        let currentResult = is_vehicle && jupiterPhase != .SEARCHING ? self.curPathMatchingResult : (self.curPathMatchingRepresentativeLSEResult ?? self.curPathMatchingLSEResult)
+        guard let curPathMatchingResult = currentResult else { return nil }
         self.debug_calc_xyh = [curPathMatchingResult.x, curPathMatchingResult.y, curPathMatchingResult.absolute_heading]
         
         let buildingName = curPathMatchingResult.building_name
@@ -293,7 +310,6 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             llh = LLH(lat: converted.lat, lon: converted.lon, azimuth: converted.azimuth)
         }
         
-        let is_vehicle = curUserModeEnum == .MODE_VEHICLE
         let jupiterResult = JupiterResult(mobile_time: currentTime,
                                           index: curUvd.index,
                                           building_name: buildingName,
@@ -312,7 +328,9 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     
     func getJupiterDebugResult() -> JupiterDebugResult? {
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-        guard let curPathMatchingResult = self.curPathMatchingResult else { return nil }
+        let is_vehicle = curUserModeEnum == .MODE_VEHICLE
+        let currentResult = is_vehicle && jupiterPhase != .SEARCHING ? self.curPathMatchingResult : (self.curPathMatchingRepresentativeLSEResult ?? self.curPathMatchingLSEResult)
+        guard let curPathMatchingResult = currentResult else { return nil }
         self.debug_calc_xyh = [curPathMatchingResult.x, curPathMatchingResult.y, curPathMatchingResult.absolute_heading]
 
         let buildingName = curPathMatchingResult.building_name
@@ -348,6 +366,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             tu_xyh: self.debug_tu_xyh,
             landmark: self.debug_landmark,
             best_landmark: self.debug_best_landmark,
+            lse_rep_xyh: self.debug_lse_rep_xyh,
+            ent_compensated_traj: self.debug_ent_compensated_traj,
             recon_raw_traj: self.debug_recon_raw_traj,
             recon_corr_traj: self.debug_recon_corr_traj,
             selected_cand: self.debug_selected_cand,
@@ -662,7 +682,7 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
         if jupiterPhase == .ENTERING {
             var forceStop = false
             if let innermostWard = entManager.stopEntTrack(wardId: peakId) {
-                let uvdBuffer = stackManager.getUvdBuffer(from: uvd.index-50)
+                let uvdBuffer = stackManager.getUvdBuffer(from: uvd.index-30)
                 let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBuffer.map{ Float($0.heading) })
                 forceStop = majorSection.isEmpty
                 if !forceStop {
@@ -745,6 +765,14 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
 //                        ]
                         
                         wardArea = [
+                            EntWardArea(x: 362, y: 152, heading: [158, 180]),
+                            EntWardArea(x: 361, y: 153, heading: [158, 180]),
+                            EntWardArea(x: 360, y: 153, heading: [158, 180]),
+                            EntWardArea(x: 359, y: 154, heading: [158]),
+                            EntWardArea(x: 358, y: 154, heading: [158]),
+                            EntWardArea(x: 357, y: 154, heading: [158]),
+                            EntWardArea(x: 357, y: 154, heading: [158]),
+                            EntWardArea(x: 356, y: 155, heading: [158]),
                             EntWardArea(x: 355, y: 155, heading: [158]),
                             EntWardArea(x: 354, y: 155, heading: [158]),
                             EntWardArea(x: 353, y: 156, heading: [158]),
@@ -793,12 +821,15 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                     let headingForCompensation = majorSection.average - uvdBuffer[0].heading
                     
                     if let curResult = curResult {
+                        self.debug_ent_compensated_traj = nil
+
                         struct EntTrackCandidateResult {
                             let dist: Float
                             let result: FineLocationTrackingOutput
                             let wardX: Float
                             let wardY: Float
                             let pathHeading: Float
+                            let compensatedTraj: [[Double]]
                         }
                         
                         let candidateInputs: [(wardX: Float, wardY: Float, pathHeading: Float)] = wardArea!.flatMap { area in
@@ -924,13 +955,15 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                                                                          result: lastResult,
                                                                          wardX: wardX,
                                                                          wardY: wardY,
-                                                                         pathHeading: pathHeading)
+                                                                         pathHeading: pathHeading,
+                                                                         compensatedTraj: compensatedBuffer.map { [Double($0[0]), Double($0[1]), Double($0[2])] })
                             candidateResults.lock()
                             evaluatedCandidates.append(candidateResult)
                             candidateResults.unlock()
                         }
                         
                         if let bestCandidate = evaluatedCandidates.min(by: { $0.dist < $1.dist }) {
+                            self.debug_ent_compensated_traj = bestCandidate.compensatedTraj
                             var tempResult = bestCandidate.result
                             tempResult.building_name = entManager.getEntTrackEndBuilding()
                             tempResult.level_name = innermostWard.level.name
@@ -1230,10 +1263,8 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
             } else if userPeak.id == correctionId {
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(applyCorrectionWithPeaks) same PEAK detected just before id:\(userPeak.id)")
                 break peakHandling
-            } else if userPeak.peak_index <= recoveryIndex {
-                JupiterLogger.i(tag: "JupiterCalcManager", message: "(applyCorrectionWithPeaks) Recovery worked at \(recoveryIndex) uvd index")
-                break peakHandling
             }
+            let shouldSkipCorrectionAfterRecovery = userPeak.peak_index <= recoveryIndex
 
             // MARK: - Use Two peaks anytime
             let curResultBuffer = stackManager.getCurResultBuffer()
@@ -1249,6 +1280,11 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
                 stackManager.stackUserPeakAndLinks(userPeakAndLinks: (userPeak, linkInfosWhenPeak))
             } else {
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(applyCorrectionWithPeaks) cannot find matched landmark with user peak \(userPeak.id) or cannot find linkInfosWhenPeak")
+                break peakHandling
+            }
+
+            if shouldSkipCorrectionAfterRecovery {
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(applyCorrectionWithPeaks) Recovery worked at \(recoveryIndex) uvd index")
                 break peakHandling
             }
 
@@ -1876,6 +1912,96 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     func onStateReported(_ code: JupiterServiceCode) {
         delegate?.onStateReported(code)
     }
+
+    private func updateLSEBuffer(with result: FineLocationTrackingOutput) {
+        if let last = lseResultBuffer.last,
+           (last.building_name != result.building_name || last.level_name != result.level_name) {
+            lseResultBuffer.removeAll()
+            curRepresentativeLSEResult = nil
+            curPathMatchingRepresentativeLSEResult = nil
+            debug_lse_rep_xyh = nil
+        }
+
+        lseResultBuffer.append(result)
+        if lseResultBuffer.count > LSE_RESULT_BUFFER_SIZE {
+            lseResultBuffer.removeFirst(lseResultBuffer.count - LSE_RESULT_BUFFER_SIZE)
+        }
+    }
+
+    private func selectRepresentativeLSECluster() -> [FineLocationTrackingOutput] {
+        let buffer = lseResultBuffer
+        guard buffer.count > LSE_REPRESENTATIVE_CLUSTER_SIZE else { return buffer }
+
+        var bestCluster = Array(buffer.suffix(LSE_REPRESENTATIVE_CLUSTER_SIZE))
+        var bestScore = Float.greatestFiniteMagnitude
+
+        for i in 0..<(buffer.count - 2) {
+            for j in (i + 1)..<(buffer.count - 1) {
+                for k in (j + 1)..<buffer.count {
+                    let cluster = [buffer[i], buffer[j], buffer[k]]
+                    let score = pairwiseDistanceSum(for: cluster)
+                    if score < bestScore {
+                        bestScore = score
+                        bestCluster = cluster
+                    }
+                }
+            }
+        }
+
+        return bestCluster
+    }
+
+    private func pairwiseDistanceSum(for cluster: [FineLocationTrackingOutput]) -> Float {
+        guard cluster.count > 1 else { return 0 }
+
+        var score: Float = 0
+        for i in 0..<(cluster.count - 1) {
+            for j in (i + 1)..<cluster.count {
+                let dx = cluster[i].x - cluster[j].x
+                let dy = cluster[i].y - cluster[j].y
+                score += sqrt(dx * dx + dy * dy)
+            }
+        }
+        return score
+    }
+
+    private func calculateRepresentativeLSEHeading(x: Float, y: Float, fallbackHeading: Float) -> Float {
+        guard let previousRepresentative = curRepresentativeLSEResult else { return fallbackHeading }
+
+        let dx = x - previousRepresentative.x
+        let dy = y - previousRepresentative.y
+        let distance = sqrt(dx * dx + dy * dy)
+        guard distance >= LSE_HEADING_MIN_DISTANCE else {
+            return previousRepresentative.absolute_heading
+        }
+
+        let headingRadian = atan2(Double(dy), Double(dx))
+        let headingDegree = TJLabsUtilFunctions.shared.radian2degree(radian: headingRadian)
+        return Float(TJLabsUtilFunctions.shared.compensateDegree(headingDegree))
+    }
+
+    private func makeRepresentativeLSEResult(currentTime: Int,
+                                             index: Int,
+                                             buildingName: String,
+                                             levelName: String,
+                                             fallbackHeading: Float) -> FineLocationTrackingOutput? {
+        let cluster = selectRepresentativeLSECluster()
+        guard !cluster.isEmpty else { return nil }
+
+        let sumX = cluster.reduce(Float(0)) { $0 + $1.x }
+        let sumY = cluster.reduce(Float(0)) { $0 + $1.y }
+        let representativeX = sumX / Float(cluster.count)
+        let representativeY = sumY / Float(cluster.count)
+        let representativeHeading = calculateRepresentativeLSEHeading(x: representativeX, y: representativeY, fallbackHeading: fallbackHeading)
+
+        return FineLocationTrackingOutput(mobile_time: currentTime,
+                                          index: index,
+                                          building_name: buildingName,
+                                          level_name: levelName,
+                                          x: representativeX,
+                                          y: representativeY,
+                                          absolute_heading: representativeHeading)
+    }
     
     func lseManager(
         _ manager: LSEManager,
@@ -1885,18 +2011,69 @@ class JupiterCalcManager: RFDGeneratorDelegate, UVDGeneratorDelegate, TJLabsReso
     ) {
         switch (result) {
         case .success(let success):
+            let context = requestContext
+            
+            let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
+            let curIndex = curUvd.index
+            let bName = context.buildingName
+            let lName = context.levelName
             let x = Float(success.location.x)
             let y = Float(success.location.y)
             let h: Float = 0
-            
+
+            let rawLSEResult = FineLocationTrackingOutput(mobile_time: currentTime,
+                                                          index: curIndex,
+                                                          building_name: bName,
+                                                          level_name: lName,
+                                                          x: x,
+                                                          y: y,
+                                                          absolute_heading: h)
+            self.curLSEResult = rawLSEResult
+            updateLSEBuffer(with: rawLSEResult)
+
+            if let pmResult = PathMatcher.shared.pathMatching(sectorId: self.sectorId, building: bName, level: lName, x: x, y: y, heading: h, isUseHeading: false, mode: curUserModeEnum, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) {
+                var pathMatchedRawLSEResult = rawLSEResult
+                pathMatchedRawLSEResult.x = pmResult.x
+                pathMatchedRawLSEResult.y = pmResult.y
+                self.curPathMatchingLSEResult = pathMatchedRawLSEResult
+            } else {
+                self.curPathMatchingLSEResult = rawLSEResult
+            }
+
+            let fallbackHeading = curRepresentativeLSEResult?.absolute_heading ?? h
+            guard let representativeLSEResult = makeRepresentativeLSEResult(currentTime: currentTime,
+                                                                             index: curIndex,
+                                                                             buildingName: bName,
+                                                                             levelName: lName,
+                                                                             fallbackHeading: fallbackHeading) else {
+                self.debug_lse_rep_xyh = nil
+                self.curRepresentativeLSEResult = nil
+                self.curPathMatchingRepresentativeLSEResult = nil
+                self.debug_navi_xyh = [rawLSEResult.x, rawLSEResult.y, rawLSEResult.absolute_heading]
+                return
+            }
+
+            self.curRepresentativeLSEResult = representativeLSEResult
+            self.debug_lse_rep_xyh = [representativeLSEResult.x, representativeLSEResult.y, representativeLSEResult.absolute_heading]
+
+            if let pmResult = PathMatcher.shared.pathMatching(sectorId: self.sectorId, building: bName, level: lName, x: representativeLSEResult.x, y: representativeLSEResult.y, heading: representativeLSEResult.absolute_heading, isUseHeading: false, mode: curUserModeEnum, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) {
+                var pathMatchedRepresentativeLSEResult = representativeLSEResult
+                pathMatchedRepresentativeLSEResult.x = pmResult.x
+                pathMatchedRepresentativeLSEResult.y = pmResult.y
+                self.curPathMatchingRepresentativeLSEResult = pathMatchedRepresentativeLSEResult
+            } else {
+                self.curPathMatchingRepresentativeLSEResult = representativeLSEResult
+            }
+
+            self.debug_navi_xyh = [rawLSEResult.x, rawLSEResult.y, rawLSEResult.absolute_heading]
         case .noLocation(let noLocation):
             print("noLocation")
         case .failure(let failure):
             print("failure")
         }
-        JupiterLogger.i(
-            tag: "JupiterCalcManager",
-            message: "(didReceiveSingleEpochResult) result= \(result), requestPayload= \(requestPayload), requestContext= \(requestContext)"
-        )
+//        JupiterLogger.i(
+//            tag: "JupiterCalcManager",
+//            message: "(didReceiveSingleEpochResult) result= \(result), requestPayload= \(requestPayload), requestContext= \(requestContext)"
+//        )
     }
 }

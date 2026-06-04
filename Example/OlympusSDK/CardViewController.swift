@@ -181,9 +181,9 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
 //        serviceManager?.setNaviDestination(dest: Point(level_id: 52, x: 145, y: 196))
 //        serviceManager?.setReplayModeLegacy(flag: true, bleFileName: "ble_coex_01_0310.csv", sensorFileName: "sensor_coex_01_0310.csv")
 //        serviceManager?.setSimulationMode(flag: true, rfdFileName: "260428_songdo_test3_rfd.json", uvdFileName: "260428_songdo_test3_uvd.json", eventFileName: "260428_songdo_test3_event.json")
-        serviceManager?.setReplayMode(flag: true, rfdFileName: "260522_songdo_test11_rfd.json",
-                                      uvdFileName: "260522_songdo_test11_uvd.json",
-                                      eventFileName: "260522_songdo_test11_event.json")
+        serviceManager?.setReplayMode(flag: true, rfdFileName: "260522_songdo_test4_rfd.json",
+                                      uvdFileName: "260522_songdo_test4_uvd.json",
+                                      eventFileName: "260522_songdo_test4_event.json")
         
         // service
 //        serviceManager.addObserver(self)
@@ -352,6 +352,8 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
                            calcXYH: [Double], tuXYH: [Double],
                            landmark: LandmarkData?,
                            best_landmark: PeakData?,
+                           lseRepXYH: [Double]?,
+                           ent_compensated_traj: [[Double]]?,
                            recon_raw_traj: [[Double]]?,
                            recon_corr_traj: [FineLocationTrackingOutput]?,
                            selected_search: SelectedSearch?,
@@ -479,6 +481,39 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
             setLandmarkPeak.setColor(.darkgrey4)
             setLandmarkPeak.scatterShapeSize = 10
             chartData.append(setLandmarkPeak)
+        }
+
+        if let lseRepXYH = lseRepXYH {
+            let valuesLseRep = (0..<1).map { (i) -> ChartDataEntry in
+                return ChartDataEntry(x: lseRepXYH[0], y: lseRepXYH[1])
+            }
+
+            let setLseRep = ScatterChartDataSet(entries: valuesLseRep, label: "LSERep")
+            setLseRep.drawValuesEnabled = false
+            setLseRep.setScatterShape(.circle)
+            setLseRep.setColor(.systemPink)
+            setLseRep.scatterShapeSize = 14
+            chartData.append(setLseRep)
+        }
+
+        if let ent_compensated_traj = ent_compensated_traj {
+            var xAxisValue = [Double]()
+            var yAxisValue = [Double]()
+            for traj in ent_compensated_traj {
+                xAxisValue.append(traj[0])
+                yAxisValue.append(traj[1])
+            }
+
+            let valuesEntCompTraj = (0..<xAxisValue.count).map { (i) -> ChartDataEntry in
+                return ChartDataEntry(x: xAxisValue[i], y: yAxisValue[i])
+            }
+
+            let setEntCompTraj = ScatterChartDataSet(entries: valuesEntCompTraj, label: "EntCompTraj")
+            setEntCompTraj.drawValuesEnabled = false
+            setEntCompTraj.setScatterShape(.circle)
+            setEntCompTraj.setColor(.systemTeal)
+            setEntCompTraj.scatterShapeSize = 4
+            chartData.append(setEntCompTraj)
         }
         
         if let recon_raw_traj = recon_raw_traj {
@@ -671,6 +706,21 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
             viewWithTagNavi.removeFromSuperview()
         }
         scatterChart.addSubview(imageViewNavi)
+
+        if let lseRepXYH = lseRepXYH {
+            let pointLseRep = scatterChart.getPosition(entry: ChartDataEntry(x: lseRepXYH[0], y: lseRepXYH[1]), axis: .left)
+            let imageViewLseRep = UIImageView(image: headingImage!.rotate(degrees: -lseRepXYH[2]+90))
+            let lseRepSize: CGFloat = 30
+            imageViewLseRep.frame = CGRect(x: pointLseRep.x - lseRepSize/2, y: pointLseRep.y - lseRepSize/2, width: lseRepSize, height: lseRepSize)
+            imageViewLseRep.contentMode = .center
+            imageViewLseRep.tag = 500
+            if let viewWithTagLseRep = scatterChart.viewWithTag(500) {
+                viewWithTagLseRep.removeFromSuperview()
+            }
+            scatterChart.addSubview(imageViewLseRep)
+        } else if let viewWithTagLseRep = scatterChart.viewWithTag(500) {
+            viewWithTagLseRep.removeFromSuperview()
+        }
         
         let chartFlag: Bool = false
         scatterChart.isHidden = false
@@ -790,12 +840,19 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
                     for value in debugResult.navi_xyh {
                         navi_xyh.append(Double(value))
                     }
+
+                    var lse_rep_xyh: [Double]?
+                    if let lseRep = debugResult.lse_rep_xyh {
+                        lse_rep_xyh = lseRep.map { Double($0) }
+                    }
                     
                     drawDebug(XYH: XYH, RP_X: pathPixel[0], RP_Y: pathPixel[1],
                               calcXYH: calc_xyh,
                               tuXYH: tu_xyh,
                               landmark: debugResult.landmark,
                               best_landmark: debugResult.best_landmark,
+                              lseRepXYH: lse_rep_xyh,
+                              ent_compensated_traj: debugResult.ent_compensated_traj,
                               recon_raw_traj: debugResult.recon_raw_traj,
                               recon_corr_traj: debugResult.recon_corr_traj,
                               selected_search: debugResult.selected_search,

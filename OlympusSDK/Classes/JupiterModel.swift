@@ -192,6 +192,8 @@ public struct JupiterDebugResult {
     public var tu_xyh: [Float]
     public var landmark: LandmarkData?
     public var best_landmark: PeakData?
+    public var lse_rep_xyh: [Float]?
+    public var ent_compensated_traj: [[Double]]?
     public var recon_raw_traj: [[Double]]?
     public var recon_corr_traj: [FineLocationTrackingOutput]?
     public var selected_cand: SelectedCandidate?

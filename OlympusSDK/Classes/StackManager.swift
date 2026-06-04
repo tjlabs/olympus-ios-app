@@ -394,6 +394,7 @@ class StackManager {
                 headingBuffer.append(compensatedHeading)
             }
             let headingStd = TJLabsUtilFunctions.shared.calculateCircularStd(for: headingBuffer)
+            JupiterLogger.i(tag: "StackManager", message: "(isDrBufferStraightCircularStd) : straight= \((headingStd <= condition)), std= \(headingStd)")
             return (headingStd <= condition) ? (true, headingStd) : (false, headingStd)
         } else {
             return (false, 360)

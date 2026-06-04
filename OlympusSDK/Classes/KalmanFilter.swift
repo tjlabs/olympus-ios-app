@@ -579,7 +579,7 @@ class KalmanFilter {
         let drBufferStraightResults = stackManager.isDrBufferStraightCircularStd(numIndex: DR_HEADING_CORR_NUM_IDX, condition: 2.5)
         let isDrStraight = nextTuResult.level_name == "B0" ? false : (drBufferStraightResults.0 && !isInNode)
         
-        if let pmResults = PathMatcher.shared.pathMatching(sectorId: sectorId, building: nextTuResult.building_name, level: nextTuResult.level_name, x: nextTuResult.x, y: nextTuResult.y, heading: nextTuResult.absolute_heading, headingRange: 10, isUseHeading: true, mode: .MODE_VEHICLE, paddingValues: paddingValues) {
+        if let pmResults = PathMatcher.shared.pathMatching(sectorId: sectorId, building: nextTuResult.building_name, level: nextTuResult.level_name, x: nextTuResult.x, y: nextTuResult.y, heading: nextTuResult.absolute_heading, headingRange: 35, isUseHeading: true, mode: .MODE_VEHICLE, paddingValues: paddingValues) {
             nextTuResult.absolute_heading = isDrStraight ? Float(TJLabsUtilFunctions.shared.compensateDegree(Double(pmResults.heading))) : Float(TJLabsUtilFunctions.shared.compensateDegree(Double(nextTuResult.absolute_heading)))
             JupiterLogger.i(tag: "KalmanFilter", message: "(timeUpdate) - pmResults : xyh= [\(pmResults.x),\(pmResults.y),\(pmResults.heading)], headingFail= \(pmResults.headingFail)")
         } else {

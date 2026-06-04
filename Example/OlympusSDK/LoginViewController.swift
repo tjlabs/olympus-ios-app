@@ -33,7 +33,7 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         setLocaleInfo()
         let clientMeta = self.makeClientMeta()
         SecretConfig.set(clientMeta: clientMeta)
-        TJLabsAuthConstants.setServerURL(cloud: "GCP", region: AuthRegion.KOREA.rawValue, serverType: "jupiter")
+        TJLabsAuthConstants.setServerURL(cloud: "AWS", region: AuthRegion.KOREA.rawValue, serverType: "jupiter")
         guard
             let accessKey = nonEmptyInfoValue(forKey: ConfigKeys.accessKey),
             let secretAccessKey = nonEmptyInfoValue(forKey: ConfigKeys.secretAccessKey)

@@ -38,16 +38,16 @@ public class JupiterFileUploader: NSObject, URLSessionTaskDelegate {
         })
     }
     
-    func uploadFileToStorage(s3Path: String, filePath: String, completion: ((Bool) -> Void)? = nil) {
-        guard let uploadURL = URL(string: s3Path) else {
-            JupiterLogger.e(tag: "JupiterFileUploader", message: "uploadFileToS3 : invalid s3Path = \(s3Path)")
+    func uploadFileToStorage(storagePath: String, filePath: String, completion: ((Bool) -> Void)? = nil) {
+        guard let uploadURL = URL(string: storagePath) else {
+            JupiterLogger.e(tag: "JupiterFileUploader", message: "uploadFileToStorage : invalid storagePath = \(storagePath)")
             completion?(false)
             return
         }
         
         let fileURL = URL(fileURLWithPath: filePath)
         guard FileManager.default.fileExists(atPath: fileURL.path) else {
-            JupiterLogger.e(tag: "JupiterFileUploader", message: "uploadFileToS3 : file does not exist at \(fileURL.path)")
+            JupiterLogger.e(tag: "JupiterFileUploader", message: "uploadFileToStorage : file does not exist at \(fileURL.path)")
             completion?(false)
             return
         }

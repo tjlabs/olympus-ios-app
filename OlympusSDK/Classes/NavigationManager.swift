@@ -359,6 +359,7 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     private var trackingIndex: Int = 0
     var resultMode: IndoorResultMode = .NONE
     private var jupiterPhase: JupiterPhase = .NONE
+    private var curUserModeEnum: UserMode = .MODE_VEHICLE
     private var recentLandmarkPeaks: [PeakData]?
     private var mockMode: Bool = false
     
@@ -417,6 +418,11 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
             jupiterDebugResult.navi_xyh = [routingResult.x, routingResult.y, routingResult.heading]
         }
         return jupiterDebugResult
+    }
+    
+    func changeUserMode(mode: UserMode) {
+        self.curUserModeEnum = mode
+        self.jupiterManager?.changeUserMode(mode: mode)
     }
     
     public func requestRouting(start: RoutingStart, end: Point, waypoints: [Point] = [], is_vehicle: Bool, completion: @escaping (RoutingResult?, [NavigationLevelRoute]) -> Void) {
