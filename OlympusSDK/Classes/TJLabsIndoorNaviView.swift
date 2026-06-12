@@ -194,7 +194,7 @@ class TJLabsIndoorNaviView: UIView, TJLabsNaviViewDelegate, NavigationManagerDel
     func setupNaviView() {
         guard let region = self.region, let sectorId = self.sectorId else { return }
         
-        naviView.initialize(cloud: "AWS", region: region, sectorId: sectorId)
+        naviView.initialize(cloud: "GCP", region: region, sectorId: sectorId)
         naviView.setPointOffset(offset: 200)
         naviView.setZoomAndMarkerScale(zoom: 2.0)
         containerView.addSubview(naviView)

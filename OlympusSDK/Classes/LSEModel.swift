@@ -53,12 +53,12 @@ struct SimulationFilePair: Equatable {
 struct LocationRequestPayload: Codable {
     let trace_id: String?
     let sector_code: Int
-    let building_code: Int
+    let building_code: Int?
     let algorithm_mode: String
     let os_type: String
     let measurements: [LSEMeas]
     
-    init(trace_id: String? = nil, sector_code: Int, building_code: Int, algorithm_mode: String, os_type: String = "iOS", measurements: [LSEMeas]) {
+    init(trace_id: String? = nil, sector_code: Int, building_code: Int? = nil, algorithm_mode: String, os_type: String = "iOS", measurements: [LSEMeas]) {
         self.trace_id = trace_id
         self.sector_code = sector_code
         self.building_code = building_code
@@ -90,6 +90,8 @@ struct LSEEstimatedLocation: Decodable {
     let timestamp: Int
     let x: Double
     let y: Double
+    let building_id: Int
+    let level_id: Int
     let floor: String
 }
 
@@ -123,6 +125,11 @@ struct LSERequestContext {
     let y: Float
 }
 
+struct SingleEpochSnapshot {
+    let requestContext: LSERequestContext
+    let result: FineLocationTrackingOutput
+}
+
 enum LocationSingleEpochResult {
     case success(LocationSingleEpochSuccess)
     case noLocation(LocationSingleEpochNoLocation)
@@ -134,6 +141,6 @@ protocol LSEManagerDelegate: AnyObject {
         _ manager: LSEManager,
         didReceiveSingleEpochResult result: LocationSingleEpochResult,
         requestPayload: LocationRequestPayload,
-        requestContext: LSERequestContext
+        requestContext: LSERequestContext?
     )
 }

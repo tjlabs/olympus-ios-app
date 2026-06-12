@@ -5,11 +5,12 @@ import TJLabsResource
 class StackManager {
     init() { }
     
+    private let LSE_DIST_THRESHOLD: Float = 50
     private let SAME_COORD_THRESHOLD: Int = 20
     
     private let DR_BUFFER_SIZE: Int = 200
     private let PEAK_BUILDING_LEVEL_BUFFER_SIZE: Int = 5
-    private let BLE_LEVEL_BUFFER_SIZE: Int = 8
+    private let BLE_LEVEL_BUFFER_SIZE: Int = 4
     private let USER_PEAK_BUFFER_SIZE: Int = 5
     private let USER_PEAK_AND_LINK_BUFFER_SIZE: Int = 5
     private let CUR_RESULT_BUFFER_SIZE: Int = 200
@@ -17,7 +18,7 @@ class StackManager {
     private let SEARCH_RESULT_BUFFER_SIZE: Int = 5
     private let NAVI_ROUTE_RESULT_BUFFER_SIZE: Int = 200
     
-    private var rfdBuffer = [[String: Float]]()
+    private var rfdBuffer = [[String: Double]]()
     var uvdBuffer = [UserVelocity]()
     
     var buildingLevelByPeakBuffer = [(String, String)]()
@@ -350,8 +351,10 @@ class StackManager {
         return headingSet.map{$0}
     }
     
-    func checkIsBadCase(jupiterPhase: JupiterPhase, uvdIndexWhenCorrection: Int, travelingLinkDist: Float) -> Bool {
+    func checkIsBadCase(jupiterPhase: JupiterPhase, uvdIndexWhenCorrection: Int, travelingLinkDist: Float, distWithLSE: Float) -> Bool {
         if jupiterPhase == .ENTERING || jupiterPhase == .SEARCHING { return false }
+        
+        if distWithLSE > LSE_DIST_THRESHOLD { return true }
         
         let adaptive_th = max(Int(travelingLinkDist*0.3), SAME_COORD_THRESHOLD)
         JupiterLogger.i(tag: "StackManager", message: "(checkIsBadCase) travelingLinkDist: \(travelingLinkDist), adaptive_th: \(adaptive_th)")
@@ -413,9 +416,9 @@ class StackManager {
         return (headingStd <= condition) ? (true, headingStd) : (false, headingStd)
     }
     
-    func extractTop3BleInWindow(currentTime: Int, ble: [String: Float]) ->  (Int, [(String, Float)])? {
+    func extractTop3BleInWindow(currentTime: Int, ble: [String: Double]) ->  (Int, [(String, Float)])? {
         var result: (Int, [(String, Float)])?
-        var mergedBLE: [String: Float] = [:]
+        var mergedBLE: [String: Double] = [:]
         
         rfdBuffer.append(ble)
         if (rfdBuffer.count >= BLE_LEVEL_BUFFER_SIZE) {
@@ -432,7 +435,7 @@ class StackManager {
                 }
             }
             
-            let top3 = mergedBLE.sorted(by: { $0.value > $1.value }).prefix(3).map { ($0.key, $0.value) }
+            let top3 = mergedBLE.sorted(by: { $0.value > $1.value }).prefix(3).map { ($0.key, Float($0.value)) }
             result = ((currentTime, top3))
             
             rfdBuffer = []

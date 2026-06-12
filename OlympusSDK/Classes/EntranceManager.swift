@@ -18,6 +18,14 @@ class EntranceManager {
     
     deinit { }
     
+    private let ENTERING_LSE_BUFFER_SIZE = 5
+    private let ENTERING_LSE_MAX_STEP_DISTANCE: Float = 30
+    private let ENTERING_LSE_MAX_PATH_LENGTH_DIFF: Float = 25
+    private let ENTERING_LSE_MIN_DISPLACEMENT: Float = 3
+    private let ENTERING_LSE_MAX_AVG_TRAJECTORY_DISTANCE: Float = 18
+    private let ENTERING_LSE_MAX_END_TRAJECTORY_DISTANCE: Float = 22
+    private let ENTERING_LSE_SEGMENT_HEADING_STD_THRESHOLD: Double = 5
+    
     private var entRouteMap = [String: EntranceRouteData]()
     private var entDataMap = [String: EntranceData]()
     private var entOuterWardIdMap = [String: String]()
@@ -51,6 +59,7 @@ class EntranceManager {
         self.entDataMap[key] = data
         if let outermostWard = data.outermostWard {
             self.entOuterWardIdMap[key] = outermostWard.name
+            JupiterLogger.i(tag: "EntranceManager", message: "(setEntData) \(key) outermostWard: \(outermostWard.name)")
         }
         
         if let innermostWard = data.innermostWard {
@@ -198,5 +207,286 @@ class EntranceManager {
             return nil
         }
     }
-}
+    
+    func isDrBufferStraightCircularStd(uvdBuffer: [UserVelocity], condition: Double = 5) -> (Bool, Double) {
+        var headingBuffer = [Double]()
+        for uvd in uvdBuffer {
+            let compensatedHeading = TJLabsUtilFunctions.shared.compensateDegree(uvd.heading)
+            headingBuffer.append(compensatedHeading)
+        }
+        let headingStd = TJLabsUtilFunctions.shared.calculateCircularStd(for: headingBuffer)
+        return (headingStd <= condition) ? (true, headingStd) : (false, headingStd)
+    }
+    
+    func maybePromoteEnteringToTrackingUsingLse(
+        curResult: FineLocationTrackingOutput?,
+        uvd: UserVelocity,
+        uvdBuffer: [UserVelocity],
+        lseSnapshotBuffer: [SingleEpochSnapshot],
+        majorSection: [Float]
+    ) -> FineLocationTrackingOutput? {
 
+        // LSE 기준으로 ENTERING 구간이 충분히 안정적일 때만 TRACKING으로 승격한다.
+        guard let baseResult = curResult else { return nil }
+        var finalResult = baseResult
+        
+        let snapshots = getEnteringSingleEpochSnapshotsFor(lseSnapshotBuffer: lseSnapshotBuffer, buildingName: baseResult.building_name)
+        if snapshots.count < ENTERING_LSE_BUFFER_SIZE {
+            return nil
+        }
+
+        // 층 정보는 시뮬레이션과 실제가 다를 수 있어 버퍼 다수결로 최종 층을 정한다.
+        let dominantLevelName = resolveDominantEnteringLseLevelName(
+            snapshots: snapshots,
+            fallbackLevelName: baseResult.level_name
+        )
+
+        // 최근 LSE 버퍼가 만들어내는 이동 방향을 절대 heading 기준으로 사용한다.
+        guard let lseTrendHeading = resolveEnteringLseTrendHeading(
+            snapshots: snapshots,
+            buildingName: baseResult.building_name,
+            levelName: baseResult.level_name
+        ) else {
+            return nil
+        }
+
+        // LSE 자체가 크게 튀는 상황이면 UVD와 비교하기 전에 바로 배제한다.
+        let lseStepDistances: [Float] = zip(snapshots, snapshots.dropFirst()).map { prev, next in
+            let dx = next.result.x - prev.result.x
+            let dy = next.result.y - prev.result.y
+            return sqrt(dx * dx + dy * dy)
+        }
+
+        let maxStepDistance = lseStepDistances.max() ?? 0
+
+        if maxStepDistance > ENTERING_LSE_MAX_STEP_DISTANCE {
+            JupiterLogger.i(
+                tag: "EnteringLseFlow",
+                message: "skip tracking transition: unstable LSE step maxStepDistance=\(maxStepDistance), steps=\(lseStepDistances)"
+            )
+            return nil
+        }
+
+        guard let firstSnapshot = snapshots.first else { return nil }
+
+        // UVD의 상대 heading을 LSE trend heading 기준으로 재정렬하기 위한 offset이다.
+        let majorHeading = Float(majorSection.map { Double($0) }.reduce(0, +) / Double(majorSection.count))
+        let headingCompensation = lseTrendHeading - majorHeading
+
+        var segmentEndpointDistances: [Float] = []
+        var propagatedPoints: [(index: Int, x: Float, y: Float)] = []
+
+        propagatedPoints.append((
+            index: firstSnapshot.requestContext.index,
+            x: firstSnapshot.result.x,
+            y: firstSnapshot.result.y
+        ))
+
+        var lastAlignedHeading = lseTrendHeading
+
+        for (prevSnapshot, nextSnapshot) in zip(snapshots, snapshots.dropFirst()) {
+
+            // 각 LSE snapshot 사이의 UVD만 잘라서, 해당 짧은 구간이 직진/안정 구간인지 먼저 본다.
+            let segmentUvd = uvdBuffer.filter {
+                $0.index > prevSnapshot.requestContext.index && $0.index <= nextSnapshot.requestContext.index
+            }
+
+            if segmentUvd.count < 2 {
+                return nil
+            }
+
+            let straightResult = isDrBufferStraightCircularStd(
+                uvdBuffer: segmentUvd,
+                condition: ENTERING_LSE_SEGMENT_HEADING_STD_THRESHOLD
+            )
+
+            let isStableSegment = straightResult.0
+            let headingStd = straightResult.1
+
+            if !isStableSegment {
+                return nil
+            }
+
+            var propagatedX = prevSnapshot.result.x
+            var propagatedY = prevSnapshot.result.y
+
+            // 이전 LSE 점을 시작점으로 두고, 보정된 heading으로 UVD를 다시 적분해서 다음 LSE 점까지 예측한다.
+            for bufferedUvd in segmentUvd {
+                let compensatedHeading = TJLabsUtilFunctions.shared.compensateDegree(
+                    bufferedUvd.heading + Double(headingCompensation)
+                )
+
+                let rad = TJLabsUtilFunctions.shared.degree2radian(degree: compensatedHeading)
+
+                propagatedX += Float(bufferedUvd.length) * Float(cos(rad))
+                propagatedY += Float(bufferedUvd.length) * Float(sin(rad))
+
+                propagatedPoints.append((
+                    index: bufferedUvd.index,
+                    x: propagatedX,
+                    y: propagatedY
+                ))
+
+                lastAlignedHeading = Float(compensatedHeading)
+            }
+
+            let dx = propagatedX - nextSnapshot.result.x
+            let dy = propagatedY - nextSnapshot.result.y
+            let endpointDistance = sqrt(dx*dx + dy*dy)
+
+            segmentEndpointDistances.append(endpointDistance)
+        }
+        
+        // 각 구간의 끝점 오차가 작아야, LSE가 보여준 궤적과 UVD 적분 결과가 같은 움직임이라고 본다.
+        let avgTrajectoryDistance = Float(
+            segmentEndpointDistances.map { Double($0) }.reduce(0, +) / Double(segmentEndpointDistances.count)
+        )
+
+        let maxTrajectoryDistance = segmentEndpointDistances.max() ?? Float.greatestFiniteMagnitude
+
+        if avgTrajectoryDistance > ENTERING_LSE_MAX_AVG_TRAJECTORY_DISTANCE ||
+            maxTrajectoryDistance > ENTERING_LSE_MAX_END_TRAJECTORY_DISTANCE {
+
+            JupiterLogger.i(
+                tag: "EnteringLseFlow",
+                message: "skip tracking transition: propagated trajectory mismatch avg=\(avgTrajectoryDistance), max=\(maxTrajectoryDistance), distances=\(segmentEndpointDistances)"
+            )
+            return nil
+        }
+
+        // 전체 이동거리도 함께 비교해서, 종점만 우연히 맞는 케이스를 줄인다.
+        let lsePathLength = calculatePolylineLength(
+            points: snapshots.map { ($0.result.x, $0.result.y) }
+        )
+
+        let propagatedPathLength = calculatePolylineLength(
+            points: propagatedPoints.map { ($0.x, $0.y) }
+        )
+
+        let pathLengthDiff = abs(lsePathLength - propagatedPathLength)
+
+        if pathLengthDiff > ENTERING_LSE_MAX_PATH_LENGTH_DIFF {
+            JupiterLogger.i(
+                tag: "EnteringLseFlow",
+                message: "skip tracking transition: path length mismatch lse=\(lsePathLength), propagated=\(propagatedPathLength), diff=\(pathLengthDiff)"
+            )
+            return nil
+        }
+
+        // 최종 propagated 위치를 path matching 해서 TRACKING 시작 위치로 정규화한다.
+        guard let lastPropagated = propagatedPoints.last else { return nil }
+
+        let propagatedHeading = lastAlignedHeading
+
+        guard let pmResult = PathMatcher.shared.pathMatching(
+            sectorId: sectorId,
+            building: baseResult.building_name,
+            level: dominantLevelName,
+            x: lastPropagated.x,
+            y: lastPropagated.y,
+            heading: propagatedHeading,
+            isUseHeading: true,
+            mode: UserMode.MODE_VEHICLE,
+            paddingValues: JupiterMode.PADDING_VALUES_MEDIUM
+        ) else {
+            return nil
+        }
+
+        JupiterLogger.i(
+            tag: "EnteringLseFlow",
+            message: "promote ENTERING -> TRACKING: index=\(uvd.index), dominantLevel=\(dominantLevelName), majorHeading=\(majorHeading), lseTrendHeading=\(lseTrendHeading), headingCompensation=\(headingCompensation), maxStepDistance=\(maxStepDistance), avgTrajectoryDistance=\(avgTrajectoryDistance), maxTrajectoryDistance=\(maxTrajectoryDistance), lsePathLength=\(lsePathLength), propagatedPathLength=\(propagatedPathLength), pathLengthDiff=\(pathLengthDiff)"
+        )
+        
+        finalResult.index = uvd.index
+        finalResult.level_name = dominantLevelName
+        finalResult.x = pmResult.x
+        finalResult.y = pmResult.y
+        finalResult.absolute_heading = pmResult.heading
+        
+        return finalResult
+    }
+    
+    private func getEnteringSingleEpochSnapshotsFor(lseSnapshotBuffer: [SingleEpochSnapshot], buildingName: String) -> [SingleEpochSnapshot] {
+        return lseSnapshotBuffer.filter { $0.result.building_name == buildingName }
+    }
+
+    private func resolveTrendHeading(
+        snapshots: [SingleEpochSnapshot],
+        minDistance: Float,
+        buildingName: String,
+        levelName: String
+    ) -> Float? {
+        guard snapshots.count >= 2 else { return nil }
+
+        var sumDx: Float = 0
+        var sumDy: Float = 0
+
+        for i in 1..<snapshots.count {
+            sumDx += snapshots[i].result.x - snapshots[i - 1].result.x
+            sumDy += snapshots[i].result.y - snapshots[i - 1].result.y
+        }
+
+        let displacement = sqrt(sumDx * sumDx + sumDy * sumDy)
+        guard displacement >= minDistance else { return nil }
+
+        let headingRadian = atan2(Double(sumDy), Double(sumDx))
+        let headingDegree = TJLabsUtilFunctions.shared.radian2degree(radian: headingRadian)
+        return Float(TJLabsUtilFunctions.shared.compensateDegree(headingDegree))
+    }
+
+    private func resolveEnteringLseTrendHeading(snapshots: [SingleEpochSnapshot], buildingName: String, levelName: String) -> Float? {
+        if snapshots.count < ENTERING_LSE_BUFFER_SIZE  {
+            return nil
+        }
+        
+        return resolveTrendHeading(
+            snapshots: snapshots,
+            minDistance: ENTERING_LSE_MIN_DISPLACEMENT,
+            buildingName: buildingName,
+            levelName: levelName
+        )
+    }
+
+    private func resolveDominantEnteringLseLevelName(
+        snapshots: [SingleEpochSnapshot],
+        fallbackLevelName: String
+    ) -> String {
+        let normalizedLevelCounts = snapshots.reduce(into: [String: Int]()) { counts, snapshot in
+            let normalizedLevel = TJLabsUtilFunctions.shared.removeLevelDirectionString(
+                levelName: snapshot.result.level_name
+            )
+            counts[normalizedLevel, default: 0] += 1
+        }
+
+        guard let dominantNormalizedLevel = normalizedLevelCounts.max(by: { lhs, rhs in
+            if lhs.value == rhs.value {
+                return lhs.key > rhs.key
+            }
+            return lhs.value < rhs.value
+        })?.key else {
+            return fallbackLevelName
+        }
+
+        return snapshots.reversed().first(where: {
+            TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: $0.result.level_name) == dominantNormalizedLevel
+        })?.result.level_name ?? fallbackLevelName
+    }
+
+//    private func isConvensiaEnteringLseTarget(entManager: EntranceManager): Boolean {
+//        if (sectorId != 20) return false
+//        return entManager.getCurrentEntKey()?.startsWith("20_Convensia_B0_") == true
+//    }
+
+    private func calculatePolylineLength(points: [(Float, Float)]) -> Float {
+        if points.count < 2 {
+            return 0
+        }
+        var total: Float = 0
+        for i in 1..<points.count {
+            let dx = points[i].0 - points[i-1].0
+            let dy = points[i].1 - points[i-1].1
+            total += sqrt(dx*dx + dy*dy)
+        }
+        return total
+    }
+}

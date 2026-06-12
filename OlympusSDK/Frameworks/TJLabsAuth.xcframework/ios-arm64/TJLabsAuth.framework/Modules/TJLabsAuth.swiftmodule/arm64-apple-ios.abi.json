@@ -2137,27 +2137,27 @@
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsAuth-sdk-ios\/TJLabsAuth\/TJLabsAuthConstants.swift",
       "kind": "StringLiteral",
       "offset": 519,
-      "length": 17,
-      "value": "\"ap-northeast-2.\""
+      "length": 18,
+      "value": "\"asia-northeast3.\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsAuth-sdk-ios\/TJLabsAuth\/TJLabsAuthConstants.swift",
       "kind": "StringLiteral",
-      "offset": 579,
+      "offset": 580,
       "length": 7,
       "value": "\"Korea\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsAuth-sdk-ios\/TJLabsAuth\/TJLabsAuthConstants.swift",
       "kind": "StringLiteral",
-      "offset": 637,
+      "offset": 638,
       "length": 9,
       "value": "\"jupiter\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsAuth-sdk-ios\/TJLabsAuth\/TJLabsAuthConstants.swift",
       "kind": "StringLiteral",
-      "offset": 716,
+      "offset": 717,
       "length": 7,
       "value": "\"user.\""
     },

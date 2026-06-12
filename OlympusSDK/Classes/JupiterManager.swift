@@ -76,13 +76,15 @@ public class JupiterManager: JupiterCalcManagerDelegate, MockResultDelegate {
             delegate?.onJupiterReport(code, "Newtork is disconnected")
         case .GET_FIRST_RESULT:
             delegate?.onJupiterReport(code, "Get First Result")
+        case .PEAK_DETECTED:
+            return
         }
     }
     
-    public static let sdkVersion: String = "2.0.2"
+    public static let sdkVersion: String = "2.0.3"
     
     var tenantUserName: String = ""
-    var id: String = ""
+    var externalName: String = ""
     var cloud: String = ""
     var region: String = ""
     var sectorId: Int = 0
@@ -93,6 +95,11 @@ public class JupiterManager: JupiterCalcManagerDelegate, MockResultDelegate {
     var jupiterCalcManager: JupiterCalcManager?
     private var jupiterPhase: JupiterPhase = .NONE
     private var curUserModeEnum: UserMode = .MODE_VEHICLE
+    public var isUseOSHeading: Bool = false {
+        didSet {
+            jupiterCalcManager?.isUseOSHeading = isUseOSHeading
+        }
+    }
     
     public weak var delegate: JupiterManagerDelegate?
     private let debugOption: Bool
@@ -105,11 +112,13 @@ public class JupiterManager: JupiterCalcManagerDelegate, MockResultDelegate {
     private var isStartMock = false
     private var mockJupiterResult: JupiterResult?
     
+    private var mobileResultTimeOffset: Int = 0
+    
     // MARK: - JupiterResult Timer
     var outputTimer: DispatchSourceTimer?
-    
+
     public init(id: String, cloud: String, region: String = JupiterRegion.KOREA.rawValue, sectorId: Int, debugOption: Bool = false) {
-        self.id = id
+        self.externalName = id
         self.cloud = cloud
         self.region = region
         self.sectorId = sectorId
@@ -135,7 +144,7 @@ public class JupiterManager: JupiterCalcManagerDelegate, MockResultDelegate {
     func initialize(cloud: String, region: String, sectorId: Int, debugOption: Bool) {
         JupiterNetworkConstants.setServerURL(cloud: cloud, region: region)
         let (isNetworkAvailable, _) = JupiterNetworkManager.shared.isConnectedToInternet()
-        let (isIdAvailable, _) = checkIdIsAvailable(id: id)
+        let (isIdAvailable, _) = checkIdIsAvailable(id: externalName)
         
         if !TJLabsAuthManager.shared.isAuthorized {
             delegate?.onInitSuccess(false, .NOT_AUTHORIZED)
@@ -153,7 +162,7 @@ public class JupiterManager: JupiterCalcManagerDelegate, MockResultDelegate {
         }
         
         self.tenantUserName = TJLabsAuthManager.shared.getTenantUserName()
-        let loginInput = LoginInput(tenant_user_name: self.tenantUserName, external_name: self.id)
+        let loginInput = LoginInput(tenant_user_name: self.tenantUserName, external_name: self.externalName)
         let tasks: [(_ group: DispatchGroup, _ reportError: @escaping (String) -> Void) -> Void] = [
             { group, reportError in
                 group.enter()
@@ -177,7 +186,7 @@ public class JupiterManager: JupiterCalcManagerDelegate, MockResultDelegate {
                     if debugOption {
                         self.uploadReplayFiles()
                         JupiterFileManager.shared.setDebugOption(flag: debugOption)
-                        JupiterFileManager.shared.createFiles(id: self.id, os: "iOS")
+                        JupiterFileManager.shared.createFiles(externalName: self.externalName, tenantUserName: self.tenantUserName)
                     }
                     jupiterCalcManager = calcManager
                     JupiterMockManager.shared.delegate = self
@@ -231,7 +240,13 @@ public class JupiterManager: JupiterCalcManagerDelegate, MockResultDelegate {
                 isStartJupiter = true
                 startTimer()
                 let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-                JupiterFileManager.shared.writeEvent(event: JupiterEvent(mobile_time: currentTime, event_code: JupiterServiceCode.SERVICE_SUCCESS.rawValue))
+                JupiterFileManager.shared.writeEvent(event: JupiterEvent(mobile_time: currentTime, event_code: JupiterServiceCode.SERVICE_SUCCESS.rawValue, event_info: ""))
+                
+                if JupiterReplayer.shared.replayMode {
+                    let replayServiceStartTime = JupiterFileManager.shared.getServiceStartTime()
+                    self.mobileResultTimeOffset = currentTime - replayServiceStartTime
+                }
+                
                 delegate?.onJupiterSuccess(true, nil)
             } else {
                 delegate?.onJupiterSuccess(false, .GENERATOR_FAIL)
@@ -245,7 +260,7 @@ public class JupiterManager: JupiterCalcManagerDelegate, MockResultDelegate {
         let uvdFile = fileInfos.uvdFiles
         let eventFile = fileInfos.eventFiles
         
-        let filePrefix = "\(self.sectorId)/iOS"
+        let filePrefix = makeReplayFilePrefix()
         let normalizedFilePrefix = filePrefix.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
         
         for r in rfdFile {
@@ -261,6 +276,18 @@ public class JupiterManager: JupiterCalcManagerDelegate, MockResultDelegate {
         }
     }
 
+    private func makeReplayFilePrefix(for date: Date = Date()) -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC") ?? TimeZone(secondsFromGMT: 0)!
+
+        let components = calendar.dateComponents([.year, .month, .day], from: date)
+        let year = components.year ?? 0
+        let month = components.month ?? 0
+        let day = components.day ?? 0
+
+        return "\(self.sectorId)/iOS/year=\(year)/month=\(String(format: "%02d", month))/day=\(String(format: "%02d", day))"
+    }
+
     private func uploadReplayFileIfNeeded(name: String, path: String, normalizedFilePrefix: String) {
         guard !isReplayFileEmpty(at: path) else {
             JupiterLogger.i(tag: "JupiterManager", message: "(uploadReplayFiles) delete empty replay file: \(path)")
@@ -268,8 +295,9 @@ public class JupiterManager: JupiterCalcManagerDelegate, MockResultDelegate {
             return
         }
         
-        let storageFileName = "\(normalizedFilePrefix)/\(name)"
-        JupiterFileUploader.shared.requestStorageFileURL(fileName: storageFileName, completion: { output in
+        let storageFileName = "\(name)"
+        JupiterFileUploader.shared.requestStorageFileURL(sectorId: self.sectorId, fileName: storageFileName, completion: { output in
+            JupiterLogger.i(tag: "JupiterManager", message: "(uploadReplayFileIfNeeded) requestStorageFileURL: \(output)")
             if let storageOutput = output {
                 let presigned_url = storageOutput.presigned_url
                 JupiterFileUploader.shared.uploadFileToStorage(storagePath: presigned_url, filePath: path, completion: { isSuccess in
@@ -357,8 +385,9 @@ public class JupiterManager: JupiterCalcManagerDelegate, MockResultDelegate {
     }
     
     private func makeJupiterCalcManager() -> JupiterCalcManager {
-        let calcManager = JupiterCalcManager(cloud: cloud, region: region, id: id, sectorId: sectorId, tenantUserName: tenantUserName)
+        let calcManager = JupiterCalcManager(cloud: cloud, region: region, id: externalName, sectorId: sectorId, tenantUserName: tenantUserName)
         calcManager.debugOption = debugOption
+        calcManager.isUseOSHeading = isUseOSHeading
         calcManager.delegate = self
         return calcManager
     }
@@ -449,19 +478,21 @@ public class JupiterManager: JupiterCalcManagerDelegate, MockResultDelegate {
         } else {
             guard let jupiterResult = jupiterCalcManager?.getJupiterResult(),
                   let jupiterPhase = jupiterCalcManager?.jupiterPhase else { return }
+            
             if !isGetFirstResult {
                 let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-                JupiterFileManager.shared.writeEvent(event: JupiterEvent(mobile_time: currentTime, event_code: JupiterServiceCode.GET_FIRST_RESULT.rawValue))
+                JupiterFileManager.shared.writeEvent(event: JupiterEvent(mobile_time: currentTime, event_code: JupiterServiceCode.GET_FIRST_RESULT.rawValue, event_info: ""))
                 isGetFirstResult = true
             }
             delegate?.onJupiterResult(jupiterResult)
-            makeMobileResult(jupiterPhase: jupiterPhase, jupiterResult: jupiterResult)
+            makeMobileResult(jupiterPhase: jupiterPhase, jupiterResult: jupiterResult, timeOffset: self.mobileResultTimeOffset)
         }
     }
     
-    private func makeMobileResult(jupiterPhase: JupiterPhase, jupiterResult: JupiterResult) {
+    private func makeMobileResult(jupiterPhase: JupiterPhase, jupiterResult: JupiterResult, timeOffset: Int) {
         let is_vehicle = jupiterResult.is_vehicle
-        let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
+        
+        let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int - timeOffset
         guard let levelId = self.getLevelId(sectorId: self.sectorId, buildingName: jupiterResult.building_name, levelName: jupiterResult.level_name) else {
             JupiterLogger.e(tag: "JupiterManager", message: "(makeMobileResult) level_id find fail \(self.sectorId):\(jupiterResult.building_name):\(jupiterResult.level_name)")
             return
@@ -480,6 +511,7 @@ public class JupiterManager: JupiterCalcManagerDelegate, MockResultDelegate {
         case .NONE:
             phase = 0
         }
+        
             
         let mobileResult = MobileResult(tenant_user_name: self.tenantUserName,
                                         is_vehicle: is_vehicle,

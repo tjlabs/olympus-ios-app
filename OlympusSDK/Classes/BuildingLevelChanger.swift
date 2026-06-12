@@ -386,51 +386,52 @@ class BuildingLevelChanger {
         return first.1 != "B0" && buildingLevelByPeakBuffer.allSatisfy { $0.0 == first.0 && $0.1 == first.1 }
     }
 
-//    func calculateLevelByBle(data: (Int, [(String, Float)])) -> String {
-//        var result: String = "UNKNOWN"
-//        var strongestBleData: (String, String, Float)?
-//
-//        var checker = [(String, String, Float)]()
-//        let bleData = data.1
-//        for (levelName, wardIds) in levelWardsMap {
-//            for (id, rssi) in bleData {
-//                if wardIds.contains(id) {
-//                    let normalized_rssi = Float(rssi)
-//                    if normalized_rssi >= -90 {
-//                        checker.append((levelName, id, normalized_rssi))
-//                    }
-//
-//                    if let stronggest = strongestBleData {
-//                        if stronggest.2 < normalized_rssi {
-//                            strongestBleData = (levelName, id, normalized_rssi)
-//                        }
-//                    } else {
-//                        strongestBleData = (levelName, id, normalized_rssi)
-//                    }
-//                }
-//            }
-//        }
-//
-//        if let stronggest = strongestBleData {
-//            if stronggest.2 >= -55 {
-//                return getLevelInKey(key: stronggest.0)
-//            }
-//        }
-//
-//        if checker.count >= 2 {
-//            let frequentLevel = mostFrequentCheckerValue(from: checker)
-//            result = frequentLevel
-//        } else if checker.count == 1 {
-//            if checker[0].2 >= -80 {
-//                result = checker[0].0
-//            }
-//        }
-//
-//        return result != "UNKNOWN" ? getLevelInKey(key: result) : result
-//    }
+    func calculateLevelByBle(data: (Int, [(String, Float)])) -> String? {
+        var result: String?
+        var strongestBleData: (String, String, Float)?
+
+        var checker = [(String, String, Float)]()
+        let bleData = data.1
+        for (levelName, value) in levelWardsMap {
+            let wardIds = value.map{$0.name}
+            for (id, rssi) in bleData {
+                if wardIds.contains(id) {
+                    if rssi >= -90 {
+                        checker.append((levelName, id, rssi))
+                    }
+
+                    if let stronggest = strongestBleData {
+                        if stronggest.2 < rssi {
+                            strongestBleData = (levelName, id, rssi)
+                        }
+                    } else {
+                        strongestBleData = (levelName, id, rssi)
+                    }
+                }
+            }
+        }
+
+        if let stronggest = strongestBleData {
+            if stronggest.2 >= -55 {
+                return getLevelInKey(key: stronggest.0)
+            }
+        }
+
+        if checker.count >= 2 {
+            let frequentLevel = mostFrequentCheckerValue(from: checker)
+            result = frequentLevel
+        } else if checker.count == 1 {
+            if checker[0].2 >= -80 {
+                result = checker[0].0
+            }
+        }
+
+        return getLevelInKey(key: result)
+    }
     
-    private func getLevelInKey(key: String) -> String {
-        let splittedKey = key.split(separator: "_")
+    private func getLevelInKey(key: String?) -> String? {
+        guard let unwrappedKey = key else { return nil }
+        let splittedKey = unwrappedKey.split(separator: "_")
         return String(splittedKey[splittedKey.count-1])
     }
     

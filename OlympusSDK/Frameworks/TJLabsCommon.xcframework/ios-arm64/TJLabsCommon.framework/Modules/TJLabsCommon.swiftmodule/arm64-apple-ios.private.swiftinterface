@@ -76,7 +76,8 @@ extension Foundation.NSNotification.Name {
 public struct JupiterEvent {
   public let mobile_time: Swift.Int
   public let event_code: Swift.Int
-  public init(mobile_time: Swift.Int, event_code: Swift.Int)
+  public let event_info: Swift.String
+  public init(mobile_time: Swift.Int, event_code: Swift.Int, event_info: Swift.String)
 }
 public struct ReplayUserVelocity {
   public let uvd: TJLabsCommon.UserVelocity
@@ -91,7 +92,7 @@ public struct ReplayUserVelocity {
   #if compiler(>=5.3) && $NonescapableTypes
   public func createExportDirectory() -> Foundation.URL?
   #endif
-  public func createFiles(id: Swift.String, os: Swift.String)
+  public func createFiles(externalName: Swift.String, tenantUserName: Swift.String)
   public func getReplayFilesInExports() -> (rfdFiles: [(name: Swift.String, path: Swift.String)], uvdFiles: [(name: Swift.String, path: Swift.String)], eventFiles: [(name: Swift.String, path: Swift.String)])
   @discardableResult
   public func deleteReplayFile(at path: Swift.String) -> Swift.Bool
@@ -102,6 +103,7 @@ public struct ReplayUserVelocity {
   public func writeEvent(event: TJLabsCommon.JupiterEvent)
   public func writeRFD(rfd: TJLabsCommon.ReceivedForce)
   public func writeUVD(uvd: TJLabsCommon.UserVelocity, mode: TJLabsCommon.UserMode)
+  public func getServiceStartTime() -> Swift.Int
   #if compiler(>=5.3) && $NonescapableTypes
   public func getResultTimeOffset() -> Swift.Int?
   #endif

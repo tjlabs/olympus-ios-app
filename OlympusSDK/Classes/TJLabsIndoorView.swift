@@ -164,7 +164,7 @@ public class TJLabsIndoorView: UIView, TJLabsResourceManagerDelegate {
         self.sectorId = sectorId
         self.userId = userId
         TJLabsResourceManager.shared.delegate = self
-        TJLabsResourceManager.shared.loadResources(cloud: "AWS", region: region, sectorId: sectorId, completion: { isSuccess in
+        TJLabsResourceManager.shared.loadResources(cloud: "GCP", region: region, sectorId: sectorId, completion: { isSuccess in
             let msg = isSuccess ? "success" : "fail"
             JupiterLogger.i(tag: "TJLabsIndoorView", message: "initialize " + msg)
             self.isResourceLoaded = isSuccess

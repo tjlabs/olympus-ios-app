@@ -14,7 +14,7 @@
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios-simulator.abi.json</key>
 		<data>
-		EhknESYKfWivBLj5HlylBMzxgrY=
+		hhwclAf2KgZXfNG2ot4GJBWM+og=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios-simulator.private.swiftinterface</key>
 		<data>
@@ -30,11 +30,11 @@
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios-simulator.swiftmodule</key>
 		<data>
-		yy7SXlzU5QUsDwtEs9svQk9GKIs=
+		ge3el3igtOwlq9FqZzJ2obFeIyw=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/x86_64-apple-ios-simulator.abi.json</key>
 		<data>
-		EhknESYKfWivBLj5HlylBMzxgrY=
+		hhwclAf2KgZXfNG2ot4GJBWM+og=
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/x86_64-apple-ios-simulator.private.swiftinterface</key>
 		<data>
@@ -50,7 +50,7 @@
 		</data>
 		<key>Modules/TJLabsAuth.swiftmodule/x86_64-apple-ios-simulator.swiftmodule</key>
 		<data>
-		UmnGZBlBDRgPutA24cYwQBVCwzo=
+		PpPxRAUGscVPVBOuesR8Ak1tskU=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -58,7 +58,7 @@
 		</data>
 		<key>TJLabsAuthSecretConfig.plist</key>
 		<data>
-		WHwLg9j6uYGoOCVjZg4Nn7aYX5A=
+		QArVUcfsgePI8I0vk8sM+pk4aZw=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -74,7 +74,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			xp9yFY1NufA3nEphVbf8ZaNW8f2VH4Vl2oEcL5T5coA=
+			40nREz17ifTjWdqMW5ksvJ6O5LjktdGDMvVFrPudKyE=
 			</data>
 		</dict>
 		<key>Modules/TJLabsAuth.swiftmodule/arm64-apple-ios-simulator.private.swiftinterface</key>
@@ -102,14 +102,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			M1zILcQn8qd/6tdhphfR1OmHpUMcxZFqyLBaHbkt97k=
+			h0rzGRR0N6ZxiW/HfJIHfxz4m1ddHCpNmV9zTymrKYc=
 			</data>
 		</dict>
 		<key>Modules/TJLabsAuth.swiftmodule/x86_64-apple-ios-simulator.abi.json</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			xp9yFY1NufA3nEphVbf8ZaNW8f2VH4Vl2oEcL5T5coA=
+			40nREz17ifTjWdqMW5ksvJ6O5LjktdGDMvVFrPudKyE=
 			</data>
 		</dict>
 		<key>Modules/TJLabsAuth.swiftmodule/x86_64-apple-ios-simulator.private.swiftinterface</key>
@@ -137,7 +137,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			OuMDNRmvy4Apz1zmfkJP9fAtKlZJSX0cR+aKOHKeNh0=
+			QGIHZ3QzUzb9BSYtoJpFpAUJKEA+ISvE2eFnMRDHAto=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>
@@ -151,7 +151,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			kPWlWYZ6WvUczJz6XJ1ugXrgcYWv7qQKLJ0Zc5bDZ/Q=
+			LH9FPXKYLPikQwROEjluGdfBy1zQSApH4fWhiQYh5g8=
 			</data>
 		</dict>
 	</dict>

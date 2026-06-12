@@ -80,6 +80,7 @@ public enum JupiterServiceCode: Int {
     case BLUETOOTH_SCAN_STOP = 6
     case NETWORK_DISCONNECT = 7
     case GET_FIRST_RESULT = 8
+    case PEAK_DETECTED = 300
 }
 
 public enum JupiterPhase {
@@ -243,6 +244,7 @@ public struct SearchResult {
     public let loss_lm: Float
     public let loss_g_d: Float
     public let loss_g_h: Float
+    public let loss_lse: Float
 }
 
 public struct SelectedSearch {
@@ -273,6 +275,7 @@ public struct CandidateResult {
     public let loss_lm: Float
     public let loss_g_d: Float
     public let loss_g_h: Float
+    public let loss_pre_fixed: Float?
 }
 
 public struct SelectedCandidate {

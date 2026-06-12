@@ -218,10 +218,10 @@ relocations:
   - { offset: 0x5280E, size: 0x8, addend: 0x0, symName: '_$s10TJLabsAuth12SecretConfigO3set11customerKey10clientMetaySS_AA06ClientI0VSgtFZTf4nnd_n', symObjAddr: 0xD90, symBinAddr: 0x6B60, symSize: 0x180 }
   - { offset: 0x5286F, size: 0x8, addend: 0x0, symName: '_$s10TJLabsAuth12SecretConfigO06clientC0SSvgZTf4d_g', symObjAddr: 0xF10, symBinAddr: 0x6CE0, symSize: 0xC0 }
   - { offset: 0x52950, size: 0x8, addend: 0x0, symName: '_$s10TJLabsAuth0aB9ConstantsC8USER_URL_WZ', symObjAddr: 0x0, symBinAddr: 0x6F40, symSize: 0x110 }
-  - { offset: 0x52974, size: 0x8, addend: 0x0, symName: '_$s10TJLabsAuth0aB9ConstantsC13REGION_PREFIXSSvpZ', symObjAddr: 0x868, symBinAddr: 0x12850, symSize: 0x0 }
-  - { offset: 0x5298E, size: 0x8, addend: 0x0, symName: '_$s10TJLabsAuth0aB9ConstantsC11REGION_NAMESSvpZ', symObjAddr: 0x878, symBinAddr: 0x12860, symSize: 0x0 }
-  - { offset: 0x529A8, size: 0x8, addend: 0x0, symName: '_$s10TJLabsAuth0aB9ConstantsC11SERVER_TYPE33_ABEAF1F618731DB917D572A62DB361FCLLSSvpZ', symObjAddr: 0x888, symBinAddr: 0x12870, symSize: 0x0 }
-  - { offset: 0x529C2, size: 0x8, addend: 0x0, symName: '_$s10TJLabsAuth0aB9ConstantsC8USER_URLSSvpZ', symObjAddr: 0x2F88, symBinAddr: 0x14258, symSize: 0x0 }
+  - { offset: 0x52974, size: 0x8, addend: 0x0, symName: '_$s10TJLabsAuth0aB9ConstantsC13REGION_PREFIXSSvpZ', symObjAddr: 0x8E0, symBinAddr: 0x12850, symSize: 0x0 }
+  - { offset: 0x5298E, size: 0x8, addend: 0x0, symName: '_$s10TJLabsAuth0aB9ConstantsC11REGION_NAMESSvpZ', symObjAddr: 0x8F0, symBinAddr: 0x12860, symSize: 0x0 }
+  - { offset: 0x529A8, size: 0x8, addend: 0x0, symName: '_$s10TJLabsAuth0aB9ConstantsC11SERVER_TYPE33_ABEAF1F618731DB917D572A62DB361FCLLSSvpZ', symObjAddr: 0x900, symBinAddr: 0x12870, symSize: 0x0 }
+  - { offset: 0x529C2, size: 0x8, addend: 0x0, symName: '_$s10TJLabsAuth0aB9ConstantsC8USER_URLSSvpZ', symObjAddr: 0x2F98, symBinAddr: 0x14258, symSize: 0x0 }
   - { offset: 0x529D0, size: 0x8, addend: 0x0, symName: '_$s10TJLabsAuth0aB9ConstantsC8USER_URL_WZ', symObjAddr: 0x0, symBinAddr: 0x6F40, symSize: 0x110 }
   - { offset: 0x52AF5, size: 0x8, addend: 0x0, symName: '_$s10TJLabsAuth0aB9ConstantsCMa', symObjAddr: 0x830, symBinAddr: 0x7750, symSize: 0x20 }
   - { offset: 0x52B6A, size: 0x8, addend: 0x0, symName: '_$s10TJLabsAuth0aB9ConstantsC12setServerURL5cloud6region10serverTypeySS_S2StFZ', symObjAddr: 0x110, symBinAddr: 0x7050, symSize: 0x3F0 }

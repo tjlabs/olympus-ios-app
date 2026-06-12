@@ -21,18 +21,18 @@ public class JupiterFileUploader: NSObject, URLSessionTaskDelegate {
         return JupiterFileManager.shared.getReplayFilesInExports()
     }
     
-    func requestStorageFileURL(fileName: String, completion: @escaping (S3Output?) -> Void) {
+    func requestStorageFileURL(sectorId: Int, fileName: String, completion: @escaping (StorageOutput?) -> Void) {
         let successRange = 200..<300
-        let input = S3Input(file_name: fileName, content_type: "application/json")
-        JupiterNetworkManager.shared.postS3(url: JupiterNetworkConstants.getRecFileUploadURL(), input: input, completion: { [self] statusCode, returnedString, s3Input in
+        let input = StorageInput(sector_id: sectorId, operating_system: "iOS", file_name: fileName)
+        JupiterNetworkManager.shared.postStorage(url: JupiterNetworkConstants.getUserFileUploadURL(), input: input, completion: { [self] statusCode, returnedString, storageInput in
             if successRange.contains(statusCode) {
-                guard let s3Output = decodeS3Output(from: returnedString) else {
+                guard let StorageOutput = decodeStorageOutput(from: returnedString) else {
                     completion(nil)
                     return
                 }
-                completion(s3Output)
+                completion(StorageOutput)
             } else {
-                JupiterLogger.e(tag: "JupiterFileUploader", message: "\(statusCode) fail")
+                JupiterLogger.e(tag: "JupiterFileUploader", message: "(requestStorageFileURL) : \(statusCode), \(returnedString)")
                 completion(nil)
             }
         })
@@ -56,7 +56,7 @@ public class JupiterFileUploader: NSObject, URLSessionTaskDelegate {
         do {
             fileAttributes = try FileManager.default.attributesOfItem(atPath: fileURL.path)
         } catch {
-            JupiterLogger.e(tag: "JupiterFileUploader", message: "uploadFileToS3 : failed to read file attributes \(error)")
+            JupiterLogger.e(tag: "JupiterFileUploader", message: "uploadFileToStorage : failed to read file attributes \(error)")
             completion?(false)
             return
         }
@@ -72,12 +72,12 @@ public class JupiterFileUploader: NSObject, URLSessionTaskDelegate {
         if let completion = completion {
             completionHandlers[task.taskIdentifier] = completion
         }
-        JupiterLogger.i(tag: "JupiterFileUploader", message: "uploadFileToS3 : background upload started for \(fileURL.lastPathComponent)")
+        JupiterLogger.i(tag: "JupiterFileUploader", message: "uploadFileToStorage : background upload started for \(fileURL.lastPathComponent)")
         task.resume()
     }
     
     // MARK: - Decoding
-    private func decodeS3Output(from jsonString: String) -> S3Output? {
+    private func decodeStorageOutput(from jsonString: String) -> StorageOutput? {
         guard let data = jsonString.data(using: .utf8) else {
             JupiterLogger.e(tag: "JupiterFileUploader", message: "utf8 → data fail")
             return nil
@@ -85,7 +85,7 @@ public class JupiterFileUploader: NSObject, URLSessionTaskDelegate {
 
         let decoder = JSONDecoder()
         do {
-            let result = try decoder.decode(S3Output.self, from: data)
+            let result = try decoder.decode(StorageOutput.self, from: data)
             return result
         } catch {
             JupiterLogger.e(tag: "JupiterFileUploader", message: "decode S3Output fail: \(error)")

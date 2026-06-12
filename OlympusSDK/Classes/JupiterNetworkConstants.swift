@@ -6,13 +6,12 @@ public class JupiterNetworkConstants {
     static let TIMEOUT_VALUE_POST: TimeInterval = 5.0
     
     static let USER_LOGIN_SERVER_VERSION = "2026-05-18"
-    static let USER_RC_SERVER_VERSION = "2024-06-12"
+    static let USER_FILE_UPLOAD_SERVER_VERSION = "2026-06-09"
     
     static let REC_RFD_SERVER_VERSION = "2025-04-02"
     static let REC_UVD_SERVER_VERSION = "2025-04-02"
     static let REC_MOBILE_RESULT_SERVER_VERSION = "2026-04-09"
     static let REC_MOBILE_REPORT_SERVER_VERSION = "2025-04-02"
-    static let REC_FILE_UPLOAD_SERVER_VERSION = "2026-04-29"
     
     static let CALC_DIRECTIONS_SERVER_VERSION = "2026-05-28"
     
@@ -29,6 +28,12 @@ public class JupiterNetworkConstants {
     private(set) static var REC_URL = HTTP_PREFIX + REGION_PREFIX + "rec" + JUPITER_SUFFIX
     private(set) static var CALC_URL = HTTP_PREFIX + REGION_PREFIX + "calc" + JUPITER_SUFFIX
     private(set) static var CLIENT_URL = HTTP_PREFIX + REGION_PREFIX + "client" + JUPITER_SUFFIX
+    
+    private(set) static var IS_PROD = false
+    
+    public static func setServerBranch(prod: Bool) {
+        IS_PROD = prod
+    }
     
     public static func setServerURL(cloud: String, region: String) {
         REGION_NAME = region
@@ -84,10 +89,6 @@ public class JupiterNetworkConstants {
         return USER_LOGIN_SERVER_VERSION
     }
     
-    public static func getUserRcVersion() -> String {
-        return USER_RC_SERVER_VERSION
-    }
-    
     public static func getRecRfdServerVersion() -> String {
         return REC_RFD_SERVER_VERSION
     }
@@ -101,15 +102,11 @@ public class JupiterNetworkConstants {
     }
     
     public static func getRecFileUploadServerVersion() -> String {
-        return REC_FILE_UPLOAD_SERVER_VERSION
+        return USER_FILE_UPLOAD_SERVER_VERSION
     }
     
     public static func getUserLoginURL() -> String {
         return USER_URL + "/" + USER_LOGIN_SERVER_VERSION + "/tenants/me/users"
-    }
-    
-    public static func getUserRcURL() -> String {
-        return USER_URL + "/" + USER_RC_SERVER_VERSION + "/rssi-compensation-result"
     }
     
     public static func getRecRfdURL() -> String {
@@ -128,8 +125,8 @@ public class JupiterNetworkConstants {
         return REC_URL + "/" + REC_MOBILE_REPORT_SERVER_VERSION + "/mobile-report"
     }
     
-    public static func getRecFileUploadURL() -> String {
-        return REC_URL + "/" + REC_FILE_UPLOAD_SERVER_VERSION + "/storage"
+    public static func getUserFileUploadURL() -> String {
+        return USER_URL + "/" + USER_FILE_UPLOAD_SERVER_VERSION + "/collections"
     }
     
     public static func getCalcDirsServerVersion() -> String {
@@ -141,7 +138,10 @@ public class JupiterNetworkConstants {
     }
     
     public static func getLocationSingleEpochURL() -> String {
-        return "https://asia-northeast3.location.calc.jupiter.tjlabs.dev/location/v1/single-epoch"  // dev
-//        return "https://me-central2.location.calc.jupiter.tjlabs.dev/location/v1/single-epoch" // prod
+        if IS_PROD {
+            return "https://me-central2.location.calc.jupiter.tjlabs.dev/location/v1/single-epoch" // prod
+        } else {
+            return "https://asia-northeast3.location.calc.jupiter.tjlabs.dev/location/v1/single-epoch"  // dev
+        }
     }
 }

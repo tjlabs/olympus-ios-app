@@ -362,15 +362,21 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     private var curUserModeEnum: UserMode = .MODE_VEHICLE
     private var recentLandmarkPeaks: [PeakData]?
     private var mockMode: Bool = false
+    public var isUseOSHeading: Bool = false {
+        didSet {
+            jupiterManager?.isUseOSHeading = isUseOSHeading
+        }
+    }
     
     // MARK: - init & deinit
-    public init(id: String, cloud: String = JupiterCloud.AWS.rawValue, region: String = JupiterRegion.KOREA.rawValue, sectorId: Int, debugOption: Bool = false) {
+    public init(id: String, cloud: String = JupiterCloud.GCP.rawValue, region: String = JupiterRegion.KOREA.rawValue, sectorId: Int, debugOption: Bool = false) {
         self.id = id
         self.cloud = cloud
         self.region = region
         self.sectorId = sectorId
         
         self.jupiterManager = JupiterManager(id: id, cloud: cloud, region: region, sectorId: sectorId, debugOption: debugOption)
+        self.jupiterManager?.isUseOSHeading = isUseOSHeading
         self.jupiterManager?.delegate = self
         
         self.routingManager = RoutingManager(id: id, sectorId: sectorId)

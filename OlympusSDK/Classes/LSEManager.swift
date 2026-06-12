@@ -138,33 +138,32 @@ class LSEManager: RFDGeneratorDelegate {
         }
     }
 
-    private func makeBufferedRequestForLastFiveSeconds(curPmResult: FineLocationTrackingOutput?) -> (payload: LocationRequestPayload, context: LSERequestContext)? {
-        guard let curPmResult = curPmResult, let resourceManager = self.resourceManager else { return nil }
-        guard let buildingId = resourceManager.getBuildingId(buildingName: curPmResult.building_name) else { return nil }
-        let levelId = resourceManager.getLevelId(
-            sectorId: self.sectorId,
-            buildingName: curPmResult.building_name,
-            levelName: curPmResult.level_name
-        )
-        let requestContext = LSERequestContext(
-            index: curPmResult.index,
-            buildingName: curPmResult.building_name,
-            buildingId: buildingId,
-            levelName: curPmResult.level_name,
-            levelId: levelId,
-            x: curPmResult.x,
-            y: curPmResult.y
-        )
-        
+    private func makeBufferedRequestForLastFiveSeconds(curPmResult: FineLocationTrackingOutput?) -> (payload: LocationRequestPayload, context: LSERequestContext?)? {
+        guard let resourceManager = self.resourceManager else { return nil }
+        var requestContext: LSERequestContext?
+        if let curPmResult = curPmResult {
+            if let buildingId = resourceManager.getBuildingId(buildingName: curPmResult.building_name),
+               let levelId = resourceManager.getLevelId(
+                sectorId: self.sectorId,
+                buildingName: curPmResult.building_name,
+                levelName: curPmResult.level_name
+            ) {
+                requestContext = LSERequestContext(
+                    index: curPmResult.index,
+                    buildingName: curPmResult.building_name,
+                    buildingId: buildingId,
+                    levelName: curPmResult.level_name,
+                    levelId: levelId,
+                    x: curPmResult.x,
+                    y: curPmResult.y
+                )
+            }
+        }
         
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
         let windowStart = currentTime - payloadWindowMillis
 
         return rfdBufferQueue.sync {
-            guard self.rfdBuffer.contains(where: { $0.mobile_time <= windowStart }) else {
-                return nil
-            }
-
             let measurements = self.rfdBuffer
                 .filter { $0.mobile_time >= windowStart && $0.mobile_time <= currentTime }
                 .flatMap { rfd in
@@ -180,7 +179,7 @@ class LSEManager: RFDGeneratorDelegate {
             let payload = LocationRequestPayload(
                 trace_id: self.traceId,
                 sector_code: self.sectorId,
-                building_code: buildingId,
+                building_code: requestContext?.buildingId,
                 algorithm_mode: self.algorithmMode,
                 measurements: measurements
             )

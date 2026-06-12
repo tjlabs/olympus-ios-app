@@ -7,6 +7,9 @@ class SolutionEstimator {
     init(sectorId: Int) {
         self.sectorId = sectorId
     }
+    private let SEARCHING_LSE_MIN_COUNT = 10
+    private let SEARCHING_LSE_HEADING_THRESHOLD_DEG: Float = 45
+    private let SEARCHING_LSE_MIN_TREND_DISTANCE: Float = 5
     
     var sectorId: Int
     var preFixedLandmarkPos: [Float]?
@@ -105,6 +108,7 @@ class SolutionEstimator {
                                               landmarks: (older: LandmarkData, recent: LandmarkData),
                                               mode: UserMode,
                                               isDrStraight: Bool,
+                                              lseResult: FineLocationTrackingOutput?,
                                               residualSplitter: Int = 10) -> [SearchResult] {
         guard userPeakBuffer.count >= 2 else { return [] }
         let building = buildingLevelByUserPeak.0
@@ -230,6 +234,13 @@ class SolutionEstimator {
                 let loss_lm = ocDist
                 let loss_g_d: Float = lossDistSum
                 let loss_g_h: Float = lossHeadingSum
+                var loss_lse: Float = 0
+                
+                if let lse = lseResult {
+                    let diffX = headResult.x - lse.x
+                    let diffY = headResult.y - lse.y
+                    loss_lse = sqrt(diffX*diffX + diffY*diffY)
+                }
                 
                 let sResult = SearchResult(older: localOlderCand,
                                            recent: cand,
@@ -238,7 +249,7 @@ class SolutionEstimator {
                                            head: head,
                                            headResult: headResult,
                                            lossPointResultList: lossPointResult,
-                                           loss_lm: loss_lm, loss_g_d: loss_g_d, loss_g_h: loss_g_h)
+                                           loss_lm: loss_lm, loss_g_d: loss_g_d, loss_g_h: loss_g_h, loss_lse: loss_lse)
                 
                 
                 resultList.append(sResult)
@@ -250,14 +261,14 @@ class SolutionEstimator {
     
     func calculateSearchResult(lossParamAtEachCand: [SearchResult]) -> SelectedSearch? {
         guard let best = lossParamAtEachCand.min(by: {
-            let lhsLoss = $0.loss_lm + $0.loss_g_d + $0.loss_g_h
-            let rhsLoss = $1.loss_lm + $1.loss_g_d + $1.loss_g_h
+            let lhsLoss = $0.loss_lm + $0.loss_g_d + $0.loss_g_h + $0.loss_lse
+            let rhsLoss = $1.loss_lm + $1.loss_g_d + $1.loss_g_h + $0.loss_lse
             return lhsLoss < rhsLoss
         }) else {
             return nil
         }
         
-        let loss = best.loss_lm + best.loss_g_d + best.loss_g_h
+        let loss = best.loss_lm + best.loss_g_d + best.loss_g_h + best.loss_lse
         let selected = SelectedSearch(older: best.older,
                                       recent: best.recent,
                                       traj: best.traj,
@@ -277,6 +288,7 @@ class SolutionEstimator {
                                       curPmResult: FineLocationTrackingOutput,
                                       mode: UserMode,
                                       matchedNode: NodeData?,
+                                      preFixed: FixedPeak? = nil,
                                       isDrStraight: Bool,
                                       residualSplitter: Int = 10,
                                       maxGroupSwitchLimit: Int = 2) -> [CandidateResult] {
@@ -457,6 +469,15 @@ class SolutionEstimator {
                 let loss_g_d: Float = lossDistSum
                 let loss_g_h: Float = lossHeadingSum
                 
+                var loss_pre_fixed: Float?
+                if let preFixedPeak = preFixed, let ocPeak = localOlderCand, let prePeakX = preFixedPeak.lm_x, let prePeakY = preFixedPeak.lm_y {
+                    if preFixedPeak.id == olderUserPeak.id {
+                        let diffX = prePeakX - ocPeak.x
+                        let diffY = prePeakY - ocPeak.y
+                        loss_pre_fixed = sqrt(Float(diffX*diffX + diffY*diffY))
+                    }
+                }
+                
                 let cResult = CandidateResult(older: localOlderCand,
                                               recent: cand,
                                               links: candLinkNums, linkGroups: candLinkGroupNums,
@@ -466,7 +487,7 @@ class SolutionEstimator {
                                               isInSameLinkGroup: isInSameLinkGroup, linkGroupSwitchCount: switchCount,
                                               distWithRecentPeakResult: distWithRecentPeakResult,
                                               lossPointResultList: lossPointResult,
-                                              loss_lm: loss_lm, loss_g_d: loss_g_d, loss_g_h: loss_g_h)
+                                              loss_lm: loss_lm, loss_g_d: loss_g_d, loss_g_h: loss_g_h, loss_pre_fixed: loss_pre_fixed)
                 
                 resultList.append(cResult)
             }
@@ -664,15 +685,30 @@ class SolutionEstimator {
             for cand in lossParamAtEachCand {
                 guard cand.linkGroupSwitchCount <= 1 else { continue }
                 let penalty: Float = !cand.isInSameLinkGroup ? 2.0 : 1.0
-                let loss = ((cand.loss_lm + cand.loss_g_d + cand.loss_g_h) * penalty)/3
-                selected.append((cand: cand, loss: loss))
+                
+                var divideNum: Float = 3
+                if let loss_pre_fixed = cand.loss_pre_fixed {
+                    divideNum = 4
+                    let loss = ((cand.loss_lm + cand.loss_g_d + cand.loss_g_h + loss_pre_fixed) * penalty)/divideNum
+                    selected.append((cand: cand, loss: loss))
+                } else {
+                    let loss = ((cand.loss_lm + cand.loss_g_d + cand.loss_g_h) * penalty)/divideNum
+                    selected.append((cand: cand, loss: loss))
+                }
             }
         } else {
             // 1. cand.isInSameLinkGroup을 만족하는 후보군들은 반드시 포함
             for cand in lossParamAtEachCand where cand.isInSameLinkGroup {
                 let penalty: Float = 1.0
-                let loss = ((cand.loss_lm + cand.loss_g_d + cand.loss_g_h) * penalty)/3
-                selected.append((cand: cand, loss: loss))
+                var divideNum: Float = 3
+                if let loss_pre_fixed = cand.loss_pre_fixed {
+                    divideNum = 4
+                    let loss = ((cand.loss_lm + cand.loss_g_d + cand.loss_g_h + loss_pre_fixed) * penalty)/divideNum
+                    selected.append((cand: cand, loss: loss))
+                } else {
+                    let loss = ((cand.loss_lm + cand.loss_g_d + cand.loss_g_h) * penalty)/divideNum
+                    selected.append((cand: cand, loss: loss))
+                }
             }
             
             // 2. cand.isInSameLinkGroup과 무관하게 distWithRecentPeakResult 값이 가장 작은 후보군을 하나 뽑음
@@ -689,8 +725,16 @@ class SolutionEstimator {
                 // 3. 2에서 뽑아낸 후보군이 기존 포함 후보가 아니면 추가
                 if !isAlreadyIncluded {
                     let penalty: Float = 1.0
-                    let loss = ((minDistCand.loss_lm + minDistCand.loss_g_d + minDistCand.loss_g_h) * penalty)/3
-                    selected.append((cand: minDistCand, loss: loss))
+                    
+                    var divideNum: Float = 3
+                    if let loss_pre_fixed = minDistCand.loss_pre_fixed {
+                        divideNum = 4
+                        let loss = ((minDistCand.loss_lm + minDistCand.loss_g_d + minDistCand.loss_g_h + loss_pre_fixed) * penalty)/divideNum
+                        selected.append((cand: minDistCand, loss: loss))
+                    } else {
+                        let loss = ((minDistCand.loss_lm + minDistCand.loss_g_d + minDistCand.loss_g_h) * penalty)/divideNum
+                        selected.append((cand: minDistCand, loss: loss))
+                    }
                 }
             }
         }
