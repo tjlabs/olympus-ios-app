@@ -50,7 +50,7 @@ public class JupiterManager: JupiterCalcManagerDelegate, MockResultDelegate {
             delegate?.isJupiterInOutStateChanged(.INDOOR)
         } else if phase == .EXITING {
             delegate?.isJupiterInOutStateChanged(.IN_TO_OUT)
-        } else {
+        } else if phase == .OUTDOOR {
             delegate?.isJupiterInOutStateChanged(.OUTDOOR)
         }
         self.jupiterPhase = phase
@@ -393,6 +393,10 @@ public class JupiterManager: JupiterCalcManagerDelegate, MockResultDelegate {
     }
     
     // MARK: - Bridging
+    func setLSEAppName(name: String) {
+        jupiterCalcManager?.setLSEAppName(name: name)
+    }
+    
     func getBuildingsData() -> [BuildingData]? {
         let buildingsData = jupiterCalcManager?.buildingsData
         JupiterLogger.i(tag: "JupiterManager", message: "getBuildingsData : buildingsData= \(buildingsData)")
@@ -508,6 +512,8 @@ public class JupiterManager: JupiterCalcManagerDelegate, MockResultDelegate {
             phase = 3
         case .EXITING:
             phase = 4
+        case .OUTDOOR:
+            phase = 0
         case .NONE:
             phase = 0
         }

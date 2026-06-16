@@ -135,7 +135,7 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         self.landmarkTagger = LandmarkTagger(sectorId: sectorId)
         self.solutionEstimator = SolutionEstimator(sectorId: sectorId)
         self.stateManager = JupiterStateManager()
-        self.lseManager = LSEManager(sectorId: sectorId, resourceManager: self.tjlabsResourceManager)
+        self.lseManager = LSEManager(sectorId: sectorId, traceId: tenantUserName, externalName: id, resourceManager: tjlabsResourceManager)
         
         peakDetector.setInnerWardIds(ids: self.entManager!.getEntInnermostWardIds())
         
@@ -228,6 +228,8 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         JupiterReplayer.shared.replayMode ? uvdGenerator?.generateReplayUvd() : uvdGenerator?.generateUvd()
         uvdGenerator?.delegate = self
         
+        let lseAppName = JupiterReplayer.shared.replayMode ? "ios_jupiter_replay" : "ios_jupiter_dev"
+        lseManager?.setAppName(name: lseAppName)
         lseManager?.startService()
         updateOSHeadingMonitoring()
         
@@ -550,6 +552,8 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         case .EXITING:
             // TODO
             JupiterLogger.i(tag: "EXITING", message: "TODO")
+        case .OUTDOOR:
+            JupiterLogger.i(tag: "OUTDOOR", message: "TODO")
         case .NONE:
             break
         }
@@ -1051,8 +1055,8 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                 break peakHandling
             }
             guard let matchedWithUserPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: userPeak,
-                                                                                        building: building,
-                                                                                        level: level) else {
+                                                                                           building: building,
+                                                                                           level: level) else {
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) cannot find matched landmark with user peak \(userPeak.id)")
                 break peakHandling
             }
@@ -1075,7 +1079,7 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
             guard let matchedWithOldUserPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: olderUserPeak,
                                                                                         building: building,
                                                                                         level: level) else {
-                JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) cannot find matched landmark with old user peak \(userPeak.id)")
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) cannot find matched landmark with old user peak \(olderUserPeak.id)")
                 break peakHandling
             }
             
@@ -1096,36 +1100,57 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                                                                                           lseSnapshotBuffer: self.lseSnapshotBuffer)
                 if let selectedSearch = solutionEstimator.calculateSearchResult(lossParamAtEachCand: searchResult) {
                     let bestResult = selectedSearch.headResult
+                    solutionEstimator.setPreFixedLandmark(peakData: selectedSearch.recent)
                     self.debug_selected_search = selectedSearch
                     self.searchingIndex = userPeak.peak_index
                     self.curResult = bestResult
                     self.CallWhenFirstResponse()
                     JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) searchResult= [index:\(bestResult.index), x:\(bestResult.x), y:\(bestResult.y), h:\(bestResult.absolute_heading)]")
                     stackManager.stackSearchResult(searchResult: bestResult)
-                    let searchResultBuffer = stackManager.getSearchResultBuffer(size: 2)
-                    if searchResultBuffer.count < 2 { break peakHandling }
+                    let searchResultBuffer = stackManager.getSearchResultBuffer(size: 3)
+                    if searchResultBuffer.count < 3 { break peakHandling }
                     
-                    let preSearchResult = searchResultBuffer[0]
-                    let curSearchResult = searchResultBuffer[1]
-                    let isConnected = checkResultConnectionForTracking(preResult: preSearchResult, curResult: curSearchResult, uvdBuffer: uvdBufferForSearching, mode: mode)
-                    if isConnected {
-                        guard let ixyhs = stackManager.propagateUsingUvd(uvdBuffer: uvdBufferForSearching, fltResult: bestResult) else { break peakHandling }
-                        var curResult = bestResult
-                        let propagatedX = bestResult.x + ixyhs.x
-                        let propagatedY = bestResult.y + ixyhs.y
-                        let propagatedH = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(bestResult.absolute_heading + ixyhs.heading)))
-                        curResult.x = propagatedX
-                        curResult.y = propagatedY
-                        curResult.absolute_heading = propagatedH
-                        guard let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: curResult.x, y: curResult.y, heading: curResult.absolute_heading, isUseHeading: false, mode: mode, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else { break peakHandling }
-                        curResult.x = pmResult.x
-                        curResult.y = pmResult.y
-                        curResult.absolute_heading = pmResult.heading
-                        
-                        correctionIndex = userPeak.peak_index
-                        correctionId = userPeak.id
-                        startIndoorTracking(uvd: userVelocity, fltResult: curResult)
-                    }
+                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) best searchResult lm= [\(selectedSearch.recent?.x), \(selectedSearch.recent?.y)")
+                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) best searchResult= [index:\(bestResult.index), x:\(bestResult.x), y:\(bestResult.y), h:\(bestResult.absolute_heading)]")
+                    
+                    guard let ixyhs = stackManager.propagateUsingUvd(uvdBuffer: uvdBufferForSearching, fltResult: bestResult) else { break peakHandling }
+                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) propagateUsingUvd : curIndex= \(userVelocity.index)")
+                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) propagateUsingUvd : ixyhs=[\(ixyhs.x), \(ixyhs.y), \(ixyhs.heading)]")
+                    var curResult = bestResult
+                    let propagatedX = bestResult.x + ixyhs.x
+                    let propagatedY = bestResult.y + ixyhs.y
+                    let propagatedH = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(bestResult.absolute_heading + ixyhs.heading)))
+                    curResult.x = propagatedX
+                    curResult.y = propagatedY
+                    curResult.absolute_heading = propagatedH
+                    guard let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: curResult.x, y: curResult.y, heading: curResult.absolute_heading, isUseHeading: false, mode: mode, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else { break peakHandling }
+                    curResult.x = pmResult.x
+                    curResult.y = pmResult.y
+                    curResult.absolute_heading = pmResult.heading
+                    
+                    correctionIndex = userPeak.peak_index
+                    correctionId = userPeak.id
+                    startIndoorTracking(uvd: userVelocity, fltResult: curResult)
+                    
+//                    let isConnected = checkResultConnectionForTracking(preResult: preSearchResult, curResult: curSearchResult, uvdBuffer: uvdBufferForSearching, mode: mode)
+//                    if isConnected {
+//                        guard let ixyhs = stackManager.propagateUsingUvd(uvdBuffer: uvdBufferForSearching, fltResult: bestResult) else { break peakHandling }
+//                        var curResult = bestResult
+//                        let propagatedX = bestResult.x + ixyhs.x
+//                        let propagatedY = bestResult.y + ixyhs.y
+//                        let propagatedH = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(bestResult.absolute_heading + ixyhs.heading)))
+//                        curResult.x = propagatedX
+//                        curResult.y = propagatedY
+//                        curResult.absolute_heading = propagatedH
+//                        guard let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: curResult.x, y: curResult.y, heading: curResult.absolute_heading, isUseHeading: false, mode: mode, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else { break peakHandling }
+//                        curResult.x = pmResult.x
+//                        curResult.y = pmResult.y
+//                        curResult.absolute_heading = pmResult.heading
+//                        
+//                        correctionIndex = userPeak.peak_index
+//                        correctionId = userPeak.id
+//                        startIndoorTracking(uvd: userVelocity, fltResult: curResult)
+//                    }
                 }
             }
         }
@@ -1773,6 +1798,8 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
             return 50
         case .EXITING:
             return 30
+        case .OUTDOOR:
+            return 10
         case .NONE:
             return 10
         }
@@ -1808,6 +1835,10 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
     }
     
     // MARK: - Bridging
+    func setLSEAppName(name: String) {
+        lseManager?.setAppName(name: name)
+    }
+    
     func getMatchedLevelId(key: String) -> Int? {
         return tjlabsResourceManager.getMatchedLevelId(key: key)
     }

@@ -5,7 +5,7 @@ import TJLabsResource
 class StackManager {
     init() { }
     
-    private let LSE_DIST_THRESHOLD: Float = 50
+    private let LSE_DIST_THRESHOLD: Float = 40
     private let SAME_COORD_THRESHOLD: Int = 20
     
     private let DR_BUFFER_SIZE: Int = 200

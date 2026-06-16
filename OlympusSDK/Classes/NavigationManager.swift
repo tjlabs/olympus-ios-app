@@ -847,6 +847,10 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     }
     
     // MARK: - Bridging
+    public func setLSEAppName(name: String) {
+        jupiterManager?.setLSEAppName(name: name)
+    }
+    
     public func getMatchedLevelId(key: String) -> Int? {
         return jupiterManager?.getMatchedLevelId(key: key)
     }

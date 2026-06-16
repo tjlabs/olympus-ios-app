@@ -84,7 +84,7 @@ public enum JupiterServiceCode: Int {
 }
 
 public enum JupiterPhase {
-    case NONE, ENTERING, SEARCHING, TRACKING, EXITING
+    case NONE, ENTERING, SEARCHING, TRACKING, EXITING, OUTDOOR
 }
 
 // MARK: - JupiterResult

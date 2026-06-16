@@ -13,7 +13,7 @@ class SolutionEstimator {
     private let SEARCHING_LSE_MIN_TREND_DISTANCE: Float = 5
     
     var sectorId: Int
-    var preFixedLandmarkPos: [Float]?
+    var preFixedLandmark: PeakData?
     
     func getUvdBufferForEstimation(startIndex: Int, endIndex: Int, uvdBuffer: [UserVelocity]) -> [UserVelocity] {
         var slicedUvd = [UserVelocity]()
@@ -103,6 +103,10 @@ class SolutionEstimator {
     
     
     // MARK: - Searching
+    func setPreFixedLandmark(peakData: PeakData?) {
+        self.preFixedLandmark = peakData
+    }
+    
     func calculateLossParamAtEachCandInSearch(searchTrajList: [[CandidateTrajectory]],
                                               userPeakBuffer: [UserPeak],
                                               buildingLevelByUserPeak: (String, String),
@@ -127,10 +131,7 @@ class SolutionEstimator {
         let recentLandmarkCands: [PeakData] = landmarks.recent.peaks
         
         let searchingLseSnapShots = getSearchingSingleEpochSnapshotsFor(lseSnapshotBuffer: lseSnapshotBuffer, buildingName: building, levelName: level)
-        let hasEnoughSearchingLseSamples = searchingLseSnapShots.count >= SEARCHING_LSE_BUFFER_SIZE
-        let lseAnchor = resolveSearchingLseAnchor(lseSnapshotBuffer: searchingLseSnapShots, buildingName: building, levelName: level)
-        let lseTrendHeading = hasEnoughSearchingLseSamples ? resolveSearchingLseTrendHeading(lseSnapshotBuffer: searchingLseSnapShots, buildingName: building, levelName: level) : nil
-        JupiterLogger.i(tag: "SolutionEstimator", message: "(resolveSearchingLseTrendHeading) : searchingLseSnapShots= \(searchingLseSnapShots)")
+        guard let lseTrendHeading = resolveSearchingLseTrendHeading(lseSnapshotBuffer: searchingLseSnapShots, buildingName: building, levelName: level) else { return [] }
         JupiterLogger.i(tag: "SolutionEstimator", message: "(resolveSearchingLseTrendHeading) : lseTrendHeading= \(lseTrendHeading)")
         for searchTraj in searchTrajList {
             guard searchTraj.count >= 2 else { continue }
@@ -144,7 +145,7 @@ class SolutionEstimator {
             guard let rpIdx = anchorIdx else { continue }
             
             for cand in recentLandmarkCands {
-                JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParamAtEachCandInSearch) CAND_START cand=[\(cand.x),\(cand.y)] matchedLinks=\(cand.matched_links)")
+                JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParamAtEachCandInSearch) CAND_START cand=[\(cand.x),\(cand.y)] matchedLinks=\(cand.matched_links)")
 
                 // Recent Peak과 매칭되는 landmark 후보군들로 shit 시키기
                 let offsetX = Float(cand.x) - searchTraj[rpIdx].x
@@ -159,7 +160,7 @@ class SolutionEstimator {
                 }
                 
                 guard let first = shiftedTraj.first, let last = shiftedTraj.last else {
-                    JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParamAtEachCandInSearch) shiftedTraj first/last missing")
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParamAtEachCandInSearch) shiftedTraj first/last missing")
                     continue
                 }
                 
@@ -172,7 +173,7 @@ class SolutionEstimator {
                                                                  isUseHeading: false,
                                                                  mode: mode,
                                                                  paddingValues: JupiterMode.PADDING_VALUES_LARGE) else {
-                    JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParamAtEachCandInSearch) tail pathMatching failed with [\(first.x),\(first.y),\(first.heading)]")
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParamAtEachCandInSearch) tail pathMatching failed with [\(first.x),\(first.y),\(first.heading)]")
                     continue
                 }
                 
@@ -185,7 +186,7 @@ class SolutionEstimator {
                                                                  isUseHeading: isDrStraight,
                                                                  mode: mode,
                                                                  paddingValues: JupiterMode.PADDING_VALUES_LARGE) else {
-                    JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParamAtEachCandInSearch) head pathMatching failed with [\(last.x),\(last.y),\(last.heading)] // isUseHeading= \(isDrStraight)")
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParamAtEachCandInSearch) head pathMatching failed with [\(last.x),\(last.y),\(last.heading)] // isUseHeading= \(isDrStraight)")
                     continue
                 }
                 
@@ -196,18 +197,33 @@ class SolutionEstimator {
                 for oc in olderLandmarkCands {
                     let ocX = Float(oc.x)
                     let ocY = Float(oc.y)
-
+                    var ocLmDist: Float?
+                    
                     let lmDist = dist2(ocX, ocY, Float(cand.x), Float(cand.y))
                     if lmDist < 5 { continue }
-
-                    let d = dist2(Float(first.x), Float(first.y), ocX, ocY)
-                    if d < ocDist {
-                        ocDist = d
-                        localOlderCand = oc
+                    if let preFixedLandmark = preFixedLandmark {
+                        let hasCommonElement = !Set(preFixedLandmark.matched_links).intersection(Set(oc.matched_links)).isEmpty
+                        if hasCommonElement {
+                            ocLmDist = dist2(Float(preFixedLandmark.x), Float(preFixedLandmark.y), ocX, ocY)
+                        }
+                        
+                        if let ocLmDist = ocLmDist {
+                            let d = dist2(Float(first.x), Float(first.y), ocX, ocY) + ocLmDist
+                            if d < ocDist {
+                                ocDist = d
+                                localOlderCand = oc
+                            }
+                        }
+                    } else {
+                        let d = dist2(Float(first.x), Float(first.y), ocX, ocY)
+                        if d < ocDist {
+                            ocDist = d
+                            localOlderCand = oc
+                        }
                     }
                 }
                 
-                let curPmResult = FineLocationTrackingOutput(mobile_time: 0, index: searchTraj[0].index, building_name: building, level_name: level, x: 0, y: 0, absolute_heading: 0)
+                let curPmResult = FineLocationTrackingOutput(mobile_time: 0, index: searchTraj[searchTraj.count-1].index, building_name: building, level_name: level, x: 0, y: 0, absolute_heading: 0)
                 var headResult = curPmResult
                 headResult.x = head.x
                 headResult.y = head.y
@@ -220,8 +236,8 @@ class SolutionEstimator {
                                                                            shiftedTraj: shiftedTraj,
                                                                            targetIndices: residualIndices,
                                                                            mode: mode) else {
-                    JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParamAtEachCandInSearch) computeIntermediateLossByIndex failed")
-                    JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParamAtEachCandInSearch) residualIndices= \(residualIndices)")
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParamAtEachCandInSearch) computeIntermediateLossByIndex failed")
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParamAtEachCandInSearch) residualIndices= \(residualIndices)")
                     continue
                 }
                 
@@ -243,23 +259,19 @@ class SolutionEstimator {
                 let loss_g_d: Float = lossDistSum
                 let loss_g_h: Float = lossHeadingSum
                 var loss_lse: Float = 0
-                let loss_lse_heading: Float = 0
-//                let loss_lse_heading: Float = {
-//                    guard let trendHeading = lseTrendHeading else {
-//                        return 0
-//                    }
-//                    
-//                    let headingDiffFromLseTrend = adjustHeading(
-//                        Float(TJLabsUtilFunctions.shared.compensateDegree(Double(headResult.absolute_heading))),
-//                        trendHeading
-//                    )
-//
-//                    if headingDiffFromLseTrend <= SEARCHING_LSE_HEADING_THRESHOLD_DEG {
-//                        return 0
-//                    } else {
-//                        return (headingDiffFromLseTrend - SEARCHING_LSE_HEADING_THRESHOLD_DEG)
-//                    }
-//                }()
+                
+                let lse_heding_diff: Float? = {
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParamAtEachCandInSearch) adjustHeading -> headResult.absolute_heading:\(headResult.absolute_heading), lseTrendHeading:\(lseTrendHeading)")
+                    let headingDiffFromLseTrend = adjustHeading(headResult.absolute_heading, lseTrendHeading)
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParamAtEachCandInSearch) headingDiffFromLseTrend= \(headingDiffFromLseTrend)")
+                    
+                    return headingDiffFromLseTrend <= SEARCHING_LSE_HEADING_THRESHOLD_DEG
+                        ? abs(headingDiffFromLseTrend - SEARCHING_LSE_HEADING_THRESHOLD_DEG)
+                        : nil
+                }()
+                
+                JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParamAtEachCandInSearch) lse_heding_diff= \(lse_heding_diff)")
+                guard let loss_lse_heading = lse_heding_diff else { continue }
                 
                 if let lse = lseResult {
                     let diffX = headResult.x - lse.x
@@ -285,15 +297,22 @@ class SolutionEstimator {
     }
     
     func calculateSearchResult(lossParamAtEachCand: [SearchResult]) -> SelectedSearch? {
+        for item in lossParamAtEachCand {
+            JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateSearchResult) : lm= [\(item.recent?.x), \(item.recent?.y)]")
+            JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateSearchResult) : loss_lm= \(item.loss_lm), loss_g_d= \(item.loss_g_d), loss_g_h= \(item.loss_g_h), loss_lse= \(item.loss_lse), loss_lse_heading= \(item.loss_lse_heading)")
+            
+            let loss = item.loss_lm + item.loss_g_d + item.loss_g_h + item.loss_lse + item.loss_lse_heading
+            JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateSearchResult) : loss total= \(loss)")
+        }
+        
         guard let best = lossParamAtEachCand.min(by: {
             let lhsLoss = $0.loss_lm + $0.loss_g_d + $0.loss_g_h + $0.loss_lse + $0.loss_lse_heading
-            let rhsLoss = $1.loss_lm + $1.loss_g_d + $1.loss_g_h + $0.loss_lse + $0.loss_lse_heading
+            let rhsLoss = $1.loss_lm + $1.loss_g_d + $1.loss_g_h + $1.loss_lse + $1.loss_lse_heading
             return lhsLoss < rhsLoss
         }) else {
             return nil
         }
-        
-        JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateSearchResult) : loss_lse_heading= \(best.loss_lse_heading)")
+
         let loss = best.loss_lm + best.loss_g_d + best.loss_g_h + best.loss_lse + best.loss_lse_heading
         let selected = SelectedSearch(older: best.older,
                                       recent: best.recent,
@@ -339,7 +358,7 @@ class SolutionEstimator {
         let curLinkNums: [Int] = curPmLinks.map{$0.number}
         let curLinkGroupNums: [Int] = curPmLinks.map{ $0.group_number }
         let isInNode = matchedNode == nil ? false : true
-        JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParam) curPmResult [\(curPmResult.x),\(curPmResult.y),\(curPmResult.absolute_heading)] is in [\(curPmLinks.map{$0.number})] links, isInNode = \(isInNode)")
+        JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParam) curPmResult [\(curPmResult.x),\(curPmResult.y),\(curPmResult.absolute_heading)] is in [\(curPmLinks.map{$0.number})] links, isInNode = \(isInNode)")
         
         let olderUserPeak = userPeakAndLinksBuffer[userPeakAndLinksBuffer.count - 2].0
         let olderUserLinks = userPeakAndLinksBuffer[userPeakAndLinksBuffer.count - 2].1
@@ -364,14 +383,14 @@ class SolutionEstimator {
             guard let rpIdx = anchorIdx else { continue }
             
             for cand in recentLandmarkCands {
-                JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParam) CAND_START cand=[\(cand.x),\(cand.y)] matchedLinks=\(cand.matched_links)")
+                JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParam) CAND_START cand=[\(cand.x),\(cand.y)] matchedLinks=\(cand.matched_links)")
                 let candLinkNums = cand.matched_links
                 var candLinkGroupNums: Set<Int> = []
                 for cNum in candLinkNums {
                     guard let matchedLinkWithCand = linkData[cNum] else { continue }
                     candLinkGroupNums.insert(matchedLinkWithCand.group_number)
                 }
-                JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParam) candLinkGroupNums= \(candLinkGroupNums)")
+                JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParam) candLinkGroupNums= \(candLinkGroupNums)")
 
                 // 1. Candidate에 대해 Recent User Link와 같은 Link Group 내에 있는지 확인
                 let isInSameLinkGroup = !candLinkGroupNums.isDisjoint(with: Set(recentUserGroupNums))
@@ -397,7 +416,7 @@ class SolutionEstimator {
                 }
                 
                 guard let first = shiftedTraj.first, let last = shiftedTraj.last else {
-                    JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParam) shiftedTraj first/last missing")
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParam) shiftedTraj first/last missing")
                     continue
                 }
                 
@@ -410,7 +429,7 @@ class SolutionEstimator {
                                                                  isUseHeading: false,
                                                                  mode: mode,
                                                                  paddingValues: JupiterMode.PADDING_VALUES_LARGE) else {
-                    JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParam) tail pathMatching failed with [\(first.x),\(first.y),\(first.heading)]")
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParam) tail pathMatching failed with [\(first.x),\(first.y),\(first.heading)]")
                     continue
                 }
                 
@@ -423,7 +442,7 @@ class SolutionEstimator {
                                                                  isUseHeading: isDrStraight,
                                                                  mode: mode,
                                                                  paddingValues: JupiterMode.PADDING_VALUES_LARGE) else {
-                    JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParam) head pathMatching failed with [\(last.x),\(last.y),\(last.heading)] // isUseHeading= \(isDrStraight)")
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParam) head pathMatching failed with [\(last.x),\(last.y),\(last.heading)] // isUseHeading= \(isDrStraight)")
                     continue
                 }
                 
@@ -434,13 +453,13 @@ class SolutionEstimator {
                 headResult.absolute_heading = head.heading
 
                 guard let headLinks = PathMatcher.shared.getLinkInfosWithResult(sectorId: sectorId, result: headResult, checkAll: true, acceptDist: 15) else {
-                    JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParam) getLinkInfosWithResult failed with head [\(head.x),\(head.y),\(head.heading)] ")
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParam) getLinkInfosWithResult failed with head [\(head.x),\(head.y),\(head.heading)] ")
                     continue
                 }
-                JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParam) head [\(head.x),\(head.y),\(head.heading)] is in \(headLinks.map{$0.number}) links")
+                JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParam) head [\(head.x),\(head.y),\(head.heading)] is in \(headLinks.map{$0.number}) links")
                 let reachableResult = isLinkReachableWithGroupSwitchLimit(nodeData: nodeData, linkData: linkData, from: curPmLinks, to: headLinks, maxGroupSwitches: 3)
                 if !reachableResult.isReachable {
-                    JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParam) head [\(head.x),\(head.y),\(head.heading)] to curPm [\(curPmResult.x),\(curPmResult.y),\(curPmResult.absolute_heading)] is not reachable")
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParam) head [\(head.x),\(head.y),\(head.heading)] to curPm [\(curPmResult.x),\(curPmResult.y),\(curPmResult.absolute_heading)] is not reachable")
                     continue
                 }
                 guard let switchCount = reachableResult.switchCount else { continue }
@@ -472,8 +491,8 @@ class SolutionEstimator {
                                                                            shiftedTraj: shiftedTraj,
                                                                            targetIndices: residualIndices,
                                                                            mode: mode) else {
-                    JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParam) computeIntermediateLossByIndex failed")
-                    JupiterLogger.i(tag: "RecoveryManager", message: "(calculateLossParam) residualIndices= \(residualIndices)")
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParam) computeIntermediateLossByIndex failed")
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParam) residualIndices= \(residualIndices)")
                     continue
                 }
                 
@@ -545,7 +564,7 @@ class SolutionEstimator {
         var preIxyhs: ixyhs?
         
         let FAIL_TH = Int(Double(targetIndices.count-1) * 0.3)
-        JupiterLogger.i(tag: "RecoveryManager", message: "(computeIntermediateLossByIndex) : FAIL_TH= \(FAIL_TH)")
+        JupiterLogger.i(tag: "SolutionEstimator", message: "(computeIntermediateLossByIndex) : FAIL_TH= \(FAIL_TH)")
         var failCount = 0
         for idx in targetIndices {
             let point = shiftedTraj[idx]
@@ -565,8 +584,8 @@ class SolutionEstimator {
                 if !curLinkGroupNums.isDisjoint(with: preLinkGroupNums) {
                     let isReachable = isLinkReachableWithGroupSwitchLimit(nodeData: nodeData, linkData: linkData, from: _pre, to: matchedLinks, maxGroupSwitches: maxGroupSwitches).0
                     if !isReachable {
-                        JupiterLogger.i(tag: "RecoveryManager", message: "(computeIntermediateLossByIndex) idx \(idx) fail -> [\(_preIxyhs.x),\(_preIxyhs.y)] to [\(pm.xyhs.x),\(pm.xyhs.y)] is not reachable")
-                        JupiterLogger.i(tag: "RecoveryManager", message: "(computeIntermediateLossByIndex) pre \(_pre) link to matched \(matchedLinks) link is not reachable")
+                        JupiterLogger.i(tag: "SolutionEstimator", message: "(computeIntermediateLossByIndex) idx \(idx) fail -> [\(_preIxyhs.x),\(_preIxyhs.y)] to [\(pm.xyhs.x),\(pm.xyhs.y)] is not reachable")
+                        JupiterLogger.i(tag: "SolutionEstimator", message: "(computeIntermediateLossByIndex) pre \(_pre) link to matched \(matchedLinks) link is not reachable")
                         failCount += 1
                     }
                 }
@@ -574,7 +593,7 @@ class SolutionEstimator {
             preIxyhs = pm.xyhs
             preLinks = matchedLinks
             if failCount >= FAIL_TH {
-                JupiterLogger.i(tag: "RecoveryManager", message: "(computeIntermediateLossByIndex) : failCount= \(failCount)")
+                JupiterLogger.i(tag: "SolutionEstimator", message: "(computeIntermediateLossByIndex) : failCount= \(failCount)")
                 return nil
             }
             
