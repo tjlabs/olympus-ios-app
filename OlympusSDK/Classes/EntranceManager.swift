@@ -18,7 +18,7 @@ class EntranceManager {
     
     deinit { }
     
-    private let ENTERING_LSE_BUFFER_SIZE = 5
+    private let ENTERING_LSE_BUFFER_SIZE = 10
     private let ENTERING_LSE_MAX_STEP_DISTANCE: Float = 30
     private let ENTERING_LSE_MAX_PATH_LENGTH_DIFF: Float = 25
     private let ENTERING_LSE_MIN_DISPLACEMENT: Float = 3
@@ -225,13 +225,40 @@ class EntranceManager {
         lseSnapshotBuffer: [SingleEpochSnapshot],
         majorSection: [Float]
     ) -> FineLocationTrackingOutput? {
+        func logSkip(
+            _ reason: String,
+            buildingName: String? = nil,
+            levelName: String? = nil,
+            matchedSnapshotCount: Int? = nil,
+            extra: String? = nil
+        ) {
+            let resolvedBuildingName = buildingName ?? curResult?.building_name ?? "nil"
+            let resolvedLevelName = levelName ?? curResult?.level_name ?? "nil"
+            let resolvedMatchedSnapshotCount = matchedSnapshotCount.map(String.init) ?? "nil"
+            let extraMessage = extra.map { ", \($0)" } ?? ""
+
+            JupiterLogger.i(
+                tag: "EnteringLseFlow",
+                message: "skip tracking transition: \(reason), index=\(uvd.index), building=\(resolvedBuildingName), level=\(resolvedLevelName), uvdBufferCount=\(uvdBuffer.count), lseSnapshotBufferCount=\(lseSnapshotBuffer.count), matchedSnapshotCount=\(resolvedMatchedSnapshotCount)\(extraMessage)"
+            )
+        }
 
         // LSE 기준으로 ENTERING 구간이 충분히 안정적일 때만 TRACKING으로 승격한다.
-        guard let baseResult = curResult else { return nil }
+        guard let baseResult = curResult else {
+            logSkip("curResult is nil")
+            return nil
+        }
         var finalResult = baseResult
-        
+
         let snapshots = getEnteringSingleEpochSnapshotsFor(lseSnapshotBuffer: lseSnapshotBuffer, buildingName: baseResult.building_name)
         if snapshots.count < ENTERING_LSE_BUFFER_SIZE {
+            logSkip(
+                "insufficient matched LSE snapshots",
+                buildingName: baseResult.building_name,
+                levelName: baseResult.level_name,
+                matchedSnapshotCount: snapshots.count,
+                extra: "requiredSnapshotCount=\(ENTERING_LSE_BUFFER_SIZE)"
+            )
             return nil
         }
 
@@ -247,6 +274,12 @@ class EntranceManager {
             buildingName: baseResult.building_name,
             levelName: baseResult.level_name
         ) else {
+            logSkip(
+                "failed to resolve LSE trend heading",
+                buildingName: baseResult.building_name,
+                levelName: baseResult.level_name,
+                matchedSnapshotCount: snapshots.count
+            )
             return nil
         }
 
@@ -260,15 +293,43 @@ class EntranceManager {
         let maxStepDistance = lseStepDistances.max() ?? 0
 
         if maxStepDistance > ENTERING_LSE_MAX_STEP_DISTANCE {
-            JupiterLogger.i(
-                tag: "EnteringLseFlow",
-                message: "skip tracking transition: unstable LSE step maxStepDistance=\(maxStepDistance), steps=\(lseStepDistances)"
+            logSkip(
+                "unstable LSE step",
+                buildingName: baseResult.building_name,
+                levelName: baseResult.level_name,
+                matchedSnapshotCount: snapshots.count,
+                extra: "maxStepDistance=\(maxStepDistance), threshold=\(ENTERING_LSE_MAX_STEP_DISTANCE), steps=\(lseStepDistances)"
             )
             return nil
         }
 
-        guard let firstSnapshot = snapshots.first else { return nil }
-
+        guard let firstSnapshot = snapshots.first else {
+            logSkip(
+                "missing first snapshot after snapshot validation",
+                buildingName: baseResult.building_name,
+                levelName: baseResult.level_name,
+                matchedSnapshotCount: snapshots.count
+            )
+            return nil
+        }
+        guard let firstContext = firstSnapshot.requestContext else {
+            logSkip(
+                "missing first snapshot request context",
+                buildingName: baseResult.building_name,
+                levelName: baseResult.level_name,
+                matchedSnapshotCount: snapshots.count
+            )
+            return nil
+        }
+        guard !majorSection.isEmpty else {
+            logSkip(
+                "majorSection is empty",
+                buildingName: baseResult.building_name,
+                levelName: baseResult.level_name,
+                matchedSnapshotCount: snapshots.count
+            )
+            return nil
+        }
         // UVD의 상대 heading을 LSE trend heading 기준으로 재정렬하기 위한 offset이다.
         let majorHeading = Float(majorSection.map { Double($0) }.reduce(0, +) / Double(majorSection.count))
         let headingCompensation = lseTrendHeading - majorHeading
@@ -277,7 +338,7 @@ class EntranceManager {
         var propagatedPoints: [(index: Int, x: Float, y: Float)] = []
 
         propagatedPoints.append((
-            index: firstSnapshot.requestContext.index,
+            index: firstContext.index,
             x: firstSnapshot.result.x,
             y: firstSnapshot.result.y
         ))
@@ -285,13 +346,29 @@ class EntranceManager {
         var lastAlignedHeading = lseTrendHeading
 
         for (prevSnapshot, nextSnapshot) in zip(snapshots, snapshots.dropFirst()) {
-
+            guard let prevContext = prevSnapshot.requestContext, let nextContext = nextSnapshot.requestContext else {
+                logSkip(
+                    "missing snapshot request context in segment",
+                    buildingName: baseResult.building_name,
+                    levelName: baseResult.level_name,
+                    matchedSnapshotCount: snapshots.count,
+                    extra: "prevSnapshotIndex=\(prevSnapshot.result.index), nextSnapshotIndex=\(nextSnapshot.result.index)"
+                )
+                return nil
+            }
             // 각 LSE snapshot 사이의 UVD만 잘라서, 해당 짧은 구간이 직진/안정 구간인지 먼저 본다.
             let segmentUvd = uvdBuffer.filter {
-                $0.index > prevSnapshot.requestContext.index && $0.index <= nextSnapshot.requestContext.index
+                $0.index > prevContext.index && $0.index <= nextContext.index
             }
 
             if segmentUvd.count < 2 {
+                logSkip(
+                    "insufficient UVD samples in segment",
+                    buildingName: baseResult.building_name,
+                    levelName: baseResult.level_name,
+                    matchedSnapshotCount: snapshots.count,
+                    extra: "segmentStartIndex=\(prevContext.index), segmentEndIndex=\(nextContext.index), segmentUvdCount=\(segmentUvd.count)"
+                )
                 return nil
             }
 
@@ -304,6 +381,13 @@ class EntranceManager {
             let headingStd = straightResult.1
 
             if !isStableSegment {
+                logSkip(
+                    "unstable heading std in segment",
+                    buildingName: baseResult.building_name,
+                    levelName: baseResult.level_name,
+                    matchedSnapshotCount: snapshots.count,
+                    extra: "segmentStartIndex=\(prevContext.index), segmentEndIndex=\(nextContext.index), segmentUvdCount=\(segmentUvd.count), headingStd=\(headingStd), threshold=\(ENTERING_LSE_SEGMENT_HEADING_STD_THRESHOLD)"
+                )
                 return nil
             }
 
@@ -347,9 +431,12 @@ class EntranceManager {
         if avgTrajectoryDistance > ENTERING_LSE_MAX_AVG_TRAJECTORY_DISTANCE ||
             maxTrajectoryDistance > ENTERING_LSE_MAX_END_TRAJECTORY_DISTANCE {
 
-            JupiterLogger.i(
-                tag: "EnteringLseFlow",
-                message: "skip tracking transition: propagated trajectory mismatch avg=\(avgTrajectoryDistance), max=\(maxTrajectoryDistance), distances=\(segmentEndpointDistances)"
+            logSkip(
+                "propagated trajectory mismatch",
+                buildingName: baseResult.building_name,
+                levelName: dominantLevelName,
+                matchedSnapshotCount: snapshots.count,
+                extra: "avgTrajectoryDistance=\(avgTrajectoryDistance), avgThreshold=\(ENTERING_LSE_MAX_AVG_TRAJECTORY_DISTANCE), maxTrajectoryDistance=\(maxTrajectoryDistance), maxThreshold=\(ENTERING_LSE_MAX_END_TRAJECTORY_DISTANCE), distances=\(segmentEndpointDistances)"
             )
             return nil
         }
@@ -366,15 +453,26 @@ class EntranceManager {
         let pathLengthDiff = abs(lsePathLength - propagatedPathLength)
 
         if pathLengthDiff > ENTERING_LSE_MAX_PATH_LENGTH_DIFF {
-            JupiterLogger.i(
-                tag: "EnteringLseFlow",
-                message: "skip tracking transition: path length mismatch lse=\(lsePathLength), propagated=\(propagatedPathLength), diff=\(pathLengthDiff)"
+            logSkip(
+                "path length mismatch",
+                buildingName: baseResult.building_name,
+                levelName: dominantLevelName,
+                matchedSnapshotCount: snapshots.count,
+                extra: "lsePathLength=\(lsePathLength), propagatedPathLength=\(propagatedPathLength), pathLengthDiff=\(pathLengthDiff), threshold=\(ENTERING_LSE_MAX_PATH_LENGTH_DIFF)"
             )
             return nil
         }
 
         // 최종 propagated 위치를 path matching 해서 TRACKING 시작 위치로 정규화한다.
-        guard let lastPropagated = propagatedPoints.last else { return nil }
+        guard let lastPropagated = propagatedPoints.last else {
+            logSkip(
+                "missing propagated endpoint",
+                buildingName: baseResult.building_name,
+                levelName: dominantLevelName,
+                matchedSnapshotCount: snapshots.count
+            )
+            return nil
+        }
 
         let propagatedHeading = lastAlignedHeading
 
@@ -389,6 +487,13 @@ class EntranceManager {
             mode: UserMode.MODE_VEHICLE,
             paddingValues: JupiterMode.PADDING_VALUES_MEDIUM
         ) else {
+            logSkip(
+                "path matching failed for propagated endpoint",
+                buildingName: baseResult.building_name,
+                levelName: dominantLevelName,
+                matchedSnapshotCount: snapshots.count,
+                extra: "x=\(lastPropagated.x), y=\(lastPropagated.y), heading=\(propagatedHeading)"
+            )
             return nil
         }
 
@@ -406,8 +511,13 @@ class EntranceManager {
         return finalResult
     }
     
-    private func getEnteringSingleEpochSnapshotsFor(lseSnapshotBuffer: [SingleEpochSnapshot], buildingName: String) -> [SingleEpochSnapshot] {
-        return lseSnapshotBuffer.filter { $0.result.building_name == buildingName }
+    private func getEnteringSingleEpochSnapshotsFor(
+        lseSnapshotBuffer: [SingleEpochSnapshot],
+        buildingName: String
+    ) -> [SingleEpochSnapshot] {
+        Array(lseSnapshotBuffer.suffix(ENTERING_LSE_BUFFER_SIZE)).filter {
+            $0.result.building_name == buildingName
+        }
     }
 
     private func resolveTrendHeading(
@@ -471,11 +581,6 @@ class EntranceManager {
             TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: $0.result.level_name) == dominantNormalizedLevel
         })?.result.level_name ?? fallbackLevelName
     }
-
-//    private func isConvensiaEnteringLseTarget(entManager: EntranceManager): Boolean {
-//        if (sectorId != 20) return false
-//        return entManager.getCurrentEntKey()?.startsWith("20_Convensia_B0_") == true
-//    }
 
     private func calculatePolylineLength(points: [(Float, Float)]) -> Float {
         if points.count < 2 {

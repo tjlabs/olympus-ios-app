@@ -245,6 +245,7 @@ public struct SearchResult {
     public let loss_g_d: Float
     public let loss_g_h: Float
     public let loss_lse: Float
+    public let loss_lse_heading: Float
 }
 
 public struct SelectedSearch {

@@ -126,7 +126,7 @@ struct LSERequestContext {
 }
 
 struct SingleEpochSnapshot {
-    let requestContext: LSERequestContext
+    let requestContext: LSERequestContext?
     let result: FineLocationTrackingOutput
 }
 

@@ -108,7 +108,7 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
                                           travelingLinkDist: Float,
                                           indexForEdit: Int,
                                           curPmResult: FineLocationTrackingOutput?) -> (NaviCorrectionInfo, [StackEditInfo])? {
-        if !hasNaviRoute { return nil }
+        if !hasNaviRoute || curUserModeEnum == .MODE_PEDESTRIAN { return nil }
         if naviRouteChanged, let curPmResult = curPmResult {
             routingManager?.setStartPointInNaviRoute(xyh: [curPmResult.x, curPmResult.y, curPmResult.absolute_heading])
             naviRouteChanged = false
@@ -428,6 +428,7 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
     
     func changeUserMode(mode: UserMode) {
         self.curUserModeEnum = mode
+        self.routingManager?.setGraphMode(mode)
         self.jupiterManager?.changeUserMode(mode: mode)
     }
     
@@ -444,6 +445,8 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
         }
         
         self.isVehicle = is_vehicle
+        let userMode: UserMode = is_vehicle ? .MODE_VEHICLE : .MODE_PEDESTRIAN
+        changeUserMode(mode: userMode)
         routingManager.requestRouting(type: .INITIAL, start: start, end: end, waypoints: waypoints, is_vehicle: is_vehicle, completion: { result, failureReason in
             var levelRoutes = [NavigationLevelRoute]()
             if let routingResult = result {
@@ -451,6 +454,9 @@ public class NavigationManager: JupiterManagerDelegate, RoutingManagerDelegate {
                 self.naviDestination = end
                 self.routingManager?.setRoutingRoutes(routes: routingResult.route)
                 levelRoutes = self.routingManager?.getLevelRoutes() ?? []
+            } else {
+                self.resetRouteInfo()
+                self.handleRoutingFailure(failureReason)
             }
             completion(result, levelRoutes, failureReason)
         })

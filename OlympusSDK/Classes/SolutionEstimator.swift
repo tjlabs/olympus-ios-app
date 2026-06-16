@@ -7,7 +7,8 @@ class SolutionEstimator {
     init(sectorId: Int) {
         self.sectorId = sectorId
     }
-    private let SEARCHING_LSE_MIN_COUNT = 10
+    
+    private let SEARCHING_LSE_BUFFER_SIZE = 10
     private let SEARCHING_LSE_HEADING_THRESHOLD_DEG: Float = 45
     private let SEARCHING_LSE_MIN_TREND_DISTANCE: Float = 5
     
@@ -109,6 +110,7 @@ class SolutionEstimator {
                                               mode: UserMode,
                                               isDrStraight: Bool,
                                               lseResult: FineLocationTrackingOutput?,
+                                              lseSnapshotBuffer: [SingleEpochSnapshot],
                                               residualSplitter: Int = 10) -> [SearchResult] {
         guard userPeakBuffer.count >= 2 else { return [] }
         let building = buildingLevelByUserPeak.0
@@ -124,6 +126,12 @@ class SolutionEstimator {
         let olderLandmarkCands: [PeakData] = landmarks.older.peaks
         let recentLandmarkCands: [PeakData] = landmarks.recent.peaks
         
+        let searchingLseSnapShots = getSearchingSingleEpochSnapshotsFor(lseSnapshotBuffer: lseSnapshotBuffer, buildingName: building, levelName: level)
+        let hasEnoughSearchingLseSamples = searchingLseSnapShots.count >= SEARCHING_LSE_BUFFER_SIZE
+        let lseAnchor = resolveSearchingLseAnchor(lseSnapshotBuffer: searchingLseSnapShots, buildingName: building, levelName: level)
+        let lseTrendHeading = hasEnoughSearchingLseSamples ? resolveSearchingLseTrendHeading(lseSnapshotBuffer: searchingLseSnapShots, buildingName: building, levelName: level) : nil
+        JupiterLogger.i(tag: "SolutionEstimator", message: "(resolveSearchingLseTrendHeading) : searchingLseSnapShots= \(searchingLseSnapShots)")
+        JupiterLogger.i(tag: "SolutionEstimator", message: "(resolveSearchingLseTrendHeading) : lseTrendHeading= \(lseTrendHeading)")
         for searchTraj in searchTrajList {
             guard searchTraj.count >= 2 else { continue }
             var anchorIdx: Int? = nil
@@ -235,6 +243,23 @@ class SolutionEstimator {
                 let loss_g_d: Float = lossDistSum
                 let loss_g_h: Float = lossHeadingSum
                 var loss_lse: Float = 0
+                let loss_lse_heading: Float = 0
+//                let loss_lse_heading: Float = {
+//                    guard let trendHeading = lseTrendHeading else {
+//                        return 0
+//                    }
+//                    
+//                    let headingDiffFromLseTrend = adjustHeading(
+//                        Float(TJLabsUtilFunctions.shared.compensateDegree(Double(headResult.absolute_heading))),
+//                        trendHeading
+//                    )
+//
+//                    if headingDiffFromLseTrend <= SEARCHING_LSE_HEADING_THRESHOLD_DEG {
+//                        return 0
+//                    } else {
+//                        return (headingDiffFromLseTrend - SEARCHING_LSE_HEADING_THRESHOLD_DEG)
+//                    }
+//                }()
                 
                 if let lse = lseResult {
                     let diffX = headResult.x - lse.x
@@ -249,7 +274,7 @@ class SolutionEstimator {
                                            head: head,
                                            headResult: headResult,
                                            lossPointResultList: lossPointResult,
-                                           loss_lm: loss_lm, loss_g_d: loss_g_d, loss_g_h: loss_g_h, loss_lse: loss_lse)
+                                           loss_lm: loss_lm, loss_g_d: loss_g_d, loss_g_h: loss_g_h, loss_lse: loss_lse, loss_lse_heading: loss_lse_heading)
                 
                 
                 resultList.append(sResult)
@@ -261,14 +286,15 @@ class SolutionEstimator {
     
     func calculateSearchResult(lossParamAtEachCand: [SearchResult]) -> SelectedSearch? {
         guard let best = lossParamAtEachCand.min(by: {
-            let lhsLoss = $0.loss_lm + $0.loss_g_d + $0.loss_g_h + $0.loss_lse
-            let rhsLoss = $1.loss_lm + $1.loss_g_d + $1.loss_g_h + $0.loss_lse
+            let lhsLoss = $0.loss_lm + $0.loss_g_d + $0.loss_g_h + $0.loss_lse + $0.loss_lse_heading
+            let rhsLoss = $1.loss_lm + $1.loss_g_d + $1.loss_g_h + $0.loss_lse + $0.loss_lse_heading
             return lhsLoss < rhsLoss
         }) else {
             return nil
         }
         
-        let loss = best.loss_lm + best.loss_g_d + best.loss_g_h + best.loss_lse
+        JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateSearchResult) : loss_lse_heading= \(best.loss_lse_heading)")
+        let loss = best.loss_lm + best.loss_g_d + best.loss_g_h + best.loss_lse + best.loss_lse_heading
         let selected = SelectedSearch(older: best.older,
                                       recent: best.recent,
                                       traj: best.traj,
@@ -964,5 +990,55 @@ class SolutionEstimator {
                                          loss: loss)
         
         return selected
+    }
+    
+    //MARK: - Searching
+    private func getSearchingSingleEpochSnapshotsFor(
+        lseSnapshotBuffer: [SingleEpochSnapshot],
+        buildingName: String,
+        levelName: String
+    ) -> [SingleEpochSnapshot] {
+        lseSnapshotBuffer.filter {
+            $0.result.building_name == buildingName
+        }
+    }
+
+    private func resolveSearchingLseAnchor(lseSnapshotBuffer: [SingleEpochSnapshot], buildingName: String, levelName: String) -> (Float, Float)? {
+        let snapshots = lseSnapshotBuffer
+        guard let last = snapshots.last else { return nil }
+        return (last.result.x, last.result.y)
+    }
+    
+    private func resolveSearchingLseTrendHeading(lseSnapshotBuffer: [SingleEpochSnapshot], buildingName: String, levelName: String) -> Float? {
+        let snapshots = lseSnapshotBuffer
+        if snapshots.count < SEARCHING_LSE_BUFFER_SIZE {
+            return nil
+        }
+        
+        return resolveTrendHeading(snapshots: lseSnapshotBuffer, minDistance: SEARCHING_LSE_MIN_TREND_DISTANCE, buildingName: buildingName, levelName: levelName)
+    }
+    
+    private func resolveTrendHeading(
+        snapshots: [SingleEpochSnapshot],
+        minDistance: Float,
+        buildingName: String,
+        levelName: String
+    ) -> Float? {
+        guard snapshots.count >= 2 else { return nil }
+
+        var sumDx: Float = 0
+        var sumDy: Float = 0
+
+        for i in 1..<snapshots.count {
+            sumDx += snapshots[i].result.x - snapshots[i - 1].result.x
+            sumDy += snapshots[i].result.y - snapshots[i - 1].result.y
+        }
+
+        let displacement = sqrt(sumDx * sumDx + sumDy * sumDy)
+        guard displacement >= minDistance else { return nil }
+
+        let headingRadian = atan2(Double(sumDy), Double(sumDx))
+        let headingDegree = TJLabsUtilFunctions.shared.radian2degree(radian: headingRadian)
+        return Float(TJLabsUtilFunctions.shared.compensateDegree(headingDegree))
     }
 }

@@ -176,25 +176,27 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
 
 //        serviceManager?.setNaviDestination(dest: Point(level_id: 52, x: 335, y: 0))
 //        serviceManager?.setNaviDestination(dest: Point(level_id: 52, x: 145, y: 196))
-//        serviceManager?.setReplayModeLegacy(flag: true, bleFileName: "ble_coex_01_0310.csv", sensorFileName: "sensor_coex_01_0310.csv")
-//        serviceManager?.setSimulationMode(flag: true, rfdFileName: "260428_songdo_test3_rfd.json", uvdFileName: "260428_songdo_test3_uvd.json", eventFileName: "260428_songdo_test3_event.json")
+
 //        serviceManager?.setReplayMode(flag: true, rfdFileName: "260522_songdo_test9_rfd.json",
 //                                      uvdFileName: "260522_songdo_test9_uvd.json",
 //                                      eventFileName: "260522_songdo_test9_event.json")
-//        serviceManager?.setReplayMode(flag: true, rfdFileName: "260605_songdo_test4_rfd.json",
-//                                      uvdFileName: "260605_songdo_test4_uvd.json",
-//                                      eventFileName: "260605_songdo_test4_event.json")
+//        serviceManager?.setReplayMode(flag: true, rfdFileName: "260605_songdo_test6_rfd.json",
+//                                      uvdFileName: "260605_songdo_test6_uvd.json",
+//                                      eventFileName: "260605_songdo_test6_event.json")
         
-        serviceManager?.setReplayMode(flag: true, rfdFileName: "20260610_songdo_test3_rfd.json",
-                                      uvdFileName: "20260610_songdo_test3_uvd.json",
-                                      eventFileName: "20260610_songdo_test3_event.json")
+//        serviceManager?.setReplayMode(flag: true, rfdFileName: "20260610_songdo_test3_rfd.json",
+//                                      uvdFileName: "20260610_songdo_test3_uvd.json",
+//                                      eventFileName: "20260610_songdo_test3_event.json")
         
+        serviceManager?.setReplayMode(flag: true, rfdFileName: "20260615_songdo_test1_rfd.json",
+                                      uvdFileName: "20260615_songdo_test1_uvd.json",
+                                      eventFileName: "20260615_songdo_test1_event.json")
         // service
 //        serviceManager.addObserver(self)
 //        serviceManager.setDebugOption(flag: true)
 //        serviceManager.setDebugOption(flag: true)
 //        serviceManager.startService(user_id: uniqueId, region: self.region, sector_id: sector_id, service: "FLT", mode: mode, completion: { [self] isStart, returnedString in
-//        serviceManager.startService(user_id: uniqueId, region: "Koreㅁㅂa", sector_id: 16, service: "FLT", mode: "pdr", completion: { [self] isStart, returnedString in
+//        serviceManager.startService(user_id: uniqueId, region: "Korea", sector_id: 16, service: "FLT", mode: "pdr", completion: { [self] isStart, returnedString in
 //            if (isStart) {
 //                serviceState = true
 //                self.startTimer()

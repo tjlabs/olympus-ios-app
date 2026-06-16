@@ -157,6 +157,16 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		58AB234D0A3F4C478C0B3A04 /* Configuration */ = {
+			isa = PBXGroup;
+			children = (
+				58AB234D0A3F4C478C0B3A01 /* OlympusSDK_Example.debug.xcconfig */,
+				58AB234D0A3F4C478C0B3A02 /* OlympusSDK_Example.release.xcconfig */,
+				58AB234D0A3F4C478C0B3A03 /* ExampleSecrets.xcconfig.example */,
+			);
+			path = Configuration;
+			sourceTree = "<group>";
+		};
 		607FACC71AFB9204008FA782 = {
 			isa = PBXGroup;
 			children = (
@@ -248,16 +258,6 @@
 			name = "Podspec Metadata";
 			sourceTree = "<group>";
 		};
-		58AB234D0A3F4C478C0B3A04 /* Configuration */ = {
-			isa = PBXGroup;
-			children = (
-				58AB234D0A3F4C478C0B3A01 /* OlympusSDK_Example.debug.xcconfig */,
-				58AB234D0A3F4C478C0B3A02 /* OlympusSDK_Example.release.xcconfig */,
-				58AB234D0A3F4C478C0B3A03 /* ExampleSecrets.xcconfig.example */,
-			);
-			path = Configuration;
-			sourceTree = "<group>";
-		};
 		92DD3849BBA322FCD60B2E7F /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -273,11 +273,11 @@
 			isa = PBXGroup;
 			children = (
 				607FACD71AFB9204008FA782 /* LoginViewController.swift */,
-				B3A7A5532BBBCAE200561897 /* CardViewController.swift */,
 				B335370C2CC8919900468A95 /* NaviViewController.swift */,
 				B37D3C042CF80C140079E010 /* MapViewController.swift */,
 				B335393A2F3DBD6E004FC200 /* RoutingViewController.swift */,
 				B3D4DD1D2F614ED00019F5CD /* IndoorViewController.swift */,
+				B3A7A5532BBBCAE200561897 /* CardViewController.swift */,
 			);
 			name = ViewControllers;
 			sourceTree = "<group>";

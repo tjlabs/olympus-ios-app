@@ -50,6 +50,7 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
     // MARK: - Constants
     private let AVG_BUFFER_SIZE = 2
     private let LSE_RESULT_BUFFER_SIZE = 5
+    private let LSE_SNAPSHOT_BUFFER_SIZE = 10
     private let LSE_REPRESENTATIVE_CLUSTER_SIZE = 3
     private let LSE_HEADING_MIN_DISTANCE: Float = 1.0
     
@@ -441,7 +442,9 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         
         guard let blChanger = self.buildingLevelChanger else { return }
         if let top3Ble = stackManager.extractTop3BleInWindow(currentTime: currentTime, ble: rfd.rfs) {
-            self.levelByBle = blChanger.calculateLevelByBle(data: top3Ble)
+            if let estimatedLevel = blChanger.calculateLevelByBle(data: top3Ble) {
+                self.levelByBle = estimatedLevel
+            }
         }
     }
     
@@ -736,45 +739,24 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         }
         
         if jupiterPhase == .ENTERING {
+//            var forceStop = false
+//            let uvdBuffer = stackManager.getUvdBuffer(from: uvd.index-50)
+//            let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBuffer.map{ Float($0.heading) })
+//            forceStop = majorSection.isEmpty
+//            
+//            if !forceStop, let promotedResult = entManager.maybePromoteEnteringToTrackingUsingLse(curResult: curResult, uvd: uvd, uvdBuffer: uvdBuffer, lseSnapshotBuffer: lseSnapshotBuffer, majorSection: majorSection) {
+//                startIndoorTracking(uvd: uvd, fltResult: promotedResult)
+//            }
+            
             var forceStop = false
             if let innermostWard = entManager.stopEntTrack(wardId: peakId) {
-                let uvdBuffer = stackManager.getUvdBuffer(from: uvd.index-30)
+                let uvdBuffer = stackManager.getUvdBuffer(from: uvd.index-50)
                 let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBuffer.map{ Float($0.heading) })
                 forceStop = majorSection.isEmpty
                 if !forceStop {
                     var wardArea: [EntWardArea]?
                     if innermostWard.name.contains("46E") {
                         // Convensia Ent1
-//                        wardArea = [
-//                            EntWardArea(x: 35, y: 199, heading: [0]),
-//                            EntWardArea(x: 36, y: 199, heading: [0]),
-//                            EntWardArea(x: 37, y: 199, heading: [0]),
-//                            EntWardArea(x: 38, y: 199, heading: [0]),
-//                            EntWardArea(x: 39, y: 199, heading: [0]),
-//                            EntWardArea(x: 40, y: 199, heading: [0]),
-//                            EntWardArea(x: 41, y: 199, heading: [0]),
-//                            EntWardArea(x: 42, y: 199, heading: [0]),
-//                            EntWardArea(x: 43, y: 199, heading: [0]),
-//                            EntWardArea(x: 44, y: 199, heading: [0]),
-//                            EntWardArea(x: 45, y: 199, heading: [0]),
-//                            EntWardArea(x: 46, y: 199, heading: [0]),
-//                            EntWardArea(x: 47, y: 199, heading: [0]),
-//                            EntWardArea(x: 48, y: 199, heading: [0]),
-//                            EntWardArea(x: 49, y: 199, heading: [0]),
-//                            EntWardArea(x: 50, y: 199, heading: [0]),
-//                            EntWardArea(x: 51, y: 199, heading: [0]),
-//                            EntWardArea(x: 52, y: 199, heading: [0, 315, 270]),
-//                            EntWardArea(x: 52, y: 198, heading: [315, 270]),
-//                            EntWardArea(x: 52, y: 197, heading: [315, 270]),
-//                            EntWardArea(x: 52, y: 196, heading: [315, 270]),
-//                            EntWardArea(x: 52, y: 195, heading: [315, 270]),
-//                            EntWardArea(x: 52, y: 194, heading: [315, 270]),
-//                            EntWardArea(x: 52, y: 193, heading: [270]),
-//                            EntWardArea(x: 52, y: 192, heading: [270]),
-//                            EntWardArea(x: 52, y: 191, heading: [270]),
-//                            EntWardArea(x: 52, y: 190, heading: [270]),
-//                            EntWardArea(x: 52, y: 189, heading: [270])
-//                        ]
                         wardArea = [
                             EntWardArea(x: 30, y: 199, heading: [0]),
                             EntWardArea(x: 31, y: 199, heading: [0]),
@@ -798,28 +780,6 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                         ]
                     } else if innermostWard.name.contains("114") {
                         // Convensia Ent2
-//                        wardArea = [
-//                            EntWardArea(x: 348, y: 155, heading: [158]),
-//                            EntWardArea(x: 354, y: 155, heading: [158]),
-//                            EntWardArea(x: 353, y: 156, heading: [158]),
-//                            EntWardArea(x: 352, y: 156, heading: [158]),
-//                            EntWardArea(x: 352, y: 157, heading: [158]),
-//                            EntWardArea(x: 351, y: 157, heading: [158]),
-//                            EntWardArea(x: 350, y: 157, heading: [158]),
-//                            EntWardArea(x: 349, y: 158, heading: [158]),
-//                            EntWardArea(x: 348, y: 158, heading: [90, 158]),
-//                            EntWardArea(x: 348, y: 159, heading: [90]),
-//                            EntWardArea(x: 348, y: 160, heading: [90]),
-//                            EntWardArea(x: 348, y: 161, heading: [90]),
-//                            EntWardArea(x: 348, y: 162, heading: [90]),
-//                            EntWardArea(x: 348, y: 163, heading: [90]),
-//                            EntWardArea(x: 348, y: 164, heading: [90]),
-//                            EntWardArea(x: 348, y: 165, heading: [90]),
-//                            EntWardArea(x: 348, y: 166, heading: [90]),
-//                            EntWardArea(x: 348, y: 167, heading: [90]),
-//                            EntWardArea(x: 348, y: 168, heading: [90, 135, 180])
-//                        ]
-                        
                         wardArea = [
                             EntWardArea(x: 362, y: 152, heading: [158, 180]),
                             EntWardArea(x: 361, y: 153, heading: [158, 180]),
@@ -1132,7 +1092,8 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                                                                                           buildingLevelByUserPeak: buildingLevelByPeak,
                                                                                           landmarks: (matchedWithOldUserPeak, matchedWithUserPeak),
                                                                                           mode: mode, isDrStraight: isDrStraight.0,
-                                                                                          lseResult: self.curLSEResult)
+                                                                                          lseResult: self.curLSEResult,
+                                                                                          lseSnapshotBuffer: self.lseSnapshotBuffer)
                 if let selectedSearch = solutionEstimator.calculateSearchResult(lossParamAtEachCand: searchResult) {
                     let bestResult = selectedSearch.headResult
                     self.debug_selected_search = selectedSearch
@@ -1630,13 +1591,13 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - result (after link corr): \(result.building_name), \(result.level_name), [\(result.x),\(result.y),\(result.absolute_heading)]")
         
         if isUseHeading && phase == .TRACKING, let curResult = self.curResult {
-//            let diffX = result.x - curResult.x
-//            let diffY = result.y - curResult.y
-//            let diffNorm = sqrt(diffX*diffX + diffY*diffY)
-//            JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - tu correction: diffNorm= \(diffNorm), xy= [\(result.x), \(result.y)]")
-//            if diffNorm >= 2 {
-//                kalmanFilter?.updateTuPosition(coord: [result.x, result.y])
-//            }
+            let diffX = result.x - curResult.x
+            let diffY = result.y - curResult.y
+            let diffNorm = sqrt(diffX*diffX + diffY*diffY)
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - tu correction: diffNorm= \(diffNorm), xy= [\(result.x), \(result.y)]")
+            if diffNorm >= 2 {
+                kalmanFilter?.updateTuPosition(coord: [result.x, result.y])
+            }
             kalmanFilter?.updateTuPosition(coord: [result.x, result.y])
             JupiterLogger.i(tag: "JupiterCalcManager", message: "(makeCurrentResult) - tu correction (2): xyh= [\(result.x), \(result.y), \(result.absolute_heading)]")
         }
@@ -1794,6 +1755,9 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
             self.curUserMode = "DR"
         } else if mode == .MODE_PEDESTRIAN {
             self.curUserMode = "PDR"
+            if jupiterPhase == .ENTERING {
+                jupiterPhase = .SEARCHING
+            }
         } else {
             self.curUserMode = "UNKNOWN"
         }
@@ -1989,8 +1953,8 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
     
     private func updateLSESnapshotBuffer(with snpshot: SingleEpochSnapshot) {
         lseSnapshotBuffer.append(snpshot)
-        if lseSnapshotBuffer.count > LSE_RESULT_BUFFER_SIZE {
-            lseSnapshotBuffer.removeFirst(lseSnapshotBuffer.count - LSE_RESULT_BUFFER_SIZE)
+        if lseSnapshotBuffer.count > LSE_SNAPSHOT_BUFFER_SIZE {
+            lseSnapshotBuffer.removeFirst(lseSnapshotBuffer.count - LSE_SNAPSHOT_BUFFER_SIZE)
         }
     }
 

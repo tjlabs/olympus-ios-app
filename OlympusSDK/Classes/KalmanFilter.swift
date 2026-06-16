@@ -605,11 +605,14 @@ class KalmanFilter {
         var updatedTuResult = nextTuResult
         if let limitationResult = PathMatcher.shared.getTimeUpdateLimitation(level: nextTuResult.level_name), limitationResult.count >= 4 {
             JupiterLogger.i(tag: "KalmanFilter", message: "(updateLimitationResult) - limitationResult: \(limitationResult)")
+            let limitMarginScale: Float = 1.1
             let scale: Float = uturnLink ? 0.5 : 1
             let anchorX = limitationResult[0]
             let anchorY = limitationResult[1]
             let axisHeading = limitationResult[2]
             let lateralLimit = limitationResult[3]
+            let paddedLongitudinalLimit = 40 * scale * limitMarginScale
+            let paddedLateralLimit = lateralLimit * limitMarginScale
 
             let constrained = constrainToAxisCorridor(
                 x: nextTuResult.x,
@@ -623,13 +626,13 @@ class KalmanFilter {
             updatedTuResult.y = constrained.y
             pathMatchingAxisConstraint = PathMatchingAxisConstraint(
                 heading: axisHeading,
-                longitudinalLimit: 40 * scale,
-                lateralLimit: lateralLimit
+                longitudinalLimit: paddedLongitudinalLimit,
+                lateralLimit: paddedLateralLimit
             )
             paddings = PathMatcher.shared.getAxisAlignedPadding(
                 axisHeading: axisHeading,
-                longitudinalLimit: 40 * scale,
-                lateralLimit: lateralLimit
+                longitudinalLimit: paddedLongitudinalLimit,
+                lateralLimit: paddedLateralLimit
             )
         } else {
             pathMatchingAxisConstraint = nil
