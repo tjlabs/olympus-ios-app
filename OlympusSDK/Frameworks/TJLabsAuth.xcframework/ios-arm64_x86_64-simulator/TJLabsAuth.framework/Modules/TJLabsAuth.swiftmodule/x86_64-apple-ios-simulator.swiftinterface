@@ -88,6 +88,8 @@ public enum SecretConfig {
   public static let shared: TJLabsAuth.TJLabsAuthManager
   public var isAuthorized: Swift.Bool
   public func getAccessToken(update: Swift.Bool = true, completion: @escaping (TJLabsAuth.TokenResult) -> Swift.Void)
+  public func getTenantId() -> Swift.Int
+  public func getTenantName() -> Swift.String
   public func getTenantUserName() -> Swift.String
   #if compiler(>=5.3) && $NonescapableTypes
   public func setClientConfigKey(_ customerKey: Swift.String, clientMeta: TJLabsAuth.ClientMeta? = nil)

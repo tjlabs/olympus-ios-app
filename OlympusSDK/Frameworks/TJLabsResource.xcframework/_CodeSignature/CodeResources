@@ -34,7 +34,7 @@
 		</data>
 		<key>ios-arm64/TJLabsResource.framework/TJLabsResource</key>
 		<data>
-		cIh3pUi5z7aqjtOJOUROh9JVMCU=
+		VnNN+FGiM4RsVPxvlWMSrCvMUyk=
 		</data>
 		<key>ios-arm64/TJLabsResource.framework/_CodeSignature/CodeResources</key>
 		<data>
@@ -54,7 +54,7 @@
 		</data>
 		<key>ios-arm64/dSYMs/TJLabsResource.framework.dSYM/Contents/Resources/Swift/aarch64/TJLabsAuth.swiftinterface</key>
 		<data>
-		t3+/J8Ve+ip/GgFTr/kv43G0rhA=
+		JXg+CDnijuarELj4ju/AUo3Po+E=
 		</data>
 		<key>ios-arm64_x86_64-simulator/TJLabsResource.framework/Headers/TJLabsResource.h</key>
 		<data>
@@ -126,11 +126,11 @@
 		</data>
 		<key>ios-arm64_x86_64-simulator/dSYMs/TJLabsResource.framework.dSYM/Contents/Resources/Swift/aarch64/TJLabsAuth.swiftinterface</key>
 		<data>
-		tkwfcvrujSULBym5jq42MvrdLW4=
+		jM1L1HpbzDWw7c++HY+DEcGNUWc=
 		</data>
 		<key>ios-arm64_x86_64-simulator/dSYMs/TJLabsResource.framework.dSYM/Contents/Resources/Swift/x86_64/TJLabsAuth.swiftinterface</key>
 		<data>
-		Q4mNeQBKyqo9B3KO0mPXAS3AEmM=
+		Hpid4Lgl9imf7qFS1WI02GSXz2M=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -188,7 +188,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			7l3ZA4/Cv74OwrRmgqAfjthvp5/+bPmtSlkUje7iPmE=
+			tBg9C8qUMYUoel0UMLKEdwqd5Vfb54G/3XdfvKzS7fY=
 			</data>
 		</dict>
 		<key>ios-arm64/TJLabsResource.framework/_CodeSignature/CodeResources</key>
@@ -223,7 +223,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			KbJeCEXjczRDXMcAao8WUReJUGx0xeKx/c436ib3LHE=
+			oEP4Gnvj84LBuUIZkfWysTPm2F6O+icPDeLRAlGoeeM=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/TJLabsResource.framework/Headers/TJLabsResource.h</key>
@@ -349,14 +349,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			BulI8dOx7yURQKKJJmp7TLcO8fAHEysMdG5oFng7zwY=
+			iRhCqYFc36mLc5IXsgBospAvAfiUs+izx3KyGbT0hsw=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/dSYMs/TJLabsResource.framework.dSYM/Contents/Resources/Swift/x86_64/TJLabsAuth.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			es7SPJ32V+QrlMYCyL+4brjzpuNdfk9uNycwsVMeAKo=
+			C7UeDyMhdsYqUhPI38zEB8lbw4ZisZUztZNv5KocFAo=
 			</data>
 		</dict>
 	</dict>
