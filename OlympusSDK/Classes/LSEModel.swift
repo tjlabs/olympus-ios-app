@@ -48,18 +48,23 @@ struct SimulationFilePair: Equatable {
     let eventFileName: String
 }
 
-
 // LSE
 struct LocationRequestPayload: Codable {
     let trace_id: String?
+    let external_name: String?
+    let tenant_name: String?
+    let app_name: String?
     let sector_code: Int
     let building_code: Int?
     let algorithm_mode: String
     let os_type: String
     let measurements: [LSEMeas]
     
-    init(trace_id: String? = nil, sector_code: Int, building_code: Int? = nil, algorithm_mode: String, os_type: String = "iOS", measurements: [LSEMeas]) {
+    init(trace_id: String? = nil, external_name: String?, tenant_name: String?, app_name: String?, sector_code: Int, building_code: Int? = nil, algorithm_mode: String, os_type: String = "iOS", measurements: [LSEMeas]) {
         self.trace_id = trace_id
+        self.external_name = external_name
+        self.tenant_name = tenant_name
+        self.app_name = app_name
         self.sector_code = sector_code
         self.building_code = building_code
         self.algorithm_mode = algorithm_mode

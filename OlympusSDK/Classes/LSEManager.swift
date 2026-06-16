@@ -30,8 +30,11 @@ class LSEManager: RFDGeneratorDelegate {
     let algorithmMode = "dr"
     
     var traceId: String?
+    var externalName: String = "LSE"
+    var tenantName: String = "tjlabs"
+    var appName: String?
+    
     var headingOffset: Double = 0
-    var userId: String = "LSE"
     var sectorId: Int = 0
     var mockMode: Bool = false
     
@@ -43,7 +46,10 @@ class LSEManager: RFDGeneratorDelegate {
     private var rfdEmptyMillis: Double = 0
     private var pressure: Float = 0
     
-    init(sectorId: Int, resourceManager: TJLabsResourceManager) {
+    init(sectorId: Int, traceId: String, externalName: String, resourceManager: TJLabsResourceManager) {
+        self.traceId = traceId
+        self.externalName = externalName
+        
         self.mockMode = JupiterMockManager.shared.mockMode
         self.sectorId = sectorId
         self.resourceManager = resourceManager
@@ -52,6 +58,11 @@ class LSEManager: RFDGeneratorDelegate {
     deinit {
         stopPostTimer()
         clearRfdBuffer()
+    }
+    
+    func setAppName(name: String) {
+        self.appName = name
+        JupiterLogger.i(tag: "LSEManager", message: "(setAppName) : \(name)")
     }
     
     func startService() {
@@ -178,11 +189,15 @@ class LSEManager: RFDGeneratorDelegate {
 
             let payload = LocationRequestPayload(
                 trace_id: self.traceId,
+                external_name: self.externalName,
+                tenant_name: self.tenantName,
+                app_name: self.algorithmMode,
                 sector_code: self.sectorId,
                 building_code: requestContext?.buildingId,
                 algorithm_mode: self.algorithmMode,
                 measurements: measurements
             )
+            
             return (payload: payload, context: requestContext)
         }
     }
