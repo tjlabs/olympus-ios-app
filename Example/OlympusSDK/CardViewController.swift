@@ -188,9 +188,13 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
 //                                      uvdFileName: "20260610_songdo_test3_uvd.json",
 //                                      eventFileName: "20260610_songdo_test3_event.json")
         
-        serviceManager?.setReplayMode(flag: true, rfdFileName: "20260615_songdo_test1_rfd.json",
-                                      uvdFileName: "20260615_songdo_test1_uvd.json",
-                                      eventFileName: "20260615_songdo_test1_event.json")
+//        serviceManager?.setReplayMode(flag: true, rfdFileName: "20260615_songdo_test3_rfd.json",
+//                                      uvdFileName: "20260615_songdo_test3_uvd.json",
+//                                      eventFileName: "20260615_songdo_test3_event.json")
+        
+        serviceManager?.setReplayMode(flag: true, rfdFileName: "20260617_songdo_test1_rfd.json",
+                                      uvdFileName: "20260617_songdo_test1_uvd.json",
+                                      eventFileName: "20260617_songdo_test1_event.json")
         // service
 //        serviceManager.addObserver(self)
 //        serviceManager.setDebugOption(flag: true)

@@ -2,6 +2,7 @@ import Foundation
 import CoreLocation
 import UIKit
 import simd
+import TJLabsAuth
 import TJLabsCommon
 import TJLabsResource
 
@@ -49,7 +50,7 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
     
     // MARK: - Constants
     private let AVG_BUFFER_SIZE = 2
-    private let LSE_RESULT_BUFFER_SIZE = 5
+    private let LSE_RESULT_BUFFER_SIZE = 10
     private let LSE_SNAPSHOT_BUFFER_SIZE = 10
     private let LSE_REPRESENTATIVE_CLUSTER_SIZE = 3
     private let LSE_HEADING_MIN_DISTANCE: Float = 1.0
@@ -128,6 +129,8 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         self.sectorId = sectorId
         self.tenantUserName = tenantUserName
         
+        let tenantName = TJLabsAuthManager.shared.getTenantName()
+        
         self.entManager = EntranceManager(sectorId: sectorId)
         self.buildingLevelChanger = BuildingLevelChanger(sectorId: sectorId)
         self.wardAvgManager = WardAveragingManager(bufferSize: AVG_BUFFER_SIZE)
@@ -135,7 +138,7 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         self.landmarkTagger = LandmarkTagger(sectorId: sectorId)
         self.solutionEstimator = SolutionEstimator(sectorId: sectorId)
         self.stateManager = JupiterStateManager()
-        self.lseManager = LSEManager(sectorId: sectorId, traceId: tenantUserName, externalName: id, resourceManager: tjlabsResourceManager)
+        self.lseManager = LSEManager(sectorId: sectorId, traceId: tenantUserName, externalName: id, tenantName: tenantName, resourceManager: tjlabsResourceManager)
         
         peakDetector.setInnerWardIds(ids: self.entManager!.getEntInnermostWardIds())
         
@@ -743,256 +746,280 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         }
         
         if jupiterPhase == .ENTERING {
-//            var forceStop = false
-//            let uvdBuffer = stackManager.getUvdBuffer(from: uvd.index-50)
-//            let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBuffer.map{ Float($0.heading) })
-//            forceStop = majorSection.isEmpty
-//            
-//            if !forceStop, let promotedResult = entManager.maybePromoteEnteringToTrackingUsingLse(curResult: curResult, uvd: uvd, uvdBuffer: uvdBuffer, lseSnapshotBuffer: lseSnapshotBuffer, majorSection: majorSection) {
-//                startIndoorTracking(uvd: uvd, fltResult: promotedResult)
-//            }
-            
             var forceStop = false
-            if let innermostWard = entManager.stopEntTrack(wardId: peakId) {
-                let uvdBuffer = stackManager.getUvdBuffer(from: uvd.index-50)
-                let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBuffer.map{ Float($0.heading) })
-                forceStop = majorSection.isEmpty
-                if !forceStop {
-                    var wardArea: [EntWardArea]?
-                    if innermostWard.name.contains("46E") {
-                        // Convensia Ent1
-                        wardArea = [
-                            EntWardArea(x: 30, y: 199, heading: [0]),
-                            EntWardArea(x: 31, y: 199, heading: [0]),
-                            EntWardArea(x: 32, y: 199, heading: [0]),
-                            EntWardArea(x: 33, y: 199, heading: [0]),
-                            EntWardArea(x: 34, y: 199, heading: [0]),
-                            EntWardArea(x: 35, y: 199, heading: [0]),
-                            EntWardArea(x: 36, y: 199, heading: [0]),
-                            EntWardArea(x: 37, y: 199, heading: [0]),
-                            EntWardArea(x: 38, y: 199, heading: [0]),
-                            EntWardArea(x: 39, y: 199, heading: [0]),
-                            EntWardArea(x: 40, y: 199, heading: [0]),
-                            EntWardArea(x: 41, y: 199, heading: [0]),
-                            EntWardArea(x: 42, y: 199, heading: [0]),
-                            EntWardArea(x: 43, y: 199, heading: [0]),
-                            EntWardArea(x: 44, y: 199, heading: [0]),
-                            EntWardArea(x: 45, y: 199, heading: [0]),
-                            EntWardArea(x: 46, y: 199, heading: [0]),
-                            EntWardArea(x: 47, y: 199, heading: [0]),
-                            EntWardArea(x: 48, y: 199, heading: [0])
-                        ]
-                    } else if innermostWard.name.contains("114") {
-                        // Convensia Ent2
-                        wardArea = [
-                            EntWardArea(x: 362, y: 152, heading: [158, 180]),
-                            EntWardArea(x: 361, y: 153, heading: [158, 180]),
-                            EntWardArea(x: 360, y: 153, heading: [158, 180]),
-                            EntWardArea(x: 359, y: 154, heading: [158]),
-                            EntWardArea(x: 358, y: 154, heading: [158]),
-                            EntWardArea(x: 357, y: 154, heading: [158]),
-                            EntWardArea(x: 357, y: 154, heading: [158]),
-                            EntWardArea(x: 356, y: 155, heading: [158]),
-                            EntWardArea(x: 355, y: 155, heading: [158]),
-                            EntWardArea(x: 354, y: 155, heading: [158]),
-                            EntWardArea(x: 353, y: 156, heading: [158]),
-                            EntWardArea(x: 352, y: 156, heading: [158]),
-                            EntWardArea(x: 352, y: 157, heading: [158]),
-                            EntWardArea(x: 351, y: 157, heading: [158]),
-                            EntWardArea(x: 350, y: 157, heading: [158]),
-                            EntWardArea(x: 349, y: 158, heading: [158]),
-                            EntWardArea(x: 348, y: 158, heading: [90, 158]),
-                            EntWardArea(x: 348, y: 159, heading: [90]),
-                            EntWardArea(x: 348, y: 160, heading: [90]),
-                            EntWardArea(x: 348, y: 161, heading: [90]),
-                            EntWardArea(x: 348, y: 162, heading: [90]),
-                            EntWardArea(x: 348, y: 163, heading: [90]),
-                            EntWardArea(x: 348, y: 164, heading: [90]),
-                            EntWardArea(x: 348, y: 165, heading: [90])
-                        ]
-                    } else if innermostWard.name.contains("117") {
-                        wardArea = [
-                            EntWardArea(x: 348, y: 50, heading: [90]),
-                            EntWardArea(x: 348, y: 51, heading: [90]),
-                            EntWardArea(x: 348, y: 52, heading: [90]),
-                            EntWardArea(x: 348, y: 53, heading: [90]),
-                            EntWardArea(x: 348, y: 54, heading: [90]),
-                            EntWardArea(x: 348, y: 55, heading: [90]),
-                            EntWardArea(x: 348, y: 56, heading: [90]),
-                            EntWardArea(x: 348, y: 57, heading: [90]),
-                            EntWardArea(x: 348, y: 58, heading: [90]),
-                            EntWardArea(x: 348, y: 59, heading: [90]),
-                            EntWardArea(x: 348, y: 60, heading: [90]),
-                            EntWardArea(x: 348, y: 61, heading: [90]),
-                            EntWardArea(x: 348, y: 62, heading: [90]),
-                            EntWardArea(x: 348, y: 63, heading: [90]),
-                            EntWardArea(x: 348, y: 64, heading: [90]),
-                            EntWardArea(x: 348, y: 65, heading: [90]),
-                            EntWardArea(x: 348, y: 66, heading: [90]),
-                            EntWardArea(x: 348, y: 67, heading: [90]),
-                            EntWardArea(x: 348, y: 68, heading: [90, 135, 180])
-                        ]
-                    } else {
-                        wardArea = [
-                            EntWardArea(x: innermostWard.x, y: innermostWard.y, heading: innermostWard.headings)
-                        ]
-                    }
+            let uvdBuffer = stackManager.getUvdBuffer(from: uvd.index-50)
+            let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBuffer.map{ Float($0.heading) })
+            forceStop = majorSection.isEmpty
+            
+            let snapshotBuffer = getLSESnapshotBuffer(lastN: 5)
+            if !forceStop, let promotedResult = entManager.maybePromoteEnteringToTrackingUsingLse(curResult: curResult, uvd: uvd, uvdBuffer: uvdBuffer, lseSnapshotBuffer: snapshotBuffer, majorSection: majorSection) {
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) maybePromoteEnteringToTrackingUsingLse : promotedResult=[\(promotedResult.index), \(promotedResult.x), \(promotedResult.y), \(promotedResult.absolute_heading)]")
+                let uvdBufferForStopEntTrack = stackManager.getUvdBuffer(from: promotedResult.index)
+                if let ixyhs = stackManager.propagateUsingUvd(uvdBuffer: uvdBufferForStopEntTrack, fltResult: promotedResult) {
+                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) propagateUsingUvd : curIndex= \(uvd.index)")
+                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) propagateUsingUvd : ixyhs=[\(ixyhs.x), \(ixyhs.y), \(ixyhs.heading)]")
                     
-                    let headingForCompensation = majorSection.average - uvdBuffer[0].heading
-                    
-                    if let curResult = curResult {
-                        self.debug_ent_compensated_traj = nil
-
-                        struct EntTrackCandidateResult {
-                            let dist: Float
-                            let result: FineLocationTrackingOutput
-                            let wardX: Float
-                            let wardY: Float
-                            let pathHeading: Float
-                            let compensatedTraj: [[Double]]
-                        }
+                    var curResult = promotedResult
+                    let propagatedX = promotedResult.x + ixyhs.x
+                    let propagatedY = promotedResult.y + ixyhs.y
+                    let propagatedH = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(promotedResult.absolute_heading + ixyhs.heading)))
+                    curResult.x = propagatedX
+                    curResult.y = propagatedY
+                    curResult.absolute_heading = propagatedH
+                    if let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: curResult.x, y: curResult.y, heading: curResult.absolute_heading, isUseHeading: false, mode: .MODE_VEHICLE, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) {
+                        curResult.x = pmResult.x
+                        curResult.y = pmResult.y
+                        curResult.absolute_heading = pmResult.heading
                         
-                        let candidateInputs: [(wardX: Float, wardY: Float, pathHeading: Float)] = wardArea!.flatMap { area in
-                            area.heading.map { heading in
-                                (wardX: area.x, wardY: area.y, pathHeading: heading)
-                            }
-                        }
-                        
-                        let candidateResults = NSLock()
-                        var evaluatedCandidates = [EntTrackCandidateResult]()
-                        
-                        DispatchQueue.concurrentPerform(iterations: candidateInputs.count) { candidateIndex in
-                            let candidate = candidateInputs[candidateIndex]
-                            let wardX = candidate.wardX
-                            let wardY = candidate.wardY
-                            let pathHeading = candidate.pathHeading
-                            
-//                            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - EntTrack Finished : ward=(\(wardX), \(wardY)) heading=\(pathHeading)")
-                            
-                            let startHeading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(pathHeading) - Double(headingForCompensation)))
-                            var coord: [Float] = [0, 0]
-                            var heading: Float = startHeading
-                            
-                            var offset: [Float] = [0, 0]
-                            var resultBuffer = [[Float]]()
-                            resultBuffer.reserveCapacity(max(uvdBuffer.count - 1, 0))
-                            
-                            for i in 1..<uvdBuffer.count {
-                                let curUvd = uvdBuffer[i]
-                                let preUvd = uvdBuffer[i-1]
-                                
-                                let diffHeading: Float = Float(curUvd.heading - preUvd.heading)
-                                let updatedHeading = TJLabsUtilFunctions.shared.compensateDegree(Double(heading + diffHeading))
-                                let updatedHeadingRadian = TJLabsUtilFunctions.shared.degree2radian(degree: updatedHeading)
-                                
-                                let dx = curUvd.length * cos(updatedHeadingRadian)
-                                let dy = curUvd.length * sin(updatedHeadingRadian)
-                                
-                                coord[0] += Float(dx)
-                                coord[1] += Float(dy)
-                                heading = Float(updatedHeading)
-                                
-                                if uvdBuffer[i].index == userPeak.peak_index {
-                                    offset[0] = Float(wardX) - coord[0]
-                                    offset[1] = Float(wardY) - coord[1]
-                                }
-                                
-                                resultBuffer.append([coord[0], coord[1], heading])
-                            }
-                            
-                            guard !resultBuffer.isEmpty else { return }
-                            
-                            var compensatedBuffer = [[Float]]()
-                            compensatedBuffer.reserveCapacity(resultBuffer.count)
-                            for value in resultBuffer {
-                                let new: [Float] = [value[0] + offset[0], value[1] + offset[1], value[2]]
-                                compensatedBuffer.append(new)
-                            }
-                            
-                            let sampleCount = 7
-                            let lastIndex = compensatedBuffer.count - 1
-                            var sampleIndices = [Int]()
-                            if lastIndex == 0 {
-                                sampleIndices = [0]
-                            } else {
-                                for sampleOrder in 0..<sampleCount {
-                                    let ratio = Double(sampleOrder) / Double(sampleCount - 1)
-                                    let sampledIndex = Int(round(ratio * Double(lastIndex)))
-                                    if sampleIndices.last != sampledIndex {
-                                        sampleIndices.append(sampledIndex)
-                                    }
-                                }
-                            }
-                            
-                            var totalDist: Float = 0
-                            var validSampleCount = 0
-                            for sampleIndex in sampleIndices {
-                                let sample = compensatedBuffer[sampleIndex]
-                                let sampleX = sample[0]
-                                let sampleY = sample[1]
-                                let sampleHeading = TJLabsUtilFunctions.shared.compensateDegree(Double(sample[2]))
-                                
-                                var sampleResult = curResult
-                                sampleResult.x = sampleX
-                                sampleResult.y = sampleY
-                                sampleResult.absolute_heading = Float(sampleHeading)
-                                
-                                guard let samplePm = PathMatcher.shared.pathMatching(sectorId: sectorId,
-                                                                                     building: sampleResult.building_name,
-                                                                                     level: sampleResult.level_name,
-                                                                                     x: sampleResult.x, y: sampleResult.y, heading: sampleResult.absolute_heading, isUseHeading: true, mode: .MODE_VEHICLE, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else {
-                                    validSampleCount = 0
-                                    break
-                                }
-                                
-                                let dx = sampleX - samplePm.x
-                                let dy = sampleY - samplePm.y
-                                let sampleDist = sqrt(dx*dx + dy*dy)
-                                totalDist += sampleDist
-                                validSampleCount += 1
-                            }
-                            
-                            guard validSampleCount == sampleIndices.count, validSampleCount > 0 else { return }
-                            let dist = totalDist / Float(validSampleCount)
-                            
-                            let lastX = compensatedBuffer[lastIndex][0]
-                            let lastY = compensatedBuffer[lastIndex][1]
-                            let lastHeading = TJLabsUtilFunctions.shared.compensateDegree(Double(compensatedBuffer[lastIndex][2]))
-                            var lastResult = curResult
-                            lastResult.x = lastX
-                            lastResult.y = lastY
-                            lastResult.absolute_heading = Float(lastHeading)
-                            
-                            guard let lastPm = PathMatcher.shared.pathMatching(sectorId: sectorId,
-                                                                               building: lastResult.building_name,
-                                                                               level: lastResult.level_name,
-                                                                               x: lastResult.x, y: lastResult.y, heading: lastResult.absolute_heading, isUseHeading: true, mode: .MODE_VEHICLE, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else { return }
-                            
-                            lastResult.x = lastPm.x
-                            lastResult.y = lastPm.y
-                            
-                            let candidateResult = EntTrackCandidateResult(dist: dist,
-                                                                         result: lastResult,
-                                                                         wardX: wardX,
-                                                                         wardY: wardY,
-                                                                         pathHeading: pathHeading,
-                                                                         compensatedTraj: compensatedBuffer.map { [Double($0[0]), Double($0[1]), Double($0[2])] })
-                            candidateResults.lock()
-                            evaluatedCandidates.append(candidateResult)
-                            candidateResults.unlock()
-                        }
-                        
-                        if let bestCandidate = evaluatedCandidates.min(by: { $0.dist < $1.dist }) {
-                            self.debug_ent_compensated_traj = bestCandidate.compensatedTraj
-                            var tempResult = bestCandidate.result
-                            tempResult.building_name = entManager.getEntTrackEndBuilding()
-                            tempResult.level_name = innermostWard.level.name
-                            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - EntTrack Finished : wardXY:[\(bestCandidate.wardX),\(bestCandidate.wardY)] // headings:\(bestCandidate.pathHeading) // dist \(bestCandidate.dist) // tempResult \(tempResult)")
-                            startIndoorTracking(uvd: uvd, fltResult: tempResult)
-                        }
+                        correctionIndex = userPeak.peak_index
+                        correctionId = userPeak.id
+                        startIndoorTracking(uvd: uvd, fltResult: curResult)
+//                        startIndoorTracking(uvd: uvd, fltResult: promotedResult)
                     }
                 }
             }
+            
+//            var forceStop = false
+//            if let innermostWard = entManager.stopEntTrack(wardId: peakId) {
+//                let uvdBuffer = stackManager.getUvdBuffer(from: uvd.index-50)
+//                let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBuffer.map{ Float($0.heading) })
+//                forceStop = majorSection.isEmpty
+//                if !forceStop {
+//                    var wardArea: [EntWardArea]?
+//                    if innermostWard.name.contains("46E") {
+//                        // Convensia Ent1
+//                        wardArea = [
+//                            EntWardArea(x: 30, y: 199, heading: [0]),
+//                            EntWardArea(x: 31, y: 199, heading: [0]),
+//                            EntWardArea(x: 32, y: 199, heading: [0]),
+//                            EntWardArea(x: 33, y: 199, heading: [0]),
+//                            EntWardArea(x: 34, y: 199, heading: [0]),
+//                            EntWardArea(x: 35, y: 199, heading: [0]),
+//                            EntWardArea(x: 36, y: 199, heading: [0]),
+//                            EntWardArea(x: 37, y: 199, heading: [0]),
+//                            EntWardArea(x: 38, y: 199, heading: [0]),
+//                            EntWardArea(x: 39, y: 199, heading: [0]),
+//                            EntWardArea(x: 40, y: 199, heading: [0]),
+//                            EntWardArea(x: 41, y: 199, heading: [0]),
+//                            EntWardArea(x: 42, y: 199, heading: [0]),
+//                            EntWardArea(x: 43, y: 199, heading: [0]),
+//                            EntWardArea(x: 44, y: 199, heading: [0]),
+//                            EntWardArea(x: 45, y: 199, heading: [0]),
+//                            EntWardArea(x: 46, y: 199, heading: [0]),
+//                            EntWardArea(x: 47, y: 199, heading: [0]),
+//                            EntWardArea(x: 48, y: 199, heading: [0])
+//                        ]
+//                    } else if innermostWard.name.contains("114") {
+//                        // Convensia Ent2
+//                        wardArea = [
+//                            EntWardArea(x: 362, y: 152, heading: [158, 180]),
+//                            EntWardArea(x: 361, y: 153, heading: [158, 180]),
+//                            EntWardArea(x: 360, y: 153, heading: [158, 180]),
+//                            EntWardArea(x: 359, y: 154, heading: [158]),
+//                            EntWardArea(x: 358, y: 154, heading: [158]),
+//                            EntWardArea(x: 357, y: 154, heading: [158]),
+//                            EntWardArea(x: 357, y: 154, heading: [158]),
+//                            EntWardArea(x: 356, y: 155, heading: [158]),
+//                            EntWardArea(x: 355, y: 155, heading: [158]),
+//                            EntWardArea(x: 354, y: 155, heading: [158]),
+//                            EntWardArea(x: 353, y: 156, heading: [158]),
+//                            EntWardArea(x: 352, y: 156, heading: [158]),
+//                            EntWardArea(x: 352, y: 157, heading: [158]),
+//                            EntWardArea(x: 351, y: 157, heading: [158]),
+//                            EntWardArea(x: 350, y: 157, heading: [158]),
+//                            EntWardArea(x: 349, y: 158, heading: [158]),
+//                            EntWardArea(x: 348, y: 158, heading: [90, 158]),
+//                            EntWardArea(x: 348, y: 159, heading: [90]),
+//                            EntWardArea(x: 348, y: 160, heading: [90]),
+//                            EntWardArea(x: 348, y: 161, heading: [90]),
+//                            EntWardArea(x: 348, y: 162, heading: [90]),
+//                            EntWardArea(x: 348, y: 163, heading: [90]),
+//                            EntWardArea(x: 348, y: 164, heading: [90]),
+//                            EntWardArea(x: 348, y: 165, heading: [90])
+//                        ]
+//                    } else if innermostWard.name.contains("117") {
+//                        wardArea = [
+//                            EntWardArea(x: 348, y: 50, heading: [90]),
+//                            EntWardArea(x: 348, y: 51, heading: [90]),
+//                            EntWardArea(x: 348, y: 52, heading: [90]),
+//                            EntWardArea(x: 348, y: 53, heading: [90]),
+//                            EntWardArea(x: 348, y: 54, heading: [90]),
+//                            EntWardArea(x: 348, y: 55, heading: [90]),
+//                            EntWardArea(x: 348, y: 56, heading: [90]),
+//                            EntWardArea(x: 348, y: 57, heading: [90]),
+//                            EntWardArea(x: 348, y: 58, heading: [90]),
+//                            EntWardArea(x: 348, y: 59, heading: [90]),
+//                            EntWardArea(x: 348, y: 60, heading: [90]),
+//                            EntWardArea(x: 348, y: 61, heading: [90]),
+//                            EntWardArea(x: 348, y: 62, heading: [90]),
+//                            EntWardArea(x: 348, y: 63, heading: [90]),
+//                            EntWardArea(x: 348, y: 64, heading: [90]),
+//                            EntWardArea(x: 348, y: 65, heading: [90]),
+//                            EntWardArea(x: 348, y: 66, heading: [90]),
+//                            EntWardArea(x: 348, y: 67, heading: [90]),
+//                            EntWardArea(x: 348, y: 68, heading: [90, 135, 180])
+//                        ]
+//                    } else {
+//                        wardArea = [
+//                            EntWardArea(x: innermostWard.x, y: innermostWard.y, heading: innermostWard.headings)
+//                        ]
+//                    }
+//                    
+//                    let headingForCompensation = majorSection.average - uvdBuffer[0].heading
+//                    
+//                    if let curResult = curResult {
+//                        self.debug_ent_compensated_traj = nil
+//
+//                        struct EntTrackCandidateResult {
+//                            let dist: Float
+//                            let result: FineLocationTrackingOutput
+//                            let wardX: Float
+//                            let wardY: Float
+//                            let pathHeading: Float
+//                            let compensatedTraj: [[Double]]
+//                        }
+//                        
+//                        let candidateInputs: [(wardX: Float, wardY: Float, pathHeading: Float)] = wardArea!.flatMap { area in
+//                            area.heading.map { heading in
+//                                (wardX: area.x, wardY: area.y, pathHeading: heading)
+//                            }
+//                        }
+//                        
+//                        let candidateResults = NSLock()
+//                        var evaluatedCandidates = [EntTrackCandidateResult]()
+//                        
+//                        DispatchQueue.concurrentPerform(iterations: candidateInputs.count) { candidateIndex in
+//                            let candidate = candidateInputs[candidateIndex]
+//                            let wardX = candidate.wardX
+//                            let wardY = candidate.wardY
+//                            let pathHeading = candidate.pathHeading
+//                            
+////                            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - EntTrack Finished : ward=(\(wardX), \(wardY)) heading=\(pathHeading)")
+//                            
+//                            let startHeading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(pathHeading) - Double(headingForCompensation)))
+//                            var coord: [Float] = [0, 0]
+//                            var heading: Float = startHeading
+//                            
+//                            var offset: [Float] = [0, 0]
+//                            var resultBuffer = [[Float]]()
+//                            resultBuffer.reserveCapacity(max(uvdBuffer.count - 1, 0))
+//                            
+//                            for i in 1..<uvdBuffer.count {
+//                                let curUvd = uvdBuffer[i]
+//                                let preUvd = uvdBuffer[i-1]
+//                                
+//                                let diffHeading: Float = Float(curUvd.heading - preUvd.heading)
+//                                let updatedHeading = TJLabsUtilFunctions.shared.compensateDegree(Double(heading + diffHeading))
+//                                let updatedHeadingRadian = TJLabsUtilFunctions.shared.degree2radian(degree: updatedHeading)
+//                                
+//                                let dx = curUvd.length * cos(updatedHeadingRadian)
+//                                let dy = curUvd.length * sin(updatedHeadingRadian)
+//                                
+//                                coord[0] += Float(dx)
+//                                coord[1] += Float(dy)
+//                                heading = Float(updatedHeading)
+//                                
+//                                if uvdBuffer[i].index == userPeak.peak_index {
+//                                    offset[0] = Float(wardX) - coord[0]
+//                                    offset[1] = Float(wardY) - coord[1]
+//                                }
+//                                
+//                                resultBuffer.append([coord[0], coord[1], heading])
+//                            }
+//                            
+//                            guard !resultBuffer.isEmpty else { return }
+//                            
+//                            var compensatedBuffer = [[Float]]()
+//                            compensatedBuffer.reserveCapacity(resultBuffer.count)
+//                            for value in resultBuffer {
+//                                let new: [Float] = [value[0] + offset[0], value[1] + offset[1], value[2]]
+//                                compensatedBuffer.append(new)
+//                            }
+//                            
+//                            let sampleCount = 7
+//                            let lastIndex = compensatedBuffer.count - 1
+//                            var sampleIndices = [Int]()
+//                            if lastIndex == 0 {
+//                                sampleIndices = [0]
+//                            } else {
+//                                for sampleOrder in 0..<sampleCount {
+//                                    let ratio = Double(sampleOrder) / Double(sampleCount - 1)
+//                                    let sampledIndex = Int(round(ratio * Double(lastIndex)))
+//                                    if sampleIndices.last != sampledIndex {
+//                                        sampleIndices.append(sampledIndex)
+//                                    }
+//                                }
+//                            }
+//                            
+//                            var totalDist: Float = 0
+//                            var validSampleCount = 0
+//                            for sampleIndex in sampleIndices {
+//                                let sample = compensatedBuffer[sampleIndex]
+//                                let sampleX = sample[0]
+//                                let sampleY = sample[1]
+//                                let sampleHeading = TJLabsUtilFunctions.shared.compensateDegree(Double(sample[2]))
+//                                
+//                                var sampleResult = curResult
+//                                sampleResult.x = sampleX
+//                                sampleResult.y = sampleY
+//                                sampleResult.absolute_heading = Float(sampleHeading)
+//                                
+//                                guard let samplePm = PathMatcher.shared.pathMatching(sectorId: sectorId,
+//                                                                                     building: sampleResult.building_name,
+//                                                                                     level: sampleResult.level_name,
+//                                                                                     x: sampleResult.x, y: sampleResult.y, heading: sampleResult.absolute_heading, isUseHeading: true, mode: .MODE_VEHICLE, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else {
+//                                    validSampleCount = 0
+//                                    break
+//                                }
+//                                
+//                                let dx = sampleX - samplePm.x
+//                                let dy = sampleY - samplePm.y
+//                                let sampleDist = sqrt(dx*dx + dy*dy)
+//                                totalDist += sampleDist
+//                                validSampleCount += 1
+//                            }
+//                            
+//                            guard validSampleCount == sampleIndices.count, validSampleCount > 0 else { return }
+//                            let dist = totalDist / Float(validSampleCount)
+//                            
+//                            let lastX = compensatedBuffer[lastIndex][0]
+//                            let lastY = compensatedBuffer[lastIndex][1]
+//                            let lastHeading = TJLabsUtilFunctions.shared.compensateDegree(Double(compensatedBuffer[lastIndex][2]))
+//                            var lastResult = curResult
+//                            lastResult.x = lastX
+//                            lastResult.y = lastY
+//                            lastResult.absolute_heading = Float(lastHeading)
+//                            
+//                            guard let lastPm = PathMatcher.shared.pathMatching(sectorId: sectorId,
+//                                                                               building: lastResult.building_name,
+//                                                                               level: lastResult.level_name,
+//                                                                               x: lastResult.x, y: lastResult.y, heading: lastResult.absolute_heading, isUseHeading: true, mode: .MODE_VEHICLE, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else { return }
+//                            
+//                            lastResult.x = lastPm.x
+//                            lastResult.y = lastPm.y
+//                            
+//                            let candidateResult = EntTrackCandidateResult(dist: dist,
+//                                                                         result: lastResult,
+//                                                                         wardX: wardX,
+//                                                                         wardY: wardY,
+//                                                                         pathHeading: pathHeading,
+//                                                                         compensatedTraj: compensatedBuffer.map { [Double($0[0]), Double($0[1]), Double($0[2])] })
+//                            candidateResults.lock()
+//                            evaluatedCandidates.append(candidateResult)
+//                            candidateResults.unlock()
+//                        }
+//                        
+//                        if let bestCandidate = evaluatedCandidates.min(by: { $0.dist < $1.dist }) {
+//                            self.debug_ent_compensated_traj = bestCandidate.compensatedTraj
+//                            var tempResult = bestCandidate.result
+//                            tempResult.building_name = entManager.getEntTrackEndBuilding()
+//                            tempResult.level_name = innermostWard.level.name
+//                            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - EntTrack Finished : wardXY:[\(bestCandidate.wardX),\(bestCandidate.wardY)] // headings:\(bestCandidate.pathHeading) // dist \(bestCandidate.dist) // tempResult \(tempResult)")
+//                            startIndoorTracking(uvd: uvd, fltResult: tempResult)
+//                        }
+//                    }
+//                }
+//            }
             
             if entManager.forcedStopEntTrack(bleAvg: bleData, sec: 30) || forceStop {
                 // Entrance Tracking Finshid (Force)
@@ -1988,6 +2015,14 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
             lseSnapshotBuffer.removeFirst(lseSnapshotBuffer.count - LSE_SNAPSHOT_BUFFER_SIZE)
         }
     }
+    
+    private func getLSESnapshotBuffer(lastN: Int) -> [SingleEpochSnapshot] {
+        let container = self.lseSnapshotBuffer
+
+        guard lastN > 0 else { return [] }
+
+        return Array(container.suffix(lastN))
+    }
 
     private func selectRepresentativeLSECluster() -> [FineLocationTrackingOutput] {
         let buffer = lseResultBuffer
@@ -2094,6 +2129,12 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                                                           y: y,
                                                           absolute_heading: h)
             self.curLSEResult = rawLSEResult
+            if let param = AffineConverter.shared.getAffineParam(sectorId: self.sectorId) {
+                let magHeading = Float(latestMagneticHeading ?? 0)
+                let convertedHeading = AffineConverter.shared.convertMagHeading(magHeading: magHeading, param: param)
+                self.curLSEResult?.absolute_heading = convertedHeading
+            }
+            
             updateLSEBuffer(with: rawLSEResult)
             updateLSESnapshotBuffer(with: SingleEpochSnapshot(requestContext: context, result: rawLSEResult))
             

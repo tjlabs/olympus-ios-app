@@ -28,4 +28,11 @@ class AffineConverter {
         
         return LLH(lat: lat, lon: lon, azimuth: correctedHeading)
     }
+    
+    func convertMagHeading(magHeading: Float, param: WGS84Transform) -> Float {
+        let headingOffsetDeg = param.headingOffset // songdo : 36.92
+        let correctedHeading = fmod(Double(-magHeading) + headingOffsetDeg + 360.0, 360.0)
+        
+        return Float(correctedHeading)
+    }
 }

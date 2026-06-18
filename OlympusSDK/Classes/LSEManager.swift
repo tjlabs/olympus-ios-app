@@ -46,13 +46,15 @@ class LSEManager: RFDGeneratorDelegate {
     private var rfdEmptyMillis: Double = 0
     private var pressure: Float = 0
     
-    init(sectorId: Int, traceId: String, externalName: String, resourceManager: TJLabsResourceManager) {
+    init(sectorId: Int, traceId: String, externalName: String, tenantName: String, resourceManager: TJLabsResourceManager) {
         self.traceId = traceId
         self.externalName = externalName
+        self.tenantName = tenantName
         
         self.mockMode = JupiterMockManager.shared.mockMode
         self.sectorId = sectorId
         self.resourceManager = resourceManager
+        JupiterLogger.i(tag: "LSEManager", message: "(info) : traceId=\(traceId), externalName=\(externalName), tenantName=\(tenantName)")
     }
     
     deinit {
@@ -191,7 +193,7 @@ class LSEManager: RFDGeneratorDelegate {
                 trace_id: self.traceId,
                 external_name: self.externalName,
                 tenant_name: self.tenantName,
-                app_name: self.algorithmMode,
+                app_name: self.appName,
                 sector_code: self.sectorId,
                 building_code: requestContext?.buildingId,
                 algorithm_mode: self.algorithmMode,

@@ -18,13 +18,13 @@ class EntranceManager {
     
     deinit { }
     
-    private let ENTERING_LSE_BUFFER_SIZE = 10
+    private let ENTERING_LSE_BUFFER_SIZE = 5
     private let ENTERING_LSE_MAX_STEP_DISTANCE: Float = 30
     private let ENTERING_LSE_MAX_PATH_LENGTH_DIFF: Float = 25
     private let ENTERING_LSE_MIN_DISPLACEMENT: Float = 3
     private let ENTERING_LSE_MAX_AVG_TRAJECTORY_DISTANCE: Float = 18
     private let ENTERING_LSE_MAX_END_TRAJECTORY_DISTANCE: Float = 22
-    private let ENTERING_LSE_SEGMENT_HEADING_STD_THRESHOLD: Double = 5
+    private let ENTERING_LSE_SEGMENT_HEADING_STD_THRESHOLD: Double = 8
     
     private var entRouteMap = [String: EntranceRouteData]()
     private var entDataMap = [String: EntranceData]()
@@ -238,11 +238,13 @@ class EntranceManager {
             let extraMessage = extra.map { ", \($0)" } ?? ""
 
             JupiterLogger.i(
-                tag: "EnteringLseFlow",
+                tag: "EntranceManager",
                 message: "skip tracking transition: \(reason), index=\(uvd.index), building=\(resolvedBuildingName), level=\(resolvedLevelName), uvdBufferCount=\(uvdBuffer.count), lseSnapshotBufferCount=\(lseSnapshotBuffer.count), matchedSnapshotCount=\(resolvedMatchedSnapshotCount)\(extraMessage)"
             )
         }
-
+        
+        JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) : uvd= \(uvd.index)")
+        
         // LSE 기준으로 ENTERING 구간이 충분히 안정적일 때만 TRACKING으로 승격한다.
         guard let baseResult = curResult else {
             logSkip("curResult is nil")
@@ -267,7 +269,7 @@ class EntranceManager {
             snapshots: snapshots,
             fallbackLevelName: baseResult.level_name
         )
-
+        JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) dominantLevelName= \(dominantLevelName)")
         // 최근 LSE 버퍼가 만들어내는 이동 방향을 절대 heading 기준으로 사용한다.
         guard let lseTrendHeading = resolveEnteringLseTrendHeading(
             snapshots: snapshots,
@@ -282,14 +284,15 @@ class EntranceManager {
             )
             return nil
         }
-
+        
+        JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) lseTrendHeading= \(lseTrendHeading)")
         // LSE 자체가 크게 튀는 상황이면 UVD와 비교하기 전에 바로 배제한다.
         let lseStepDistances: [Float] = zip(snapshots, snapshots.dropFirst()).map { prev, next in
             let dx = next.result.x - prev.result.x
             let dy = next.result.y - prev.result.y
             return sqrt(dx * dx + dy * dy)
         }
-
+        JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) lseStepDistances= \(lseStepDistances)")
         let maxStepDistance = lseStepDistances.max() ?? 0
 
         if maxStepDistance > ENTERING_LSE_MAX_STEP_DISTANCE {
@@ -344,8 +347,11 @@ class EntranceManager {
         ))
 
         var lastAlignedHeading = lseTrendHeading
+        JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) lastAlignedHeading= \(lastAlignedHeading)")
 
         for (prevSnapshot, nextSnapshot) in zip(snapshots, snapshots.dropFirst()) {
+            JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) prevContext= \(prevSnapshot.requestContext)")
+            JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) nextContext= \(nextSnapshot.requestContext)")
             guard let prevContext = prevSnapshot.requestContext, let nextContext = nextSnapshot.requestContext else {
                 logSkip(
                     "missing snapshot request context in segment",
@@ -451,7 +457,7 @@ class EntranceManager {
         )
 
         let pathLengthDiff = abs(lsePathLength - propagatedPathLength)
-
+        JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) lsePathLength= \(lsePathLength), propagatedPathLength= \(propagatedPathLength), pathLengthDiff= \(pathLengthDiff)")
         if pathLengthDiff > ENTERING_LSE_MAX_PATH_LENGTH_DIFF {
             logSkip(
                 "path length mismatch",
@@ -475,7 +481,7 @@ class EntranceManager {
         }
 
         let propagatedHeading = lastAlignedHeading
-
+        JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) propagatedHeading= \(propagatedHeading)")
         guard let pmResult = PathMatcher.shared.pathMatching(
             sectorId: sectorId,
             building: baseResult.building_name,
@@ -496,13 +502,13 @@ class EntranceManager {
             )
             return nil
         }
-
+        
         JupiterLogger.i(
-            tag: "EnteringLseFlow",
+            tag: "EntranceManager",
             message: "promote ENTERING -> TRACKING: index=\(uvd.index), dominantLevel=\(dominantLevelName), majorHeading=\(majorHeading), lseTrendHeading=\(lseTrendHeading), headingCompensation=\(headingCompensation), maxStepDistance=\(maxStepDistance), avgTrajectoryDistance=\(avgTrajectoryDistance), maxTrajectoryDistance=\(maxTrajectoryDistance), lsePathLength=\(lsePathLength), propagatedPathLength=\(propagatedPathLength), pathLengthDiff=\(pathLengthDiff)"
         )
         
-        finalResult.index = uvd.index
+        finalResult.index = lastPropagated.index
         finalResult.level_name = dominantLevelName
         finalResult.x = pmResult.x
         finalResult.y = pmResult.y
@@ -532,15 +538,17 @@ class EntranceManager {
         var sumDy: Float = 0
 
         for i in 1..<snapshots.count {
-            sumDx += snapshots[i].result.x - snapshots[i - 1].result.x
-            sumDy += snapshots[i].result.y - snapshots[i - 1].result.y
+            sumDx += (snapshots[i].result.x - snapshots[i - 1].result.x)
+            sumDy += (snapshots[i].result.y - snapshots[i - 1].result.y)
         }
 
         let displacement = sqrt(sumDx * sumDx + sumDy * sumDy)
+        JupiterLogger.i(tag: "EntranceManager", message: "(resolveTrendHeading) sumDx= \(sumDx), sumDy= \(sumDy)")
+        JupiterLogger.i(tag: "EntranceManager", message: "(resolveTrendHeading) displacement= \(displacement)")
         guard displacement >= minDistance else { return nil }
-
         let headingRadian = atan2(Double(sumDy), Double(sumDx))
         let headingDegree = TJLabsUtilFunctions.shared.radian2degree(radian: headingRadian)
+        JupiterLogger.i(tag: "EntranceManager", message: "(resolveTrendHeading) headingRadian= \(headingRadian), headingDegree= \(headingDegree)")
         return Float(TJLabsUtilFunctions.shared.compensateDegree(headingDegree))
     }
 
