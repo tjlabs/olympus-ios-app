@@ -40,12 +40,12 @@ class PathMatcher {
         TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: level)
     }
 
-    private func makeBaseKey(sectorId: Int, building: String, level: String) -> String {
+    func makeBaseKey(sectorId: Int, building: String, level: String) -> String {
         let levelName = normalizeLevelName(level)
         return "\(sectorId)_\(building)_\(levelName)"
     }
 
-    private func makeGraphKey(sectorId: Int, building: String, level: String, mode: UserMode?) -> String {
+    func makeGraphKey(sectorId: Int, building: String, level: String, mode: UserMode?) -> String {
         let resolvedMode = mode ?? currentGraphMode
         let suffix = resolvedMode == .MODE_VEHICLE ? "_DR" : "_PDR"
         return "\(makeBaseKey(sectorId: sectorId, building: building, level: level))\(suffix)"
@@ -310,13 +310,16 @@ class PathMatcher {
         return PathMatchingResult(xyhs: ixyhs, matchedHeadings: matched.isEmpty ? [finalHeading] : matched)
     }
     
-    func getPathMatchingHeadings(sectorId: Int, building: String, level: String, x: Float, y: Float, paddingValue: Float) -> [Float] {
+    func getPathMatchingHeadings(sectorId: Int, building: String, level: String, x: Float, y: Float, mode: UserMode, paddingValue: Float) -> [Float] {
         var headings: [Float] = []
-        let levelCopy: String = TJLabsUtilFunctions.shared.removeLevelDirectionString(levelName: level)
         
+        JupiterLogger.i(tag: "PathMatcher", message: "(getPathMatchingHeadings) : \(sectorId),\(building),\(level),\(x),\(y),\(paddingValue)")
         if (!(building.isEmpty) && !(level.isEmpty)) {
-            let key: String = "\(sectorId)_\(building)_\(levelCopy)"
-            guard let pathPixelData = self.checkIsAvailablePathPixelData(key: key) else { return headings }
+            let key: String = makeGraphKey(sectorId: sectorId, building: building, level: level, mode: mode)
+            guard let pathPixelData = self.checkIsAvailablePathPixelData(key: key) else {
+                JupiterLogger.i(tag: "PathMatcher", message: "(getPathMatchingHeadings) : pathPixelData is empty")
+                return headings
+            }
 
             let mainRoad = pathPixelData.road
             let mainHeading = pathPixelData.roadHeading
@@ -385,9 +388,6 @@ class PathMatcher {
     func checkIsAvailablePathPixelData(key: String) -> PathPixelData? {
         guard let pathPixelData = self.pathPixelData[key] else { return nil }
         
-//        let mainType = pathPixelData.roadType
-//        if mainType.isEmpty { return nil }
-        
         let mainRoad = pathPixelData.road
         if mainRoad.isEmpty { return nil }
         
@@ -454,7 +454,7 @@ class PathMatcher {
         let key: String = "\(sectorId)_\(building)_\(levelName)"
         
         if (!(building.isEmpty) && !(level.isEmpty)) {
-            guard let pathPixelData = checkIsAvailablePathPixelData(key: key) else { return false }
+            guard let pathPixelData = checkIsAvailablePathPixelData(key: key) else {return false }
             let mainRoad = pathPixelData.road
             
             if (!mainRoad.isEmpty) {
@@ -491,7 +491,7 @@ class PathMatcher {
         return (false, heading)
     }
 
-    private func adjustHeading(_ heading: Float, _ mapHeading: Float) -> Float {
+    func adjustHeading(_ heading: Float, _ mapHeading: Float) -> Float {
         if heading > 270 && mapHeading < 90 {
             return abs(heading - (mapHeading + 360))
         } else if mapHeading > 270 && heading < 90 {
@@ -985,11 +985,12 @@ class PathMatcher {
 
         guard bestLinkNum != -1, let ld = bestLink, bestLinkDist <= ACCEPT_DIST else {
             let coordHeadings = getPathMatchingHeadings(sectorId: sectorId,
-                                                       building: curResult.building_name,
-                                                       level: curResult.level_name,
-                                                       x: correctedX,
-                                                       y: correctedY,
-                                                       paddingValue: 0)
+                                                        building: curResult.building_name,
+                                                        level: curResult.level_name,
+                                                        x: correctedX,
+                                                        y: correctedY,
+                                                        mode: currentGraphMode,
+                                                        paddingValue: 0)
             curLinkDirs = coordHeadings
             JupiterLogger.i(tag: "PathMatcher", message: "(updateNodeAndLinkInfo) [LINK] uvd=\(uvdIndex) key=\(key) xy=(\(correctedX),\(correctedY)) userH=\(heading) -> link not detected (bestDist=\(bestLinkDist)), headingsFallback=\(coordHeadings)")
             return

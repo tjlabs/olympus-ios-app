@@ -132,6 +132,14 @@ class EntranceManager {
 //        JupiterLogger.i(tag: "EntranceManager", message: "(trackEntRoute) - entTrackResult : \(result.building_name) , \(result.level_name) , \(result.x) , \(result.y) , \(result.absolute_heading)")
         return result
     }
+    
+    func getIsLastEntPos() -> Bool {
+        return isLastEntPos
+    }
+    
+    func setIsLastEntPos(flag: Bool) {
+        self.isLastEntPos = flag
+    }
             
     func forcedStopEntTrack(bleAvg: [String: Double], sec: Int) -> Bool {
         guard let curEntKey = self.curEntKey else { return false }
@@ -271,8 +279,8 @@ class EntranceManager {
         )
         JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) dominantLevelName= \(dominantLevelName)")
         // 최근 LSE 버퍼가 만들어내는 이동 방향을 절대 heading 기준으로 사용한다.
-        guard let lseTrendHeading = resolveEnteringLseTrendHeading(
-            snapshots: snapshots,
+        guard let lseTrend = resolveEnteringLseTrendHeading(
+            lseSnapshotBuffer: snapshots,
             buildingName: baseResult.building_name,
             levelName: baseResult.level_name
         ) else {
@@ -284,6 +292,8 @@ class EntranceManager {
             )
             return nil
         }
+        
+        let lseTrendHeading = lseTrend.trendHeading
         
         JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) lseTrendHeading= \(lseTrendHeading)")
         // LSE 자체가 크게 튀는 상황이면 UVD와 비교하기 전에 바로 배제한다.
@@ -345,7 +355,21 @@ class EntranceManager {
             x: firstSnapshot.result.x,
             y: firstSnapshot.result.y
         ))
-
+        
+        guard let firstContext = snapshots[0].requestContext, let lastContext = snapshots[snapshots.count-1].requestContext else { return nil }
+        let contextDx = lastContext.x - firstContext.x
+        let contextDy = lastContext.y - firstContext.y
+        let displacement = sqrt(contextDx * contextDx + contextDy * contextDy)
+        JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) contextDx= \(contextDx), contextDy= \(contextDy)")
+        JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) displacement= \(displacement)")
+        guard displacement >= 5 else { return nil }
+        let contextHeadingRadian = atan2(Double(contextDy), Double(contextDx))
+        let contextHeadingDegree = TJLabsUtilFunctions.shared.radian2degree(radian: contextHeadingRadian)
+        let hChecker = PathMatcher.shared.adjustHeading(Float(contextHeadingDegree), lseTrendHeading)
+        JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) contextHeadingDegree= \(contextHeadingDegree)")
+        JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) hChecker= \(hChecker)")
+        if hChecker > 90 { return nil }
+        
         var lastAlignedHeading = lseTrendHeading
         JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) lastAlignedHeading= \(lastAlignedHeading)")
 
@@ -525,44 +549,44 @@ class EntranceManager {
             $0.result.building_name == buildingName
         }
     }
-
+    
+    private func resolveEnteringLseTrendHeading(lseSnapshotBuffer: [SingleEpochSnapshot], buildingName: String, levelName: String) -> (startIndex: Int, endIndex: Int, trendHeading: Float)? {
+        let snapshots = lseSnapshotBuffer
+        JupiterLogger.i(tag: "EntranceManager", message: "(resolveEnteringLseTrendHeading) snapshots.count = \(snapshots.count)")
+        if snapshots.count < ENTERING_LSE_BUFFER_SIZE {
+            return nil
+        }
+        
+        return resolveTrendHeading(snapshots: lseSnapshotBuffer,
+                                   minDistance: ENTERING_LSE_MIN_DISPLACEMENT,
+                                   buildingName: buildingName,
+                                   levelName: levelName)
+    }
+    
     private func resolveTrendHeading(
         snapshots: [SingleEpochSnapshot],
         minDistance: Float,
         buildingName: String,
         levelName: String
-    ) -> Float? {
+    ) -> (startIndex: Int, endIndex: Int, trendHeading: Float)? {
         guard snapshots.count >= 2 else { return nil }
-
+        JupiterLogger.i(tag: "EntranceManager", message: "(resolveTrendHeading) : snapshots= \(snapshots)")
         var sumDx: Float = 0
         var sumDy: Float = 0
-
+        guard let startRqContext = snapshots[0].requestContext,
+              let endRqContext = snapshots[snapshots.count-1].requestContext else { return nil }
+        
         for i in 1..<snapshots.count {
-            sumDx += (snapshots[i].result.x - snapshots[i - 1].result.x)
-            sumDy += (snapshots[i].result.y - snapshots[i - 1].result.y)
+            sumDx += snapshots[i].result.x - snapshots[i - 1].result.x
+            sumDy += snapshots[i].result.y - snapshots[i - 1].result.y
         }
 
         let displacement = sqrt(sumDx * sumDx + sumDy * sumDy)
-        JupiterLogger.i(tag: "EntranceManager", message: "(resolveTrendHeading) sumDx= \(sumDx), sumDy= \(sumDy)")
-        JupiterLogger.i(tag: "EntranceManager", message: "(resolveTrendHeading) displacement= \(displacement)")
         guard displacement >= minDistance else { return nil }
+
         let headingRadian = atan2(Double(sumDy), Double(sumDx))
         let headingDegree = TJLabsUtilFunctions.shared.radian2degree(radian: headingRadian)
-        JupiterLogger.i(tag: "EntranceManager", message: "(resolveTrendHeading) headingRadian= \(headingRadian), headingDegree= \(headingDegree)")
-        return Float(TJLabsUtilFunctions.shared.compensateDegree(headingDegree))
-    }
-
-    private func resolveEnteringLseTrendHeading(snapshots: [SingleEpochSnapshot], buildingName: String, levelName: String) -> Float? {
-        if snapshots.count < ENTERING_LSE_BUFFER_SIZE  {
-            return nil
-        }
-        
-        return resolveTrendHeading(
-            snapshots: snapshots,
-            minDistance: ENTERING_LSE_MIN_DISPLACEMENT,
-            buildingName: buildingName,
-            levelName: levelName
-        )
+        return (startRqContext.index, endRqContext.index, Float(TJLabsUtilFunctions.shared.compensateDegree(headingDegree)))
     }
 
     private func resolveDominantEnteringLseLevelName(

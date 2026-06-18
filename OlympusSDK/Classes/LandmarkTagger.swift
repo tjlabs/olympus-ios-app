@@ -35,6 +35,7 @@ class LandmarkTagger {
         var matchedCurResult: FineLocationTrackingOutput?
         for result in curResultBuffer {
             if result.index == userPeak.peak_index {
+                JupiterLogger.i(tag: "LandmarkTagger", message: "(findMatchedLandmarkWithUserPeak) result= \(result)")
                 if result.building_name == curResult.building_name && result.level_name == curResult.level_name {
                     isMatched = true
                     matchedCurResult = result
@@ -44,7 +45,7 @@ class LandmarkTagger {
         }
         
         if !isMatched {
-            JupiterLogger.i(tag: "LandmarkTagger", message: "(findMatchedLandmarkWithUserPeak) curResult=\(curResult)")
+            JupiterLogger.i(tag: "LandmarkTagger", message: "(findMatchedLandmarkWithUserPeak) curResult= \(curResult)")
             JupiterLogger.i(tag: "LandmarkTagger", message: "(findMatchedLandmarkWithUserPeak) isMatched false")
             return nil
         }

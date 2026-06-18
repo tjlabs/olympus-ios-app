@@ -77,17 +77,6 @@ class StackManager {
         }
     }
     
-    func stackUserPeak(userPeak: UserPeak) {
-        userPeakBuffer.append(userPeak)
-        if (userPeakBuffer.count > USER_PEAK_BUFFER_SIZE) {
-            userPeakBuffer.remove(at: 0)
-        }
-    }
-    
-    func getUserPeakBuffer() -> [UserPeak] {
-        return self.userPeakBuffer
-    }
-    
     func stackUserPeakAndLinks(userPeakAndLinks: (UserPeak, [LinkData])) {
         userPeakAndLinksBuffer.append(userPeakAndLinks)
         if (userPeakAndLinksBuffer.count > USER_PEAK_AND_LINK_BUFFER_SIZE) {

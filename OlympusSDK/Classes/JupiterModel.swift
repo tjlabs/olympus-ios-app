@@ -255,7 +255,7 @@ public struct SelectedSearch {
     public let tail: ixyhs
     public let head: ixyhs
     public var headResult: FineLocationTrackingOutput
-    
+
     public let loss: Float
 }
 
@@ -290,23 +290,4 @@ public struct SelectedCandidate {
     public let headResult: FineLocationTrackingOutput
 
     public let loss: Float
-}
-
-public struct RecoveryResult3Peaks: Codable {
-    public let traj: [[Double]]
-    public let shiftedTraj: [RecoveryTrajectory]
-    public let loss: Float
-    public let bestThird: [Int]
-    public let bestSecond: [Int]
-    public let bestFirst: [Int]
-    public let bestResult: FineLocationTrackingOutput?
-}
-
-struct _RecoveryCandidate {
-    let loss: Float
-    let shiftedTraj: [RecoveryTrajectory]
-    let recentCand: PeakData
-    let olderCand: PeakData?
-    let tail: FineLocationTrackingOutput?
-    let head: FineLocationTrackingOutput?
 }

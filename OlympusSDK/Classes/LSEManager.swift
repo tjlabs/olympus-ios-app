@@ -40,6 +40,7 @@ class LSEManager: RFDGeneratorDelegate {
     
     var resourceManager: TJLabsResourceManager?
     var curPmResult: FineLocationTrackingOutput?
+    var curLSEResult: FineLocationTrackingOutput?
     
     // MARK: RFD
     var rfdGenerator: RFDGenerator?
@@ -78,6 +79,10 @@ class LSEManager: RFDGeneratorDelegate {
     
     func updateCurPmResult(curPmResult: FineLocationTrackingOutput) {
         self.curPmResult = curPmResult
+    }
+    
+    func updateCurLSEResult(curLSEResult: FineLocationTrackingOutput?) {
+        self.curLSEResult = curLSEResult
     }
 
     private func handlePostTimerTick() {
@@ -170,7 +175,33 @@ class LSEManager: RFDGeneratorDelegate {
                     x: curPmResult.x,
                     y: curPmResult.y
                 )
+            } else {
+                JupiterLogger.i(tag: "LSEManager", message: "(makeBufferedRequestForLastFiveSeconds) getBuildingId is nil , getLevelId is nil")
             }
+        } else {
+            if let curLSEResult = self.curLSEResult {
+                if let buildingId = resourceManager.getBuildingId(buildingName: curLSEResult.building_name),
+                   let levelId = resourceManager.getLevelId(
+                    sectorId: self.sectorId,
+                    buildingName: curLSEResult.building_name,
+                    levelName: curLSEResult.level_name
+                ) {
+                    requestContext = LSERequestContext(
+                        index: curLSEResult.index,
+                        buildingName: curLSEResult.building_name,
+                        buildingId: buildingId,
+                        levelName: curLSEResult.level_name,
+                        levelId: levelId,
+                        x: curLSEResult.x,
+                        y: curLSEResult.y
+                    )
+                } else {
+                    JupiterLogger.i(tag: "LSEManager", message: "(makeBufferedRequestForLastFiveSeconds) getBuildingId is nil , getLevelId is nil")
+                }
+            } else {
+                JupiterLogger.i(tag: "LSEManager", message: "(makeBufferedRequestForLastFiveSeconds) curLSEResult is nil")
+            }
+            JupiterLogger.i(tag: "LSEManager", message: "(makeBufferedRequestForLastFiveSeconds) curPmResult is nil")
         }
         
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int

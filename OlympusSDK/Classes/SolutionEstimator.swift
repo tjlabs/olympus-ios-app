@@ -9,7 +9,7 @@ class SolutionEstimator {
     }
     
     private let SEARCHING_LSE_BUFFER_SIZE = 10
-    private let SEARCHING_LSE_HEADING_THRESHOLD_DEG: Float = 45
+    private let SEARCHING_LSE_HEADING_THRESHOLD_DEG: Float = 60
     private let SEARCHING_LSE_MIN_TREND_DISTANCE: Float = 5
     
     var sectorId: Int
@@ -103,10 +103,6 @@ class SolutionEstimator {
     
     
     // MARK: - Searching
-    func setPreFixedLandmark(peakData: PeakData?) {
-        self.preFixedLandmark = peakData
-    }
-    
     func calculateLossParamAtEachCandInSearch(searchTrajList: [[CandidateTrajectory]],
                                               userPeakBuffer: [UserPeak],
                                               buildingLevelByUserPeak: (String, String),
@@ -126,15 +122,23 @@ class SolutionEstimator {
         let recentUserPeak = userPeakBuffer[userPeakBuffer.count - 1]
         
         let recentUserPeakIndex = recentUserPeak.peak_index
-        
+        let peakIndexDiff = abs(recentUserPeak.peak_index - olderUserPeak.peak_index)
         let olderLandmarkCands: [PeakData] = landmarks.older.peaks
         let recentLandmarkCands: [PeakData] = landmarks.recent.peaks
-        
+        JupiterLogger.i(tag: "SolutionEstimator", message: "(resolveSearchingLseTrendHeading) : olderUserPeak= \(olderUserPeak)")
+        JupiterLogger.i(tag: "SolutionEstimator", message: "(resolveSearchingLseTrendHeading) : recentUserPeak= \(recentUserPeak)")
         let searchingLseSnapShots = getSearchingSingleEpochSnapshotsFor(lseSnapshotBuffer: lseSnapshotBuffer, buildingName: building, levelName: level)
-        guard let lseTrendHeading = resolveSearchingLseTrendHeading(lseSnapshotBuffer: searchingLseSnapShots, buildingName: building, levelName: level) else { return [] }
-        JupiterLogger.i(tag: "SolutionEstimator", message: "(resolveSearchingLseTrendHeading) : lseTrendHeading= \(lseTrendHeading)")
+        guard let lseTrend = resolveSearchingLseTrendHeading(lseSnapshotBuffer: searchingLseSnapShots, buildingName: building, levelName: level) else { return [] }
+        let lseTrendHeading = lseTrend.trendHeading
+        var trendMatchedHeading: Float?
+        JupiterLogger.i(tag: "SolutionEstimator", message: "(resolveSearchingLseTrendHeading) : lseTrend= \(lseTrend)")
+        JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParamAtEachCandInSearch) searchTrajList : \(searchTrajList)")
         for searchTraj in searchTrajList {
-            guard searchTraj.count >= 2 else { continue }
+            guard searchTraj.count >= 2 else {
+                JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParamAtEachCandInSearch) searchTraj is too short -> \(searchTraj)")
+                continue
+            }
+            JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParamAtEachCandInSearch) : searchTraj indexes= \(searchTraj.map{$0.index})")
             var anchorIdx: Int? = nil
             for i in 0..<searchTraj.count {
                 if searchTraj[i].index == recentUserPeakIndex {
@@ -142,7 +146,10 @@ class SolutionEstimator {
                     break
                 }
             }
-            guard let rpIdx = anchorIdx else { continue }
+            guard let rpIdx = anchorIdx else {
+                JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParamAtEachCandInSearch) cannot find anchorIdx \(anchorIdx) with \(recentUserPeakIndex)")
+                continue
+            }
             
             for cand in recentLandmarkCands {
                 JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParamAtEachCandInSearch) CAND_START cand=[\(cand.x),\(cand.y)] matchedLinks=\(cand.matched_links)")
@@ -157,6 +164,9 @@ class SolutionEstimator {
                                                            x: p.x + offsetX,
                                                            y: p.y + offsetY,
                                                            heading: p.heading))
+                    if p.index == lseTrend.endIndex {
+                        trendMatchedHeading = p.heading
+                    }
                 }
                 
                 guard let first = shiftedTraj.first, let last = shiftedTraj.last else {
@@ -197,31 +207,17 @@ class SolutionEstimator {
                 for oc in olderLandmarkCands {
                     let ocX = Float(oc.x)
                     let ocY = Float(oc.y)
-                    var ocLmDist: Float?
                     
                     let lmDist = dist2(ocX, ocY, Float(cand.x), Float(cand.y))
-                    if lmDist < 5 { continue }
-                    if let preFixedLandmark = preFixedLandmark {
-                        let hasCommonElement = !Set(preFixedLandmark.matched_links).intersection(Set(oc.matched_links)).isEmpty
-                        if hasCommonElement {
-                            ocLmDist = dist2(Float(preFixedLandmark.x), Float(preFixedLandmark.y), ocX, ocY)
-                        }
-                        
-                        if let ocLmDist = ocLmDist {
-                            let d = dist2(Float(first.x), Float(first.y), ocX, ocY) + ocLmDist
-                            if d < ocDist {
-                                ocDist = d
-                                localOlderCand = oc
-                            }
-                        }
-                    } else {
-                        let d = dist2(Float(first.x), Float(first.y), ocX, ocY)
-                        if d < ocDist {
-                            ocDist = d
-                            localOlderCand = oc
-                        }
+                    if lmDist < Float(peakIndexDiff) { continue }
+                    let d = dist2(Float(first.x), Float(first.y), ocX, ocY)
+                    if d < ocDist {
+                        ocDist = d
+                        localOlderCand = oc
                     }
                 }
+                
+                guard let _ = localOlderCand else { continue }
                 
                 let curPmResult = FineLocationTrackingOutput(mobile_time: 0, index: searchTraj[searchTraj.count-1].index, building_name: building, level_name: level, x: 0, y: 0, absolute_heading: 0)
                 var headResult = curPmResult
@@ -261,12 +257,13 @@ class SolutionEstimator {
                 var loss_lse: Float = 0
                 
                 let lse_heding_diff: Float? = {
-                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParamAtEachCandInSearch) adjustHeading -> headResult.absolute_heading:\(headResult.absolute_heading), lseTrendHeading:\(lseTrendHeading)")
-                    let headingDiffFromLseTrend = adjustHeading(headResult.absolute_heading, lseTrendHeading)
+                    let hToCompare = trendMatchedHeading ?? head.heading
+                    JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParamAtEachCandInSearch) adjustHeading -> hToCompare:\(hToCompare), headResult.absolute_heading:\(headResult.absolute_heading), lseTrendHeading:\(lseTrendHeading)")
+                    let headingDiffFromLseTrend = adjustHeading(hToCompare, lseTrendHeading)
                     JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParamAtEachCandInSearch) headingDiffFromLseTrend= \(headingDiffFromLseTrend)")
                     
                     return headingDiffFromLseTrend <= SEARCHING_LSE_HEADING_THRESHOLD_DEG
-                        ? abs(headingDiffFromLseTrend - SEARCHING_LSE_HEADING_THRESHOLD_DEG)
+                        ? headingDiffFromLseTrend
                         : nil
                 }()
                 
@@ -988,28 +985,65 @@ class SolutionEstimator {
         return nil
     }
     
-    func calculateBadCaseResult(lossParamAtEachCand: [CandidateResult]) -> SelectedCandidate? {
+    func calculateBadCaseResult(lossParamAtEachCand: [SearchResult]) -> SelectedSearch? {
+        for item in lossParamAtEachCand {
+            JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateBadCaseResult) : ------------------------------------")
+            JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateBadCaseResult) : recent=[\(item.recent?.x), \(item.recent?.y)]")
+            JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateBadCaseResult) : older=[\(item.older?.x), \(item.older?.y)]")
+            JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateBadCaseResult) : head=[\(item.headResult.x), \(item.headResult.y), \(item.headResult.absolute_heading)]")
+            JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateBadCaseResult) : loss_lm=\(item.loss_lm), loss_g_d= \(item.loss_g_d), loss_g_h= \(item.loss_g_h), loss_lse= \(item.loss_lse), loss_lse_heading= \(item.loss_lse_heading)")
+            JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateBadCaseResult) : loss = \(item.loss_lm + item.loss_g_d + item.loss_g_h + item.loss_lse + item.loss_lse_heading)")
+        }
+        
         guard let best = lossParamAtEachCand.min(by: {
-            let lhsLoss = $0.loss_lm + $0.loss_g_d + $0.loss_g_h
-            let rhsLoss = $1.loss_lm + $1.loss_g_d + $1.loss_g_h
+            let lhsLoss = $0.loss_lm + $0.loss_g_d + $0.loss_g_h + $0.loss_lse + $0.loss_lse_heading
+            let rhsLoss = $1.loss_lm + $1.loss_g_d + $1.loss_g_h + $1.loss_lse + $1.loss_lse_heading
             return lhsLoss < rhsLoss
         }) else {
             return nil
         }
         
         let loss = best.loss_lm + best.loss_g_d + best.loss_g_h
-        let selected = SelectedCandidate(older: best.older,
-                                         recent: best.recent,
-                                         links: best.links,
-                                         linkGroups: best.linkGroups,
-                                         traj: best.traj,
-                                         tail: best.tail,
-                                         head: best.head,
-                                         headResult: best.headResult,
-                                         loss: loss)
-        
+        let selected = SelectedSearch(older: best.older,
+                                     recent: best.recent,
+                                     traj: best.traj,
+                                     tail: best.tail,
+                                     head: best.head,
+                                     headResult: best.headResult,
+                                     loss: loss)
         return selected
     }
+    
+//    func calculateBadCaseResult(lossParamAtEachCand: [CandidateResult]) -> SelectedCandidate? {
+//        for item in lossParamAtEachCand {
+//            JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateBadCaseResult) : ------------------------------------")
+//            JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateBadCaseResult) : recent=[\(item.recent?.x), \(item.recent?.y)]")
+//            JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateBadCaseResult) : older=[\(item.older?.x), \(item.older?.y)]")
+//            JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateBadCaseResult) : head=[\(item.headResult.x), \(item.headResult.y), \(item.headResult.absolute_heading)]")
+//            JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateBadCaseResult) : loss_lm=\(item.loss_lm), loss_g_d= \(item.loss_g_d), loss_g_h= \(item.loss_g_h)")
+//        }
+//        
+//        guard let best = lossParamAtEachCand.min(by: {
+//            let lhsLoss = $0.loss_lm + $0.loss_g_d + $0.loss_g_h
+//            let rhsLoss = $1.loss_lm + $1.loss_g_d + $1.loss_g_h
+//            return lhsLoss < rhsLoss
+//        }) else {
+//            return nil
+//        }
+//        
+//        let loss = best.loss_lm + best.loss_g_d + best.loss_g_h
+//        let selected = SelectedCandidate(older: best.older,
+//                                         recent: best.recent,
+//                                         links: best.links,
+//                                         linkGroups: best.linkGroups,
+//                                         traj: best.traj,
+//                                         tail: best.tail,
+//                                         head: best.head,
+//                                         headResult: best.headResult,
+//                                         loss: loss)
+//        
+//        return selected
+//    }
     
     //MARK: - Searching
     private func getSearchingSingleEpochSnapshotsFor(
@@ -1022,14 +1056,9 @@ class SolutionEstimator {
         }
     }
 
-    private func resolveSearchingLseAnchor(lseSnapshotBuffer: [SingleEpochSnapshot], buildingName: String, levelName: String) -> (Float, Float)? {
+    private func resolveSearchingLseTrendHeading(lseSnapshotBuffer: [SingleEpochSnapshot], buildingName: String, levelName: String) -> (startIndex: Int, endIndex: Int, trendHeading: Float)? {
         let snapshots = lseSnapshotBuffer
-        guard let last = snapshots.last else { return nil }
-        return (last.result.x, last.result.y)
-    }
-    
-    private func resolveSearchingLseTrendHeading(lseSnapshotBuffer: [SingleEpochSnapshot], buildingName: String, levelName: String) -> Float? {
-        let snapshots = lseSnapshotBuffer
+        JupiterLogger.i(tag: "SolutionEstimator", message: "(resolveSearchingLseTrendHeading) snapshots.count = \(snapshots.count)")
         if snapshots.count < SEARCHING_LSE_BUFFER_SIZE {
             return nil
         }
@@ -1042,12 +1071,14 @@ class SolutionEstimator {
         minDistance: Float,
         buildingName: String,
         levelName: String
-    ) -> Float? {
+    ) -> (startIndex: Int, endIndex: Int, trendHeading: Float)? {
         guard snapshots.count >= 2 else { return nil }
-
+        JupiterLogger.i(tag: "SolutionEstimator", message: "(resolveTrendHeading) : snapshots= \(snapshots)")
         var sumDx: Float = 0
         var sumDy: Float = 0
-
+        guard let startRqContext = snapshots[0].requestContext,
+              let endRqContext = snapshots[snapshots.count-1].requestContext else { return nil }
+        
         for i in 1..<snapshots.count {
             sumDx += snapshots[i].result.x - snapshots[i - 1].result.x
             sumDy += snapshots[i].result.y - snapshots[i - 1].result.y
@@ -1058,6 +1089,6 @@ class SolutionEstimator {
 
         let headingRadian = atan2(Double(sumDy), Double(sumDx))
         let headingDegree = TJLabsUtilFunctions.shared.radian2degree(radian: headingRadian)
-        return Float(TJLabsUtilFunctions.shared.compensateDegree(headingDegree))
+        return (startRqContext.index, endRqContext.index, Float(TJLabsUtilFunctions.shared.compensateDegree(headingDegree)))
     }
 }
