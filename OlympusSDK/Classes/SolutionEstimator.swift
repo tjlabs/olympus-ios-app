@@ -1038,6 +1038,10 @@ class SolutionEstimator {
             return nil
         }
         
+        if best.normalizedLoss.total >= 50 {
+            return nil
+        }
+        
         let selected = SelectedSearch(older: best.item.older,
                                      recent: best.item.recent,
                                      traj: best.item.traj,
