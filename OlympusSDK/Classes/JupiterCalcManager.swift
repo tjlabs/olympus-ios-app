@@ -73,6 +73,9 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
     
     // MARK: - Navigation
     private var feedbackIndex: Int = 0
+    private var searchingDebugTrigger: String?
+    private var searchingDebugStartIndex: Int?
+    private var searchingDebugAttemptCount: Int = 0
     
     // MARK: - Etc..
     private var pathMatchingCondition = PathMatchingCondition()
@@ -557,7 +560,8 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         var uturnLink = false
         switch (jupiterPhase) {
         case .ENTERING:
-            calcEntranceResult(currentTime: currentTime, entManager: entManager, uvd: userVelocity)
+            calcEntranceResult(currentTime: currentTime, entManager: entManager, uvd: userVelocity, userPeak: curPeak)
+            stopEntranceTracking(currentTime: currentTime, entManager: entManager, uvd: userVelocity, bleData: bleData)
         case .TRACKING:
             uturnLink = PathMatcher.shared.isInUturnLink()
             applyCorrectionWithPeaks(userPeak: curPeak, mode: mode, userVelocity: userVelocity, uvdBuffer: uvdBuffer)
@@ -769,7 +773,7 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
             let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBuffer.map{ Float($0.heading) })
             forceStop = majorSection.isEmpty
             
-            let snapshotBuffer = getLSESnapshotBuffer(lastN: 5)
+            let snapshotBuffer = getLSESnapshotBuffer(lastN: LSE_SNAPSHOT_BUFFER_SIZE)
             if !forceStop, let promotedResult = entManager.maybePromoteEnteringToTrackingUsingLse(curResult: curResult, uvd: uvd, uvdBuffer: uvdBuffer, lseSnapshotBuffer: snapshotBuffer, majorSection: majorSection) {
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(startEntranceTracking) maybePromoteEnteringToTrackingUsingLse : promotedResult=[\(promotedResult.index), \(promotedResult.x), \(promotedResult.y), \(promotedResult.absolute_heading)]")
                 let uvdBufferForStopEntTrack = stackManager.getUvdBuffer(from: promotedResult.index)
@@ -792,7 +796,6 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                         correctionIndex = userPeak.peak_index
                         correctionId = userPeak.id
                         startIndoorTracking(uvd: uvd, fltResult: curResult)
-//                        startIndoorTracking(uvd: uvd, fltResult: promotedResult)
                     }
                 }
             }
@@ -1038,27 +1041,83 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
 //                    }
 //                }
 //            }
-            
-            if entManager.forcedStopEntTrack(bleAvg: bleData, sec: 30) || forceStop {
-                // Entrance Tracking Finshid (Force)
-                JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcEntranceResult) index:\(uvd.index) - forcedStopEntTrack")
-                if let blChanger = self.buildingLevelChanger {
-                    if let buildingLevelByPeak = blChanger.getMatchedBuildingLevelByUserPeak(userPeak: userPeak) {
-                        stackManager.stackBuildingLevelByPeak(buildingLevel: buildingLevelByPeak)
-                        let buildingLevelByPeakBuffer = stackManager.getBuildingLevelByPeakBuffer(size: 3)
-                        startIndoorSearching(uvd: uvd, blChanger: blChanger, buildingLevelByPeakBuffer: buildingLevelByPeakBuffer, force: true)
-                    } else {
-                        JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcEntranceResult) buildingLevelByPeak is nil")
-                    }
-                } else {
-                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcEntranceResult) buildingLevelChanger is nil")
-                }
-                entManager.setEntTrackFinishedTimestamp(time: currentTime)
-            }
+//            if entManager.forcedStopEntTrack(bleAvg: bleData, sec: 15) || forceStop {
+//                // Entrance Tracking Finshid (Force)
+//                JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcEntranceResult) index:\(uvd.index) - forcedStopEntTrack")
+//                if let blChanger = self.buildingLevelChanger {
+//                    if let buildingLevelByPeak = blChanger.getMatchedBuildingLevelByUserPeak(userPeak: userPeak) {
+//                        stackManager.stackBuildingLevelByPeak(buildingLevel: buildingLevelByPeak)
+//                        let buildingLevelByPeakBuffer = stackManager.getBuildingLevelByPeakBuffer(size: 3)
+//                        startIndoorSearching(uvd: uvd, blChanger: blChanger, buildingLevelByPeakBuffer: buildingLevelByPeakBuffer, force: true)
+//                    } else {
+//                        JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcEntranceResult) buildingLevelByPeak is nil")
+//                    }
+//                } else {
+//                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcEntranceResult) buildingLevelChanger is nil")
+//                }
+//                entManager.setEntTrackFinishedTimestamp(time: currentTime)
+//            }
         }
     }
     
-    private func calcEntranceResult(currentTime: Int, entManager: EntranceManager, uvd: UserVelocity) {
+    private func stopEntranceTracking(currentTime: Int, entManager: EntranceManager, uvd: UserVelocity, bleData: [String: Double]) {
+        if jupiterPhase != .ENTERING { return }
+        
+        var forceStop = false
+        let uvdBuffer = stackManager.getUvdBuffer(from: uvd.index-50)
+        let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBuffer.map{ Float($0.heading) })
+        forceStop = majorSection.isEmpty
+        
+        let snapshotBuffer = getLSESnapshotBuffer(lastN: LSE_SNAPSHOT_BUFFER_SIZE)
+        if !forceStop, let promotedResult = entManager.maybePromoteEnteringToTrackingUsingLse(curResult: curResult, uvd: uvd, uvdBuffer: uvdBuffer, lseSnapshotBuffer: snapshotBuffer, majorSection: majorSection) {
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(startEntranceTracking) maybePromoteEnteringToTrackingUsingLse : promotedResult=[\(promotedResult.index), \(promotedResult.x), \(promotedResult.y), \(promotedResult.absolute_heading)]")
+            let uvdBufferForStopEntTrack = stackManager.getUvdBuffer(from: promotedResult.index)
+            if let ixyhs = stackManager.propagateUsingUvd(uvdBuffer: uvdBufferForStopEntTrack, fltResult: promotedResult) {
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(startEntranceTracking) propagateUsingUvd : curIndex= \(uvd.index)")
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(startEntranceTracking) propagateUsingUvd : ixyhs=[\(ixyhs.x), \(ixyhs.y), \(ixyhs.heading)]")
+                
+                var curResult = promotedResult
+                let propagatedX = promotedResult.x + ixyhs.x
+                let propagatedY = promotedResult.y + ixyhs.y
+                let propagatedH = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(promotedResult.absolute_heading + ixyhs.heading)))
+                curResult.x = propagatedX
+                curResult.y = propagatedY
+                curResult.absolute_heading = propagatedH
+                if let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: curResult.x, y: curResult.y, heading: curResult.absolute_heading, isUseHeading: false, mode: .MODE_VEHICLE, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) {
+                    curResult.x = pmResult.x
+                    curResult.y = pmResult.y
+                    curResult.absolute_heading = pmResult.heading
+                    startIndoorTracking(uvd: uvd, fltResult: curResult)
+                }
+            }
+        }
+        
+        if entManager.forcedStopEntTrack(bleAvg: bleData, sec: 15) || forceStop {
+            // Entrance Tracking Finshid (Force)
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcEntranceResult) index:\(uvd.index) - forcedStopEntTrack")
+            if let blChanger = self.buildingLevelChanger {
+                let buildingLevelByPeakBuffer = stackManager.getBuildingLevelByPeakBuffer(size: 2)
+                startIndoorSearching(uvd: uvd, blChanger: blChanger, buildingLevelByPeakBuffer: buildingLevelByPeakBuffer, force: true)
+            } else {
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcEntranceResult) buildingLevelChanger is nil")
+            }
+            entManager.setEntTrackFinishedTimestamp(time: currentTime)
+        }
+    }
+    
+    private func calcEntranceResult(currentTime: Int, entManager: EntranceManager, uvd: UserVelocity, userPeak: UserPeak?) {
+        if let userPeak = userPeak {
+            stackManager.stackUserPeakAndLinks(userPeakAndLinks: (userPeak, []))
+            if let blChanger = self.buildingLevelChanger {
+                if let buildingLevelByPeak = blChanger.getMatchedBuildingLevelByUserPeak(userPeak: userPeak) {
+                    stackManager.stackBuildingLevelByPeak(buildingLevel: buildingLevelByPeak)
+                } else {
+                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcEntranceResult) buildingLevelByPeak is nil")
+                }
+            } else {
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcEntranceResult) buildingLevelChanger is nil")
+            }
+        }
         guard let entTrackResult = entManager.startEntTrack(currentTime: currentTime, uvd: uvd) else { return }
         self.curResult = entTrackResult
     }
@@ -1066,11 +1125,23 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
     private func startIndoorSearching(uvd: UserVelocity, blChanger: BuildingLevelChanger, buildingLevelByPeakBuffer: [(String, String)], force: Bool = false) {
         if jupiterPhase == .NONE || force {
             if blChanger.isIndoorLevel(buildingLevelByPeakBuffer: buildingLevelByPeakBuffer) {
+                if force {
+                    beginSearchingDebugTrace(trigger: "forcedStopEntTrack",
+                                             uvdIndex: uvd.index,
+                                             buildingLevelByPeakBuffer: buildingLevelByPeakBuffer)
+                }
                 jupiterPhase = .SEARCHING
                 delegate?.isJupiterPhaseChanged(index: uvd.index, phase: jupiterPhase, xyh: nil)
-                JupiterLogger.i(tag: "JupiterCalcManager", message: "(startIndoorSearching) start")
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(startIndoorSearching) start // force=\(force), index=\(uvd.index), buildingLevels=\(buildingLevelByPeakBuffer)")
             } else {
-                JupiterLogger.i(tag: "JupiterCalcManager", message: "(startIndoorSearching) isIndoorLevel result is nil")
+                if force {
+                    beginSearchingDebugTrace(trigger: "forcedStopEntTrack_rejected",
+                                             uvdIndex: uvd.index,
+                                             buildingLevelByPeakBuffer: buildingLevelByPeakBuffer)
+                    logSearchingDebugReturn(reason: "isIndoorLevel false", uvdIndex: uvd.index)
+                    clearSearchingDebugTrace(reason: "startIndoorSearching rejected", uvdIndex: uvd.index)
+                }
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(startIndoorSearching) isIndoorLevel result is nil // force=\(force), index=\(uvd.index)")
             }
         }
     }
@@ -1081,11 +1152,26 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                                      userVelocity: UserVelocity,
                                      uvdBuffer: [UserVelocity]) {
         if jupiterPhase != .SEARCHING { return }
-        
-        guard let landmarkTagger = self.landmarkTagger else { return }
-        guard let solutionEstimator = self.solutionEstimator else { return }
-        guard let userPeak = userPeak else { return }
-        guard let buildingLevelByPeak = buildingLevelByPeak else { return }
+        JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) run at uvd:\(userVelocity.index)")
+        logSearchingDebugAttempt(uvdIndex: userVelocity.index,
+                                 userPeak: userPeak,
+                                 buildingLevelByPeak: buildingLevelByPeak)
+        guard let landmarkTagger = self.landmarkTagger else {
+            logSearchingDebugReturn(reason: "landmarkTagger nil", uvdIndex: userVelocity.index)
+            return
+        }
+        guard let solutionEstimator = self.solutionEstimator else {
+            logSearchingDebugReturn(reason: "solutionEstimator nil", uvdIndex: userVelocity.index)
+            return
+        }
+        guard let userPeak = userPeak else {
+            logSearchingDebugReturn(reason: "userPeak nil", uvdIndex: userVelocity.index)
+            return
+        }
+        guard let buildingLevelByPeak = buildingLevelByPeak else {
+            logSearchingDebugReturn(reason: "buildingLevelByPeak nil", uvdIndex: userVelocity.index)
+            return
+        }
         
         peakHandling: do {
             let curIndex = userVelocity.index
@@ -1093,15 +1179,24 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
             let level = buildingLevelByPeak.1
             
             if userPeak.peak_index - searchingIndex < 5 {
+                logSearchingDebugReturn(reason: "peak too close to previous searchingIndex",
+                                        uvdIndex: curIndex,
+                                        extra: "peakIndex=\(userPeak.peak_index), searchingIndex=\(searchingIndex)")
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) PEAK is too close with previous peak index")
                 break peakHandling
             } else if userPeak.id == searcingId {
+                logSearchingDebugReturn(reason: "same peak id",
+                                        uvdIndex: curIndex,
+                                        extra: "peakId=\(userPeak.id)")
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) same PEAK detected just before id:\(userPeak.id)")
                 break peakHandling
             }
             guard let matchedWithUserPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: userPeak,
                                                                                            building: building,
                                                                                            level: level) else {
+                logSearchingDebugReturn(reason: "findMatchedLandmarkWithUserPeak failed",
+                                        uvdIndex: curIndex,
+                                        extra: "peakId=\(userPeak.id), building=\(building), level=\(level)")
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) cannot find matched landmark with user peak \(userPeak.id)")
                 break peakHandling
             }
@@ -1110,7 +1205,12 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
             stackManager.stackUserPeakAndLinks(userPeakAndLinks:(userPeak, []))
             
             let userPeakAndLinksBuffer = stackManager.getUserPeakAndLinksBuffer()
-            if userPeakAndLinksBuffer.count < 2 { break peakHandling }
+            if userPeakAndLinksBuffer.count < 2 {
+                logSearchingDebugReturn(reason: "userPeakAndLinksBuffer insufficient",
+                                        uvdIndex: curIndex,
+                                        extra: "count=\(userPeakAndLinksBuffer.count)")
+                break peakHandling
+            }
             let userPeakBuffer = userPeakAndLinksBuffer.map{$0.0}
             
             let olderUserPeak = userPeakBuffer[userPeakBuffer.count - 2]
@@ -1125,6 +1225,9 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
             guard let matchedWithOldUserPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: olderUserPeak,
                                                                                         building: building,
                                                                                         level: level) else {
+                logSearchingDebugReturn(reason: "findMatchedLandmarkWithOldUserPeak failed",
+                                        uvdIndex: curIndex,
+                                        extra: "olderPeakId=\(olderUserPeak.id)")
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) cannot find matched landmark with old user peak \(olderUserPeak.id)")
                 break peakHandling
             }
@@ -1136,6 +1239,11 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                 let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBufferForSearching.map{ Float($0.heading) })
                 let searchTrajList = solutionEstimator.makeMultipleCandidateTrajectory(uvdBuffer: uvdBufferForSearching, majorSection: majorSection, pathHeadings: pathHeadings)
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) searchTrajList.count= \(searchTrajList.count)")
+                if searchTrajList.isEmpty {
+                    logSearchingDebugReturn(reason: "searchTrajList empty",
+                                            uvdIndex: curIndex,
+                                            extra: "majorSectionCount=\(majorSection.count)")
+                }
                 
                 let searchResult = solutionEstimator.calculateLossParamAtEachCandInSearch(searchTrajList: searchTrajList,
                                                                                           userPeakBuffer: userPeakBuffer,
@@ -1144,6 +1252,11 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                                                                                           mode: mode, isDrStraight: isDrStraight.0,
                                                                                           lseResult: self.curLSEResult,
                                                                                           lseSnapshotBuffer: self.lseSnapshotBuffer)
+                if searchResult.isEmpty {
+                    logSearchingDebugReturn(reason: "searchResult empty",
+                                            uvdIndex: curIndex,
+                                            extra: "searchTrajListCount=\(searchTrajList.count)")
+                }
                 if let selectedSearch = solutionEstimator.calculateSearchResult(lossParamAtEachCand: searchResult) {
                     let bestResult = selectedSearch.headResult
                     self.debug_selected_search = selectedSearch
@@ -1153,12 +1266,20 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                     JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) searchResult= [index:\(bestResult.index), x:\(bestResult.x), y:\(bestResult.y), h:\(bestResult.absolute_heading)]")
                     stackManager.stackSearchResult(searchResult: bestResult)
                     let searchResultBuffer = stackManager.getSearchResultBuffer(size: 3)
-                    if searchResultBuffer.count < 3 { break peakHandling }
+                    if searchResultBuffer.count < 3 {
+                        logSearchingDebugReturn(reason: "searchResultBuffer insufficient",
+                                                uvdIndex: curIndex,
+                                                extra: "count=\(searchResultBuffer.count)")
+                        break peakHandling
+                    }
                     
                     JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) best searchResult lm= [\(selectedSearch.recent?.x), \(selectedSearch.recent?.y)")
                     JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) best searchResult= [index:\(bestResult.index), x:\(bestResult.x), y:\(bestResult.y), h:\(bestResult.absolute_heading)]")
                     
-                    guard let ixyhs = stackManager.propagateUsingUvd(uvdBuffer: uvdBufferForSearching, fltResult: bestResult) else { break peakHandling }
+                    guard let ixyhs = stackManager.propagateUsingUvd(uvdBuffer: uvdBufferForSearching, fltResult: bestResult) else {
+                        logSearchingDebugReturn(reason: "propagateUsingUvd failed", uvdIndex: curIndex)
+                        break peakHandling
+                    }
                     JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) propagateUsingUvd : curIndex= \(userVelocity.index)")
                     JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) propagateUsingUvd : ixyhs=[\(ixyhs.x), \(ixyhs.y), \(ixyhs.heading)]")
                     var curResult = bestResult
@@ -1168,13 +1289,21 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                     curResult.x = propagatedX
                     curResult.y = propagatedY
                     curResult.absolute_heading = propagatedH
-                    guard let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: curResult.x, y: curResult.y, heading: curResult.absolute_heading, isUseHeading: false, mode: mode, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else { break peakHandling }
+                    guard let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: curResult.x, y: curResult.y, heading: curResult.absolute_heading, isUseHeading: false, mode: mode, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else {
+                        logSearchingDebugReturn(reason: "pathMatching failed after propagation",
+                                                uvdIndex: curIndex,
+                                                extra: "xyh=[\(curResult.x), \(curResult.y), \(curResult.absolute_heading)]")
+                        break peakHandling
+                    }
                     curResult.x = pmResult.x
                     curResult.y = pmResult.y
                     curResult.absolute_heading = pmResult.heading
                     
                     correctionIndex = userPeak.peak_index
                     correctionId = userPeak.id
+                    logSearchingDebugReturn(reason: "startIndoorTracking success",
+                                            uvdIndex: curIndex,
+                                            extra: "bestResultIndex=\(bestResult.index)")
                     startIndoorTracking(uvd: userVelocity, fltResult: curResult)
                     
 //                    let isConnected = checkResultConnectionForTracking(preResult: preSearchResult, curResult: curSearchResult, uvdBuffer: uvdBufferForSearching, mode: mode)
@@ -1196,7 +1325,15 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
 //                        correctionId = userPeak.id
 //                        startIndoorTracking(uvd: userVelocity, fltResult: curResult)
 //                    }
+                } else {
+                    logSearchingDebugReturn(reason: "calculateSearchResult returned nil",
+                                            uvdIndex: curIndex,
+                                            extra: "searchResultCount=\(searchResult.count)")
                 }
+            } else {
+                logSearchingDebugReturn(reason: "hasMajorDirection false",
+                                        uvdIndex: curIndex,
+                                        extra: "uvdBufferForSearchingCount=\(uvdBufferForSearching.count)")
             }
         }
     }
@@ -1264,6 +1401,7 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         jupiterPhase = .TRACKING
         guard let fltResult = fltResult else { return }
         guard let entManager = entManager else { return }
+        clearSearchingDebugTrace(reason: "startIndoorTracking", uvdIndex: uvd.index)
         entManager.setIsLastEntPos(flag: false)
         curResult = fltResult
         kalmanFilter?.activateKalmanFilter(fltResult: fltResult)
@@ -1992,7 +2130,7 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
     func onEntranceData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: TJLabsResource.EntranceData) {
         entManager?.setEntData(key: key, data: data)
         guard let innermostward = data.innermostWard else { return }
-        landmarkTagger?.setExceptionalTagInfo(id: innermostward.name)
+//        landmarkTagger?.setExceptionalTagInfo(id: innermostward.name)
     }
     
     func onEntranceRouteData(_ manager: TJLabsResource.TJLabsResourceManager, key: String, data: TJLabsResource.EntranceRouteData) {
@@ -2045,6 +2183,39 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         guard lastN > 0 else { return [] }
 
         return Array(container.suffix(lastN))
+    }
+
+    private func beginSearchingDebugTrace(trigger: String,
+                                          uvdIndex: Int,
+                                          buildingLevelByPeakBuffer: [(String, String)]) {
+        searchingDebugTrigger = trigger
+        searchingDebugStartIndex = uvdIndex
+        searchingDebugAttemptCount = 0
+        JupiterLogger.i(tag: "JupiterCalcManager", message: "(SearchingDebug) begin trigger=\(trigger), startIndex=\(uvdIndex), buildingLevels=\(buildingLevelByPeakBuffer)")
+    }
+
+    private func clearSearchingDebugTrace(reason: String, uvdIndex: Int? = nil) {
+        guard let trigger = searchingDebugTrigger else { return }
+        JupiterLogger.i(tag: "JupiterCalcManager", message: "(SearchingDebug) clear trigger=\(trigger), startIndex=\(String(describing: searchingDebugStartIndex)), attempts=\(searchingDebugAttemptCount), reason=\(reason), index=\(String(describing: uvdIndex))")
+        searchingDebugTrigger = nil
+        searchingDebugStartIndex = nil
+        searchingDebugAttemptCount = 0
+    }
+
+    private func logSearchingDebugAttempt(uvdIndex: Int,
+                                          userPeak: UserPeak?,
+                                          buildingLevelByPeak: (String, String)?) {
+        guard let trigger = searchingDebugTrigger else { return }
+        searchingDebugAttemptCount += 1
+        JupiterLogger.i(tag: "JupiterCalcManager", message: "(SearchingDebug) attempt=\(searchingDebugAttemptCount), trigger=\(trigger), startIndex=\(String(describing: searchingDebugStartIndex)), curIndex=\(uvdIndex), userPeakId=\(String(describing: userPeak?.id)), buildingLevel=\(String(describing: buildingLevelByPeak))")
+    }
+
+    private func logSearchingDebugReturn(reason: String,
+                                         uvdIndex: Int,
+                                         extra: String = "") {
+        guard let trigger = searchingDebugTrigger else { return }
+        let suffix = extra.isEmpty ? "" : ", \(extra)"
+        JupiterLogger.i(tag: "JupiterCalcManager", message: "(SearchingDebug) return trigger=\(trigger), startIndex=\(String(describing: searchingDebugStartIndex)), attempt=\(searchingDebugAttemptCount), curIndex=\(uvdIndex), reason=\(reason)\(suffix)")
     }
 
     private func calculateDistWithLatestLSESnapshot() -> Float {
