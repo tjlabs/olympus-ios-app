@@ -591,12 +591,8 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         stackManager.stackCurPmResultBuffer(curPmResult: curPmResult)
         lseManager?.updateCurPmResult(curPmResult: curPmResult)
         
-        var distWithLSE: Float = 0
-        if let curLSEResult = curLSEResult {
-            let diffX = curPmResult.x - curLSEResult.x
-            let diffY = curPmResult.y - curLSEResult.y
-            distWithLSE = sqrt(diffX*diffX + diffY*diffY)
-        }
+        let distWithLSE = calculateDistWithLatestLSESnapshot()
+        
         // Bad Case 확인
         let travelingLinkDist = PathMatcher.shared.getCurPassedLinksDist()
         if stackManager.checkIsBadCase(jupiterPhase: jupiterPhase, uvdIndexWhenCorrection: self.uvdIndexWhenCorrection, travelingLinkDist: travelingLinkDist, distWithLSE: distWithLSE) && !uturnLink {
@@ -2049,6 +2045,28 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         guard lastN > 0 else { return [] }
 
         return Array(container.suffix(lastN))
+    }
+
+    private func calculateDistWithLatestLSESnapshot() -> Float {
+        guard let latestSnapshot = lseSnapshotBuffer.reversed().first(where: { $0.requestContext != nil }),
+              let requestContext = latestSnapshot.requestContext else {
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(calculateDistWithLatestLSESnapshot) no valid snapshot context")
+            return 0
+        }
+
+        let curPmResultBuffer = stackManager.getCurPmResultBuffer(from: requestContext.index)
+        guard let matchedPmResult = curPmResultBuffer.first(where: { $0.index == requestContext.index }) else {
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(calculateDistWithLatestLSESnapshot) no matched PM result for snapshot index=\(requestContext.index)")
+            return 0
+        }
+
+        let diffX = matchedPmResult.x - latestSnapshot.result.x
+        let diffY = matchedPmResult.y - latestSnapshot.result.y
+        let distWithLSE = sqrt(diffX * diffX + diffY * diffY)
+
+        JupiterLogger.i(tag: "JupiterCalcManager", message: "(calculateDistWithLatestLSESnapshot) snapshotIndex=\(requestContext.index), snapshot=[\(latestSnapshot.result.x), \(latestSnapshot.result.y)], pm=[\(matchedPmResult.x), \(matchedPmResult.y)], distWithLSE=\(distWithLSE)")
+
+        return distWithLSE
     }
     
     private func decide2PeakCorrection(headResult: FineLocationTrackingOutput?, lseSnapshotBuffer: [SingleEpochSnapshot]) -> Bool {
