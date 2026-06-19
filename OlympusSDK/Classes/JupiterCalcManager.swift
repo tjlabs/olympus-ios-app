@@ -84,11 +84,8 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
     var preResult: FineLocationTrackingOutput?
     var curPathMatchingResult: FineLocationTrackingOutput?
     var curLSEResult: FineLocationTrackingOutput?
-    var curPathMatchingLSEResult: FineLocationTrackingOutput?
     var lseResultBuffer = [FineLocationTrackingOutput]()
     var lseSnapshotBuffer = [SingleEpochSnapshot]()
-    var curRepresentativeLSEResult: FineLocationTrackingOutput?
-    var curPathMatchingRepresentativeLSEResult: FineLocationTrackingOutput?
     var buildingsData: [BuildingData]?
     var levelByBle: String?
     
@@ -115,7 +112,6 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
     var isUseOSHeading: Bool = false {
         didSet {
             updateOSHeadingMonitoring()
-            applyOSHeadingToRepresentativeResultIfNeeded()
         }
     }
     
@@ -301,10 +297,7 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         preResult = nil
         curPathMatchingResult = nil
         curLSEResult = nil
-        curPathMatchingLSEResult = nil
         lseResultBuffer.removeAll()
-        curRepresentativeLSEResult = nil
-        curPathMatchingRepresentativeLSEResult = nil
         
         debug_calc_xyh = [0, 0, 0]
         debug_tu_xyh = [0, 0, 0]
@@ -1458,6 +1451,8 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                         self.debug_ratio = selectedCandResult.1
                         
                         let headResult = trackingResult.headResult
+                        let shouldApply2PeakCorrection = decide2PeakCorrection(headResult: headResult,
+                                                                              lseSnapshotBuffer: self.lseSnapshotBuffer)
                         var trackingCoord = [Float]()
                         var paddings = JupiterMode.PADDING_VALUES_LARGE
                         var axisConstraint: PathMatchingAxisConstraint?
@@ -1484,88 +1479,91 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                         }
                         
                         self.debug_selected_cand = trackingResult
-                        self.correctionIndex = userPeak.peak_index
-                        self.uvdIndexWhenCorrection = userVelocity.index
-                        self.preFixed = FixedPeak(id: recentUserPeak.id,
-                                                  peak_index: recentUserPeak.peak_index,
-                                                  peak_rssi: recentUserPeak.peak_rssi,
-                                                  lm_x: selectedCandResult.0.recent?.x,
-                                                  lm_y: selectedCandResult.0.recent?.y,
-                                                  lm_links: selectedCandResult.0.links,
-                                                  lm_linkGroups: selectedCandResult.0.linkGroups)
-                        stackManager.editCurResultBuffer(sectorId: sectorId,
-                                                         mode: mode,
-                                                         from: userPeak.peak_index,
-                                                         shifteTraj: trackingResult.traj,
-                                                         paddings: paddings,
-                                                         axisConstraint: axisConstraint)
+                        if shouldApply2PeakCorrection {
+                            self.correctionIndex = userPeak.peak_index
+                            self.uvdIndexWhenCorrection = userVelocity.index
+                            self.preFixed = FixedPeak(id: recentUserPeak.id,
+                                                      peak_index: recentUserPeak.peak_index,
+                                                      peak_rssi: recentUserPeak.peak_rssi,
+                                                      lm_x: selectedCandResult.0.recent?.x,
+                                                      lm_y: selectedCandResult.0.recent?.y,
+                                                      lm_links: selectedCandResult.0.links,
+                                                      lm_linkGroups: selectedCandResult.0.linkGroups)
+                            stackManager.editCurResultBuffer(sectorId: sectorId,
+                                                             mode: mode,
+                                                             from: userPeak.peak_index,
+                                                             shifteTraj: trackingResult.traj,
+                                                             paddings: paddings,
+                                                             axisConstraint: axisConstraint)
 
-                        let updatedCurPmResult = stackManager.editCurPmResultBuffer(sectorId: sectorId,
-                                                                                    mode: mode,
-                                                                                    from: recentUserPeak.peak_index,
-                                                                                    shifteTraj: trackingResult.traj,
-                                                                                    paddings: paddings,
-                                                                                    axisConstraint: axisConstraint)
+                            let updatedCurPmResult = stackManager.editCurPmResultBuffer(sectorId: sectorId,
+                                                                                        mode: mode,
+                                                                                        from: recentUserPeak.peak_index,
+                                                                                        shifteTraj: trackingResult.traj,
+                                                                                        paddings: paddings,
+                                                                                        axisConstraint: axisConstraint)
 
-                        kalmanFilter.editTuResultBuffer(sectorId: sectorId,
-                                                        mode: mode,
-                                                        from: userPeak.peak_index,
-                                                        shifteTraj: trackingResult.traj,
-                                                        curResult: curResult,
-                                                        paddings: paddings,
-                                                        axisConstraint: axisConstraint)
+                            kalmanFilter.editTuResultBuffer(sectorId: sectorId,
+                                                            mode: mode,
+                                                            from: userPeak.peak_index,
+                                                            shifteTraj: trackingResult.traj,
+                                                            curResult: curResult,
+                                                            paddings: paddings,
+                                                            axisConstraint: axisConstraint)
 
-                        trackingCoord = [updatedCurPmResult.x, updatedCurPmResult.y, updatedCurPmResult.absolute_heading]
-                        
-                        if !isLinkNotChanged {
-                            let curPmResultBufferFromRecentPeak = stackManager.getCurPmResultBuffer(from: recentUserPeak.peak_index)
-                            PathMatcher.shared.editPassingLinkBuffer(from: recentUserPeak.peak_index,
-                                                                     sectorId: sectorId,
-                                                                     curPmResultBuffer: curPmResultBufferFromRecentPeak,
-                                                                     mode: mode)
-                        }
+                            trackingCoord = [updatedCurPmResult.x, updatedCurPmResult.y, updatedCurPmResult.absolute_heading]
+                            
+                            if !isLinkNotChanged {
+                                let curPmResultBufferFromRecentPeak = stackManager.getCurPmResultBuffer(from: recentUserPeak.peak_index)
+                                PathMatcher.shared.editPassingLinkBuffer(from: recentUserPeak.peak_index,
+                                                                         sectorId: sectorId,
+                                                                         curPmResultBuffer: curPmResultBufferFromRecentPeak,
+                                                                         mode: mode)
+                            }
 
-                        if let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId,
-                                                                         building: curResult.building_name,
-                                                                         level: curResult.level_name,
-                                                                         x: trackingCoord[0],
-                                                                         y: trackingCoord[1],
-                                                                         heading: trackingCoord[2],
-                                                                         isUseHeading: true,
+                            if let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId,
+                                                                             building: curResult.building_name,
+                                                                             level: curResult.level_name,
+                                                                             x: trackingCoord[0],
+                                                                             y: trackingCoord[1],
+                                                                             heading: trackingCoord[2],
+                                                                             isUseHeading: true,
+                                                                             mode: mode,
+                                                                             paddingValues: paddings,
+                                                                             axisConstraint: axisConstraint) {
+                                curPathMatchingResult = headResult
+                                curPathMatchingResult?.x = pmResult.x
+                                curPathMatchingResult?.y = pmResult.y
+                                curPathMatchingResult?.absolute_heading = pmResult.heading
+
+                                JupiterLogger.i(tag: "JupiterCalcManager", message: "(applyCorrectionWithPeaks) 2 Peaks : best= \(headResult.x),\(headResult.y),\(headResult.absolute_heading)")
+                                JupiterLogger.i(tag: "JupiterCalcManager", message: "(applyCorrectionWithPeaks) 2 Peaks : pm= \(pmResult.x),\(pmResult.y),\(pmResult.heading)")
+
+                                kalmanFilter.updateTuPosition(coord: [pmResult.x, pmResult.y])
+                                self.curResult? = curPathMatchingResult!
+                            } else {
+                                kalmanFilter.updateTuPosition(coord: trackingCoord)
+                                self.curResult? = headResult
+                            }
+
+                            if let curPmResult2 = curPathMatchingResult,
+                               let matchedLink = PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId,
+                                                                                          result: curPmResult2,
+                                                                                          checkAll: true,
+                                                                                          mode: mode) {
+                                let jumpInfo = JumpInfo(link_number: matchedLink.number, jumped_nodes: [])
+                                PathMatcher.shared.updateNodeAndLinkInfo(sectorId: sectorId,
+                                                                         uvdIndex: userVelocity.index,
+                                                                         curResult: curPmResult2,
+                                                                         jumpInfo: jumpInfo,
                                                                          mode: mode,
-                                                                         paddingValues: paddings,
-                                                                         axisConstraint: axisConstraint) {
-                            curPathMatchingResult = headResult
-                            curPathMatchingResult?.x = pmResult.x
-                            curPathMatchingResult?.y = pmResult.y
-                            curPathMatchingResult?.absolute_heading = pmResult.heading
-
-                            JupiterLogger.i(tag: "JupiterCalcManager", message: "(applyCorrectionWithPeaks) 2 Peaks : best= \(headResult.x),\(headResult.y),\(headResult.absolute_heading)")
-                            JupiterLogger.i(tag: "JupiterCalcManager", message: "(applyCorrectionWithPeaks) 2 Peaks : pm= \(pmResult.x),\(pmResult.y),\(pmResult.heading)")
-
-                            kalmanFilter.updateTuPosition(coord: [pmResult.x, pmResult.y])
-                            self.curResult? = curPathMatchingResult!
+                                                                         pLinkCutIndex: recentUserPeak.peak_index)
+                            } else {
+                                PathMatcher.shared.initPassedLinkInfo()
+                            }
                         } else {
-                            kalmanFilter.updateTuPosition(coord: trackingCoord)
-                            self.curResult? = headResult
+                            JupiterLogger.i(tag: "JupiterCalcManager", message: "(applyCorrectionWithPeaks) skip 2 Peak correction by LSE consistency check at index=\(userVelocity.index), headResult=[\(headResult.x), \(headResult.y), \(headResult.absolute_heading)]")
                         }
-
-                        if let curPmResult2 = curPathMatchingResult,
-                           let matchedLink = PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId,
-                                                                                      result: curPmResult2,
-                                                                                      checkAll: true,
-                                                                                      mode: mode) {
-                            let jumpInfo = JumpInfo(link_number: matchedLink.number, jumped_nodes: [])
-                            PathMatcher.shared.updateNodeAndLinkInfo(sectorId: sectorId,
-                                                                     uvdIndex: userVelocity.index,
-                                                                     curResult: curPmResult2,
-                                                                     jumpInfo: jumpInfo,
-                                                                     mode: mode,
-                                                                     pLinkCutIndex: recentUserPeak.peak_index)
-                        } else {
-                            PathMatcher.shared.initPassedLinkInfo()
-                        }
-                        
                     }
                 }
                 
@@ -2029,8 +2027,6 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         if let last = lseResultBuffer.last,
            (last.building_name != result.building_name || last.level_name != result.level_name) {
             lseResultBuffer.removeAll()
-            curRepresentativeLSEResult = nil
-            curPathMatchingRepresentativeLSEResult = nil
             debug_lse_rep_xyh = nil
         }
 
@@ -2054,81 +2050,84 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
 
         return Array(container.suffix(lastN))
     }
+    
+    private func decide2PeakCorrection(headResult: FineLocationTrackingOutput?, lseSnapshotBuffer: [SingleEpochSnapshot]) -> Bool {
+        guard let headResult = headResult else { return true }
+        if lseSnapshotBuffer.count < LSE_SNAPSHOT_BUFFER_SIZE { return true }
+        guard let firstContext = lseSnapshotBuffer[0].requestContext else { return true }
+        let curPmResultBuffer = stackManager.getCurPmResultBuffer(from: firstContext.index)
+        guard let latestPmResult = curPmResultBuffer.last else { return true }
+        
+        // headResult, lseSnapshoBuffer, curPmResultBuffer를 이용해서 2PeakCorrection을 수행/미수행에 대한 Bool값 전달
+        // 각 결과들은 모두 index값을 보유하고 있는데, 같은 Epoch에서의 결과라는 것은 index를 보고 판단
+        // headResult는 2PeakCorrection을 수행하기 위해 결정된 위치 결과
+        // lseSnapshotBuffer 는 LSEManager에서 전달받은 최근 10개의 결과, SingleEpochSnapshot에는 result와 requestContext가 있는데 index는 requestContext에 있는걸 사용해야함. 왜냐하면 result는 delay가 있는 결과이기 때문임. result는 requestContext의 index시기에서의 결과라고 이해하면 됨
+        
+        // 동작 프로세스는 아래와 같음
+        // 1. lseSnapshotBuffer의 결과들과 curPmResultBuffer의 결과들 간의 유사도를 확인하고, 이것이 유사하다면 내가 추정하고있는 위치가 적절하다고 판단
+        // 2. 내가 추정하고있는 위치가 적절하다고 판단된 상황에서, 옮겨가려고하는 headResult가 curPmResultBuffer의 가장 최근 결과와 얼만큼 떨어져있는지 확인
+        // 3. 2에서 판단했을 때, 내가 추정하고 있는 위치가 적절하지만 headResult로 옮기게 되면 벗어나게 된다고 생각한다면 false를 리턴
 
-    private func selectRepresentativeLSECluster() -> [FineLocationTrackingOutput] {
-        let buffer = lseResultBuffer
-        guard buffer.count > LSE_REPRESENTATIVE_CLUSTER_SIZE else { return buffer }
+        let minAlignedSampleCount = 7
+        let maxAverageSimilarityDistance: Float = 15
+        let maxSimilarityDistance: Float = 22
+        let maxHeadMoveDistance: Float = 45
 
-        var bestCluster = Array(buffer.suffix(LSE_REPRESENTATIVE_CLUSTER_SIZE))
-        var bestScore = Float.greatestFiniteMagnitude
+        func distance(_ lhs: FineLocationTrackingOutput, _ rhs: FineLocationTrackingOutput) -> Float {
+            let dx = lhs.x - rhs.x
+            let dy = lhs.y - rhs.y
+            return sqrt(dx * dx + dy * dy)
+        }
 
-        for i in 0..<(buffer.count - 2) {
-            for j in (i + 1)..<(buffer.count - 1) {
-                for k in (j + 1)..<buffer.count {
-                    let cluster = [buffer[i], buffer[j], buffer[k]]
-                    let score = pairwiseDistanceSum(for: cluster)
-                    if score < bestScore {
-                        bestScore = score
-                        bestCluster = cluster
-                    }
-                }
+        var pmResultsByIndex = [Int: FineLocationTrackingOutput]()
+        for pmResult in curPmResultBuffer {
+            pmResultsByIndex[pmResult.index] = pmResult
+        }
+
+        var alignedDistances = [Float]()
+        alignedDistances.reserveCapacity(lseSnapshotBuffer.count)
+
+        for snapshot in lseSnapshotBuffer {
+            guard let context = snapshot.requestContext,
+                  let pmResult = pmResultsByIndex[context.index] else {
+                continue
             }
-        }
 
-        return bestCluster
-    }
-
-    private func pairwiseDistanceSum(for cluster: [FineLocationTrackingOutput]) -> Float {
-        guard cluster.count > 1 else { return 0 }
-
-        var score: Float = 0
-        for i in 0..<(cluster.count - 1) {
-            for j in (i + 1)..<cluster.count {
-                let dx = cluster[i].x - cluster[j].x
-                let dy = cluster[i].y - cluster[j].y
-                score += sqrt(dx * dx + dy * dy)
+            guard snapshot.result.building_name == pmResult.building_name,
+                  snapshot.result.level_name == pmResult.level_name else {
+                continue
             }
-        }
-        return score
-    }
 
-    private func calculateRepresentativeLSEHeading(x: Float, y: Float, fallbackHeading: Float) -> Float {
-        guard let previousRepresentative = curRepresentativeLSEResult else { return fallbackHeading }
-
-        let dx = x - previousRepresentative.x
-        let dy = y - previousRepresentative.y
-        let distance = sqrt(dx * dx + dy * dy)
-        guard distance >= LSE_HEADING_MIN_DISTANCE else {
-            return previousRepresentative.absolute_heading
+            alignedDistances.append(distance(snapshot.result, pmResult))
         }
 
-        let headingRadian = atan2(Double(dy), Double(dx))
-        let headingDegree = TJLabsUtilFunctions.shared.radian2degree(radian: headingRadian)
-        return Float(TJLabsUtilFunctions.shared.compensateDegree(headingDegree))
-    }
+        guard alignedDistances.count >= minAlignedSampleCount else {
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(decide2PeakCorrection) allow correction: insufficient aligned LSE/PM samples count=\(alignedDistances.count)")
+            return true
+        }
 
-    private func makeRepresentativeLSEResult(currentTime: Int,
-                                             index: Int,
-                                             buildingName: String,
-                                             levelName: String,
-                                             fallbackHeading: Float) -> FineLocationTrackingOutput? {
-        let cluster = selectRepresentativeLSECluster()
-        guard !cluster.isEmpty else { return nil }
+        let avgSimilarityDistance = alignedDistances.reduce(0, +) / Float(alignedDistances.count)
+        let maxSimilarityDistanceInBuffer = alignedDistances.max() ?? 0
+        let isCurrentEstimateReliable = avgSimilarityDistance <= maxAverageSimilarityDistance &&
+                                        maxSimilarityDistanceInBuffer <= maxSimilarityDistance
 
-        let sumX = cluster.reduce(Float(0)) { $0 + $1.x }
-        let sumY = cluster.reduce(Float(0)) { $0 + $1.y }
-        let representativeX = sumX / Float(cluster.count)
-        let representativeY = sumY / Float(cluster.count)
-        let calculatedHeading = calculateRepresentativeLSEHeading(x: representativeX, y: representativeY, fallbackHeading: fallbackHeading)
-        let representativeHeading = resolvedRepresentativeHeading(fallbackHeading: calculatedHeading)
+        JupiterLogger.i(tag: "JupiterCalcManager", message: "(decide2PeakCorrection) similarity avg=\(avgSimilarityDistance), max=\(maxSimilarityDistanceInBuffer), count=\(alignedDistances.count), reliable=\(isCurrentEstimateReliable)")
 
-        return FineLocationTrackingOutput(mobile_time: currentTime,
-                                          index: index,
-                                          building_name: buildingName,
-                                          level_name: levelName,
-                                          x: representativeX,
-                                          y: representativeY,
-                                          absolute_heading: representativeHeading)
+        guard isCurrentEstimateReliable else {
+            return true
+        }
+
+        guard latestPmResult.building_name == headResult.building_name,
+              latestPmResult.level_name == headResult.level_name else {
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(decide2PeakCorrection) reject correction: headResult building/level mismatch with latest PM result")
+            return false
+        }
+
+        let headMoveDistance = distance(headResult, latestPmResult)
+        let shouldApplyCorrection = headMoveDistance <= maxHeadMoveDistance
+        JupiterLogger.i(tag: "JupiterCalcManager", message: "(decide2PeakCorrection) headMoveDistance=\(headMoveDistance), threshold=\(maxHeadMoveDistance), shouldApply=\(shouldApplyCorrection)")
+
+        return shouldApplyCorrection
     }
     
     func lseManager(
@@ -2168,42 +2167,8 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
             
             updateLSEBuffer(with: rawLSEResult)
             updateLSESnapshotBuffer(with: SingleEpochSnapshot(requestContext: context, result: rawLSEResult))
-            
-            if let pmResult = PathMatcher.shared.pathMatching(sectorId: self.sectorId, building: bName, level: lName, x: x, y: y, heading: h, isUseHeading: false, mode: curUserModeEnum, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) {
-                var pathMatchedRawLSEResult = rawLSEResult
-                pathMatchedRawLSEResult.x = pmResult.x
-                pathMatchedRawLSEResult.y = pmResult.y
-                self.curPathMatchingLSEResult = pathMatchedRawLSEResult
-            } else {
-                self.curPathMatchingLSEResult = rawLSEResult
-            }
 
-            let fallbackHeading = curRepresentativeLSEResult?.absolute_heading ?? h
-            guard let representativeLSEResult = makeRepresentativeLSEResult(currentTime: currentTime,
-                                                                             index: curIndex,
-                                                                             buildingName: bName,
-                                                                             levelName: lName,
-                                                                             fallbackHeading: fallbackHeading) else {
-                self.debug_lse_rep_xyh = nil
-                self.curRepresentativeLSEResult = nil
-                self.curPathMatchingRepresentativeLSEResult = nil
-                self.debug_navi_xyh = [rawLSEResult.x, rawLSEResult.y, rawLSEResult.absolute_heading]
-                return
-            }
-
-            self.curRepresentativeLSEResult = representativeLSEResult
-            self.debug_lse_rep_xyh = [representativeLSEResult.x, representativeLSEResult.y, representativeLSEResult.absolute_heading]
-
-            if let pmResult = PathMatcher.shared.pathMatching(sectorId: self.sectorId, building: bName, level: lName, x: representativeLSEResult.x, y: representativeLSEResult.y, heading: representativeLSEResult.absolute_heading, isUseHeading: false, mode: curUserModeEnum, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) {
-                var pathMatchedRepresentativeLSEResult = representativeLSEResult
-                pathMatchedRepresentativeLSEResult.x = pmResult.x
-                pathMatchedRepresentativeLSEResult.y = pmResult.y
-                self.curPathMatchingRepresentativeLSEResult = pathMatchedRepresentativeLSEResult
-            } else {
-                self.curPathMatchingRepresentativeLSEResult = representativeLSEResult
-            }
-
-            self.debug_navi_xyh = [rawLSEResult.x, rawLSEResult.y, rawLSEResult.absolute_heading]
+            self.debug_lse_rep_xyh = [rawLSEResult.x, rawLSEResult.y, rawLSEResult.absolute_heading]
         case .noLocation(let noLocation):
             JupiterLogger.w(tag: "JupiterCalcManager", message: "(didReceiveSingleEpochResult) : noLocation -> \(noLocation.response.message)")
         case .failure(let failure):
@@ -2228,20 +2193,6 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         }
         
         return convertedMapHeading(from: magneticHeading, headingOffset: affineParam.headingOffset)
-    }
-    
-    private func applyOSHeadingToRepresentativeResultIfNeeded() {
-        guard let osHeading = currentOSRepresentativeHeading() else { return }
-        
-        if curRepresentativeLSEResult != nil {
-            curRepresentativeLSEResult?.absolute_heading = osHeading
-        }
-        if curPathMatchingRepresentativeLSEResult != nil {
-            curPathMatchingRepresentativeLSEResult?.absolute_heading = osHeading
-        }
-        if let representativeResult = curRepresentativeLSEResult {
-            debug_lse_rep_xyh = [representativeResult.x, representativeResult.y, representativeResult.absolute_heading]
-        }
     }
     
     private func updateOSHeadingMonitoring() {
@@ -2292,7 +2243,6 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
     func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
         guard newHeading.headingAccuracy >= 0 else { return }
         latestMagneticHeading = newHeading.magneticHeading
-        applyOSHeadingToRepresentativeResultIfNeeded()
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {

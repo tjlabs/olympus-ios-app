@@ -8,9 +8,14 @@ class SolutionEstimator {
         self.sectorId = sectorId
     }
     
-    private let SEARCHING_LSE_BUFFER_SIZE = 10
-    private let SEARCHING_LSE_HEADING_THRESHOLD_DEG: Float = 60
-    private let SEARCHING_LSE_MIN_TREND_DISTANCE: Float = 5
+    private let SEARCH_LSE_BUFFER_SIZE = 10
+    private let SEARCH_LSE_HEADING_THRESHOLD_DEG: Float = 60
+    private let SEARCH_LSE_MIN_TREND_DISTANCE: Float = 5
+    private let SEARCH_LOSS_SIGMA_LM: Float = 10
+    private let SEARCH_LOSS_SIGMA_G_D: Float = 6
+    private let SEARCH_LOSS_SIGMA_G_H: Float = 20
+    private let SEARCH_LOSS_SIGMA_LSE: Float = 8
+    private let SEARCH_LOSS_SIGMA_LSE_HEADING: Float = 25
     
     var sectorId: Int
     var preFixedLandmark: PeakData?
@@ -101,8 +106,30 @@ class SolutionEstimator {
         }
     }
     
-    
     // MARK: - Searching
+    private func normalizedSquaredLoss(_ value: Float, sigma: Float, weight: Float = 1) -> Float {
+        guard sigma > 0 else { return value * weight }
+
+        let normalized = value / sigma
+        return weight * normalized * normalized
+    }
+
+    private func calculateSearchNormalizedLoss(for item: SearchResult) -> (lm: Float, g_d: Float, g_h: Float, lse: Float, lse_heading: Float, total: Float) {
+        let lmScore = normalizedSquaredLoss(item.loss_lm, sigma: SEARCH_LOSS_SIGMA_LM)
+        let gDistScore = normalizedSquaredLoss(item.loss_g_d, sigma: SEARCH_LOSS_SIGMA_G_D)
+        let gHeadingScore = normalizedSquaredLoss(item.loss_g_h, sigma: SEARCH_LOSS_SIGMA_G_H)
+        let lseScore = normalizedSquaredLoss(item.loss_lse, sigma: SEARCH_LOSS_SIGMA_LSE)
+        let lseHeadingScore = normalizedSquaredLoss(item.loss_lse_heading, sigma: SEARCH_LOSS_SIGMA_LSE_HEADING)
+        let totalScore = lmScore + gDistScore + gHeadingScore + lseScore + lseHeadingScore
+
+        return (lm: lmScore,
+                g_d: gDistScore,
+                g_h: gHeadingScore,
+                lse: lseScore,
+                lse_heading: lseHeadingScore,
+                total: totalScore)
+    }
+    
     func calculateLossParamAtEachCandInSearch(searchTrajList: [[CandidateTrajectory]],
                                               userPeakBuffer: [UserPeak],
                                               buildingLevelByUserPeak: (String, String),
@@ -262,7 +289,7 @@ class SolutionEstimator {
                     let headingDiffFromLseTrend = adjustHeading(hToCompare, lseTrendHeading)
                     JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParamAtEachCandInSearch) headingDiffFromLseTrend= \(headingDiffFromLseTrend)")
                     
-                    return headingDiffFromLseTrend <= SEARCHING_LSE_HEADING_THRESHOLD_DEG
+                    return headingDiffFromLseTrend <= SEARCH_LSE_HEADING_THRESHOLD_DEG
                         ? headingDiffFromLseTrend
                         : nil
                 }()
@@ -294,30 +321,33 @@ class SolutionEstimator {
     }
     
     func calculateSearchResult(lossParamAtEachCand: [SearchResult]) -> SelectedSearch? {
-        for item in lossParamAtEachCand {
+        let normalizedLossCandidates = lossParamAtEachCand.map { item in
+            (item: item, normalizedLoss: calculateSearchNormalizedLoss(for: item))
+        }
+
+        for entry in normalizedLossCandidates {
+            let item = entry.item
+            let normalizedLoss = entry.normalizedLoss
             JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateSearchResult) : lm= [\(item.recent?.x), \(item.recent?.y)]")
             JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateSearchResult) : loss_lm= \(item.loss_lm), loss_g_d= \(item.loss_g_d), loss_g_h= \(item.loss_g_h), loss_lse= \(item.loss_lse), loss_lse_heading= \(item.loss_lse_heading)")
-            
-            let loss = item.loss_lm + item.loss_g_d + item.loss_g_h + item.loss_lse + item.loss_lse_heading
-            JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateSearchResult) : loss total= \(loss)")
+
+            JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateSearchResult) : normalizedLoss_lm= \(normalizedLoss.lm), normalizedLoss_g_d= \(normalizedLoss.g_d), normalizedLoss_g_h= \(normalizedLoss.g_h), normalizedLoss_lse= \(normalizedLoss.lse), normalizedLoss_lse_heading= \(normalizedLoss.lse_heading)")
+            JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateSearchResult) : normalizedLoss total= \(normalizedLoss.total)")
         }
         
-        guard let best = lossParamAtEachCand.min(by: {
-            let lhsLoss = $0.loss_lm + $0.loss_g_d + $0.loss_g_h + $0.loss_lse + $0.loss_lse_heading
-            let rhsLoss = $1.loss_lm + $1.loss_g_d + $1.loss_g_h + $1.loss_lse + $1.loss_lse_heading
-            return lhsLoss < rhsLoss
+        guard let best = normalizedLossCandidates.min(by: {
+            $0.normalizedLoss.total < $1.normalizedLoss.total
         }) else {
             return nil
         }
 
-        let loss = best.loss_lm + best.loss_g_d + best.loss_g_h + best.loss_lse + best.loss_lse_heading
-        let selected = SelectedSearch(older: best.older,
-                                      recent: best.recent,
-                                      traj: best.traj,
-                                      tail: best.tail,
-                                      head: best.head,
-                                      headResult: best.headResult,
-                                      loss: loss)
+        let selected = SelectedSearch(older: best.item.older,
+                                      recent: best.item.recent,
+                                      traj: best.item.traj,
+                                      tail: best.item.tail,
+                                      head: best.item.head,
+                                      headResult: best.item.headResult,
+                                      loss: best.normalizedLoss.total)
         
         return selected
     }
@@ -986,64 +1016,37 @@ class SolutionEstimator {
     }
     
     func calculateBadCaseResult(lossParamAtEachCand: [SearchResult]) -> SelectedSearch? {
-        for item in lossParamAtEachCand {
+        let normalizedLossCandidates = lossParamAtEachCand.map { item in
+            (item: item, normalizedLoss: calculateSearchNormalizedLoss(for: item))
+        }
+
+        for entry in normalizedLossCandidates {
+            let item = entry.item
+            let normalizedLoss = entry.normalizedLoss
             JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateBadCaseResult) : ------------------------------------")
             JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateBadCaseResult) : recent=[\(item.recent?.x), \(item.recent?.y)]")
             JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateBadCaseResult) : older=[\(item.older?.x), \(item.older?.y)]")
             JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateBadCaseResult) : head=[\(item.headResult.x), \(item.headResult.y), \(item.headResult.absolute_heading)]")
             JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateBadCaseResult) : loss_lm=\(item.loss_lm), loss_g_d= \(item.loss_g_d), loss_g_h= \(item.loss_g_h), loss_lse= \(item.loss_lse), loss_lse_heading= \(item.loss_lse_heading)")
-            JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateBadCaseResult) : loss = \(item.loss_lm + item.loss_g_d + item.loss_g_h + item.loss_lse + item.loss_lse_heading)")
+            JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateBadCaseResult) : normalizedLoss_lm= \(normalizedLoss.lm), normalizedLoss_g_d= \(normalizedLoss.g_d), normalizedLoss_g_h= \(normalizedLoss.g_h), normalizedLoss_lse= \(normalizedLoss.lse), normalizedLoss_lse_heading= \(normalizedLoss.lse_heading)")
+            JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateBadCaseResult) : normalizedLoss total= \(normalizedLoss.total)")
         }
         
-        guard let best = lossParamAtEachCand.min(by: {
-            let lhsLoss = $0.loss_lm + $0.loss_g_d + $0.loss_g_h + $0.loss_lse + $0.loss_lse_heading
-            let rhsLoss = $1.loss_lm + $1.loss_g_d + $1.loss_g_h + $1.loss_lse + $1.loss_lse_heading
-            return lhsLoss < rhsLoss
+        guard let best = normalizedLossCandidates.min(by: {
+            $0.normalizedLoss.total < $1.normalizedLoss.total
         }) else {
             return nil
         }
         
-        let loss = best.loss_lm + best.loss_g_d + best.loss_g_h
-        let selected = SelectedSearch(older: best.older,
-                                     recent: best.recent,
-                                     traj: best.traj,
-                                     tail: best.tail,
-                                     head: best.head,
-                                     headResult: best.headResult,
-                                     loss: loss)
+        let selected = SelectedSearch(older: best.item.older,
+                                     recent: best.item.recent,
+                                     traj: best.item.traj,
+                                     tail: best.item.tail,
+                                     head: best.item.head,
+                                     headResult: best.item.headResult,
+                                     loss: best.normalizedLoss.total)
         return selected
     }
-    
-//    func calculateBadCaseResult(lossParamAtEachCand: [CandidateResult]) -> SelectedCandidate? {
-//        for item in lossParamAtEachCand {
-//            JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateBadCaseResult) : ------------------------------------")
-//            JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateBadCaseResult) : recent=[\(item.recent?.x), \(item.recent?.y)]")
-//            JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateBadCaseResult) : older=[\(item.older?.x), \(item.older?.y)]")
-//            JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateBadCaseResult) : head=[\(item.headResult.x), \(item.headResult.y), \(item.headResult.absolute_heading)]")
-//            JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateBadCaseResult) : loss_lm=\(item.loss_lm), loss_g_d= \(item.loss_g_d), loss_g_h= \(item.loss_g_h)")
-//        }
-//        
-//        guard let best = lossParamAtEachCand.min(by: {
-//            let lhsLoss = $0.loss_lm + $0.loss_g_d + $0.loss_g_h
-//            let rhsLoss = $1.loss_lm + $1.loss_g_d + $1.loss_g_h
-//            return lhsLoss < rhsLoss
-//        }) else {
-//            return nil
-//        }
-//        
-//        let loss = best.loss_lm + best.loss_g_d + best.loss_g_h
-//        let selected = SelectedCandidate(older: best.older,
-//                                         recent: best.recent,
-//                                         links: best.links,
-//                                         linkGroups: best.linkGroups,
-//                                         traj: best.traj,
-//                                         tail: best.tail,
-//                                         head: best.head,
-//                                         headResult: best.headResult,
-//                                         loss: loss)
-//        
-//        return selected
-//    }
     
     //MARK: - Searching
     private func getSearchingSingleEpochSnapshotsFor(
@@ -1059,11 +1062,11 @@ class SolutionEstimator {
     private func resolveSearchingLseTrendHeading(lseSnapshotBuffer: [SingleEpochSnapshot], buildingName: String, levelName: String) -> (startIndex: Int, endIndex: Int, trendHeading: Float)? {
         let snapshots = lseSnapshotBuffer
         JupiterLogger.i(tag: "SolutionEstimator", message: "(resolveSearchingLseTrendHeading) snapshots.count = \(snapshots.count)")
-        if snapshots.count < SEARCHING_LSE_BUFFER_SIZE {
+        if snapshots.count < SEARCH_LSE_BUFFER_SIZE {
             return nil
         }
         
-        return resolveTrendHeading(snapshots: lseSnapshotBuffer, minDistance: SEARCHING_LSE_MIN_TREND_DISTANCE, buildingName: buildingName, levelName: levelName)
+        return resolveTrendHeading(snapshots: lseSnapshotBuffer, minDistance: SEARCH_LSE_MIN_TREND_DISTANCE, buildingName: buildingName, levelName: levelName)
     }
     
     private func resolveTrendHeading(
