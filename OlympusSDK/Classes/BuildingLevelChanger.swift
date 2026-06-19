@@ -363,6 +363,7 @@ class BuildingLevelChanger {
         let userPeakWardId = userPeak.id
         if let prePeak = self.prePeak {
             if userPeakWardId == prePeak.id {
+                JupiterLogger.i(tag: "BuildingLevelChanger", message: "(getMatchedBuildingLevelByUserPeak) userPeakWardId and prePeak is same \(prePeak.id)")
                 return nil
             }
         }
@@ -372,10 +373,12 @@ class BuildingLevelChanger {
             let wardIds = value.map{$0.name}
             if wardIds.contains(userPeakWardId) {
                 if let buildingLevel = getBuidlingLevelInKey(key: key) {
+                    JupiterLogger.i(tag: "BuildingLevelChanger", message: "(getMatchedBuildingLevelByUserPeak) buildingLevel= \(buildingLevel)")
                     return buildingLevel
                 }
             }
         }
+        JupiterLogger.i(tag: "BuildingLevelChanger", message: "(getMatchedBuildingLevelByUserPeak) no matched id")
         return nil
     }
     
