@@ -18,7 +18,8 @@ class EntranceManager {
     
     deinit { }
     
-    private let ENTERING_LSE_BUFFER_SIZE = 5
+    private let ENTERING_LSE_BUFFER_SIZE = 10
+    private let ENTERING_LSE_BUFFER_SIZE_JUDGE = 7
     private let ENTERING_LSE_MAX_STEP_DISTANCE: Float = 30
     private let ENTERING_LSE_MAX_PATH_LENGTH_DIFF: Float = 25
     private let ENTERING_LSE_MIN_DISPLACEMENT: Float = 3
@@ -149,8 +150,12 @@ class EntranceManager {
 
         if isLastEntPos && curEntKey != "" {
             if let bleID = entInnerWardIdMap[curEntKey] {
-                let scannedRSSI = bleAvg[bleID]
-                if scannedRSSI == nil && checkForcedStopEntTrackTimestamp != 0 {
+                if let scannedRSSI = bleAvg[bleID], scannedRSSI < -90 {
+                    let timeDiff = currentTime - checkForcedStopEntTrackTimestamp
+                    if timeDiff >= sec*1000 {
+                        return true
+                    }
+                } else if checkForcedStopEntTrackTimestamp != 0 {
                     let timeDiff = currentTime - checkForcedStopEntTrackTimestamp
                     if timeDiff >= sec*1000 {
                         return true
@@ -158,6 +163,15 @@ class EntranceManager {
                 } else {
                     checkForcedStopEntTrackTimestamp = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
                 }
+                
+//                if scannedRSSI == nil && checkForcedStopEntTrackTimestamp != 0 {
+//                    let timeDiff = currentTime - checkForcedStopEntTrackTimestamp
+//                    if timeDiff >= sec*1000 {
+//                        return true
+//                    }
+//                } else {
+//                    checkForcedStopEntTrackTimestamp = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
+//                }
             }
         }
         return false
@@ -356,19 +370,19 @@ class EntranceManager {
             y: firstSnapshot.result.y
         ))
         
-        guard let firstContext = snapshots[0].requestContext, let lastContext = snapshots[snapshots.count-1].requestContext else { return nil }
-        let contextDx = lastContext.x - firstContext.x
-        let contextDy = lastContext.y - firstContext.y
-        let displacement = sqrt(contextDx * contextDx + contextDy * contextDy)
-        JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) contextDx= \(contextDx), contextDy= \(contextDy)")
-        JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) displacement= \(displacement)")
-        guard displacement >= 5 else { return nil }
-        let contextHeadingRadian = atan2(Double(contextDy), Double(contextDx))
-        let contextHeadingDegree = TJLabsUtilFunctions.shared.radian2degree(radian: contextHeadingRadian)
-        let hChecker = PathMatcher.shared.adjustHeading(Float(contextHeadingDegree), lseTrendHeading)
-        JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) contextHeadingDegree= \(contextHeadingDegree)")
-        JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) hChecker= \(hChecker)")
-        if hChecker > 90 { return nil }
+//        guard let firstContext = snapshots[0].requestContext, let lastContext = snapshots[snapshots.count-1].requestContext else { return nil }
+//        let contextDx = lastContext.x - firstContext.x
+//        let contextDy = lastContext.y - firstContext.y
+//        let displacement = sqrt(contextDx * contextDx + contextDy * contextDy)
+//        JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) contextDx= \(contextDx), contextDy= \(contextDy)")
+//        JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) displacement= \(displacement)")
+//        guard displacement >= 5 else { return nil }
+//        let contextHeadingRadian = atan2(Double(contextDy), Double(contextDx))
+//        let contextHeadingDegree = TJLabsUtilFunctions.shared.radian2degree(radian: contextHeadingRadian)
+//        let hChecker = PathMatcher.shared.adjustHeading(Float(contextHeadingDegree), lseTrendHeading)
+//        JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) contextHeadingDegree= \(contextHeadingDegree)")
+//        JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) hChecker= \(hChecker)")
+//        if hChecker > 46 { return nil }
         
         var lastAlignedHeading = lseTrendHeading
         JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) lastAlignedHeading= \(lastAlignedHeading)")
@@ -540,12 +554,12 @@ class EntranceManager {
         
         return finalResult
     }
-    
+
     private func getEnteringSingleEpochSnapshotsFor(
         lseSnapshotBuffer: [SingleEpochSnapshot],
         buildingName: String
     ) -> [SingleEpochSnapshot] {
-        Array(lseSnapshotBuffer.suffix(ENTERING_LSE_BUFFER_SIZE)).filter {
+        Array(lseSnapshotBuffer.suffix(ENTERING_LSE_BUFFER_SIZE_JUDGE)).filter {
             $0.result.building_name == buildingName
         }
     }
@@ -553,7 +567,7 @@ class EntranceManager {
     private func resolveEnteringLseTrendHeading(lseSnapshotBuffer: [SingleEpochSnapshot], buildingName: String, levelName: String) -> (startIndex: Int, endIndex: Int, trendHeading: Float)? {
         let snapshots = lseSnapshotBuffer
         JupiterLogger.i(tag: "EntranceManager", message: "(resolveEnteringLseTrendHeading) snapshots.count = \(snapshots.count)")
-        if snapshots.count < ENTERING_LSE_BUFFER_SIZE {
+        if snapshots.count < ENTERING_LSE_BUFFER_SIZE_JUDGE {
             return nil
         }
         
