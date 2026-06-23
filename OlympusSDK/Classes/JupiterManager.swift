@@ -240,7 +240,9 @@ public class JupiterManager: JupiterCalcManagerDelegate, MockResultDelegate {
                 isStartJupiter = true
                 startTimer()
                 let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-                JupiterFileManager.shared.writeEvent(event: JupiterEvent(mobile_time: currentTime, event_code: JupiterServiceCode.SERVICE_SUCCESS.rawValue, event_info: ""))
+                if debugOption && !JupiterReplayer.shared.replayMode {
+                    JupiterFileManager.shared.writeEvent(event: JupiterEvent(mobile_time: currentTime, event_code: JupiterServiceCode.SERVICE_SUCCESS.rawValue, event_info: ""))
+                }
                 
                 if JupiterReplayer.shared.replayMode {
                     let replayServiceStartTime = JupiterFileManager.shared.getServiceStartTime()
@@ -485,7 +487,9 @@ public class JupiterManager: JupiterCalcManagerDelegate, MockResultDelegate {
             
             if !isGetFirstResult {
                 let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
-                JupiterFileManager.shared.writeEvent(event: JupiterEvent(mobile_time: currentTime, event_code: JupiterServiceCode.GET_FIRST_RESULT.rawValue, event_info: ""))
+                if debugOption && !JupiterReplayer.shared.replayMode {
+                    JupiterFileManager.shared.writeEvent(event: JupiterEvent(mobile_time: currentTime, event_code: JupiterServiceCode.GET_FIRST_RESULT.rawValue, event_info: ""))
+                }
                 isGetFirstResult = true
             }
             delegate?.onJupiterResult(jupiterResult)
@@ -553,6 +557,7 @@ public class JupiterManager: JupiterCalcManagerDelegate, MockResultDelegate {
                                                         calc_xyh: [mockResult.jupiter_pos.x, mockResult.jupiter_pos.y, mockResult.jupiter_pos.heading],
                                                         tu_xyh: [mockResult.jupiter_pos.x, mockResult.jupiter_pos.y, mockResult.jupiter_pos.heading],
                                                         lse_rep_xyh: nil,
+                                                        lse_trend_velocity: nil,
                                                         ent_compensated_traj: nil,
                                                         navi_xyh: [mockResult.jupiter_pos.x, mockResult.jupiter_pos.y, mockResult.jupiter_pos.heading])
             return jupiterDebugResult

@@ -42,6 +42,10 @@ class KalmanFilter {
     private var pathTrajMatchingIndex: Int = 0
     private var pathTrajTurnIndex: Int = 0
     
+    var sensorVelocity: Float?
+    var lseTrendVelocity: Float?
+    var lseTrendVelocityUpdatedTime: Int?
+    
     // MARK: - Constants
     let DR_BUFFER_SIZE_FOR_STRAIGHT: Int = 10 // COEX 12 // DS 6 //default 10 // tips : 4
     let DR_BUFFER_SIZE_FOR_HEAD_STRAIGHT: Int = 3
@@ -79,6 +83,15 @@ class KalmanFilter {
         headingKalmanQ = pastHeadingKalmanQ
         headingKalmanR = pastHeadingKalmanR
         headingKalmanK = pastHeadingKalmanK
+    }
+    
+    func updateSensorVelocity(kmPh: Float) {
+        self.sensorVelocity = kmPh
+    }
+    
+    func updateLseTrendVelocity(kmPh: Float) {
+        self.lseTrendVelocity = kmPh
+        self.lseTrendVelocityUpdatedTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
     }
     
     func updateTuResult(result: FineLocationTrackingOutput) {
@@ -156,6 +169,30 @@ class KalmanFilter {
                     newResult.x = pm.x
                     newResult.y = pm.y
                     newResult.heading = pm.heading
+                    
+                    if newResult.x == preResult.x && newResult.y == preResult.y {
+                        JupiterLogger.i(tag: "KalmanFilter", message: "(editTuResultBuffer) pre and new is same with [\(newResult.x),\(newResult.y)]")
+                        if let _ = PathMatcher.shared.getMatchedNodeWithCoord(sectorId: sectorId, fltResult: curResult, originCoord: [newResult.x, newResult.y], coordToCheck: [newResult.x, newResult.y], paddingValues: [1, 1, 1, 1]) {
+                            JupiterLogger.i(tag: "KalmanFilter", message: "(editTuResultBuffer) [\(newResult.x),\(newResult.y)] is in node")
+                        } else {
+                            JupiterLogger.i(tag: "KalmanFilter", message: "(editTuResultBuffer) new pm input xyh:[\(traj.x),\(traj.y),\(traj.heading)]")
+                            guard let rePm = PathMatcher.shared.pathMatching(
+                                sectorId: sectorId,
+                                building: curResult.building_name,
+                                level: curResult.level_name,
+                                x: traj.x, y: traj.y, heading: traj.heading,
+                                isUseHeading: true,
+                                mode: mode,
+                                paddingValues: paddings,
+                                axisConstraint: axisConstraint
+                            ) else {
+                                return result
+                            }
+                            newResult.x = rePm.x
+                            newResult.y = rePm.y
+                            newResult.heading = rePm.heading
+                        }
+                    }
                 }
                 preResult = newResult
 
@@ -231,11 +268,62 @@ class KalmanFilter {
         let dx = length*cos(updatedHeadingRadian)
         let dy = length*sin(updatedHeadingRadian)
         
+        let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
+
         tuResult.x += Float(dx)
         tuResult.y += Float(dy)
         tuResult.absolute_heading = Float(updatedHeading)
         JupiterLogger.i(tag: "KalmanFilter", message: "(timeUpdate) - tuResult after :[\(tuResult.x),\(tuResult.y),\(tuResult.absolute_heading)]")
         return tuResult
+    }
+    
+    private let VELOCITY_MIN: Float = 4
+    private var VELOCITY_MAX: Float = 16.2
+    private let LSE_LOW_SPEED_THRESHOLD: Float = 8.0
+    private let LSE_TREND_TIMEOUT_MILLIS: Int = 3000
+    
+    private func applyLseTrendVelocityCorrection(sensorVelocityKmh: Float?, currentTime: Int) -> Float {
+        guard let sensorVelocityKmh = sensorVelocityKmh else { return
+            1.0
+        }
+        
+        guard let lseTrendVelocity = getFreshLseTrendVelocity(currentTime: currentTime) else {
+            return 1.0
+        }
+
+        let clippedLseTrendVelocity = min(max(lseTrendVelocity, 0), VELOCITY_MAX)
+        let alpha = calculateLseTrendAlpha(sensorVelocityKmh: sensorVelocityKmh, lseTrendVelocity: clippedLseTrendVelocity)
+
+        return alpha
+    }
+
+    private func calculateLseTrendAlpha(sensorVelocityKmh: Float, lseTrendVelocity: Float) -> Float {
+        JupiterLogger.i(tag: "KalmanFilter", message: "(timeUpdate) - sensorVelocityKmh= \(sensorVelocityKmh), lseTrendVelocity= \(lseTrendVelocity)")
+        if lseTrendVelocity <= VELOCITY_MIN {
+            return 0.6
+        }
+        if lseTrendVelocity <= LSE_LOW_SPEED_THRESHOLD {
+            return 0.4
+        }
+        
+        if lseTrendVelocity <= 12 {
+            return 0.8
+        }
+        
+        return 1.0
+    }
+    
+    private func getFreshLseTrendVelocity(currentTime: Int) -> Float? {
+        guard let lseTrendVelocity,
+              let lseTrendVelocityUpdatedTime else {
+            return nil
+        }
+        
+        guard currentTime - lseTrendVelocityUpdatedTime <= LSE_TREND_TIMEOUT_MILLIS else {
+            return nil
+        }
+
+        return lseTrendVelocity
     }
     
 //    func pdrTimeUpdate(region: String, sectorId: Int, uvd: UserVelocity, pastUvd: UserVelocity, pathMatchingCondition: PathMatchingCondition) -> (FineLocationTrackingOutput, Bool, Bool) {

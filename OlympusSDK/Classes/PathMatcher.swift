@@ -436,12 +436,18 @@ class PathMatcher {
         
         let curHeading = tuResult.absolute_heading
         let nodeHeadings = matchedNode.directions.map({$0.heading})
-        let (_, bestIndex) = closestHeading(to: curHeading, candidates: nodeHeadings)
+        let (cHeading, bestIndex) = closestHeading(to: curHeading, candidates: nodeHeadings)
         JupiterLogger.i(tag: "PathMatcher", message: "(checkIsInMapEnd) - curHeading: \(curHeading)")
         JupiterLogger.i(tag: "PathMatcher", message: "(checkIsInMapEnd) - nodeHeadings: \(nodeHeadings)")
         JupiterLogger.i(tag: "PathMatcher", message: "(checkIsInMapEnd) - matchedNode : num= \(matchedNode.number), directions= \(matchedNode.directions)")
         let bestIsMapEnd = matchedNode.directions[bestIndex].is_end
-        
+        if bestIsMapEnd {
+            let diffH = adjustHeading(cHeading, curHeading)
+            if diffH < 20 {
+                return false
+            }
+        }
+        JupiterLogger.i(tag: "PathMatcher", message: "(checkIsInMapEnd) - bestIndex: \(bestIndex), bestIsMapEnd: \(bestIsMapEnd)")
         return bestIsMapEnd
     }
     

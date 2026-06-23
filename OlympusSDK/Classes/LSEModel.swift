@@ -98,6 +98,7 @@ struct LSEEstimatedLocation: Decodable {
     let building_id: Int
     let level_id: Int
     let floor: String
+    let confidence_info: String
 }
 
 struct LocationSingleEpochMessage: Decodable {
@@ -122,6 +123,7 @@ struct LocationSingleEpochFailure {
 
 struct LSERequestContext {
     let index: Int
+    let mobileTime: Int
     let buildingName: String
     let buildingId: Int
     let levelName: String

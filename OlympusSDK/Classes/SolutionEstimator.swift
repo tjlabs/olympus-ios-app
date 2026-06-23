@@ -8,8 +8,8 @@ class SolutionEstimator {
         self.sectorId = sectorId
     }
     
-    private let SEARCH_LSE_BUFFER_SIZE = 10
-    private let SEARCH_LSE_HEADING_THRESHOLD_DEG: Float = 60
+    private let SEARCH_LSE_BUFFER_SIZE = 5
+    private let SEARCH_LSE_HEADING_THRESHOLD_DEG: Float = 45
     private let SEARCH_LSE_MIN_TREND_DISTANCE: Float = 5
     private let SEARCH_LOSS_SIGMA_LM: Float = 10
     private let SEARCH_LOSS_SIGMA_G_D: Float = 6
@@ -157,6 +157,7 @@ class SolutionEstimator {
         let searchingLseSnapShots = getSearchingSingleEpochSnapshotsFor(lseSnapshotBuffer: lseSnapshotBuffer, buildingName: building, levelName: level)
         guard let lseTrend = resolveSearchingLseTrendHeading(lseSnapshotBuffer: searchingLseSnapShots, buildingName: building, levelName: level) else { return [] }
         let lseTrendHeading = lseTrend.trendHeading
+        let trendMidIndex = lseTrend.startIndex + Int((lseTrend.endIndex - lseTrend.startIndex)/2)
         var trendMatchedHeading: Float?
         JupiterLogger.i(tag: "SolutionEstimator", message: "(resolveSearchingLseTrendHeading) : lseTrend= \(lseTrend)")
         JupiterLogger.i(tag: "SolutionEstimator", message: "(calculateLossParamAtEachCandInSearch) searchTrajList : \(searchTrajList)")
@@ -191,7 +192,7 @@ class SolutionEstimator {
                                                            x: p.x + offsetX,
                                                            y: p.y + offsetY,
                                                            heading: p.heading))
-                    if p.index == lseTrend.endIndex {
+                    if p.index == trendMidIndex {
                         trendMatchedHeading = p.heading
                     }
                 }
@@ -575,7 +576,10 @@ class SolutionEstimator {
                                                 maxGroupSwitches: Int = 1,
                                                 mode: UserMode) -> [LossPointResult]? {
         
-        if shiftedTraj.isEmpty || targetIndices.isEmpty { return nil }
+        if shiftedTraj.isEmpty || targetIndices.isEmpty {
+            JupiterLogger.i(tag: "SolutionEstimator", message: "(computeIntermediateLossByIndex) : shiftedTraj or targetIndices isEmpty")
+            return nil
+        }
         guard let nodeData = PathMatcher.shared.getNodeData(sectorId: sectorId,
                                                             building: curPmResult.building_name,
                                                             level: curPmResult.level_name,
@@ -583,7 +587,10 @@ class SolutionEstimator {
               let linkData = PathMatcher.shared.getLinkData(sectorId: sectorId,
                                                             building: curPmResult.building_name,
                                                             level: curPmResult.level_name,
-                                                            mode: mode) else { return nil }
+                                                            mode: mode) else {
+            JupiterLogger.i(tag: "SolutionEstimator", message: "(computeIntermediateLossByIndex) : cannot find nodeData or linkData with curPmResult:\(curPmResult)")
+            return nil
+        }
         
         var lossPointResults = [LossPointResult]()
         
@@ -600,11 +607,17 @@ class SolutionEstimator {
                                                                  level: curPmResult.level_name,
                                                                  x: point.x, y: point.y, heading: point.heading,
                                                                  isUseHeading: false, mode: mode,
-                                                                 paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else { return nil }
+                                                                       paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else {
+                JupiterLogger.i(tag: "SolutionEstimator", message: "(computeIntermediateLossByIndex) : pm fail with [\(point.x),\(point.y),\(point.heading)]")
+                return nil
+            }
             var newResult = curPmResult
             newResult.x = pm.xyhs.x
             newResult.y = pm.xyhs.y
-            guard let matchedLinks = PathMatcher.shared.getLinkInfosWithResult(sectorId: sectorId, result: newResult, checkAll: true, mode: mode) else { return nil }
+            guard let matchedLinks = PathMatcher.shared.getLinkInfosWithResult(sectorId: sectorId, result: newResult, checkAll: true, mode: mode) else {
+                JupiterLogger.i(tag: "SolutionEstimator", message: "(computeIntermediateLossByIndex) : cannto find matchedLinks with [\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]")
+                return nil
+            }
             if let _pre = preLinks, let _preIxyhs = preIxyhs {
                 let curLinkGroupNums = Set(matchedLinks.map{$0.group_number})
                 let preLinkGroupNums = Set(_pre.map{$0.group_number})

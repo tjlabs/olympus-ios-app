@@ -32,7 +32,7 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         setDeviceInfo()
         setLocaleInfo()
         let clientMeta = self.makeClientMeta()
-        SecretConfig.set(clientMeta: clientMeta)
+        SecretConfig.set(customerKey: "JUPITER", clientMeta: clientMeta)
         TJLabsAuthConstants.setServerURL(cloud: "GCP", region: AuthRegion.KOREA.rawValue, serverType: "jupiter")
         guard
             let accessKey = nonEmptyInfoValue(forKey: ConfigKeys.accessKey),
@@ -57,9 +57,9 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     
     private func makeClientMeta() -> ClientMeta {
         let clientSdks = [
-            SdkMeta(name: "TJLabsCommon", version: "0.1.0"),
-            SdkMeta(name: "TJLabsResource", version: "0.1.0"),
-            SdkMeta(name: "TJLabsJupiter", version: "0.1.0"),
+            SdkMeta(name: "TJLabsCommon", version: "0.1.3"),
+            SdkMeta(name: "TJLabsResource", version: "0.1.4"),
+            SdkMeta(name: "TJLabsJupiter", version: "2.0.7"),
         ]
         
         let bundleIdentifier = Bundle.main.bundleIdentifier ?? ""

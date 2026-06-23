@@ -51,9 +51,21 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
     // MARK: - Constants
     private let AVG_BUFFER_SIZE = 2
     private let LSE_RESULT_BUFFER_SIZE = 10
+    private let LSE_SEARCH_BUFFER_SIZE = 5
     private let LSE_SNAPSHOT_BUFFER_SIZE = 10
+    private let LSE_TREND_SPEED_BUFFER_SIZE = 30
     private let LSE_REPRESENTATIVE_CLUSTER_SIZE = 3
     private let LSE_HEADING_MIN_DISTANCE: Float = 1.0
+    private let LSE_TREND_SPEED_MEDIAN_WINDOW = 3
+    private let LSE_TREND_SPEED_EMA_ALPHA: Float = 0.25
+    private let LSE_TREND_SPEED_MIN_SAMPLE_COUNT = 8
+    private let LSE_TREND_SPEED_MIN_DURATION_MS = 8_000
+    private let LSE_TREND_SPEED_MIN_DISPLACEMENT: Float = 4.0
+    private let LSE_TREND_SPEED_MAX_STEP_SPEED_MPS: Float = 8.0
+    private let LSE_VALIDATE_BASE_DISTANCE: Float = 12.0
+    private let LSE_VALIDATE_MAX_SPEED_MPS_VEHICLE: Float = 16.0
+    private let LSE_VALIDATE_MAX_SPEED_MPS_PEDESTRIAN: Float = 8.0
+    private let LSE_VALIDATE_FORCE_ACCEPT_COUNT: Int = 5
     
     // MARK: - Searching
     private var searcingId: String = ""
@@ -70,6 +82,8 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
     private var recoveryIndex: Int = 0
     private var recentUserPeakIndex: Int = 0
     private var recentLandmarkPeaks: [PeakData]?
+    private var badcaseCount: Int = 0
+    private var invalidLseCount: Int = 0
     
     // MARK: - Navigation
     private var feedbackIndex: Int = 0
@@ -101,6 +115,7 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
     var debug_landmark: LandmarkData?
     var debug_best_landmark: PeakData?
     var debug_lse_rep_xyh: [Float]?
+    var debug_lse_trend_velocity: Float?
     var debug_ent_compensated_traj: [[Double]]?
     var debug_recon_raw_traj: [[Double]]?
     var debug_recon_corr_traj: [FineLocationTrackingOutput]?
@@ -174,14 +189,14 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
     
     // MARK: - Functions
     func initialize(completion: @escaping (Bool, String) -> Void) {
-        tjlabsResourceManager.loadResources(cloud: cloud, region: region, sectorId: sectorId, landmarkTh: -92, forceUpdate: true, completion: { isSuccess in
+        tjlabsResourceManager.loadResources(cloud: cloud, region: region, sectorId: sectorId, landmarkTh: -88, forceUpdate: true, completion: { isSuccess in
             let msg: String = isSuccess ? "JupiterCalcManager initialize success" : "JupiterCalcManager initialize failed"
             completion(isSuccess, msg)
         })
     }
     
     func start(completion: @escaping (Bool, String) -> Void) {
-        tjlabsResourceManager.loadResources(cloud: cloud, region: region, sectorId: sectorId, landmarkTh: -92, forceUpdate: true, completion: { isSuccess in
+        tjlabsResourceManager.loadResources(cloud: cloud, region: region, sectorId: sectorId, landmarkTh: -88, forceUpdate: true, completion: { isSuccess in
             let msg: String = isSuccess ? "JupiterCalcManager start success" : "JupiterCalcManager start failed"
             completion(isSuccess, msg)
         })
@@ -197,7 +212,7 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         PathMatcher.shared.setGraphMode(mode)
         rfdGenerator = RFDGenerator(userId: tenantUserName)
         uvdGenerator = UVDGenerator(userId: tenantUserName)
-
+        
         guard let rfd = rfdGenerator else {
             completion(false, "rfdGenerator is nil")
             return
@@ -291,6 +306,8 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         recoveryIndex = 0
         recentUserPeakIndex = 0
         recentLandmarkPeaks = nil
+        badcaseCount = 0
+        invalidLseCount = 0
         feedbackIndex = 0
         pathMatchingCondition = PathMatchingCondition()
         report = -1
@@ -301,12 +318,14 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         curPathMatchingResult = nil
         curLSEResult = nil
         lseResultBuffer.removeAll()
+        lseSnapshotBuffer.removeAll()
         
         debug_calc_xyh = [0, 0, 0]
         debug_tu_xyh = [0, 0, 0]
         debug_landmark = nil
         debug_best_landmark = nil
         debug_lse_rep_xyh = nil
+        debug_lse_trend_velocity = nil
         debug_ent_compensated_traj = nil
         debug_recon_raw_traj = nil
         debug_recon_corr_traj = nil
@@ -320,7 +339,7 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
         let is_vehicle = curUserModeEnum == .MODE_VEHICLE
         var isShowLSEResult: Bool = false
-        if is_vehicle {
+        if is_vehicle && !JupiterResultState.isInRecoveryProcess {
             if let levelByBle = self.levelByBle, levelByBle != "B0" {
                 if jupiterPhase == .ENTERING || jupiterPhase == .TRACKING {
                     if let entManager = entManager, entManager.getIsLastEntPos() {
@@ -331,6 +350,8 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                 } else {
                     isShowLSEResult = true
                 }
+            } else {
+                isShowLSEResult = true
             }
         } else {
             isShowLSEResult = true
@@ -373,7 +394,7 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
         let is_vehicle = curUserModeEnum == .MODE_VEHICLE
         var isShowLSEResult: Bool = false
-        if is_vehicle {
+        if is_vehicle && !JupiterResultState.isInRecoveryProcess {
             if let levelByBle = self.levelByBle, levelByBle != "B0" {
                 if jupiterPhase == .ENTERING || jupiterPhase == .TRACKING {
                     if let entManager = entManager, entManager.getIsLastEntPos() {
@@ -385,6 +406,8 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                     isShowLSEResult = true
                 }
                 
+            } else {
+                isShowLSEResult = true
             }
         } else {
             isShowLSEResult = true
@@ -429,6 +452,7 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
             landmark: self.debug_landmark,
             best_landmark: self.debug_best_landmark,
             lse_rep_xyh: self.debug_lse_rep_xyh,
+            lse_trend_velocity: self.debug_lse_trend_velocity,
             ent_compensated_traj: self.debug_ent_compensated_traj,
             recon_raw_traj: self.debug_recon_raw_traj,
             recon_corr_traj: self.debug_recon_corr_traj,
@@ -443,7 +467,7 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
 
     // MARK: - RFDGeneratorDelegate Methods
     func onRfdResult(_ generator: TJLabsCommon.RFDGenerator, receivedForce: TJLabsCommon.ReceivedForce) {
-        if debugOption { JupiterFileManager.shared.writeRFD(rfd: receivedForce) }
+        if debugOption && !JupiterReplayer.shared.replayMode { JupiterFileManager.shared.writeRFD(rfd: receivedForce) }
         handleRfd(rfd: receivedForce)
         lseManager?.onRfdResult(generator, receivedForce: receivedForce)
         delegate?.onRfdResult(receivedForce: receivedForce)
@@ -492,7 +516,7 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
     }
     
     func onUvdResult(_ generator: UVDGenerator, mode: UserMode, userVelocity: UserVelocity) {
-        if debugOption { JupiterFileManager.shared.writeUVD(uvd: userVelocity, mode: mode) }
+        if debugOption && !JupiterReplayer.shared.replayMode { JupiterFileManager.shared.writeUVD(uvd: userVelocity, mode: mode) }
         let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
 
         let rfs = curRfd.rfs
@@ -502,9 +526,12 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
             rfdDataString.append(str)
         }
 
+        var userVelocity = userVelocity
+        userVelocity.length = userVelocity.length*0.825
         // Update Current UVD
         self.curUvd = userVelocity
         let curIndex = userVelocity.index
+        lseManager?.updateCurUvd(userVelocity: userVelocity)
         guard let entManager = self.entManager else { return }
         guard let blChanger = self.buildingLevelChanger else { return }
         guard let landmarkTagger = self.landmarkTagger else { return }
@@ -531,7 +558,9 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
             self.debug_ratio = nil
             
             let peakEventInfo: String = "ward_id:\(userPeak.id),start_index:\(userPeak.start_index),peak_index:\(userPeak.peak_index),end_index:\(userPeak.end_index),peak_rssi:\(userPeak.peak_rssi),th:\(userPeak.threshold)"
-            JupiterFileManager.shared.writeEvent(event: JupiterEvent(mobile_time: currentTime, event_code: JupiterServiceCode.PEAK_DETECTED.rawValue, event_info: peakEventInfo))
+            if debugOption && !JupiterReplayer.shared.replayMode {
+                JupiterFileManager.shared.writeEvent(event: JupiterEvent(mobile_time: currentTime, event_code: JupiterServiceCode.PEAK_DETECTED.rawValue, event_info: peakEventInfo))
+            }
             peakHandling: do {
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) PEAK detected : id=\(userPeak.id) // peak_idx=\(userPeak.peak_index), peak_rssi=\(userPeak.peak_rssi), detected_idx = \(userPeak.end_index), detected_rssi = \(userPeak.end_rssi)")
                 startEntranceTracking(currentTime: currentTime, entManager: entManager, uvd: userVelocity, userPeak: userPeak, bleData: bleData)
@@ -602,15 +631,15 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         if stackManager.checkIsBadCase(jupiterPhase: jupiterPhase, uvdIndexWhenCorrection: self.uvdIndexWhenCorrection, travelingLinkDist: travelingLinkDist, distWithLSE: distWithLSE) && !uturnLink {
             JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: entered, index=\(userVelocity.index), phase=\(jupiterPhase), travelingLinkDist=\(travelingLinkDist)")
             
-            
             let userPeakAndLinksBuffer = stackManager.getUserPeakAndLinksBuffer()
             if userPeakAndLinksBuffer.count < 2 {
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: return - peaks are not sufficient, count=\(userPeakAndLinksBuffer.count)")
+                JupiterResultState.isInRecoveryProcess = true
                 return
             }
-            JupiterResultState.isInRecoveryProcess = true
             guard let recentAndOld = getRecentAndOlderUserPeak(userPeakAndLinksBuffer: userPeakAndLinksBuffer) else {
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: return - getRecentAndOlderUserPeak returned nil")
+                JupiterResultState.isInRecoveryProcess = true
                 return
             }
             guard let solutionEstimator = self.solutionEstimator else {
@@ -620,11 +649,21 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
             let recentUserPeak = recentAndOld.recent.0
             let olderUserPeak = recentAndOld.old.0
             
-            let uvdBufferForRecovery = solutionEstimator.getUvdBufferForEstimation(startIndex: olderUserPeak.peak_index,
+            if self.lseSnapshotBuffer.count < 2  {
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) lseSnapshotBuffer is small \(lseSnapshotBuffer.count)")
+                return
+            }
+            guard let firstContext = self.lseSnapshotBuffer[0].requestContext, let lastContext = self.lseSnapshotBuffer[self.lseSnapshotBuffer.count-1].requestContext else {
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) cannot find context")
+                return
+            }
+            
+            let midIndex = firstContext.index + Int((lastContext.index - firstContext.index)/2)
+            let queryIndex = min(olderUserPeak.peak_index, midIndex)
+            let uvdBufferForRecovery = solutionEstimator.getUvdBufferForEstimation(startIndex: queryIndex,
                                                                                     endIndex: userVelocity.index,
                                                                                     uvdBuffer: uvdBuffer)
-//            let pmResultBuffer = stackManager.getCurPmResultBuffer(from: olderUserPeak.peak_index)
-//            let pathHeadings = stackManager.makeHeadingSet(resultBuffer: pmResultBuffer)
+
             let pathHeadings = PathMatcher.shared.getPathMatchingHeadings(sectorId: sectorId, building: curPmResult.building_name, level: curPmResult.level_name, x: curPmResult.x, y: curPmResult.y, mode: mode, paddingValue: JupiterMode.PADDING_VALUE_MEDIUM*2)
             JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: pathHeadings= \(pathHeadings)")
             let uvdBufferForStraight = stackManager.getUvdBuffer(from: recentUserPeak.peak_index)
@@ -632,14 +671,19 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
             let curResultBuffer = stackManager.getCurResultBuffer()
             if let matchedWithOlderPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: olderUserPeak, curResult: curResult, curResultBuffer: curResultBuffer),
                let matchedWithRecentPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: recentUserPeak, curResult: curResult, curResultBuffer: curResultBuffer) {
+                badcaseCount += 1
+                if badcaseCount >= 5 {
+                    JupiterResultState.isInRecoveryProcess = true
+                }
                 let hasMajorDirection = stackManager.checkHasMajorDirection(uvdBuffer: uvdBufferForRecovery)
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: hasMajorDirection= \(hasMajorDirection)")
                 if hasMajorDirection {
-                    let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBufferForRecovery.map{ Float($0.heading) })
+                    let extractedSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBufferForRecovery.map{ Float($0.heading) })
+                    let majorSection = extractedSection.0
                     JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: majorSection= \(majorSection)")
-                    
                     let candidateTrajList = solutionEstimator.makeMultipleCandidateTrajectory(uvdBuffer: uvdBufferForRecovery, majorSection: majorSection, pathHeadings: pathHeadings)
-                    
+                        
+                    let snapshots = getLSESnapshotBuffer(lastN: LSE_SEARCH_BUFFER_SIZE)
                     let userPeakBuffer = userPeakAndLinksBuffer.map{$0.0}
                     let candidateResult = solutionEstimator.calculateLossParamAtEachCandInSearch(searchTrajList: candidateTrajList,
                                                                                                  userPeakBuffer: userPeakBuffer,
@@ -647,13 +691,8 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                                                                                                  landmarks: (matchedWithOlderPeak.0, matchedWithRecentPeak.0),
                                                                                                  mode: mode, isDrStraight: isDrStraight.0,
                                                                                                  lseResult: self.curLSEResult,
-                                                                                                 lseSnapshotBuffer: self.lseSnapshotBuffer)
+                                                                                                 lseSnapshotBuffer: snapshots)
                     
-//                        let candidateResult = solutionEstimator.calculateLossParamAtEachCand(trackingTrajList: candidateTrajList,
-//                                                                                             userPeakAndLinksBuffer: userPeakAndLinksBuffer,
-//                                                                                             landmarks: (matchedWithOlderPeak.0, matchedWithRecentPeak.0),
-//                                                                                             curPmResult: curPmResult,
-//                                                                                             mode: mode, matchedNode: nil, isDrStraight: isDrStraight.0)
                     if let bestResult = solutionEstimator.calculateBadCaseResult(lossParamAtEachCand: candidateResult) {
                         self.debug_selected_search = bestResult
                         self.recoveryIndex = userVelocity.index
@@ -664,14 +703,22 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                         
                         let curPmResultBuffer = stackManager.getCurPmResultBuffer(from: recentUserPeak.peak_index)
                         PathMatcher.shared.editPassingLinkBuffer(from: recentUserPeak.peak_index, sectorId: sectorId, curPmResultBuffer: curPmResultBuffer, mode: mode)
-                        let recoveryCoord: [Float] = [updatedCurPmResult.x, updatedCurPmResult.y, updatedCurPmResult.absolute_heading]
+                        var recoveryCoord: [Float] = [updatedCurPmResult.x, updatedCurPmResult.y, updatedCurPmResult.absolute_heading]
+                        
+                        if let bestRecent = bestResult.recent {
+                            if bestRecent.x == Int(recoveryCoord[0]) && bestRecent.y == Int(recoveryCoord[1]) {
+                                recoveryCoord = [bestResult.head.x, bestResult.head.y, bestResult.head.heading]
+                            }
+                        }
+                        
                         if let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: recoveryCoord[0],y: recoveryCoord[1], heading: recoveryCoord[2], isUseHeading: true, mode: mode, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) {
                             curPathMatchingResult = bestResult.headResult
                             curPathMatchingResult?.x = pmResult.x
                             curPathMatchingResult?.y = pmResult.y
-                            curPathMatchingResult?.absolute_heading = pmResult.heading
+                            curPathMatchingResult?.absolute_heading = bestResult.head.heading
+//                            curPathMatchingResult?.absolute_heading = pmResult.heading
                             JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: recoveryCoord= \(recoveryCoord), loss= \(bestResult.loss)")
-                            kalmanFilter?.updateTuPosition(coord: [pmResult.x, pmResult.y])
+                            kalmanFilter?.updateTuResult(result: curPathMatchingResult!)
                             self.curResult? = curPathMatchingResult!
                             if let matchedLink = PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId, result: curPathMatchingResult!, checkAll: true, mode: mode) {
                                 let jumpInfo = JumpInfo(link_number: matchedLink.number, jumped_nodes: [])
@@ -689,7 +736,10 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                             self.curResult? = copiedResult
                             PathMatcher.shared.initPassedLinkInfo()
                         }
+                        badcaseCount = 0
+                        JupiterResultState.isInRecoveryProcess = false
                     } else {
+                        JupiterResultState.isInRecoveryProcess = true
                         JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: calculateBadCaseResult returned nil")
                     }
                 } else {
@@ -698,7 +748,6 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
             } else {
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: landmark matching failed, olderPeak=\(olderUserPeak.peak_index), recentPeak=\(recentUserPeak.peak_index)")
             }
-            JupiterResultState.isInRecoveryProcess = false
             JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) BadCase: exited recovery block")
         }
         
@@ -770,7 +819,8 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         if jupiterPhase == .ENTERING {
             var forceStop = false
             let uvdBuffer = stackManager.getUvdBuffer(from: uvd.index-50)
-            let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBuffer.map{ Float($0.heading) })
+            let extractedSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBuffer.map{ Float($0.heading) })
+            let majorSection = extractedSection.0
             forceStop = majorSection.isEmpty
             
             let snapshotBuffer = getLSESnapshotBuffer(lastN: LSE_SNAPSHOT_BUFFER_SIZE)
@@ -799,264 +849,6 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                     }
                 }
             }
-            
-//            var forceStop = false
-//            if let innermostWard = entManager.stopEntTrack(wardId: peakId) {
-//                let uvdBuffer = stackManager.getUvdBuffer(from: uvd.index-50)
-//                let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBuffer.map{ Float($0.heading) })
-//                forceStop = majorSection.isEmpty
-//                if !forceStop {
-//                    var wardArea: [EntWardArea]?
-//                    if innermostWard.name.contains("46E") {
-//                        // Convensia Ent1
-//                        wardArea = [
-//                            EntWardArea(x: 30, y: 199, heading: [0]),
-//                            EntWardArea(x: 31, y: 199, heading: [0]),
-//                            EntWardArea(x: 32, y: 199, heading: [0]),
-//                            EntWardArea(x: 33, y: 199, heading: [0]),
-//                            EntWardArea(x: 34, y: 199, heading: [0]),
-//                            EntWardArea(x: 35, y: 199, heading: [0]),
-//                            EntWardArea(x: 36, y: 199, heading: [0]),
-//                            EntWardArea(x: 37, y: 199, heading: [0]),
-//                            EntWardArea(x: 38, y: 199, heading: [0]),
-//                            EntWardArea(x: 39, y: 199, heading: [0]),
-//                            EntWardArea(x: 40, y: 199, heading: [0]),
-//                            EntWardArea(x: 41, y: 199, heading: [0]),
-//                            EntWardArea(x: 42, y: 199, heading: [0]),
-//                            EntWardArea(x: 43, y: 199, heading: [0]),
-//                            EntWardArea(x: 44, y: 199, heading: [0]),
-//                            EntWardArea(x: 45, y: 199, heading: [0]),
-//                            EntWardArea(x: 46, y: 199, heading: [0]),
-//                            EntWardArea(x: 47, y: 199, heading: [0]),
-//                            EntWardArea(x: 48, y: 199, heading: [0])
-//                        ]
-//                    } else if innermostWard.name.contains("114") {
-//                        // Convensia Ent2
-//                        wardArea = [
-//                            EntWardArea(x: 362, y: 152, heading: [158, 180]),
-//                            EntWardArea(x: 361, y: 153, heading: [158, 180]),
-//                            EntWardArea(x: 360, y: 153, heading: [158, 180]),
-//                            EntWardArea(x: 359, y: 154, heading: [158]),
-//                            EntWardArea(x: 358, y: 154, heading: [158]),
-//                            EntWardArea(x: 357, y: 154, heading: [158]),
-//                            EntWardArea(x: 357, y: 154, heading: [158]),
-//                            EntWardArea(x: 356, y: 155, heading: [158]),
-//                            EntWardArea(x: 355, y: 155, heading: [158]),
-//                            EntWardArea(x: 354, y: 155, heading: [158]),
-//                            EntWardArea(x: 353, y: 156, heading: [158]),
-//                            EntWardArea(x: 352, y: 156, heading: [158]),
-//                            EntWardArea(x: 352, y: 157, heading: [158]),
-//                            EntWardArea(x: 351, y: 157, heading: [158]),
-//                            EntWardArea(x: 350, y: 157, heading: [158]),
-//                            EntWardArea(x: 349, y: 158, heading: [158]),
-//                            EntWardArea(x: 348, y: 158, heading: [90, 158]),
-//                            EntWardArea(x: 348, y: 159, heading: [90]),
-//                            EntWardArea(x: 348, y: 160, heading: [90]),
-//                            EntWardArea(x: 348, y: 161, heading: [90]),
-//                            EntWardArea(x: 348, y: 162, heading: [90]),
-//                            EntWardArea(x: 348, y: 163, heading: [90]),
-//                            EntWardArea(x: 348, y: 164, heading: [90]),
-//                            EntWardArea(x: 348, y: 165, heading: [90])
-//                        ]
-//                    } else if innermostWard.name.contains("117") {
-//                        wardArea = [
-//                            EntWardArea(x: 348, y: 50, heading: [90]),
-//                            EntWardArea(x: 348, y: 51, heading: [90]),
-//                            EntWardArea(x: 348, y: 52, heading: [90]),
-//                            EntWardArea(x: 348, y: 53, heading: [90]),
-//                            EntWardArea(x: 348, y: 54, heading: [90]),
-//                            EntWardArea(x: 348, y: 55, heading: [90]),
-//                            EntWardArea(x: 348, y: 56, heading: [90]),
-//                            EntWardArea(x: 348, y: 57, heading: [90]),
-//                            EntWardArea(x: 348, y: 58, heading: [90]),
-//                            EntWardArea(x: 348, y: 59, heading: [90]),
-//                            EntWardArea(x: 348, y: 60, heading: [90]),
-//                            EntWardArea(x: 348, y: 61, heading: [90]),
-//                            EntWardArea(x: 348, y: 62, heading: [90]),
-//                            EntWardArea(x: 348, y: 63, heading: [90]),
-//                            EntWardArea(x: 348, y: 64, heading: [90]),
-//                            EntWardArea(x: 348, y: 65, heading: [90]),
-//                            EntWardArea(x: 348, y: 66, heading: [90]),
-//                            EntWardArea(x: 348, y: 67, heading: [90]),
-//                            EntWardArea(x: 348, y: 68, heading: [90, 135, 180])
-//                        ]
-//                    } else {
-//                        wardArea = [
-//                            EntWardArea(x: innermostWard.x, y: innermostWard.y, heading: innermostWard.headings)
-//                        ]
-//                    }
-//                    
-//                    let headingForCompensation = majorSection.average - uvdBuffer[0].heading
-//                    
-//                    if let curResult = curResult {
-//                        self.debug_ent_compensated_traj = nil
-//
-//                        struct EntTrackCandidateResult {
-//                            let dist: Float
-//                            let result: FineLocationTrackingOutput
-//                            let wardX: Float
-//                            let wardY: Float
-//                            let pathHeading: Float
-//                            let compensatedTraj: [[Double]]
-//                        }
-//                        
-//                        let candidateInputs: [(wardX: Float, wardY: Float, pathHeading: Float)] = wardArea!.flatMap { area in
-//                            area.heading.map { heading in
-//                                (wardX: area.x, wardY: area.y, pathHeading: heading)
-//                            }
-//                        }
-//                        
-//                        let candidateResults = NSLock()
-//                        var evaluatedCandidates = [EntTrackCandidateResult]()
-//                        
-//                        DispatchQueue.concurrentPerform(iterations: candidateInputs.count) { candidateIndex in
-//                            let candidate = candidateInputs[candidateIndex]
-//                            let wardX = candidate.wardX
-//                            let wardY = candidate.wardY
-//                            let pathHeading = candidate.pathHeading
-//                            
-////                            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - EntTrack Finished : ward=(\(wardX), \(wardY)) heading=\(pathHeading)")
-//                            
-//                            let startHeading = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(pathHeading) - Double(headingForCompensation)))
-//                            var coord: [Float] = [0, 0]
-//                            var heading: Float = startHeading
-//                            
-//                            var offset: [Float] = [0, 0]
-//                            var resultBuffer = [[Float]]()
-//                            resultBuffer.reserveCapacity(max(uvdBuffer.count - 1, 0))
-//                            
-//                            for i in 1..<uvdBuffer.count {
-//                                let curUvd = uvdBuffer[i]
-//                                let preUvd = uvdBuffer[i-1]
-//                                
-//                                let diffHeading: Float = Float(curUvd.heading - preUvd.heading)
-//                                let updatedHeading = TJLabsUtilFunctions.shared.compensateDegree(Double(heading + diffHeading))
-//                                let updatedHeadingRadian = TJLabsUtilFunctions.shared.degree2radian(degree: updatedHeading)
-//                                
-//                                let dx = curUvd.length * cos(updatedHeadingRadian)
-//                                let dy = curUvd.length * sin(updatedHeadingRadian)
-//                                
-//                                coord[0] += Float(dx)
-//                                coord[1] += Float(dy)
-//                                heading = Float(updatedHeading)
-//                                
-//                                if uvdBuffer[i].index == userPeak.peak_index {
-//                                    offset[0] = Float(wardX) - coord[0]
-//                                    offset[1] = Float(wardY) - coord[1]
-//                                }
-//                                
-//                                resultBuffer.append([coord[0], coord[1], heading])
-//                            }
-//                            
-//                            guard !resultBuffer.isEmpty else { return }
-//                            
-//                            var compensatedBuffer = [[Float]]()
-//                            compensatedBuffer.reserveCapacity(resultBuffer.count)
-//                            for value in resultBuffer {
-//                                let new: [Float] = [value[0] + offset[0], value[1] + offset[1], value[2]]
-//                                compensatedBuffer.append(new)
-//                            }
-//                            
-//                            let sampleCount = 7
-//                            let lastIndex = compensatedBuffer.count - 1
-//                            var sampleIndices = [Int]()
-//                            if lastIndex == 0 {
-//                                sampleIndices = [0]
-//                            } else {
-//                                for sampleOrder in 0..<sampleCount {
-//                                    let ratio = Double(sampleOrder) / Double(sampleCount - 1)
-//                                    let sampledIndex = Int(round(ratio * Double(lastIndex)))
-//                                    if sampleIndices.last != sampledIndex {
-//                                        sampleIndices.append(sampledIndex)
-//                                    }
-//                                }
-//                            }
-//                            
-//                            var totalDist: Float = 0
-//                            var validSampleCount = 0
-//                            for sampleIndex in sampleIndices {
-//                                let sample = compensatedBuffer[sampleIndex]
-//                                let sampleX = sample[0]
-//                                let sampleY = sample[1]
-//                                let sampleHeading = TJLabsUtilFunctions.shared.compensateDegree(Double(sample[2]))
-//                                
-//                                var sampleResult = curResult
-//                                sampleResult.x = sampleX
-//                                sampleResult.y = sampleY
-//                                sampleResult.absolute_heading = Float(sampleHeading)
-//                                
-//                                guard let samplePm = PathMatcher.shared.pathMatching(sectorId: sectorId,
-//                                                                                     building: sampleResult.building_name,
-//                                                                                     level: sampleResult.level_name,
-//                                                                                     x: sampleResult.x, y: sampleResult.y, heading: sampleResult.absolute_heading, isUseHeading: true, mode: .MODE_VEHICLE, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else {
-//                                    validSampleCount = 0
-//                                    break
-//                                }
-//                                
-//                                let dx = sampleX - samplePm.x
-//                                let dy = sampleY - samplePm.y
-//                                let sampleDist = sqrt(dx*dx + dy*dy)
-//                                totalDist += sampleDist
-//                                validSampleCount += 1
-//                            }
-//                            
-//                            guard validSampleCount == sampleIndices.count, validSampleCount > 0 else { return }
-//                            let dist = totalDist / Float(validSampleCount)
-//                            
-//                            let lastX = compensatedBuffer[lastIndex][0]
-//                            let lastY = compensatedBuffer[lastIndex][1]
-//                            let lastHeading = TJLabsUtilFunctions.shared.compensateDegree(Double(compensatedBuffer[lastIndex][2]))
-//                            var lastResult = curResult
-//                            lastResult.x = lastX
-//                            lastResult.y = lastY
-//                            lastResult.absolute_heading = Float(lastHeading)
-//                            
-//                            guard let lastPm = PathMatcher.shared.pathMatching(sectorId: sectorId,
-//                                                                               building: lastResult.building_name,
-//                                                                               level: lastResult.level_name,
-//                                                                               x: lastResult.x, y: lastResult.y, heading: lastResult.absolute_heading, isUseHeading: true, mode: .MODE_VEHICLE, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else { return }
-//                            
-//                            lastResult.x = lastPm.x
-//                            lastResult.y = lastPm.y
-//                            
-//                            let candidateResult = EntTrackCandidateResult(dist: dist,
-//                                                                         result: lastResult,
-//                                                                         wardX: wardX,
-//                                                                         wardY: wardY,
-//                                                                         pathHeading: pathHeading,
-//                                                                         compensatedTraj: compensatedBuffer.map { [Double($0[0]), Double($0[1]), Double($0[2])] })
-//                            candidateResults.lock()
-//                            evaluatedCandidates.append(candidateResult)
-//                            candidateResults.unlock()
-//                        }
-//                        
-//                        if let bestCandidate = evaluatedCandidates.min(by: { $0.dist < $1.dist }) {
-//                            self.debug_ent_compensated_traj = bestCandidate.compensatedTraj
-//                            var tempResult = bestCandidate.result
-//                            tempResult.building_name = entManager.getEntTrackEndBuilding()
-//                            tempResult.level_name = innermostWard.level.name
-//                            JupiterLogger.i(tag: "JupiterCalcManager", message: "(onUvdResult) index:\(uvd.index) - EntTrack Finished : wardXY:[\(bestCandidate.wardX),\(bestCandidate.wardY)] // headings:\(bestCandidate.pathHeading) // dist \(bestCandidate.dist) // tempResult \(tempResult)")
-//                            startIndoorTracking(uvd: uvd, fltResult: tempResult)
-//                        }
-//                    }
-//                }
-//            }
-//            if entManager.forcedStopEntTrack(bleAvg: bleData, sec: 15) || forceStop {
-//                // Entrance Tracking Finshid (Force)
-//                JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcEntranceResult) index:\(uvd.index) - forcedStopEntTrack")
-//                if let blChanger = self.buildingLevelChanger {
-//                    if let buildingLevelByPeak = blChanger.getMatchedBuildingLevelByUserPeak(userPeak: userPeak) {
-//                        stackManager.stackBuildingLevelByPeak(buildingLevel: buildingLevelByPeak)
-//                        let buildingLevelByPeakBuffer = stackManager.getBuildingLevelByPeakBuffer(size: 3)
-//                        startIndoorSearching(uvd: uvd, blChanger: blChanger, buildingLevelByPeakBuffer: buildingLevelByPeakBuffer, force: true)
-//                    } else {
-//                        JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcEntranceResult) buildingLevelByPeak is nil")
-//                    }
-//                } else {
-//                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcEntranceResult) buildingLevelChanger is nil")
-//                }
-//                entManager.setEntTrackFinishedTimestamp(time: currentTime)
-//            }
         }
     }
     
@@ -1064,8 +856,17 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         if jupiterPhase != .ENTERING { return }
         
         var forceStop = false
-        let uvdBuffer = stackManager.getUvdBuffer(from: uvd.index-50)
-        let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBuffer.map{ Float($0.heading) })
+        if self.lseSnapshotBuffer.count < 2 { return }
+        guard let firstContext = self.lseSnapshotBuffer[0].requestContext, let lastContext = self.lseSnapshotBuffer[self.lseSnapshotBuffer.count-1].requestContext else {
+            return
+        }
+        
+        let midIndex = firstContext.index + Int((lastContext.index - firstContext.index)/2)
+        let uvdBuffer = stackManager.getUvdBuffer(from: firstContext.index)
+        let extractedSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBuffer.map{ Float($0.heading) })
+        let majorSection = extractedSection.0
+        let sectionRange = extractedSection.1...extractedSection.2
+        if !sectionRange.contains(midIndex) { return }
         forceStop = majorSection.isEmpty
         
         let snapshotBuffer = getLSESnapshotBuffer(lastN: LSE_SNAPSHOT_BUFFER_SIZE)
@@ -1216,8 +1017,18 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
             let olderUserPeak = userPeakBuffer[userPeakBuffer.count - 2]
             let recentUserPeak = userPeakBuffer[userPeakBuffer.count - 1]
             JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) 2 Peaks : older= \(olderUserPeak.id), recent= \(recentUserPeak.id)")
-
-            let uvdBufferForSearching = solutionEstimator.getUvdBufferForEstimation(startIndex: olderUserPeak.peak_index,
+            
+            if self.lseSnapshotBuffer.count < 2 {
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) lseSnapshotBuffer is small \(lseSnapshotBuffer.count)")
+                return
+            }
+            guard let firstContext = self.lseSnapshotBuffer[0].requestContext, let lastContext = self.lseSnapshotBuffer[self.lseSnapshotBuffer.count-1].requestContext else {
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) cannot find context")
+                return
+            }
+            let midIndex = firstContext.index + Int((lastContext.index - firstContext.index)/2)
+            let queryIndex = min(olderUserPeak.peak_index, midIndex)
+            let uvdBufferForSearching = solutionEstimator.getUvdBufferForEstimation(startIndex: queryIndex,
                                                                                     endIndex: userVelocity.index,
                                                                                     uvdBuffer: uvdBuffer)
             let uvdBufferForStraight = stackManager.getUvdBuffer(from: recentUserPeak.peak_index)
@@ -1236,7 +1047,8 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
             let hasMajorDirection = stackManager.checkHasMajorDirection(uvdBuffer: uvdBufferForSearching)
             JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) hasMajorDirection= \(hasMajorDirection)")
             if hasMajorDirection {
-                let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBufferForSearching.map{ Float($0.heading) })
+                let extractedSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBufferForSearching.map{ Float($0.heading) })
+                let majorSection = extractedSection.0
                 let searchTrajList = solutionEstimator.makeMultipleCandidateTrajectory(uvdBuffer: uvdBufferForSearching, majorSection: majorSection, pathHeadings: pathHeadings)
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(calcIndoorSearching) searchTrajList.count= \(searchTrajList.count)")
                 if searchTrajList.isEmpty {
@@ -1245,13 +1057,14 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                                             extra: "majorSectionCount=\(majorSection.count)")
                 }
                 
+                let snapshots = getLSESnapshotBuffer(lastN: LSE_SEARCH_BUFFER_SIZE)
                 let searchResult = solutionEstimator.calculateLossParamAtEachCandInSearch(searchTrajList: searchTrajList,
                                                                                           userPeakBuffer: userPeakBuffer,
                                                                                           buildingLevelByUserPeak: buildingLevelByPeak,
                                                                                           landmarks: (matchedWithOldUserPeak, matchedWithUserPeak),
                                                                                           mode: mode, isDrStraight: isDrStraight.0,
                                                                                           lseResult: self.curLSEResult,
-                                                                                          lseSnapshotBuffer: self.lseSnapshotBuffer)
+                                                                                          lseSnapshotBuffer: snapshots)
                 if searchResult.isEmpty {
                     logSearchingDebugReturn(reason: "searchResult empty",
                                             uvdIndex: curIndex,
@@ -1305,26 +1118,6 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                                             uvdIndex: curIndex,
                                             extra: "bestResultIndex=\(bestResult.index)")
                     startIndoorTracking(uvd: userVelocity, fltResult: curResult)
-                    
-//                    let isConnected = checkResultConnectionForTracking(preResult: preSearchResult, curResult: curSearchResult, uvdBuffer: uvdBufferForSearching, mode: mode)
-//                    if isConnected {
-//                        guard let ixyhs = stackManager.propagateUsingUvd(uvdBuffer: uvdBufferForSearching, fltResult: bestResult) else { break peakHandling }
-//                        var curResult = bestResult
-//                        let propagatedX = bestResult.x + ixyhs.x
-//                        let propagatedY = bestResult.y + ixyhs.y
-//                        let propagatedH = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(bestResult.absolute_heading + ixyhs.heading)))
-//                        curResult.x = propagatedX
-//                        curResult.y = propagatedY
-//                        curResult.absolute_heading = propagatedH
-//                        guard let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: curResult.x, y: curResult.y, heading: curResult.absolute_heading, isUseHeading: false, mode: mode, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) else { break peakHandling }
-//                        curResult.x = pmResult.x
-//                        curResult.y = pmResult.y
-//                        curResult.absolute_heading = pmResult.heading
-//                        
-//                        correctionIndex = userPeak.peak_index
-//                        correctionId = userPeak.id
-//                        startIndoorTracking(uvd: userVelocity, fltResult: curResult)
-//                    }
                 } else {
                     logSearchingDebugReturn(reason: "calculateSearchResult returned nil",
                                             uvdIndex: curIndex,
@@ -1492,8 +1285,6 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(applyCorrectionWithPeaks) same PEAK detected just before id:\(userPeak.id)")
                 break peakHandling
             }
-            let shouldSkipCorrectionAfterRecovery = userPeak.peak_index <= recoveryIndex
-
             // MARK: - Use Two peaks anytime
             let curResultBuffer = stackManager.getCurResultBuffer()
             if let matchedWithUserPeak = landmarkTagger.findMatchedLandmarkWithUserPeak(userPeak: userPeak,
@@ -1508,11 +1299,6 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                 stackManager.stackUserPeakAndLinks(userPeakAndLinks: (userPeak, linkInfosWhenPeak))
             } else {
                 JupiterLogger.i(tag: "JupiterCalcManager", message: "(applyCorrectionWithPeaks) cannot find matched landmark with user peak \(userPeak.id) or cannot find linkInfosWhenPeak")
-                break peakHandling
-            }
-
-            if shouldSkipCorrectionAfterRecovery {
-                JupiterLogger.i(tag: "JupiterCalcManager", message: "(applyCorrectionWithPeaks) Recovery worked at \(recoveryIndex) uvd index")
                 break peakHandling
             }
 
@@ -1555,7 +1341,8 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                                                                                          curResultBuffer: curResultBuffer) {
                 let hasMajorDirection = stackManager.checkHasMajorDirection(uvdBuffer: uvdBufferForEstimation)
                 if hasMajorDirection {
-                    let majorSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBufferForEstimation.map { Float($0.heading) })
+                    let extractedSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBufferForEstimation.map { Float($0.heading) })
+                    let majorSection = extractedSection.0
                     let candTrajList = solutionEstimator.makeMultipleCandidateTrajectory(uvdBuffer: uvdBufferForEstimation,
                                                                                              majorSection: majorSection,
                                                                                              pathHeadings: pathHeadings,
@@ -1566,7 +1353,6 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                                                                            acceptDist: 15,
                                                                            mode: mode)
                     
-//                    let passingLinkBuffer = PathMatcher.shared.getPassingLinkBuffer(index: olderUserPeak.peak_index)
                     let passingLinkBuffer = PathMatcher.shared.getPassingLinkBuffer()
                     JupiterLogger.i(tag: "JupiterCalcManager", message: "(applyCorrectionWithPeaks) passingLinkBuffer= \(passingLinkBuffer)")
                     let passingLinkGroupNumSet = Set(passingLinkBuffer.map { $0.link_group_number })
@@ -1644,7 +1430,7 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                                                             curResult: curResult,
                                                             paddings: paddings,
                                                             axisConstraint: axisConstraint)
-
+                            
                             trackingCoord = [updatedCurPmResult.x, updatedCurPmResult.y, updatedCurPmResult.absolute_heading]
                             
                             if !isLinkNotChanged {
@@ -1654,7 +1440,13 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                                                                          curPmResultBuffer: curPmResultBufferFromRecentPeak,
                                                                          mode: mode)
                             }
-
+                            
+                            if let bestRecent = trackingResult.recent {
+                                if bestRecent.x == Int(trackingCoord[0]) && bestRecent.y == Int(trackingCoord[1]) {
+                                    trackingCoord = [trackingResult.head.x, trackingResult.head.y, updatedCurPmResult.absolute_heading]
+                                }
+                            }
+                            
                             if let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId,
                                                                              building: curResult.building_name,
                                                                              level: curResult.level_name,
@@ -1679,7 +1471,7 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                                 kalmanFilter.updateTuPosition(coord: trackingCoord)
                                 self.curResult? = headResult
                             }
-
+                            JupiterResultState.isInRecoveryProcess = false
                             if let curPmResult2 = curPathMatchingResult,
                                let matchedLink = PathMatcher.shared.getLinkInfoWithResult(sectorId: sectorId,
                                                                                           result: curPmResult2,
@@ -2019,6 +1811,7 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
     
     func onVelocityResult(_ generator: UVDGenerator, kmPh: Double) {
         curVelocity = Float(kmPh)
+        kalmanFilter?.updateSensorVelocity(kmPh: Float(kmPh))
     }
     func onMagNormSmoothingVarResult(_ generator: TJLabsCommon.UVDGenerator, value: Double) {
         //
@@ -2172,8 +1965,9 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
     
     private func updateLSESnapshotBuffer(with snpshot: SingleEpochSnapshot) {
         lseSnapshotBuffer.append(snpshot)
-        if lseSnapshotBuffer.count > LSE_SNAPSHOT_BUFFER_SIZE {
-            lseSnapshotBuffer.removeFirst(lseSnapshotBuffer.count - LSE_SNAPSHOT_BUFFER_SIZE)
+        let maxSnapshotBufferSize = max(LSE_SNAPSHOT_BUFFER_SIZE, LSE_TREND_SPEED_BUFFER_SIZE)
+        if lseSnapshotBuffer.count > maxSnapshotBufferSize {
+            lseSnapshotBuffer.removeFirst(lseSnapshotBuffer.count - maxSnapshotBufferSize)
         }
     }
     
@@ -2183,6 +1977,238 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         guard lastN > 0 else { return [] }
 
         return Array(container.suffix(lastN))
+    }
+
+    private struct LSETrendSample {
+        let index: Int
+        let timeMs: Int
+        let x: Float
+        let y: Float
+        let buildingName: String
+        let levelName: String
+    }
+
+    private struct LSETrendSpeedEstimate {
+        let velocityKmPh: Float
+        let sampleCount: Int
+        let durationMs: Int
+        let netDisplacement: Float
+        let pathLength: Float
+    }
+
+    private func estimateLseTrendSpeed() -> LSETrendSpeedEstimate? {
+        let snapshots = getLSESnapshotBuffer(lastN: LSE_TREND_SPEED_BUFFER_SIZE)
+        let rawSamples = makeLseTrendSamples(from: snapshots)
+        guard rawSamples.count >= LSE_TREND_SPEED_MIN_SAMPLE_COUNT else {
+            return nil
+        }
+
+        let smoothedSamples = smoothLseTrendSamples(rawSamples)
+        let acceptedSamples = filterLseTrendSamples(smoothedSamples)
+        guard acceptedSamples.count >= LSE_TREND_SPEED_MIN_SAMPLE_COUNT else {
+            return nil
+        }
+
+        let durationMs = acceptedSamples.last!.timeMs - acceptedSamples.first!.timeMs
+        guard durationMs >= LSE_TREND_SPEED_MIN_DURATION_MS else {
+            return nil
+        }
+
+        let firstSample = acceptedSamples.first!
+        let lastSample = acceptedSamples.last!
+        let netDx = lastSample.x - firstSample.x
+        let netDy = lastSample.y - firstSample.y
+        let netDisplacement = sqrt(netDx * netDx + netDy * netDy)
+
+        let cumulativeDistances = makeCumulativeDistances(from: acceptedSamples)
+        let pathLength = cumulativeDistances.last ?? 0
+
+        guard netDisplacement >= LSE_TREND_SPEED_MIN_DISPLACEMENT else {
+            return LSETrendSpeedEstimate(
+                velocityKmPh: 0,
+                sampleCount: acceptedSamples.count,
+                durationMs: durationMs,
+                netDisplacement: netDisplacement,
+                pathLength: pathLength
+            )
+        }
+
+        guard let slopeMps = theilSenSlope(timeMs: acceptedSamples.map(\.timeMs), distances: cumulativeDistances) else {
+            return nil
+        }
+
+        let velocityKmPh = max(0, slopeMps) * 3.6
+        return LSETrendSpeedEstimate(
+            velocityKmPh: velocityKmPh,
+            sampleCount: acceptedSamples.count,
+            durationMs: durationMs,
+            netDisplacement: netDisplacement,
+            pathLength: pathLength
+        )
+    }
+
+    private func makeLseTrendSamples(from snapshots: [SingleEpochSnapshot]) -> [LSETrendSample] {
+        guard let latestSnapshot = snapshots.reversed().first(where: { $0.requestContext != nil }) else {
+            return []
+        }
+
+        let latestBuilding = latestSnapshot.result.building_name
+        let latestLevel = latestSnapshot.result.level_name
+
+        var reversedSamples = [LSETrendSample]()
+        for snapshot in snapshots.reversed() {
+            guard let context = snapshot.requestContext else { continue }
+
+            let sameBuilding = snapshot.result.building_name == latestBuilding
+            let sameLevel = snapshot.result.level_name == latestLevel
+            if !sameBuilding || !sameLevel {
+                if !reversedSamples.isEmpty { break }
+                continue
+            }
+
+            reversedSamples.append(
+                LSETrendSample(
+                    index: context.index,
+                    timeMs: context.mobileTime,
+                    x: snapshot.result.x,
+                    y: snapshot.result.y,
+                    buildingName: snapshot.result.building_name,
+                    levelName: snapshot.result.level_name
+                )
+            )
+
+            if reversedSamples.count >= LSE_TREND_SPEED_BUFFER_SIZE {
+                break
+            }
+        }
+
+        let samples = reversedSamples.reversed()
+        var orderedSamples = [LSETrendSample]()
+        for sample in samples {
+            if let last = orderedSamples.last {
+                if sample.index == last.index {
+                    orderedSamples[orderedSamples.count - 1] = sample
+                    continue
+                }
+
+                if sample.timeMs <= last.timeMs {
+                    continue
+                }
+            }
+            orderedSamples.append(sample)
+        }
+
+        return orderedSamples
+    }
+
+    private func smoothLseTrendSamples(_ samples: [LSETrendSample]) -> [LSETrendSample] {
+        let xs = samples.map(\.x)
+        let ys = samples.map(\.y)
+        let medianFilteredX = applyMedianFilter(to: xs, windowSize: LSE_TREND_SPEED_MEDIAN_WINDOW)
+        let medianFilteredY = applyMedianFilter(to: ys, windowSize: LSE_TREND_SPEED_MEDIAN_WINDOW)
+        let smoothedX = applyEMA(to: medianFilteredX, alpha: LSE_TREND_SPEED_EMA_ALPHA)
+        let smoothedY = applyEMA(to: medianFilteredY, alpha: LSE_TREND_SPEED_EMA_ALPHA)
+
+        return samples.enumerated().map { offset, sample in
+            LSETrendSample(
+                index: sample.index,
+                timeMs: sample.timeMs,
+                x: smoothedX[offset],
+                y: smoothedY[offset],
+                buildingName: sample.buildingName,
+                levelName: sample.levelName
+            )
+        }
+    }
+
+    private func filterLseTrendSamples(_ samples: [LSETrendSample]) -> [LSETrendSample] {
+        guard let first = samples.first else { return [] }
+
+        var acceptedSamples = [first]
+        for sample in samples.dropFirst() {
+            guard let last = acceptedSamples.last else { continue }
+
+            let dt = Float(sample.timeMs - last.timeMs) / 1000
+            guard dt > 0 else { continue }
+
+            let dx = sample.x - last.x
+            let dy = sample.y - last.y
+            let distance = sqrt(dx * dx + dy * dy)
+            let stepSpeed = distance / dt
+
+            if stepSpeed <= LSE_TREND_SPEED_MAX_STEP_SPEED_MPS {
+                acceptedSamples.append(sample)
+            }
+        }
+
+        return acceptedSamples
+    }
+
+    private func makeCumulativeDistances(from samples: [LSETrendSample]) -> [Float] {
+        guard !samples.isEmpty else { return [] }
+
+        var cumulativeDistances = [Float](repeating: 0, count: samples.count)
+        for i in 1..<samples.count {
+            let dx = samples[i].x - samples[i - 1].x
+            let dy = samples[i].y - samples[i - 1].y
+            cumulativeDistances[i] = cumulativeDistances[i - 1] + sqrt(dx * dx + dy * dy)
+        }
+
+        return cumulativeDistances
+    }
+
+    private func theilSenSlope(timeMs: [Int], distances: [Float]) -> Float? {
+        guard timeMs.count == distances.count, timeMs.count >= 2 else { return nil }
+
+        var slopes = [Float]()
+        slopes.reserveCapacity(timeMs.count * (timeMs.count - 1) / 2)
+
+        for i in 0..<(timeMs.count - 1) {
+            for j in (i + 1)..<timeMs.count {
+                let dt = Float(timeMs[j] - timeMs[i]) / 1000
+                guard dt > 0 else { continue }
+                slopes.append((distances[j] - distances[i]) / dt)
+            }
+        }
+
+        return median(of: slopes)
+    }
+
+    private func applyMedianFilter(to values: [Float], windowSize: Int) -> [Float] {
+        guard !values.isEmpty, windowSize > 1 else { return values }
+
+        let radius = windowSize / 2
+        return values.indices.map { index in
+            let lower = max(0, index - radius)
+            let upper = min(values.count - 1, index + radius)
+            return median(of: Array(values[lower...upper])) ?? values[index]
+        }
+    }
+
+    private func applyEMA(to values: [Float], alpha: Float) -> [Float] {
+        guard let first = values.first else { return [] }
+
+        var emaValues = [first]
+        emaValues.reserveCapacity(values.count)
+
+        for value in values.dropFirst() {
+            let last = emaValues[emaValues.count - 1]
+            emaValues.append((alpha * value) + ((1 - alpha) * last))
+        }
+
+        return emaValues
+    }
+
+    private func median(of values: [Float]) -> Float? {
+        guard !values.isEmpty else { return nil }
+
+        let sortedValues = values.sorted()
+        let middle = sortedValues.count / 2
+        if sortedValues.count.isMultiple(of: 2) {
+            return (sortedValues[middle - 1] + sortedValues[middle]) / 2
+        } else {
+            return sortedValues[middle]
+        }
     }
 
     private func beginSearchingDebugTrace(trigger: String,
@@ -2325,6 +2351,9 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         requestPayload: LocationRequestPayload,
         requestContext: LSERequestContext?
     ) {
+        JupiterLogger.i(
+            tag: "JupiterCalcManager",
+            message: "(didReceiveSingleEpochResult) result=\(result)")
         switch (result) {
         case .success(let success):
             let context = requestContext
@@ -2334,35 +2363,114 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
             
             let buildingId = success.location.building_id
             let levelId = success.location.level_id
-            guard let bName = getBuildingName(buildingId: buildingId), let lName = getLevelName(levelId: levelId) else { return }
+            guard let bName = getBuildingName(buildingId: buildingId), let lName = getLevelName(levelId: levelId) else {
+                JupiterLogger.i(
+                    tag: "JupiterCalcManager",
+                    message: "(didReceiveSingleEpochResult) cannot find matched b & l with \(buildingId) & \(levelId)"
+                )
+                return
+            }
             
             let x = Float(success.location.x)
             let y = Float(success.location.y)
             let h: Float = 0
 
-            let rawLSEResult = FineLocationTrackingOutput(mobile_time: currentTime,
-                                                          index: curIndex,
+            var rawLSEResult = FineLocationTrackingOutput(mobile_time: context?.mobileTime ?? currentTime,
+                                                          index: context?.index ?? curIndex,
                                                           building_name: bName,
                                                           level_name: lName,
                                                           x: x,
                                                           y: y,
                                                           absolute_heading: h)
-            self.curLSEResult = rawLSEResult
             if let param = AffineConverter.shared.getAffineParam(sectorId: self.sectorId) {
                 let magHeading = Float(latestMagneticHeading ?? 0)
                 let convertedHeading = AffineConverter.shared.convertMagHeading(magHeading: magHeading, param: param)
-                self.curLSEResult?.absolute_heading = convertedHeading
+                rawLSEResult.absolute_heading = convertedHeading
             }
+            let isValidLSE = validateLSEResult(lseResult: rawLSEResult)
+            if !isValidLSE { return }
             
+            self.curLSEResult = rawLSEResult
+            JupiterLogger.i(
+                tag: "JupiterCalcManager",
+                message: "(didReceiveSingleEpochResult) curLSEResult=\(curLSEResult)")
             updateLSEBuffer(with: rawLSEResult)
-            updateLSESnapshotBuffer(with: SingleEpochSnapshot(requestContext: context, result: rawLSEResult))
+            let curSnapshot = SingleEpochSnapshot(requestContext: context, result: rawLSEResult)
+            updateLSESnapshotBuffer(with: curSnapshot)
 
             self.debug_lse_rep_xyh = [rawLSEResult.x, rawLSEResult.y, rawLSEResult.absolute_heading]
+            if let trendSpeedEstimate = estimateLseTrendSpeed() {
+                self.debug_lse_trend_velocity = trendSpeedEstimate.velocityKmPh
+                kalmanFilter?.updateLseTrendVelocity(kmPh: trendSpeedEstimate.velocityKmPh)
+                JupiterLogger.i(
+                    tag: "JupiterCalcManager",
+                    message: "(didReceiveSingleEpochResult) lseTrendVelocity=\(trendSpeedEstimate.velocityKmPh) km/h, sampleCount=\(trendSpeedEstimate.sampleCount), durationMs=\(trendSpeedEstimate.durationMs), netDisplacement=\(trendSpeedEstimate.netDisplacement), pathLength=\(trendSpeedEstimate.pathLength)"
+                )
+            } else {
+                self.debug_lse_trend_velocity = nil
+                JupiterLogger.i(
+                    tag: "JupiterCalcManager",
+                    message: "(didReceiveSingleEpochResult) lseTrendVelocity unavailable, snapshotCount=\(self.lseSnapshotBuffer.count)"
+                )
+            }
         case .noLocation(let noLocation):
             JupiterLogger.w(tag: "JupiterCalcManager", message: "(didReceiveSingleEpochResult) : noLocation -> \(noLocation.response.message)")
         case .failure(let failure):
             JupiterLogger.w(tag: "JupiterCalcManager", message: "(didReceiveSingleEpochResult) : failure -> \(failure.statusCode), \(failure.message)")
         }
+    }
+    
+    private func validateLSEResult(lseResult: FineLocationTrackingOutput) -> Bool {
+        if jupiterPhase != .TRACKING { return true }
+        guard let curLSEResult = self.curLSEResult else {
+            invalidLseCount = 0
+            return true
+        }
+
+        let isSameBuildingLevel = curLSEResult.building_name == lseResult.building_name &&
+                                  curLSEResult.level_name == lseResult.level_name
+        let deltaTimeMs = lseResult.mobile_time - curLSEResult.mobile_time
+
+        let isValid: Bool = {
+            guard isSameBuildingLevel, deltaTimeMs > 0 else {
+                return false
+            }
+
+            let deltaTimeSec = Float(deltaTimeMs) / 1000
+            let dx = lseResult.x - curLSEResult.x
+            let dy = lseResult.y - curLSEResult.y
+            let jumpDistance = sqrt(dx * dx + dy * dy)
+            let maxSpeedMps: Float = curUserModeEnum == .MODE_PEDESTRIAN
+                ? LSE_VALIDATE_MAX_SPEED_MPS_PEDESTRIAN
+                : LSE_VALIDATE_MAX_SPEED_MPS_VEHICLE
+            let allowedDistance = LSE_VALIDATE_BASE_DISTANCE + (maxSpeedMps * deltaTimeSec)
+
+            JupiterLogger.i(
+                tag: "JupiterCalcManager",
+                message: "(validateLSEResult) dtMs=\(deltaTimeMs), jumpDistance=\(jumpDistance), allowedDistance=\(allowedDistance), cur=[\(curLSEResult.x), \(curLSEResult.y), \(curLSEResult.building_name), \(curLSEResult.level_name)], new=[\(lseResult.x), \(lseResult.y), \(lseResult.building_name), \(lseResult.level_name)]"
+            )
+
+            return jumpDistance <= allowedDistance
+        }()
+
+        if isValid {
+            invalidLseCount = 0
+            return true
+        }
+
+        invalidLseCount += 1
+        let shouldForceAccept = invalidLseCount >= LSE_VALIDATE_FORCE_ACCEPT_COUNT
+        JupiterLogger.i(
+            tag: "JupiterCalcManager",
+            message: "(validateLSEResult) invalidLseCount=\(invalidLseCount), shouldForceAccept=\(shouldForceAccept), deltaTimeMs=\(deltaTimeMs), sameBuildingLevel=\(isSameBuildingLevel)"
+        )
+
+        if shouldForceAccept {
+            invalidLseCount = 0
+            return true
+        }
+
+        return false
     }
     
     private func normalizedHeading(_ heading: Float) -> Float {

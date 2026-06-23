@@ -188,14 +188,19 @@ class CardViewController: UIViewController, NavigationManagerDelegate {
 //                                      uvdFileName: "20260610_songdo_test3_uvd.json",
 //                                      eventFileName: "20260610_songdo_test3_event.json")
         
-//        serviceManager?.setReplayMode(flag: true, rfdFileName: "20260615_songdo_test3_rfd.json",
-//                                      uvdFileName: "20260615_songdo_test3_uvd.json",
-//                                      eventFileName: "20260615_songdo_test3_event.json")
+        serviceManager?.setReplayMode(flag: true, rfdFileName: "20260615_songdo_test3_rfd.json",
+                                      uvdFileName: "20260615_songdo_test3_uvd.json",
+                                      eventFileName: "20260615_songdo_test3_event.json")
         
-        serviceManager?.setReplayMode(flag: true, rfdFileName: "20260617_songdo_test6_rfd.json",
-                                      uvdFileName: "20260617_songdo_test6_uvd.json",
-                                      eventFileName: "20260617_songdo_test6_event.json")
+//        serviceManager?.setReplayMode(flag: true, rfdFileName: "20260617_songdo_test8_rfd.json",
+//                                      uvdFileName: "20260617_songdo_test8_uvd.json",
+//                                      eventFileName: "20260617_songdo_test8_event.json")
+        
+//        serviceManager?.setReplayMode(flag: true, rfdFileName: "20260617_songdo_km_test1-2_rfd.json",
+//                                      uvdFileName: "20260617_songdo_km_test1-2_uvd.json",
+//                                      eventFileName: "20260617_songdo_km_test1-2_event.json")
         // service
+        
 //        serviceManager.addObserver(self)
 //        serviceManager.setDebugOption(flag: true)
 //        serviceManager.setDebugOption(flag: true)

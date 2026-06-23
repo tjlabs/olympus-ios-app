@@ -2076,6 +2076,35 @@
           },
           {
             "kind": "Function",
+            "name": "createImportDirectory",
+            "printedName": "createImportDirectory()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Foundation.URL?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "URL",
+                    "printedName": "Foundation.URL",
+                    "usr": "s:10Foundation3URLV"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:12TJLabsCommon18JupiterFileManagerC21createImportDirectory10Foundation3URLVSgyF",
+            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC21createImportDirectory10Foundation3URLVSgyF",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
             "name": "createFiles",
             "printedName": "createFiles(externalName:tenantUserName:)",
             "children": [
@@ -2563,6 +2592,48 @@
             "declKind": "Func",
             "usr": "s:12TJLabsCommon18JupiterFileManagerC8writeUVD3uvd4modeyAA12UserVelocityV_AA0J4ModeOtF",
             "mangledName": "$s12TJLabsCommon18JupiterFileManagerC8writeUVD3uvd4modeyAA12UserVelocityV_AA0J4ModeOtF",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "getRfdStartTime",
+            "printedName": "getRfdStartTime()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:12TJLabsCommon18JupiterFileManagerC15getRfdStartTimeSiyF",
+            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC15getRfdStartTimeSiyF",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "getUvdStartTime",
+            "printedName": "getUvdStartTime()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:12TJLabsCommon18JupiterFileManagerC15getUvdStartTimeSiyF",
+            "mangledName": "$s12TJLabsCommon18JupiterFileManagerC15getUvdStartTimeSiyF",
             "moduleName": "TJLabsCommon",
             "declAttributes": [
               "AccessControl"
@@ -6838,6 +6909,32 @@
           },
           {
             "kind": "Function",
+            "name": "updateVelocityMax",
+            "printedName": "updateVelocityMax(kmh:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Double",
+                "printedName": "Swift.Double",
+                "usr": "s:Sd"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:12TJLabsCommon12UVDGeneratorC17updateVelocityMax3kmhySd_tF",
+            "mangledName": "$s12TJLabsCommon12UVDGeneratorC17updateVelocityMax3kmhySd_tF",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
             "name": "updateDrVelocityScale",
             "printedName": "updateDrVelocityScale(scale:)",
             "children": [
@@ -6856,6 +6953,32 @@
             "declKind": "Func",
             "usr": "s:12TJLabsCommon12UVDGeneratorC21updateDrVelocityScale5scaleySd_tF",
             "mangledName": "$s12TJLabsCommon12UVDGeneratorC21updateDrVelocityScale5scaleySd_tF",
+            "moduleName": "TJLabsCommon",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "updateLseTrendVelocity",
+            "printedName": "updateLseTrendVelocity(kmh:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Double",
+                "printedName": "Swift.Double",
+                "usr": "s:Sd"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:12TJLabsCommon12UVDGeneratorC22updateLseTrendVelocity3kmhySd_tF",
+            "mangledName": "$s12TJLabsCommon12UVDGeneratorC22updateLseTrendVelocity3kmhySd_tF",
             "moduleName": "TJLabsCommon",
             "declAttributes": [
               "AccessControl"
@@ -8776,7 +8899,6 @@
               "HasStorage",
               "AccessControl"
             ],
-            "isLet": true,
             "hasStorage": true,
             "accessors": [
               {
@@ -8797,6 +8919,48 @@
                 "moduleName": "TJLabsCommon",
                 "implicit": true,
                 "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Double",
+                    "printedName": "Swift.Double",
+                    "usr": "s:Sd"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12TJLabsCommon12UserVelocityV6lengthSdvs",
+                "mangledName": "$s12TJLabsCommon12UserVelocityV6lengthSdvs",
+                "moduleName": "TJLabsCommon",
+                "implicit": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12TJLabsCommon12UserVelocityV6lengthSdvM",
+                "mangledName": "$s12TJLabsCommon12UserVelocityV6lengthSdvM",
+                "moduleName": "TJLabsCommon",
+                "implicit": true,
+                "accessorKind": "_modify"
               }
             ]
           },
@@ -8820,7 +8984,6 @@
               "HasStorage",
               "AccessControl"
             ],
-            "isLet": true,
             "hasStorage": true,
             "accessors": [
               {
@@ -8841,6 +9004,48 @@
                 "moduleName": "TJLabsCommon",
                 "implicit": true,
                 "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Double",
+                    "printedName": "Swift.Double",
+                    "usr": "s:Sd"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12TJLabsCommon12UserVelocityV7headingSdvs",
+                "mangledName": "$s12TJLabsCommon12UserVelocityV7headingSdvs",
+                "moduleName": "TJLabsCommon",
+                "implicit": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12TJLabsCommon12UserVelocityV7headingSdvM",
+                "mangledName": "$s12TJLabsCommon12UserVelocityV7headingSdvM",
+                "moduleName": "TJLabsCommon",
+                "implicit": true,
+                "accessorKind": "_modify"
               }
             ]
           },
@@ -13105,28 +13310,42 @@
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 1166,
+      "offset": 1154,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1184,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1226,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
       "kind": "BooleanLiteral",
-      "offset": 1240,
+      "offset": 1300,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
       "kind": "StringLiteral",
-      "offset": 1447,
+      "offset": 1507,
       "length": 9,
       "value": "\"UNKNOWN\""
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/Simulation\/JupiterFileManager.swift",
       "kind": "StringLiteral",
-      "offset": 1490,
+      "offset": 1550,
       "length": 9,
       "value": "\"UNKNOWN\""
     },
@@ -14679,218 +14898,232 @@
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
-      "kind": "IntegerLiteral",
+      "kind": "FloatLiteral",
       "offset": 148,
-      "length": 2,
-      "value": "18"
+      "length": 4,
+      "value": "16.2"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "FloatLiteral",
-      "offset": 196,
+      "offset": 203,
+      "length": 3,
+      "value": "8.0"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
+      "kind": "FloatLiteral",
+      "offset": 252,
       "length": 4,
       "value": "0.67"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "FloatLiteral",
-      "offset": 251,
+      "offset": 307,
       "length": 3,
       "value": "1.0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "IntegerLiteral",
-      "offset": 337,
+      "offset": 393,
       "length": 1,
       "value": "2"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "IntegerLiteral",
-      "offset": 361,
+      "offset": 447,
+      "length": 4,
+      "value": "3000"
+    },
+    {
+      "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
+      "kind": "IntegerLiteral",
+      "offset": 473,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "IntegerLiteral",
-      "offset": 734,
+      "offset": 846,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "FloatLiteral",
-      "offset": 772,
+      "offset": 884,
       "length": 3,
       "value": "0.0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "FloatLiteral",
-      "offset": 806,
+      "offset": 918,
       "length": 3,
       "value": "0.0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "FloatLiteral",
-      "offset": 837,
+      "offset": 949,
       "length": 3,
       "value": "0.0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "FloatLiteral",
-      "offset": 872,
+      "offset": 984,
       "length": 3,
       "value": "0.0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "FloatLiteral",
-      "offset": 905,
+      "offset": 1017,
       "length": 3,
       "value": "1.0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "FloatLiteral",
-      "offset": 941,
+      "offset": 1132,
       "length": 3,
       "value": "1.0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "FloatLiteral",
-      "offset": 970,
+      "offset": 1161,
       "length": 3,
       "value": "1.0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "FloatLiteral",
-      "offset": 997,
+      "offset": 1188,
       "length": 3,
       "value": "0.0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "FloatLiteral",
-      "offset": 1020,
+      "offset": 1211,
       "length": 3,
       "value": "0.0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "FloatLiteral",
-      "offset": 1047,
+      "offset": 1238,
       "length": 3,
       "value": "0.0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "FloatLiteral",
-      "offset": 1070,
+      "offset": 1261,
       "length": 3,
       "value": "0.0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "IntegerLiteral",
-      "offset": 1099,
+      "offset": 1290,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "IntegerLiteral",
-      "offset": 1136,
+      "offset": 1327,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "IntegerLiteral",
-      "offset": 1173,
+      "offset": 1364,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "BooleanLiteral",
-      "offset": 1213,
+      "offset": 1404,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "BooleanLiteral",
-      "offset": 1265,
+      "offset": 1456,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "BooleanLiteral",
-      "offset": 1317,
+      "offset": 1508,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "BooleanLiteral",
-      "offset": 1357,
+      "offset": 1548,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "FloatLiteral",
-      "offset": 1405,
+      "offset": 1596,
       "length": 4,
       "value": "0.12"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "FloatLiteral",
-      "offset": 1448,
+      "offset": 1639,
       "length": 4,
       "value": "0.03"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "FloatLiteral",
-      "offset": 1494,
+      "offset": 1685,
       "length": 5,
       "value": "0.005"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "FloatLiteral",
-      "offset": 1542,
+      "offset": 1733,
       "length": 5,
       "value": "0.001"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "FloatLiteral",
-      "offset": 1579,
+      "offset": 1770,
       "length": 4,
       "value": "0.20"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "FloatLiteral",
-      "offset": 1616,
+      "offset": 1807,
       "length": 4,
       "value": "0.05"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/DR\/TJLabsDRDistanceEstimator.swift",
       "kind": "IntegerLiteral",
-      "offset": 1766,
+      "offset": 1957,
       "length": 2,
       "value": "40"
     },
@@ -15429,28 +15662,28 @@
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/UVDGenerator.swift",
       "kind": "IntegerLiteral",
-      "offset": 3676,
+      "offset": 3912,
       "length": 1,
       "value": "2"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/UVDGenerator.swift",
       "kind": "FloatLiteral",
-      "offset": 4069,
+      "offset": 4305,
       "length": 3,
       "value": "0.6"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/UVDGenerator.swift",
       "kind": "FloatLiteral",
-      "offset": 4101,
+      "offset": 4337,
       "length": 3,
       "value": "0.5"
     },
     {
       "filePath": "\/Users\/leo\/SwiftProjects\/Frameworks\/TJLabsCommon-sdk-ios\/TJLabsCommon\/UVD\/UVDGenerator.swift",
       "kind": "FloatLiteral",
-      "offset": 4133,
+      "offset": 4369,
       "length": 3,
       "value": "0.7"
     },

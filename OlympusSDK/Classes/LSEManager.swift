@@ -12,9 +12,9 @@ class LSEManager: RFDGeneratorDelegate {
     private let payloadWindowMillis = 5_000
     private var rfdBuffer: [ReceivedForce] = []
     private var postTimer: Timer?
-
+    private var timeOffset: Int = 0
+    
     func onRfdResult(_ generator: TJLabsCommon.RFDGenerator, receivedForce: TJLabsCommon.ReceivedForce) {
-        if !mockMode { JupiterFileManager.shared.writeRFD(rfd: receivedForce) }
         appendRfdToBuffer(receivedForce)
     }
     
@@ -39,6 +39,7 @@ class LSEManager: RFDGeneratorDelegate {
     var mockMode: Bool = false
     
     var resourceManager: TJLabsResourceManager?
+    var curUvd: UserVelocity?
     var curPmResult: FineLocationTrackingOutput?
     var curLSEResult: FineLocationTrackingOutput?
     
@@ -69,12 +70,22 @@ class LSEManager: RFDGeneratorDelegate {
     }
     
     func startService() {
+        if JupiterReplayer.shared.replayMode {
+            let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
+            let replayServiceStartTime = JupiterFileManager.shared.getServiceStartTime()
+            self.timeOffset = currentTime - replayServiceStartTime
+        }
         startPostTimer()
     }
     
     func stopService() {
         stopPostTimer()
         clearRfdBuffer()
+    }
+    
+    func updateCurUvd(userVelocity: UserVelocity) {
+        self.curUvd = userVelocity
+        JupiterLogger.i(tag: "LSEManager", message: "(updateCurUvd) : uvd= \(userVelocity.index)")
     }
     
     func updateCurPmResult(curPmResult: FineLocationTrackingOutput) {
@@ -86,15 +97,15 @@ class LSEManager: RFDGeneratorDelegate {
     }
 
     private func handlePostTimerTick() {
-        guard let request = makeBufferedRequestForLastFiveSeconds(curPmResult: self.curPmResult) else {
+        guard let request = makeBufferedRequestForLastFiveSeconds(curUvd: self.curUvd, curPmResult: self.curPmResult) else {
             return
         }
 
         JupiterNetworkManager.shared.postLSE(url: JupiterNetworkConstants.getLocationSingleEpochURL(), input: request.payload) { statusCode, returnedString, requestPayload in
-//            LSELogger.i(
-//                tag: "LSEManager",
-//                message: "(postLSE) statusCode=\(statusCode), sectorId=\(requestPayload.sector_code), buildingId=\(requestPayload.building_code), requestContext=\(request.context), response=\(returnedString)"
-//            )
+            LSELogger.i(
+                tag: "LSEManager",
+                message: "(postLSE) statusCode=\(statusCode), sectorId=\(requestPayload.sector_code), buildingId=\(requestPayload.building_code), requestContext=\(request.context), response=\(returnedString)"
+            )
 
             let result = self.makeSingleEpochResult(
                 statusCode: statusCode,
@@ -156,10 +167,10 @@ class LSEManager: RFDGeneratorDelegate {
         }
     }
 
-    private func makeBufferedRequestForLastFiveSeconds(curPmResult: FineLocationTrackingOutput?) -> (payload: LocationRequestPayload, context: LSERequestContext?)? {
+    private func makeBufferedRequestForLastFiveSeconds(curUvd: UserVelocity?, curPmResult: FineLocationTrackingOutput?) -> (payload: LocationRequestPayload, context: LSERequestContext?)? {
         guard let resourceManager = self.resourceManager else { return nil }
         var requestContext: LSERequestContext?
-        if let curPmResult = curPmResult {
+        if let curUvd = curUvd, let curPmResult = curPmResult {
             if let buildingId = resourceManager.getBuildingId(buildingName: curPmResult.building_name),
                let levelId = resourceManager.getLevelId(
                 sectorId: self.sectorId,
@@ -167,7 +178,8 @@ class LSEManager: RFDGeneratorDelegate {
                 levelName: curPmResult.level_name
             ) {
                 requestContext = LSERequestContext(
-                    index: curPmResult.index,
+                    index: curUvd.index,
+                    mobileTime: curUvd.mobile_time,
                     buildingName: curPmResult.building_name,
                     buildingId: buildingId,
                     levelName: curPmResult.level_name,
@@ -179,7 +191,7 @@ class LSEManager: RFDGeneratorDelegate {
                 JupiterLogger.i(tag: "LSEManager", message: "(makeBufferedRequestForLastFiveSeconds) getBuildingId is nil , getLevelId is nil")
             }
         } else {
-            if let curLSEResult = self.curLSEResult {
+            if let curUvd = curUvd, let curLSEResult = self.curLSEResult {
                 if let buildingId = resourceManager.getBuildingId(buildingName: curLSEResult.building_name),
                    let levelId = resourceManager.getLevelId(
                     sectorId: self.sectorId,
@@ -187,7 +199,8 @@ class LSEManager: RFDGeneratorDelegate {
                     levelName: curLSEResult.level_name
                 ) {
                     requestContext = LSERequestContext(
-                        index: curLSEResult.index,
+                        index: curUvd.index,
+                        mobileTime: curLSEResult.mobile_time,
                         buildingName: curLSEResult.building_name,
                         buildingId: buildingId,
                         levelName: curLSEResult.level_name,
@@ -212,7 +225,8 @@ class LSEManager: RFDGeneratorDelegate {
                 .filter { $0.mobile_time >= windowStart && $0.mobile_time <= currentTime }
                 .flatMap { rfd in
                     rfd.rfs.map { key, value in
-                        LSEMeas(timestamp: rfd.mobile_time, ward_name: key, rssi: Int(value))
+                        let timestamp = JupiterReplayer.shared.replayMode ? (rfd.mobile_time - self.timeOffset) : rfd.mobile_time
+                        return LSEMeas(timestamp: timestamp, ward_name: key, rssi: Int(value))
                     }
                 }
 

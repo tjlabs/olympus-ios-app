@@ -275,13 +275,13 @@ class EntranceManager {
         var finalResult = baseResult
 
         let snapshots = getEnteringSingleEpochSnapshotsFor(lseSnapshotBuffer: lseSnapshotBuffer, buildingName: baseResult.building_name)
-        if snapshots.count < ENTERING_LSE_BUFFER_SIZE {
+        if snapshots.count < ENTERING_LSE_BUFFER_SIZE_JUDGE {
             logSkip(
                 "insufficient matched LSE snapshots",
                 buildingName: baseResult.building_name,
                 levelName: baseResult.level_name,
                 matchedSnapshotCount: snapshots.count,
-                extra: "requiredSnapshotCount=\(ENTERING_LSE_BUFFER_SIZE)"
+                extra: "requiredSnapshotCount=\(ENTERING_LSE_BUFFER_SIZE_JUDGE)"
             )
             return nil
         }
@@ -369,20 +369,6 @@ class EntranceManager {
             x: firstSnapshot.result.x,
             y: firstSnapshot.result.y
         ))
-        
-//        guard let firstContext = snapshots[0].requestContext, let lastContext = snapshots[snapshots.count-1].requestContext else { return nil }
-//        let contextDx = lastContext.x - firstContext.x
-//        let contextDy = lastContext.y - firstContext.y
-//        let displacement = sqrt(contextDx * contextDx + contextDy * contextDy)
-//        JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) contextDx= \(contextDx), contextDy= \(contextDy)")
-//        JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) displacement= \(displacement)")
-//        guard displacement >= 5 else { return nil }
-//        let contextHeadingRadian = atan2(Double(contextDy), Double(contextDx))
-//        let contextHeadingDegree = TJLabsUtilFunctions.shared.radian2degree(radian: contextHeadingRadian)
-//        let hChecker = PathMatcher.shared.adjustHeading(Float(contextHeadingDegree), lseTrendHeading)
-//        JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) contextHeadingDegree= \(contextHeadingDegree)")
-//        JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) hChecker= \(hChecker)")
-//        if hChecker > 46 { return nil }
         
         var lastAlignedHeading = lseTrendHeading
         JupiterLogger.i(tag: "EntranceManager", message: "(maybePromoteEnteringToTrackingUsingLse) lastAlignedHeading= \(lastAlignedHeading)")

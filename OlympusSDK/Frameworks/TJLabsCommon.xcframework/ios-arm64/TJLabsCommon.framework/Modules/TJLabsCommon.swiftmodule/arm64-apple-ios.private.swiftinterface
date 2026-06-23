@@ -92,6 +92,9 @@ public struct ReplayUserVelocity {
   #if compiler(>=5.3) && $NonescapableTypes
   public func createExportDirectory() -> Foundation.URL?
   #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func createImportDirectory() -> Foundation.URL?
+  #endif
   public func createFiles(externalName: Swift.String, tenantUserName: Swift.String)
   public func getReplayFilesInExports() -> (rfdFiles: [(name: Swift.String, path: Swift.String)], uvdFiles: [(name: Swift.String, path: Swift.String)], eventFiles: [(name: Swift.String, path: Swift.String)])
   @discardableResult
@@ -103,6 +106,8 @@ public struct ReplayUserVelocity {
   public func writeEvent(event: TJLabsCommon.JupiterEvent)
   public func writeRFD(rfd: TJLabsCommon.ReceivedForce)
   public func writeUVD(uvd: TJLabsCommon.UserVelocity, mode: TJLabsCommon.UserMode)
+  public func getRfdStartTime() -> Swift.Int
+  public func getUvdStartTime() -> Swift.Int
   public func getServiceStartTime() -> Swift.Int
   #if compiler(>=5.3) && $NonescapableTypes
   public func getResultTimeOffset() -> Swift.Int?
@@ -286,7 +291,9 @@ public enum TimeFormat {
   public func setIsStartRouteTrack(isStartRoutTrack: Swift.Bool)
   public func setIsBackground(isBackground: Swift.Bool)
   public func setUserMode(mode: TJLabsCommon.UserMode)
+  public func updateVelocityMax(kmh: Swift.Double)
   public func updateDrVelocityScale(scale: Swift.Double)
+  public func updateLseTrendVelocity(kmh: Swift.Double)
   public func checkIsAvailableUvd() -> (Swift.Bool, Swift.String)
   public func generateUvd(defaultPDRStepLength: Swift.Double = 0.6, minPDRStepLength: Swift.Double = 0.5, maxPDRStepLength: Swift.Double = 0.7)
   public func stopUvdGeneration()
@@ -314,8 +321,8 @@ public struct UserVelocity : Swift.Encodable {
   public let tenant_user_name: Swift.String
   public let mobile_time: Swift.Int
   public let index: Swift.Int
-  public let length: Swift.Double
-  public let heading: Swift.Double
+  public var length: Swift.Double
+  public var heading: Swift.Double
   public let looking: Swift.Bool
   public init(tenant_user_name: Swift.String, mobile_time: Swift.Int, index: Swift.Int, length: Swift.Double, heading: Swift.Double, looking: Swift.Bool)
   public func encode(to encoder: any Swift.Encoder) throws

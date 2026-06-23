@@ -6,7 +6,7 @@ class StackManager {
     init() { }
     
     private let LSE_DIST_THRESHOLD: Float = 50
-    private let SAME_COORD_THRESHOLD: Int = 20
+    private let SAME_COORD_THRESHOLD: Int = 35
     
     private let DR_BUFFER_SIZE: Int = 200
     private let PEAK_BUILDING_LEVEL_BUFFER_SIZE: Int = 5
@@ -182,6 +182,27 @@ class StackManager {
                     newResult.x = pm.x
                     newResult.y = pm.y
                     newResult.absolute_heading = pm.heading
+                    
+                    if newResult.x == preResult.x && newResult.y == preResult.y {
+                        if let _ = PathMatcher.shared.getMatchedNodeWithCoord(sectorId: sectorId, fltResult: newResult, originCoord: [newResult.x, newResult.y], coordToCheck: [newResult.x, newResult.y], paddingValues: [1, 1, 1, 1]) {
+                        } else {
+                            guard let rePm = PathMatcher.shared.pathMatching(
+                                sectorId: sectorId,
+                                building: result.building_name,
+                                level: result.level_name,
+                                x: traj.x, y: traj.y, heading: traj.heading,
+                                isUseHeading: true,
+                                mode: mode,
+                                paddingValues: paddings,
+                                axisConstraint: axisConstraint
+                            ) else {
+                                return result
+                            }
+                            newResult.x = rePm.x
+                            newResult.y = rePm.y
+                            newResult.absolute_heading = rePm.heading
+                        }
+                    }
                 }
                 preResult = newResult
 
@@ -243,14 +264,21 @@ class StackManager {
     ) -> FineLocationTrackingOutput {
         if let shifteTraj = shifteTraj {
             let trajByIndex = Dictionary(uniqueKeysWithValues: shifteTraj.map { ($0.index, $0) })
-            
+            JupiterLogger.i(tag: "StackManager", message: "(editCurPmResultBuffer) trajByIndex \(trajByIndex)")
             var preResult = curPmResultBuffer[curPmResultBuffer.count-1]
             curPmResultBuffer = curPmResultBuffer.map { result in
-                guard result.index >= from else { return result }
-                guard let traj = trajByIndex[result.index] else { return result }
+                guard result.index >= from else {
+                    JupiterLogger.i(tag: "StackManager", message: "(editCurPmResultBuffer) result.index= \(result.index), from= \(from)")
+                    return result
+                }
+                guard let traj = trajByIndex[result.index] else {
+                    JupiterLogger.i(tag: "StackManager", message: "(editCurPmResultBuffer) cannot find traj with result.index \(result.index)")
+                    return result
+                }
                 
                 var newResult = result
                 if result.index == from {
+                    JupiterLogger.i(tag: "StackManager", message: "(editCurPmResultBuffer) pm input xyh:[\(traj.x),\(traj.y),\(traj.heading)]")
                     guard let pm = PathMatcher.shared.pathMatching(
                         sectorId: sectorId,
                         building: result.building_name,
@@ -260,20 +288,27 @@ class StackManager {
                         mode: mode,
                         paddingValues: paddings,
                         axisConstraint: axisConstraint
-                    ) else { return result }
+                    ) else {
+                        JupiterLogger.i(tag: "StackManager", message: "(editCurPmResultBuffer) pm failed")
+                        return result
+                    }
                     
                     newResult.x = pm.x
                     newResult.y = pm.y
                     newResult.absolute_heading = pm.heading
+                    JupiterLogger.i(tag: "StackManager", message: "(editCurPmResultBuffer) newResult:[\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]")
                 } else {
                     let preIndex = result.index - 1
                     guard let preTraj = trajByIndex[preIndex] else { return result }
+                    JupiterLogger.i(tag: "StackManager", message: "(editCurPmResultBuffer) index:\(preTraj.index), preTraj:[\(preTraj.x),\(preTraj.y),\(preTraj.heading)]")
+                    JupiterLogger.i(tag: "StackManager", message: "(editCurPmResultBuffer) index:\(preTraj.index), curTraj:[\(traj.x),\(traj.y),\(traj.heading)]")
+                    
                     let dx = traj.x - preTraj.x
                     let dy = traj.y - preTraj.y
-                    
+                    JupiterLogger.i(tag: "StackManager", message: "(editCurPmResultBuffer) dxdy:[\(dx),\(dy),\(traj.heading)]")
                     let newX = preResult.x + dx
                     let newY = preResult.y + dy
-                    
+                    JupiterLogger.i(tag: "StackManager", message: "(editCurPmResultBuffer) pm input xyh:[\(newX),\(newY),\(traj.heading)]")
                     guard let pm = PathMatcher.shared.pathMatching(
                         sectorId: sectorId,
                         building: result.building_name,
@@ -283,11 +318,40 @@ class StackManager {
                         mode: mode,
                         paddingValues: paddings,
                         axisConstraint: axisConstraint
-                    ) else { return result }
+                    ) else {
+                        JupiterLogger.i(tag: "StackManager", message: "(editCurPmResultBuffer) pm failed")
+                        return result
+                    }
                     
                     newResult.x = pm.x
                     newResult.y = pm.y
                     newResult.absolute_heading = pm.heading
+                    JupiterLogger.i(tag: "StackManager", message: "(editCurPmResultBuffer) newResult:[\(newResult.x),\(newResult.y),\(newResult.absolute_heading)]")
+                    
+                    JupiterLogger.i(tag: "StackManager", message: "(editCurPmResultBuffer) preResult [\(preResult.x),\(preResult.y)]")
+                    if newResult.x == preResult.x && newResult.y == preResult.y {
+                        JupiterLogger.i(tag: "StackManager", message: "(editCurPmResultBuffer) pre and new is same with [\(newResult.x),\(newResult.y)]")
+                        if let _ = PathMatcher.shared.getMatchedNodeWithCoord(sectorId: sectorId, fltResult: newResult, originCoord: [newResult.x, newResult.y], coordToCheck: [newResult.x, newResult.y], paddingValues: [1, 1, 1, 1]) {
+                            JupiterLogger.i(tag: "StackManager", message: "(editCurPmResultBuffer) [\(newResult.x),\(newResult.y)] is in node")
+                        } else {
+                            JupiterLogger.i(tag: "StackManager", message: "(editCurPmResultBuffer) new pm input xyh:[\(traj.x),\(traj.y),\(traj.heading)]")
+                            guard let rePm = PathMatcher.shared.pathMatching(
+                                sectorId: sectorId,
+                                building: result.building_name,
+                                level: result.level_name,
+                                x: traj.x, y: traj.y, heading: traj.heading,
+                                isUseHeading: true,
+                                mode: mode,
+                                paddingValues: paddings,
+                                axisConstraint: axisConstraint
+                            ) else {
+                                return result
+                            }
+                            newResult.x = rePm.x
+                            newResult.y = rePm.y
+                            newResult.absolute_heading = rePm.heading
+                        }
+                    }
                 }
                 preResult = newResult
 
@@ -476,13 +540,13 @@ class StackManager {
             uvdRawHeading.append(Float(value.heading))
         }
         let headingLeastChangeSection = extractSectionWithLeastChange(inputArray: uvdRawHeading, requiredSize: requiredSize)
-        return headingLeastChangeSection.isEmpty ? false : true
+        return headingLeastChangeSection.0.isEmpty ? false : true
     }
     
-    func extractSectionWithLeastChange(inputArray: [Float], requiredSize: Int = 7) -> [Float] {
+    func extractSectionWithLeastChange(inputArray: [Float], requiredSize: Int = 7) -> ([Float], Int, Int) {
         var resultArray = [Float]()
         guard inputArray.count > requiredSize else {
-            return []
+            return ([], 0, 0)
         }
         
         var compensatedArray = [Double] (repeating: 0, count: inputArray.count)
@@ -506,9 +570,9 @@ class StackManager {
         
         resultArray = Array(inputArray[bestSliceStartIndex...bestSliceEndIndex])
         if resultArray.count > requiredSize {
-            return resultArray
+            return (resultArray, bestSliceStartIndex, bestSliceEndIndex)
         } else {
-            return []
+            return ([], 0, 0)
         }
     }
 }
