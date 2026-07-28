@@ -18,8 +18,7 @@ class EntranceManager {
     
     deinit { }
     
-    private let ENTERING_LSE_BUFFER_SIZE = 10
-    private let ENTERING_LSE_BUFFER_SIZE_JUDGE = 7
+    private let ENTERING_LSE_BUFFER_SIZE = 7
     private let ENTERING_LSE_MAX_STEP_DISTANCE: Float = 30
     private let ENTERING_LSE_MAX_PATH_LENGTH_DIFF: Float = 25
     private let ENTERING_LSE_MIN_DISPLACEMENT: Float = 3
@@ -275,13 +274,13 @@ class EntranceManager {
         var finalResult = baseResult
 
         let snapshots = getEnteringSingleEpochSnapshotsFor(lseSnapshotBuffer: lseSnapshotBuffer, buildingName: baseResult.building_name)
-        if snapshots.count < ENTERING_LSE_BUFFER_SIZE_JUDGE {
+        if snapshots.count < ENTERING_LSE_BUFFER_SIZE {
             logSkip(
                 "insufficient matched LSE snapshots",
                 buildingName: baseResult.building_name,
                 levelName: baseResult.level_name,
                 matchedSnapshotCount: snapshots.count,
-                extra: "requiredSnapshotCount=\(ENTERING_LSE_BUFFER_SIZE_JUDGE)"
+                extra: "requiredSnapshotCount=\(ENTERING_LSE_BUFFER_SIZE)"
             )
             return nil
         }
@@ -545,7 +544,7 @@ class EntranceManager {
         lseSnapshotBuffer: [SingleEpochSnapshot],
         buildingName: String
     ) -> [SingleEpochSnapshot] {
-        Array(lseSnapshotBuffer.suffix(ENTERING_LSE_BUFFER_SIZE_JUDGE)).filter {
+        Array(lseSnapshotBuffer.suffix(ENTERING_LSE_BUFFER_SIZE)).filter {
             $0.result.building_name == buildingName
         }
     }
@@ -553,7 +552,7 @@ class EntranceManager {
     private func resolveEnteringLseTrendHeading(lseSnapshotBuffer: [SingleEpochSnapshot], buildingName: String, levelName: String) -> (startIndex: Int, endIndex: Int, trendHeading: Float)? {
         let snapshots = lseSnapshotBuffer
         JupiterLogger.i(tag: "EntranceManager", message: "(resolveEnteringLseTrendHeading) snapshots.count = \(snapshots.count)")
-        if snapshots.count < ENTERING_LSE_BUFFER_SIZE_JUDGE {
+        if snapshots.count < ENTERING_LSE_BUFFER_SIZE {
             return nil
         }
         

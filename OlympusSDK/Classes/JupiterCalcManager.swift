@@ -52,7 +52,7 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
     private let AVG_BUFFER_SIZE = 2
     private let LSE_RESULT_BUFFER_SIZE = 10
     private let LSE_SEARCH_BUFFER_SIZE = 5
-    private let LSE_SNAPSHOT_BUFFER_SIZE = 10
+    private let LSE_SNAPSHOT_BUFFER_SIZE = 7
     private let LSE_TREND_SPEED_BUFFER_SIZE = 30
     private let LSE_REPRESENTATIVE_CLUSTER_SIZE = 3
     private let LSE_HEADING_MIN_DISTANCE: Float = 1.0
@@ -816,48 +816,57 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
             }
         }
         
-        if jupiterPhase == .ENTERING {
-            var forceStop = false
-            let uvdBuffer = stackManager.getUvdBuffer(from: uvd.index-50)
-            let extractedSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBuffer.map{ Float($0.heading) })
-            let majorSection = extractedSection.0
-            forceStop = majorSection.isEmpty
-            
-            let snapshotBuffer = getLSESnapshotBuffer(lastN: LSE_SNAPSHOT_BUFFER_SIZE)
-            if !forceStop, let promotedResult = entManager.maybePromoteEnteringToTrackingUsingLse(curResult: curResult, uvd: uvd, uvdBuffer: uvdBuffer, lseSnapshotBuffer: snapshotBuffer, majorSection: majorSection) {
-                JupiterLogger.i(tag: "JupiterCalcManager", message: "(startEntranceTracking) maybePromoteEnteringToTrackingUsingLse : promotedResult=[\(promotedResult.index), \(promotedResult.x), \(promotedResult.y), \(promotedResult.absolute_heading)]")
-                let uvdBufferForStopEntTrack = stackManager.getUvdBuffer(from: promotedResult.index)
-                if let ixyhs = stackManager.propagateUsingUvd(uvdBuffer: uvdBufferForStopEntTrack, fltResult: promotedResult) {
-                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(startEntranceTracking) propagateUsingUvd : curIndex= \(uvd.index)")
-                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(startEntranceTracking) propagateUsingUvd : ixyhs=[\(ixyhs.x), \(ixyhs.y), \(ixyhs.heading)]")
-                    
-                    var curResult = promotedResult
-                    let propagatedX = promotedResult.x + ixyhs.x
-                    let propagatedY = promotedResult.y + ixyhs.y
-                    let propagatedH = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(promotedResult.absolute_heading + ixyhs.heading)))
-                    curResult.x = propagatedX
-                    curResult.y = propagatedY
-                    curResult.absolute_heading = propagatedH
-                    if let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: curResult.x, y: curResult.y, heading: curResult.absolute_heading, isUseHeading: false, mode: .MODE_VEHICLE, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) {
-                        curResult.x = pmResult.x
-                        curResult.y = pmResult.y
-                        curResult.absolute_heading = pmResult.heading
-                        
-                        correctionIndex = userPeak.peak_index
-                        correctionId = userPeak.id
-                        startIndoorTracking(uvd: uvd, fltResult: curResult)
-                    }
-                }
-            }
-        }
+//        if jupiterPhase == .ENTERING {
+//            var forceStop = false
+//            let uvdBuffer = stackManager.getUvdBuffer(from: uvd.index-50)
+//            let extractedSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBuffer.map{ Float($0.heading) })
+//            let majorSection = extractedSection.0
+//            forceStop = majorSection.isEmpty
+//            
+//            let snapshotBuffer = getLSESnapshotBuffer(lastN: LSE_SNAPSHOT_BUFFER_SIZE)
+//            if !forceStop, let promotedResult = entManager.maybePromoteEnteringToTrackingUsingLse(curResult: curResult, uvd: uvd, uvdBuffer: uvdBuffer, lseSnapshotBuffer: snapshotBuffer, majorSection: majorSection) {
+//                JupiterLogger.i(tag: "JupiterCalcManager", message: "(startEntranceTracking) maybePromoteEnteringToTrackingUsingLse : promotedResult=[\(promotedResult.index), \(promotedResult.x), \(promotedResult.y), \(promotedResult.absolute_heading)]")
+//                let uvdBufferForStopEntTrack = stackManager.getUvdBuffer(from: promotedResult.index)
+//                if let ixyhs = stackManager.propagateUsingUvd(uvdBuffer: uvdBufferForStopEntTrack, fltResult: promotedResult) {
+//                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(startEntranceTracking) propagateUsingUvd : curIndex= \(uvd.index)")
+//                    JupiterLogger.i(tag: "JupiterCalcManager", message: "(startEntranceTracking) propagateUsingUvd : ixyhs=[\(ixyhs.x), \(ixyhs.y), \(ixyhs.heading)]")
+//                    
+//                    var curResult = promotedResult
+//                    let propagatedX = promotedResult.x + ixyhs.x
+//                    let propagatedY = promotedResult.y + ixyhs.y
+//                    let propagatedH = Float(TJLabsUtilFunctions.shared.compensateDegree(Double(promotedResult.absolute_heading + ixyhs.heading)))
+//                    curResult.x = propagatedX
+//                    curResult.y = propagatedY
+//                    curResult.absolute_heading = propagatedH
+//                    if let pmResult = PathMatcher.shared.pathMatching(sectorId: sectorId, building: curResult.building_name, level: curResult.level_name, x: curResult.x, y: curResult.y, heading: curResult.absolute_heading, isUseHeading: false, mode: .MODE_VEHICLE, paddingValues: JupiterMode.PADDING_VALUES_MEDIUM) {
+//                        curResult.x = pmResult.x
+//                        curResult.y = pmResult.y
+//                        curResult.absolute_heading = pmResult.heading
+//                        
+//                        correctionIndex = userPeak.peak_index
+//                        correctionId = userPeak.id
+//                        startIndoorTracking(uvd: uvd, fltResult: curResult)
+//                    }
+//                }
+//            }
+//        }
     }
     
     private func stopEntranceTracking(currentTime: Int, entManager: EntranceManager, uvd: UserVelocity, bleData: [String: Double]) {
-        if jupiterPhase != .ENTERING { return }
+        if jupiterPhase != .ENTERING {
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(stopEntranceTracking) skipped: phase is \(jupiterPhase), index=\(uvd.index)")
+            return
+        }
         
         var forceStop = false
-        if self.lseSnapshotBuffer.count < 2 { return }
-        guard let firstContext = self.lseSnapshotBuffer[0].requestContext, let lastContext = self.lseSnapshotBuffer[self.lseSnapshotBuffer.count-1].requestContext else {
+        let snapshotBuffer = getLSESnapshotBuffer(lastN: LSE_SNAPSHOT_BUFFER_SIZE)
+        
+        if snapshotBuffer.count < 2 {
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(stopEntranceTracking) early return: lseSnapshotBuffer count is \(snapshotBuffer.count), index=\(uvd.index)")
+            return
+        }
+        guard let firstContext = snapshotBuffer[0].requestContext, let lastContext = snapshotBuffer[snapshotBuffer.count-1].requestContext else {
+            JupiterLogger.w(tag: "JupiterCalcManager", message: "(stopEntranceTracking) early return: requestContext missing in lseSnapshotBuffer, count=\(self.lseSnapshotBuffer.count), index=\(uvd.index)")
             return
         }
         
@@ -865,17 +874,22 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         let uvdBuffer = stackManager.getUvdBuffer(from: firstContext.index)
         let extractedSection = stackManager.extractSectionWithLeastChange(inputArray: uvdBuffer.map{ Float($0.heading) })
         let majorSection = extractedSection.0
-        let sectionRange = extractedSection.1...extractedSection.2
-        if !sectionRange.contains(midIndex) { return }
+        let sectionRange = uvdBuffer[extractedSection.1].index...uvdBuffer[extractedSection.2].index
+//        let sectionRange = extractedSection.1...extractedSection.2
+        if !sectionRange.contains(midIndex) {
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(stopEntranceTracking) early return: midIndex \(midIndex) out of sectionRange \(sectionRange), firstIndex=\(firstContext.index), lastIndex=\(lastContext.index), uvdBufferCount=\(uvdBuffer.count)")
+            return
+        }
         forceStop = majorSection.isEmpty
         
-        let snapshotBuffer = getLSESnapshotBuffer(lastN: LSE_SNAPSHOT_BUFFER_SIZE)
-        if !forceStop, let promotedResult = entManager.maybePromoteEnteringToTrackingUsingLse(curResult: curResult, uvd: uvd, uvdBuffer: uvdBuffer, lseSnapshotBuffer: snapshotBuffer, majorSection: majorSection) {
-            JupiterLogger.i(tag: "JupiterCalcManager", message: "(startEntranceTracking) maybePromoteEnteringToTrackingUsingLse : promotedResult=[\(promotedResult.index), \(promotedResult.x), \(promotedResult.y), \(promotedResult.absolute_heading)]")
+        if forceStop {
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(stopEntranceTracking) skip promotion: majorSection is empty, index=\(uvd.index)")
+        } else if let promotedResult = entManager.maybePromoteEnteringToTrackingUsingLse(curResult: curResult, uvd: uvd, uvdBuffer: uvdBuffer, lseSnapshotBuffer: snapshotBuffer, majorSection: majorSection) {
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(stopEntranceTracking) maybePromoteEnteringToTrackingUsingLse : promotedResult=[\(promotedResult.index), \(promotedResult.x), \(promotedResult.y), \(promotedResult.absolute_heading)]")
             let uvdBufferForStopEntTrack = stackManager.getUvdBuffer(from: promotedResult.index)
             if let ixyhs = stackManager.propagateUsingUvd(uvdBuffer: uvdBufferForStopEntTrack, fltResult: promotedResult) {
-                JupiterLogger.i(tag: "JupiterCalcManager", message: "(startEntranceTracking) propagateUsingUvd : curIndex= \(uvd.index)")
-                JupiterLogger.i(tag: "JupiterCalcManager", message: "(startEntranceTracking) propagateUsingUvd : ixyhs=[\(ixyhs.x), \(ixyhs.y), \(ixyhs.heading)]")
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(stopEntranceTracking) propagateUsingUvd : curIndex= \(uvd.index)")
+                JupiterLogger.i(tag: "JupiterCalcManager", message: "(stopEntranceTracking) propagateUsingUvd : ixyhs=[\(ixyhs.x), \(ixyhs.y), \(ixyhs.heading)]")
                 
                 var curResult = promotedResult
                 let propagatedX = promotedResult.x + ixyhs.x
@@ -889,8 +903,14 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
                     curResult.y = pmResult.y
                     curResult.absolute_heading = pmResult.heading
                     startIndoorTracking(uvd: uvd, fltResult: curResult)
+                } else {
+                    JupiterLogger.w(tag: "JupiterCalcManager", message: "(stopEntranceTracking) pathMatching failed after propagation: building=\(curResult.building_name), level=\(curResult.level_name), xyh=[\(curResult.x), \(curResult.y), \(curResult.absolute_heading)]")
                 }
+            } else {
+                JupiterLogger.w(tag: "JupiterCalcManager", message: "(stopEntranceTracking) propagateUsingUvd failed: promotedIndex=\(promotedResult.index), uvdBufferCount=\(uvdBufferForStopEntTrack.count), curIndex=\(uvd.index)")
             }
+        } else {
+            JupiterLogger.i(tag: "JupiterCalcManager", message: "(stopEntranceTracking) maybePromoteEnteringToTrackingUsingLse returned nil: curIndex=\(uvd.index), uvdBufferCount=\(uvdBuffer.count), snapshotBufferCount=\(snapshotBuffer.count), majorSectionCount=\(majorSection.count)")
         }
         
         if entManager.forcedStopEntTrack(bleAvg: bleData, sec: 15) || forceStop {
@@ -2357,6 +2377,13 @@ class JupiterCalcManager: NSObject, RFDGeneratorDelegate, UVDGeneratorDelegate, 
         switch (result) {
         case .success(let success):
             let context = requestContext
+            
+            if curLSEResult == nil && success.location.confidence_info != "normal" {
+                JupiterLogger.i(
+                    tag: "JupiterCalcManager",
+                    message: "(didReceiveSingleEpochResult) confidence is not noraml in initial phase")
+                return
+            }
             
             let currentTime = TJLabsUtilFunctions.shared.getCurrentTimeInMilliseconds(as: .int) as! Int
             let curIndex = curUvd.index
